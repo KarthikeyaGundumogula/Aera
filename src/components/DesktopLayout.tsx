@@ -1,12 +1,12 @@
 import { motion } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { PlayCircle, Search, User, Loader2, Calendar } from "lucide-react";
-import { TheatreItem } from "../types";
+import { TheatreItem, SetSelectedItem } from "../types";
 import { GRID_ITEMS } from "../data/mockData";
 
 interface DesktopLayoutProps {
   selectedItem: TheatreItem | null;
-  setSelectedItem: (item: TheatreItem | null) => void;
+  setSelectedItem: SetSelectedItem;
 }
 
 export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
@@ -22,10 +22,24 @@ export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
   const [isLoadingDown, setIsLoadingDown] = useState(false);
   const [isLoadingUp, setIsLoadingUp] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [columns, setColumns] = useState(10);
   
   const topObserverTarget = useRef<HTMLDivElement>(null);
   const bottomObserverTarget = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
+
+  // Calculate columns based on tailwind breakpoints
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth;
+      if (width >= 1536) setColumns(16); // 2xl
+      else if (width >= 1280) setColumns(12); // xl
+      else setColumns(10); // default
+    };
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
 
   // Header visibility logic
   useEffect(() => {
@@ -187,7 +201,7 @@ export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
               whileInView={{ opacity: 1, scale: 1 }}
               whileHover={{ scale: 1.05, zIndex: 10 }}
               viewport={{ once: true }}
-              onClick={() => setSelectedItem(item)}
+              onClick={() => setSelectedItem(item, items, columns)}
               className="aspect-video spotlight-hover relative rounded-2xl overflow-hidden cursor-pointer group bg-white/5 border border-white/5 shadow-2xl"
             >
               {item.image && (

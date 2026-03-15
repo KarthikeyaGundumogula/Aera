@@ -12,6 +12,8 @@ import { QuickView } from "./components/QuickView";
 export default function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
+  const [currentItems, setCurrentItems] = useState<TheatreItem[]>([]);
+  const [currentColumns, setCurrentColumns] = useState(1);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -20,14 +22,28 @@ export default function App() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  const handleSelectItem = (item: TheatreItem | null, items: TheatreItem[] = [], columns: number = 1) => {
+    setSelectedItem(item);
+    if (item) {
+      setCurrentItems(items);
+      setCurrentColumns(columns);
+    }
+  };
+
   return (
     <div className="min-h-screen font-sans selection:bg-brand-accent/30">
       {isMobile ? (
-        <MobileLayout selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+        <MobileLayout selectedItem={selectedItem} setSelectedItem={handleSelectItem} />
       ) : (
-        <DesktopLayout selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+        <DesktopLayout selectedItem={selectedItem} setSelectedItem={handleSelectItem} />
       )}
-      <QuickView selectedItem={selectedItem} setSelectedItem={setSelectedItem} isMobile={isMobile} />
+      <QuickView 
+        selectedItem={selectedItem} 
+        setSelectedItem={(item) => handleSelectItem(item, currentItems, currentColumns)} 
+        isMobile={isMobile} 
+        items={currentItems}
+        columns={currentColumns}
+      />
     </div>
   );
 }

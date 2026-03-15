@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Info, List, X, Calendar, PlayCircle } from "lucide-react";
 import { TheatreItem } from "../types";
 import { LIVE_NOW, FEED_ITEMS, GRID_ITEMS } from "../data/mockData";
@@ -8,56 +8,96 @@ interface QuickViewProps {
   selectedItem: TheatreItem | null;
   setSelectedItem: (item: TheatreItem | null) => void;
   isMobile: boolean;
+  items: TheatreItem[];
+  columns: number;
 }
 
-export function QuickView({ selectedItem, setSelectedItem, isMobile }: QuickViewProps) {
+export function QuickView({ selectedItem, setSelectedItem, isMobile, items, columns }: QuickViewProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
-  const [playlist, setPlaylist] = useState<TheatreItem[]>([]);
   const [showControls, setShowControls] = useState(true);
   const [showQueue, setShowQueue] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartRef = useRef<{ x: number, y: number } | null>(null);
 
   useEffect(() => {
     if (selectedItem) {
-      const rawPlaylist = [...LIVE_NOW, ...FEED_ITEMS, ...GRID_ITEMS].filter(item => 'image' in item || 'title' in item);
-      // Ensure unique IDs for the playlist to avoid duplicate key errors
-      const uniquePlaylist = rawPlaylist.map((item, idx) => ({
-        ...item,
-        playlistId: `${item.id}-${idx}`
-      }));
-      setPlaylist(uniquePlaylist);
-      const index = uniquePlaylist.findIndex(item => item.id === selectedItem.id);
+      const index = items.findIndex(item => item.id === selectedItem.id);
       setCurrentIndex(index !== -1 ? index : 0);
     } else {
       setCurrentIndex(-1);
       setShowQueue(false);
       setShowInfo(false);
     }
-  }, [selectedItem]);
+  }, [selectedItem, items]);
 
-  const handleNext = useCallback(() => {
-    if (currentIndex < playlist.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    }
-  }, [currentIndex, playlist.length]);
+  const handleMove = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    if (currentIndex === -1) return;
 
-  const handlePrev = useCallback(() => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
+    const row = Math.floor(currentIndex / columns);
+    const col = currentIndex % columns;
+    const totalRows = Math.ceil(items.length / columns);
+
+    let nextIndex = currentIndex;
+
+    switch (direction) {
+      case 'left':
+        if (col > 0) nextIndex = currentIndex - 1;
+        break;
+      case 'right':
+        if (col < columns - 1 && currentIndex + 1 < items.length) nextIndex = currentIndex + 1;
+        break;
+      case 'up':
+        if (row > 0) nextIndex = currentIndex - columns;
+        break;
+      case 'down':
+        if (row < totalRows - 1 && currentIndex + columns < items.length) nextIndex = currentIndex + columns;
+        break;
     }
-  }, [currentIndex]);
+
+    if (nextIndex !== currentIndex) {
+      setCurrentIndex(nextIndex);
+    }
+  }, [currentIndex, columns, items]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedItem) return;
-      if (e.key === "ArrowDown") handleNext();
-      if (e.key === "ArrowUp") handlePrev();
+      if (e.key === "ArrowDown") handleMove('down');
+      if (e.key === "ArrowUp") handleMove('up');
+      if (e.key === "ArrowLeft") handleMove('left');
+      if (e.key === "ArrowRight") handleMove('right');
       if (e.key === "Escape") setSelectedItem(null);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedItem, handleNext, handlePrev, setSelectedItem]);
+  }, [selectedItem, handleMove, setSelectedItem]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    };
+    resetTimer();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+
+    const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    if (Math.max(absX, absY) > 50) { // Threshold
+      if (absX > absY) {
+        handleMove(deltaX > 0 ? 'left' : 'right');
+      } else {
+        handleMove(deltaY > 0 ? 'up' : 'down');
+      }
+    }
+    touchStartRef.current = null;
+  };
 
   const resetTimer = useCallback(() => {
     setShowControls(true);
@@ -81,7 +121,7 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile }: QuickView
     };
   }, [selectedItem, resetTimer]);
 
-  const currentVideo = playlist[currentIndex];
+  const currentVideo = items[currentIndex];
 
   return (
     <AnimatePresence>
@@ -92,22 +132,31 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile }: QuickView
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
           onMouseMove={resetTimer}
-          onTouchStart={resetTimer}
-          onClick={resetTimer}
         >
           <div className="relative w-full h-full flex flex-col md:flex-row overflow-hidden">
             {/* Main Video Stage */}
-            <div className="relative flex-1 bg-black flex items-center justify-center group">
+            <div 
+              className="relative flex-1 bg-black flex items-center justify-center group"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               <video 
-                key={currentVideo.playlistId}
+                key={currentVideo.id}
                 src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" 
                 controls={showControls}
                 controlsList="nodownload noplaybackrate noremoteplayback"
                 disablePictureInPicture
                 autoPlay 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain pointer-events-auto"
                 poster={currentVideo.image || ''}
-                onEnded={handleNext}
+                onEnded={() => handleMove('down')}
+                onClick={(e) => {
+                  // If controls are hidden, show them on first click
+                  if (!showControls) {
+                    e.preventDefault();
+                    resetTimer();
+                  }
+                }}
               />
               
               {/* Transparent Touch Layer to bring back controls when hidden */}
@@ -115,7 +164,6 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile }: QuickView
                 <div 
                   className="absolute inset-0 z-10 cursor-pointer" 
                   onClick={resetTimer}
-                  onTouchStart={resetTimer}
                 />
               )}
               
@@ -174,20 +222,18 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile }: QuickView
 
                     {/* Navigation Hints */}
                     <div className="flex justify-center gap-4 md:gap-8 pointer-events-auto">
-                      {currentIndex > 0 && (
-                        <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
-                          <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-                            <Calendar className="w-4 h-4 md:w-6 md:h-6 rotate-180" />
-                          </motion.div>
-                        </button>
-                      )}
-                      {currentIndex < playlist.length - 1 && (
-                        <button onClick={(e) => { e.stopPropagation(); handleNext(); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
-                          <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-                            <Calendar className="w-4 h-4 md:w-6 md:h-6" />
-                          </motion.div>
-                        </button>
-                      )}
+                      <button onClick={(e) => { e.stopPropagation(); handleMove('up'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
+                        <Calendar className="w-4 h-4 md:w-6 md:h-6 rotate-180" />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleMove('down'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
+                        <Calendar className="w-4 h-4 md:w-6 md:h-6" />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleMove('left'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
+                        <Calendar className="w-4 h-4 md:w-6 md:h-6 -rotate-90" />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleMove('right'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
+                        <Calendar className="w-4 h-4 md:w-6 md:h-6 rotate-90" />
+                      </button>
                     </div>
                   </motion.div>
                 )}
@@ -209,10 +255,10 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile }: QuickView
                     <button onClick={() => setShowQueue(false)} className="md:hidden text-white/40"><X className="w-5 h-5" /></button>
                   </div>
                   <div className="space-y-6">
-                    {playlist.slice(currentIndex + 1, currentIndex + 15).map((item) => (
+                    {items.slice(currentIndex + 1, currentIndex + 15).map((item, idx) => (
                       <div 
-                        key={item.playlistId}
-                        onClick={() => { setCurrentIndex(playlist.indexOf(item)); if (isMobile) setShowQueue(false); }}
+                        key={`${item.id}-${idx}`}
+                        onClick={() => { setCurrentIndex(items.indexOf(item)); if (isMobile) setShowQueue(false); }}
                         className="group cursor-pointer flex gap-4 items-center"
                       >
                         <div className="relative w-24 md:w-32 aspect-video rounded-lg overflow-hidden border border-white/5">

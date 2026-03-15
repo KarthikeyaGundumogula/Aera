@@ -14,3 +14,5 @@ export interface TheatreItem {
   isEvent?: boolean;
   playlistId?: string;
 }
+
+export type SetSelectedItem = (item: TheatreItem | null, items?: TheatreItem[], columns?: number) => void;

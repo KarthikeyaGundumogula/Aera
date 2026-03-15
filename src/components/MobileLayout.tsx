@@ -1,11 +1,11 @@
 import { motion } from "motion/react";
 import { Search, Home, User } from "lucide-react";
-import { TheatreItem } from "../types";
+import { TheatreItem, SetSelectedItem } from "../types";
 import { LIVE_NOW, FEED_ITEMS, GRID_ITEMS } from "../data/mockData";
 
 interface MobileLayoutProps {
   selectedItem: TheatreItem | null;
-  setSelectedItem: (item: TheatreItem | null) => void;
+  setSelectedItem: SetSelectedItem;
 }
 
 export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
@@ -14,6 +14,8 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
     { id: 'b2', title: 'Exclusive: Director Cut', image: 'https://picsum.photos/seed/director/800/400' },
     { id: 'b3', title: 'Live: Global Premiere', image: 'https://picsum.photos/seed/premiere/800/400' },
   ];
+
+  const feedItems = [...LIVE_NOW, ...FEED_ITEMS, ...GRID_ITEMS.slice(0, 8)];
 
   return (
     <div className="bg-brand-dark h-screen flex flex-col overflow-hidden">
@@ -31,7 +33,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
       </header>
 
       {/* 2-Axis Scrollable Content Area */}
-      <main className="flex-1 mt-14 overflow-auto no-scrollbar bg-gradient-ambient">
+      <main className="flex-1 mt-14 overflow-auto bg-gradient-ambient touch-auto min-h-0">
         {/* Spotlight Section */}
         <div className="pt-4">
           <div className="px-6 mb-2">
@@ -63,7 +65,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
           {/* 2D Grid for 2-axis exploration - Tightened spacing */}
           <div className="grid grid-cols-2 gap-x-5 gap-y-6">
             {/* Mix of Live and Feed items in a wide grid */}
-            {[...LIVE_NOW, ...FEED_ITEMS, ...GRID_ITEMS.slice(0, 8)].map((item, idx) => (
+            {feedItems.map((item, idx) => (
               <motion.div
                 key={`${item.id}-${idx}`}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -71,7 +73,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 viewport={{ once: true }}
-                onClick={() => setSelectedItem(item)}
+                onClick={() => setSelectedItem(item, feedItems, 2)}
                 className="flex flex-col space-y-2 cursor-pointer"
               >
                 <div className="relative aspect-video w-full rounded-xl overflow-hidden shadow-xl border border-white/5">
