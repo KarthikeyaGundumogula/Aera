@@ -1,8 +1,14 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Info, List, X, Calendar, PlayCircle } from "lucide-react";
+import { Info, List, X, Calendar, PlayCircle, ExternalLink } from "lucide-react";
 import { TheatreItem } from "../types";
 import { LIVE_NOW, FEED_ITEMS, GRID_ITEMS } from "../data/mockData";
+
+declare global {
+  interface Window {
+    twttr: any;
+  }
+}
 
 interface QuickViewProps {
   selectedItem: TheatreItem | null;
@@ -17,6 +23,8 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
   const [showControls, setShowControls] = useState(true);
   const [showQueue, setShowQueue] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [twitterReady, setTwitterReady] = useState(false);
+  const twitterContainerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartRef = useRef<{ x: number, y: number } | null>(null);
 
@@ -123,6 +131,48 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
 
   const currentVideo = items[currentIndex];
 
+  // Load Twitter Widgets script
+  useEffect(() => {
+    if (window.twttr) {
+      setTwitterReady(true);
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://platform.twitter.com/widgets.js";
+      script.async = true;
+      script.onload = () => {
+        window.twttr.ready(() => setTwitterReady(true));
+      };
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // Trigger Twitter widget load when ID changes
+  useEffect(() => {
+    if (currentVideo?.twitterId && twitterReady && window.twttr?.widgets) {
+      if (twitterContainerRef.current) {
+        // Clear previous content
+        twitterContainerRef.current.innerHTML = '';
+        
+        // Create the blockquote structure requested by the user
+        const blockquote = document.createElement('blockquote');
+        blockquote.className = 'twitter-tweet';
+        blockquote.setAttribute('data-media-max-width', '560');
+        blockquote.setAttribute('data-theme', 'dark');
+        blockquote.setAttribute('data-align', 'center');
+        blockquote.setAttribute('data-dnt', 'true');
+        
+        const link = document.createElement('a');
+        link.href = `https://twitter.com/x/status/${currentVideo.twitterId}/video/1`;
+        blockquote.appendChild(link);
+        
+        twitterContainerRef.current.appendChild(blockquote);
+        
+        // Tell Twitter to process the new element
+        window.twttr.widgets.load(twitterContainerRef.current);
+      }
+    }
+  }, [currentVideo?.twitterId, twitterReady]);
+
   return (
     <AnimatePresence>
       {selectedItem && currentVideo && (
@@ -140,24 +190,33 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              <video 
-                key={currentVideo.id}
-                src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" 
-                controls={showControls}
-                controlsList="nodownload noplaybackrate noremoteplayback"
-                disablePictureInPicture
-                autoPlay 
-                className="w-full h-full object-contain pointer-events-auto"
-                poster={currentVideo.image || ''}
-                onEnded={() => handleMove('down')}
-                onClick={(e) => {
-                  // If controls are hidden, show them on first click
-                  if (!showControls) {
-                    e.preventDefault();
-                    resetTimer();
-                  }
-                }}
-              />
+              {currentVideo.twitterId ? (
+                <div 
+                  ref={twitterContainerRef}
+                  className="w-full h-full flex items-center justify-center p-4"
+                >
+                  {/* Twitter programmatic widget will be injected here */}
+                </div>
+              ) : (
+                <video 
+                  key={currentVideo.id}
+                  src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" 
+                  controls={showControls}
+                  controlsList="nodownload noplaybackrate noremoteplayback"
+                  disablePictureInPicture
+                  autoPlay 
+                  className="w-full h-full object-contain pointer-events-auto"
+                  poster={currentVideo.image || ''}
+                  onEnded={() => handleMove('down')}
+                  onClick={(e) => {
+                    // If controls are hidden, show them on first click
+                    if (!showControls) {
+                      e.preventDefault();
+                      resetTimer();
+                    }
+                  }}
+                />
+              )}
               
               {/* Transparent Touch Layer to bring back controls when hidden */}
               {!showControls && (
@@ -208,6 +267,16 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
                             className={`p-2 md:p-3 rounded-full text-white transition-all border border-white/10 ${showQueue ? 'bg-brand-accent' : 'bg-white/10 backdrop-blur-xl hover:bg-white/20'}`}
                           >
                             <List className="w-4 h-4 md:w-6 md:h-6" />
+                          </button>
+                        )}
+
+                        {currentVideo.twitterId && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); window.open(`https://twitter.com/x/status/${currentVideo.twitterId}`, '_blank'); }}
+                            className="p-2 md:p-3 bg-white/10 backdrop-blur-xl rounded-full text-white hover:bg-white/20 transition-all border border-white/10"
+                            title="Open in New Tab"
+                          >
+                            <ExternalLink className="w-4 h-4 md:w-6 md:h-6" />
                           </button>
                         )}
 

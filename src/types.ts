@@ -13,6 +13,7 @@ export interface TheatreItem {
   isPlay?: boolean;
   isEvent?: boolean;
   playlistId?: string;
+  twitterId?: string;
 }
 
 export type SetSelectedItem = (item: TheatreItem | null, items?: TheatreItem[], columns?: number) => void;

@@ -6,7 +6,8 @@ export const LIVE_NOW: TheatreItem[] = [
     title: "The Alchemist: Stage 01",
     watching: "8.2k Watching",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCX0MUEyyr-la-YRK_pQMqHijBNCeWIr655erPYLlo4H2t9zdzYOgCXx2DxNyV74S1pGAnmXD23wLPfaG_gx0dRU8-mz0oWrsaaOR3zBM4LQifaTdk9QcgsLEjU9OAt-cBZmmPG6vbDW_rrRF51kwB7XS5mCgBVipurFBl-2hqSIMgkw93EgQ28PHLfYUNPOw3Ec06LWDWV6ZyPscjSoWEBfD9_0jXdgk7V42QSt32c7m6qV3OpJeLncqmrmXQI0ru1q_YGfChLCF8",
-    status: "Live Now"
+    status: "Live Now",
+    twitterId: "2033091078199603682"
   },
   {
     id: 2,
