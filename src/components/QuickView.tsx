@@ -1,8 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Info, List, X, Calendar, PlayCircle, ExternalLink } from "lucide-react";
+import { Info, List, X, PlayCircle, ExternalLink, Sparkles, History, User } from "lucide-react";
 import { TheatreItem } from "../types";
-import { LIVE_NOW, FEED_ITEMS, GRID_ITEMS } from "../data/mockData";
 
 declare global {
   interface Window {
@@ -81,39 +80,11 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedItem, handleMove, setSelectedItem]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY
-    };
-    resetTimer();
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-
-    const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x;
-    const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y;
-    const absX = Math.abs(deltaX);
-    const absY = Math.abs(deltaY);
-
-    if (Math.max(absX, absY) > 50) { // Threshold
-      if (absX > absY) {
-        handleMove(deltaX > 0 ? 'left' : 'right');
-      } else {
-        handleMove(deltaY > 0 ? 'up' : 'down');
-      }
-    }
-    touchStartRef.current = null;
-  };
-
   const resetTimer = useCallback(() => {
     setShowControls(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    // Longer timeout for mobile to help with mute/controls interaction
     const timeout = isMobile ? 5000 : 3000;
     timeoutRef.current = setTimeout(() => {
-      // Don't hide if queue or info is open
       if (!showQueue && !showInfo) {
         setShowControls(false);
       }
@@ -131,7 +102,6 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
 
   const currentVideo = items[currentIndex];
 
-  // Load Twitter Widgets script
   useEffect(() => {
     if (window.twttr) {
       setTwitterReady(true);
@@ -146,28 +116,20 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
     }
   }, []);
 
-  // Trigger Twitter widget load when ID changes
   useEffect(() => {
     if (currentVideo?.twitterId && twitterReady && window.twttr?.widgets) {
       if (twitterContainerRef.current) {
-        // Clear previous content
         twitterContainerRef.current.innerHTML = '';
-        
-        // Create the blockquote structure requested by the user
         const blockquote = document.createElement('blockquote');
         blockquote.className = 'twitter-tweet';
         blockquote.setAttribute('data-media-max-width', '560');
         blockquote.setAttribute('data-theme', 'dark');
         blockquote.setAttribute('data-align', 'center');
         blockquote.setAttribute('data-dnt', 'true');
-        
         const link = document.createElement('a');
         link.href = `https://twitter.com/x/status/${currentVideo.twitterId}/video/1`;
         blockquote.appendChild(link);
-        
         twitterContainerRef.current.appendChild(blockquote);
-        
-        // Tell Twitter to process the new element
         window.twttr.widgets.load(twitterContainerRef.current);
       }
     }
@@ -184,45 +146,19 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
           onMouseMove={resetTimer}
         >
           <div className="relative w-full h-full flex flex-col md:flex-row overflow-hidden">
-            {/* Main Video Stage */}
-            <div 
-              className="relative flex-1 bg-black flex items-center justify-center group"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
+            {/* Main Stage */}
+            <div className="relative flex-1 bg-black flex items-center justify-center group">
               {currentVideo.twitterId ? (
-                <div 
-                  ref={twitterContainerRef}
-                  className="w-full h-full flex items-center justify-center p-4"
-                >
-                  {/* Twitter programmatic widget will be injected here */}
-                </div>
+                <div ref={twitterContainerRef} className="w-full h-full flex items-center justify-center p-4" />
               ) : (
                 <video 
                   key={currentVideo.id}
                   src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" 
                   controls={showControls}
-                  controlsList="nodownload noplaybackrate noremoteplayback"
-                  disablePictureInPicture
                   autoPlay 
-                  className="w-full h-full object-contain pointer-events-auto"
+                  className="w-full h-full object-contain"
                   poster={currentVideo.image || ''}
                   onEnded={() => handleMove('down')}
-                  onClick={(e) => {
-                    // If controls are hidden, show them on first click
-                    if (!showControls) {
-                      e.preventDefault();
-                      resetTimer();
-                    }
-                  }}
-                />
-              )}
-              
-              {/* Transparent Touch Layer to bring back controls when hidden */}
-              {!showControls && (
-                <div 
-                  className="absolute inset-0 z-10 cursor-pointer" 
-                  onClick={resetTimer}
                 />
               )}
               
@@ -233,76 +169,60 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 md:p-12"
+                    className="absolute inset-0 pointer-events-none flex flex-col justify-between p-8 md:p-16"
                   >
                     <div className="flex justify-between items-start pointer-events-auto">
-                      <div className="space-y-1 md:space-y-2">
-                        <h2 className="text-xl md:text-5xl font-black text-white uppercase tracking-tighter">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className="px-3 py-1 bg-white text-black text-[10px] font-bold uppercase tracking-widest rounded-sm">
+                            {currentVideo.category || 'Moment'}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                            By {currentVideo.artist}
+                          </span>
+                        </div>
+                        <h2 className="text-3xl md:text-6xl font-bold text-white uppercase tracking-tighter leading-none">
                           {currentVideo.title || 'Untitled'}
                         </h2>
-                        <div className="flex items-center gap-2 md:gap-4">
-                          <span className="px-2 md:px-3 py-0.5 md:py-1 bg-brand-accent text-white text-[8px] md:text-[10px] font-bold rounded-full uppercase tracking-widest">
-                            {currentVideo.watching || currentVideo.meta || 'AERA'}
-                          </span>
-                          <div className="flex items-center gap-1 md:gap-2">
-                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white/40"></span>
-                            <span className="text-[8px] md:text-[10px] font-bold text-white/60 uppercase tracking-widest">4K HDR</span>
-                          </div>
-                        </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 md:gap-4">
-                        {/* Info Toggle */}
+                      <div className="flex items-center gap-4">
                         <button 
                           onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); setShowQueue(false); }}
-                          className={`p-2 md:p-3 rounded-full text-white transition-all border border-white/10 ${showInfo ? 'bg-brand-accent' : 'bg-white/10 backdrop-blur-xl hover:bg-white/20'}`}
+                          className={`p-4 rounded-full text-white transition-all border border-white/10 ${showInfo ? 'bg-white text-black' : 'bg-black/40 backdrop-blur-xl hover:bg-white/10'}`}
                         >
-                          <Info className="w-4 h-4 md:w-6 md:h-6" />
+                          <Info className="w-6 h-6" />
                         </button>
-
-                        {/* Queue Toggle (Desktop Only) */}
-                        {!isMobile && (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setShowQueue(!showQueue); setShowInfo(false); }}
-                            className={`p-2 md:p-3 rounded-full text-white transition-all border border-white/10 ${showQueue ? 'bg-brand-accent' : 'bg-white/10 backdrop-blur-xl hover:bg-white/20'}`}
-                          >
-                            <List className="w-4 h-4 md:w-6 md:h-6" />
-                          </button>
-                        )}
-
-                        {currentVideo.twitterId && (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); window.open(`https://twitter.com/x/status/${currentVideo.twitterId}`, '_blank'); }}
-                            className="p-2 md:p-3 bg-white/10 backdrop-blur-xl rounded-full text-white hover:bg-white/20 transition-all border border-white/10"
-                            title="Open in New Tab"
-                          >
-                            <ExternalLink className="w-4 h-4 md:w-6 md:h-6" />
-                          </button>
-                        )}
-
                         <button 
                           onClick={(e) => { e.stopPropagation(); setSelectedItem(null); }}
-                          className="p-2 md:p-3 bg-white/10 backdrop-blur-xl rounded-full text-white hover:bg-white/20 transition-all border border-white/10"
+                          className="p-4 bg-black/40 backdrop-blur-xl rounded-full text-white hover:bg-white/10 transition-all border border-white/10"
                         >
-                          <X className="w-4 h-4 md:w-6 md:h-6" />
+                          <X className="w-6 h-6" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Navigation Hints */}
-                    <div className="flex justify-center gap-4 md:gap-8 pointer-events-auto">
-                      <button onClick={(e) => { e.stopPropagation(); handleMove('up'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
-                        <Calendar className="w-4 h-4 md:w-6 md:h-6 rotate-180" />
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleMove('down'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
-                        <Calendar className="w-4 h-4 md:w-6 md:h-6" />
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleMove('left'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
-                        <Calendar className="w-4 h-4 md:w-6 md:h-6 -rotate-90" />
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleMove('right'); }} className="p-3 md:p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all">
-                        <Calendar className="w-4 h-4 md:w-6 md:h-6 rotate-90" />
-                      </button>
+                    <div className="flex justify-between items-end pointer-events-auto">
+                      <div className="flex items-center gap-12">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Origins</p>
+                          <p className="text-sm font-bold">{currentVideo.origins || "Original"}</p>
+                        </div>
+                        <div className="flex items-center gap-3 px-6 py-3 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
+                          <Sparkles className="w-4 h-4 text-yellow-400" />
+                          <span className="text-sm font-bold">{currentVideo.credits || 0} Credits</span>
+                        </div>
+                      </div>
+                      
+                      {!isMobile && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setShowQueue(!showQueue); setShowInfo(false); }}
+                          className={`flex items-center gap-3 px-6 py-3 rounded-full text-white transition-all border border-white/10 ${showQueue ? 'bg-white text-black' : 'bg-black/40 backdrop-blur-xl hover:bg-white/10'}`}
+                        >
+                          <List className="w-5 h-5" />
+                          <span className="text-xs font-bold uppercase tracking-widest">The Queue</span>
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -313,32 +233,29 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
             <AnimatePresence>
               {showQueue && !isMobile && (
                 <motion.div
-                  initial={{ x: 400 }}
+                  initial={{ x: 450 }}
                   animate={{ x: 0 }}
-                  exit={{ x: 400 }}
-                  className="w-full md:w-[400px] absolute md:relative right-0 h-full bg-brand-dark/90 backdrop-blur-3xl border-l border-white/10 p-6 md:p-8 overflow-y-auto no-scrollbar z-50"
+                  exit={{ x: 450 }}
+                  className="w-[450px] h-full bg-[#0a0a0a] border-l border-white/5 p-12 overflow-y-auto no-scrollbar z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xs font-bold text-white uppercase tracking-[0.4em] opacity-40">Up Next</h3>
-                    <button onClick={() => setShowQueue(false)} className="md:hidden text-white/40"><X className="w-5 h-5" /></button>
+                  <div className="flex items-center gap-3 mb-12 opacity-40">
+                    <History className="w-5 h-5" />
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.4em]">The Queue</h3>
                   </div>
-                  <div className="space-y-6">
-                    {items.slice(currentIndex + 1, currentIndex + 15).map((item, idx) => (
+                  <div className="space-y-8">
+                    {items.map((item, idx) => (
                       <div 
                         key={`${item.id}-${idx}`}
-                        onClick={() => { setCurrentIndex(items.indexOf(item)); if (isMobile) setShowQueue(false); }}
-                        className="group cursor-pointer flex gap-4 items-center"
+                        onClick={() => setCurrentIndex(items.indexOf(item))}
+                        className={`group cursor-pointer flex gap-6 items-center transition-opacity ${item.id === currentVideo.id ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}
                       >
-                        <div className="relative w-24 md:w-32 aspect-video rounded-lg overflow-hidden border border-white/5">
-                          <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <PlayCircle className="w-6 h-6 text-white" />
-                          </div>
+                        <div className="relative w-32 aspect-video rounded-xl overflow-hidden border border-white/5">
+                          <img src={item.image} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         </div>
-                        <div className="flex-1">
-                          <h4 className="text-[10px] font-bold text-white uppercase tracking-wider line-clamp-1">{item.title}</h4>
-                          <p className="text-[8px] text-white/30 uppercase tracking-widest mt-1">AERA Original</p>
+                        <div>
+                          <h4 className="text-xs font-bold text-white uppercase tracking-tight mb-1">{item.title}</h4>
+                          <p className="text-[9px] text-white/40 uppercase tracking-widest">{item.artist}</p>
                         </div>
                       </div>
                     ))}
@@ -348,64 +265,58 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
 
               {showInfo && (
                 <motion.div
-                  initial={{ x: 400 }}
+                  initial={{ x: 450 }}
                   animate={{ x: 0 }}
-                  exit={{ x: 400 }}
-                  className="w-full md:w-[400px] absolute md:relative right-0 h-full bg-brand-dark/90 backdrop-blur-3xl border-l border-white/10 p-6 md:p-8 overflow-y-auto no-scrollbar z-50"
+                  exit={{ x: 450 }}
+                  className="w-full md:w-[450px] absolute md:relative right-0 h-full bg-[#0a0a0a] border-l border-white/5 p-12 overflow-y-auto no-scrollbar z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xs font-bold text-white uppercase tracking-[0.4em] opacity-40">Production Info</h3>
-                    <button onClick={() => setShowInfo(false)} className="md:hidden text-white/40"><X className="w-5 h-5" /></button>
+                  <div className="flex justify-between items-center mb-12">
+                    <div className="flex items-center gap-3 opacity-40">
+                      <Info className="w-5 h-5" />
+                      <h3 className="text-[10px] font-bold uppercase tracking-[0.4em]">Moment Details</h3>
+                    </div>
+                    <button onClick={() => setShowInfo(false)} className="md:hidden text-white/40"><X className="w-6 h-6" /></button>
                   </div>
                   
-                  <div className="space-y-8">
-                    <div className="space-y-4">
-                      <h4 className="text-2xl font-bold text-white">{currentVideo.title || 'Untitled'}</h4>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[8px] font-bold text-white/60 uppercase tracking-widest">4K Ultra HD</span>
-                        <span className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[8px] font-bold text-white/60 uppercase tracking-widest">Spatial Audio</span>
-                        <span className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[8px] font-bold text-white/60 uppercase tracking-widest">Dolby Vision</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h5 className="text-[10px] font-bold text-brand-accent uppercase tracking-widest">Credits</h5>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-[8px] text-white/40 uppercase tracking-widest">Director</p>
-                          <p className="text-xs text-white font-medium">Elena Vance</p>
+                  <div className="space-y-12">
+                    <div className="space-y-6">
+                      <h4 className="text-4xl font-bold text-white uppercase tracking-tighter leading-none">{currentVideo.title}</h4>
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center">
+                          <User className="w-5 h-5 text-white/40" />
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-[8px] text-white/40 uppercase tracking-widest">Choreography</p>
-                          <p className="text-xs text-white font-medium">Marcus Chen</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[8px] text-white/40 uppercase tracking-widest">Sound Design</p>
-                          <p className="text-xs text-white font-medium">AERA Labs</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[8px] text-white/40 uppercase tracking-widest">Visual Effects</p>
-                          <p className="text-xs text-white font-medium">Lumina Studios</p>
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Artist</p>
+                          <p className="text-sm font-bold">{currentVideo.artist}</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <h5 className="text-[10px] font-bold text-brand-accent uppercase tracking-widest">Tags</h5>
-                      <div className="flex flex-wrap gap-2">
-                        {['Contemporary', 'Immersive', 'Experimental', 'Digital Theatre'].map(tag => (
-                          <span key={tag} className="text-[10px] text-white/60 hover:text-white transition-colors cursor-pointer">#{tag}</span>
-                        ))}
+                    <div className="grid grid-cols-1 gap-8 pt-12 border-t border-white/5">
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Origins</p>
+                        <p className="text-lg font-bold uppercase tracking-tight">{currentVideo.origins || "Original Creation"}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Recognition</p>
+                        <div className="flex items-center gap-3">
+                          <Sparkles className="w-5 h-5 text-yellow-400" />
+                          <p className="text-2xl font-bold">{currentVideo.credits || 0} Credits</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Category</p>
+                        <p className="text-lg font-bold uppercase tracking-tight">{currentVideo.category || "Moment"}</p>
                       </div>
                     </div>
 
-                    <div className="pt-8 border-t border-white/5 space-y-4">
-                      <button className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white uppercase tracking-widest transition-all">
-                        Add to Watchlist
+                    <div className="pt-12 border-t border-white/5 space-y-4">
+                      <button className="w-full py-5 bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-white/90 transition-all">
+                        Give Credits
                       </button>
-                      <button className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white uppercase tracking-widest transition-all">
-                        Share Production
+                      <button className="w-full py-5 bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-white/10 transition-all">
+                        View Origins
                       </button>
                     </div>
                   </div>
@@ -413,16 +324,6 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
               )}
             </AnimatePresence>
           </div>
-
-          {/* Mobile Scroll Hint */}
-          {isMobile && showControls && !showQueue && !showInfo && (
-            <div className="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-2 pointer-events-none">
-              <span className="text-[8px] font-bold text-white/40 uppercase tracking-[0.3em]">Scroll for next</span>
-              <motion.div animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                <div className="w-px h-8 bg-gradient-to-b from-brand-accent to-transparent"></div>
-              </motion.div>
-            </div>
-          )}
         </motion.div>
       )}
     </AnimatePresence>
