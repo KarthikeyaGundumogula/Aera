@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Info, List, X, PlayCircle, ExternalLink, Sparkles, History, User } from "lucide-react";
+import { Info, List, X, Sparkles, History, User } from "lucide-react";
 import { TheatreItem } from "../types";
 
 declare global {

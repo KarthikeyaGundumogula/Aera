@@ -1,10 +1,11 @@
 import { motion } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PlayCircle, Search, User, Loader2, Sparkles, History, Users, MessageSquare, FileText, Image as ImageIcon, Film } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { TheatreItem, SetSelectedItem } from "../types";
-import { GRID_ITEMS, FEATURED_MOMENT, SETS } from "../data/mockData";
 
-import { CinepoeticCanvas } from "./CinepoeticCanvas";
+import { CinepoeticCanvas } from "../components/CinepoeticCanvas";
+
+import { Logo } from "../components/Logo";
 
 interface DesktopLayoutProps {
   selectedItem: TheatreItem | null;
@@ -13,12 +14,35 @@ interface DesktopLayoutProps {
 
 export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const scrollYRef = useRef(0);
   
-  // Header visibility logic
+  const lastYRef = useRef(0);
+  
+  const handleScroll = useCallback((y: number) => {
+    const dy = y - lastYRef.current;
+    lastYRef.current = y;
+    scrollYRef.current = y;
+
+    // Show header if we're near the top or scrolling up
+    if (y > -10) {
+      setIsHeaderVisible(true);
+    } else if (dy > 2) {
+      setIsHeaderVisible(true);
+    } else if (dy < -2) {
+      setIsHeaderVisible(false);
+    }
+  }, []);
+
+  // Header visibility logic via mouse
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (e.clientY < 60) setIsHeaderVisible(true);
-      else setIsHeaderVisible(false);
+      // If mouse is near top, show header
+      if (e.clientY < 60) {
+        setIsHeaderVisible(true);
+      } else if (Math.abs(scrollYRef.current) > 10) {
+        // Only hide if we're not at the top
+        setIsHeaderVisible(false);
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -35,12 +59,7 @@ export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 bg-black/40 backdrop-blur-xl border-b border-white/5"
       >
         <div className="flex items-center gap-12">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              <div className="w-4 h-4 bg-black rounded-sm rotate-45" />
-            </div>
-            <h1 className="text-xl font-bold tracking-[0.2em] uppercase">AERA</h1>
-          </div>
+          <Logo onClick={() => setSelectedItem(null)} />
           <nav className="hidden lg:flex items-center gap-8">
             <button className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors">Theatre</button>
             <button className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors">Sets</button>
@@ -53,9 +72,14 @@ export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
         </div>
       </motion.header>
 
-      <main className="h-full w-full">
-        <CinepoeticCanvas setSelectedItem={setSelectedItem} />
-      </main>
+      <motion.main 
+        initial={false}
+        animate={{ paddingTop: isHeaderVisible ? 80 : 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 150 }}
+        className="h-full w-full"
+      >
+        <CinepoeticCanvas setSelectedItem={setSelectedItem} onScroll={handleScroll} />
+      </motion.main>
     </div>
   );
 }
