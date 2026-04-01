@@ -1,14 +1,10 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # FrameHouse
 
 A cinematic gallery experience for screens, edits, posters, and scripts.
 
 ## Overview
 
-FrameHouse is a React + Vite app for exploring cinematic screens, featured artists, posters, edits, and scripts across mobile and desktop layouts.
+FrameHouse is a React-based web application that serves as a cinematic gallery, showcasing screens, edits, posters, and scripts. The app is designed to provide an immersive experience for users to explore and discover various cinematic works.
 
 ## Current Stack
 
