@@ -119,7 +119,7 @@ function createFallback(id: string, w: number, h: number): TheatreItem {
     return {
       id: `fallback-script-${id}`,
       title: "THE VOID: A Cinematic Reflection",
-      artist: "AERA SYSTEM",
+      artist: "FRAMEHOUSE SYSTEM",
       category: "Script",
       type: "image",
       image: "https://picsum.photos/seed/script/800/1200",
@@ -131,8 +131,8 @@ function createFallback(id: string, w: number, h: number): TheatreItem {
   }
   return {
     id: `fallback-media-${id}`,
-    title: "AERA SYSTEM // ARCHIVE",
-    artist: "AERA SYSTEM",
+    title: "FRAMEHOUSE SYSTEM // ARCHIVE",
+    artist: "FRAMEHOUSE SYSTEM",
     category: "Edit",
     type: "image",
     image: `https://picsum.photos/seed/media-${id}/${w * 200}/${h * 200}`,

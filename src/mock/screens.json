@@ -2,11 +2,11 @@
   {
     "id": "alchemist-screen",
     "title": "The Alchemist",
-    "description": "A cinematic journey through the soul of alchemy. Curated by AERA_ELITE.",
+    "description": "A cinematic journey through the soul of alchemy. Curated by FRAMEHOUSE_ELITE.",
     "coverImage": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1920",
     "stats": { "presence": 1240, "members": 850, "releases": 12 },
     "topArtists": [
-      { "id": "artist-a1", "name": "AERA_ELITE", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800", "presence": 1240, "releases": 18 },
+      { "id": "artist-a1", "name": "FRAMEHOUSE_ELITE", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800", "presence": 1240, "releases": 18 },
       { "id": "artist-a2", "name": "Desert_Frame", "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800", "presence": 980, "releases": 11 },
       { "id": "artist-a3", "name": "Soul_Cut", "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800", "presence": 860, "releases": 9 },
       { "id": "artist-a4", "name": "Golden_Dust", "image": "https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&q=80&w=800", "presence": 730, "releases": 7 }
