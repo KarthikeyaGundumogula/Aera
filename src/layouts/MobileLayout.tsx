@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { PlayCircle, Search, User, Loader2, Sparkles, History, Users, ChevronRight, Play, PenTool } from "lucide-react";
+import { memo, useState, useEffect, useRef, useCallback } from "react";
+import { PlayCircle, Search, User, Loader2, History, Users, ChevronRight } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem, SetSelectedItem } from "../types";
-import { GRID_ITEMS, FEATURED_ITEMS, SETS } from "../data/mockData";
+import { GRID_ITEMS, FEATURED_ITEMS, SETS } from "../mock";
+import { CategoryIcon, PresenceIcon } from "../components/AppIcons";
 
 import { Logo } from "../components/Logo";
 
@@ -11,23 +13,97 @@ interface MobileLayoutProps {
   setSelectedItem: SetSelectedItem;
 }
 
-const getCategoryIcon = (category?: string) => {
-  switch (category) {
-    case 'Edit':
-      return <Play className="w-3 h-3 fill-white/20" />;
-    case 'Script':
-      return <PenTool className="w-3 h-3 fill-white/20" />;
-    case 'Poster':
-      return <Sparkles className="w-3 h-3 fill-white/20" />;
-    default:
-      return null;
-  }
-};
+const SetRailItem = memo(function SetRailItem({
+  title,
+  captain,
+  image,
+}: {
+  title?: string;
+  captain?: string;
+  image?: string;
+}) {
+  return (
+    <div className="min-w-[200px]">
+      <div className="aspect-[4/5] rounded-xl overflow-hidden mb-3 relative bg-white/5">
+        <img
+          src={image}
+          alt={title || "Set"}
+          className="w-full h-full object-cover grayscale"
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+        />
+        <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-4">
+          <p className="text-[8px] font-bold uppercase tracking-widest text-white/60">Captain</p>
+          <p className="text-xs font-bold">{captain}</p>
+        </div>
+      </div>
+      <h4 className="text-sm font-bold uppercase tracking-tight">{title}</h4>
+    </div>
+  );
+});
+
+const FeedListItem = memo(function FeedListItem({
+  item,
+  items,
+  setSelectedItem,
+}: {
+  item: TheatreItem;
+  items: TheatreItem[];
+  setSelectedItem: SetSelectedItem;
+}) {
+  return (
+    <div
+      onClick={() => setSelectedItem(item, items, 1)}
+      className="group"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "320px" }}
+    >
+      <div className="relative rounded-xl overflow-hidden bg-white/5 border border-white/5 mb-4">
+        <img
+          src={item.image}
+          alt={item.title || "Feed item"}
+          className={`w-full aspect-video object-cover ${item.isQuote ? "opacity-40" : ""}`}
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+        />
+        {item.isPlay && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <PlayCircle className="w-12 h-12 text-white/80" />
+          </div>
+        )}
+        {item.isQuote && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+            <p className="text-sm font-light italic leading-relaxed text-white/80">{item.text}</p>
+          </div>
+        )}
+      </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <CategoryIcon category={item.category} className="w-3 h-3 fill-white/20" />
+            <h5 className="text-sm font-bold uppercase tracking-tight">{item.title}</h5>
+          </div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Origins: {item.origins || "Original"}</p>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [items, setItems] = useState<TheatreItem[]>(() => {
     return [...GRID_ITEMS];
   });
+
+  const getNavItemClassName = (active: boolean) =>
+    `flex min-w-0 flex-col items-center justify-center rounded-2xl px-2 py-3 text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${
+      active
+        ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.08)]"
+        : "text-white/45 hover:text-white"
+    }`;
   
   const [heroIndex, setHeroIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -100,10 +176,12 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
     <div className="bg-[#050505] min-h-screen text-white pb-24">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5">
-        <Logo onClick={() => setSelectedItem(null)} />
+        <Logo onClick={() => navigate("/")} />
         <div className="flex items-center gap-4">
           <button className="text-white/60"><Search className="w-5 h-5" /></button>
-          <button className="text-white/60"><User className="w-5 h-5" /></button>
+          <button onClick={() => navigate("/profile")} className={location.pathname === "/profile" ? "text-white" : "text-white/60"}>
+            <User className="w-5 h-5" />
+          </button>
         </div>
       </header>
 
@@ -121,7 +199,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
                   src={FEATURED_ITEMS[heroIndex].image} 
-                  className="absolute inset-0 w-full h-full object-cover blur-[120px] scale-150"
+                  className="absolute inset-0 w-full h-full object-cover blur-[72px] scale-125"
                   referrerPolicy="no-referrer"
                 />
               </AnimatePresence>
@@ -140,6 +218,8 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
                 <img 
                   src={FEATURED_ITEMS[heroIndex].image} 
                   className="w-full h-full object-cover"
+                  loading="eager"
+                  decoding="async"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
@@ -161,8 +241,8 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <Sparkles className="w-3 h-3 text-yellow-400" />
-                          <span className="text-[10px] font-bold text-white/80">{FEATURED_ITEMS[heroIndex].credits} Credits</span>
+                          <PresenceIcon className="w-3 h-3 text-yellow-400" />
+                          <span className="text-[10px] font-bold text-white/80">{FEATURED_ITEMS[heroIndex].presence} Presence</span>
                         </div>
                         <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">{FEATURED_ITEMS[heroIndex].origins}</span>
                       </div>
@@ -213,16 +293,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
           </div>
           <div className="flex gap-4 px-6 overflow-x-auto no-scrollbar">
             {SETS.map((set) => (
-              <div key={set.id} className="min-w-[200px]">
-                <div className="aspect-[4/5] rounded-xl overflow-hidden mb-3 relative">
-                  <img src={set.image} className="w-full h-full object-cover grayscale" />
-                  <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-4">
-                    <p className="text-[8px] font-bold uppercase tracking-widest text-white/60">Captain</p>
-                    <p className="text-xs font-bold">{set.captain}</p>
-                  </div>
-                </div>
-                <h4 className="text-sm font-bold uppercase tracking-tight">{set.title}</h4>
-              </div>
+              <SetRailItem key={set.id} title={set.title} captain={set.captain} image={set.image} />
             ))}
           </div>
         </section>
@@ -236,41 +307,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
           
           <div className="space-y-12">
             {items.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                onClick={() => setSelectedItem(item, items, 1)}
-                className="group"
-              >
-                <div className="relative rounded-xl overflow-hidden bg-white/5 border border-white/5 mb-4">
-                  <img
-                    src={item.image}
-                    className={`w-full aspect-video object-cover ${item.isQuote ? "opacity-40" : ""}`}
-                    referrerPolicy="no-referrer"
-                  />
-                  {item.isPlay && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <PlayCircle className="w-12 h-12 text-white/80" />
-                    </div>
-                  )}
-                  {item.isQuote && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                      <p className="text-sm font-light italic leading-relaxed text-white/80">{item.text}</p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      {getCategoryIcon(item.category)}
-                      <h5 className="text-sm font-bold uppercase tracking-tight">{item.title}</h5>
-                    </div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Origins: {item.origins || "Original"}</p>
-                  </div>
-                </div>
-              </motion.div>
+              <FeedListItem key={item.id} item={item} items={items} setSelectedItem={setSelectedItem} />
             ))}
           </div>
 
@@ -282,11 +319,33 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
       </main>
 
       {/* Mobile Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-2xl border-t border-white/5 px-8 py-6 flex justify-between items-center">
-        <button className="text-[9px] font-bold uppercase tracking-widest text-white">Theatre</button>
-        <button className="text-[9px] font-bold uppercase tracking-widest text-white/40">Sets</button>
-        <button className="text-[9px] font-bold uppercase tracking-widest text-white/40">Calls</button>
-        <button className="text-[9px] font-bold uppercase tracking-widest text-white/40">Profile</button>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-black/80 px-4 py-4 backdrop-blur-2xl">
+        <div className="grid grid-cols-4 gap-2">
+        <button
+          onClick={() => navigate("/")}
+          className={getNavItemClassName(location.pathname === "/")}
+        >
+          Theatre
+        </button>
+        <button
+          onClick={() => navigate("/screens")}
+          className={getNavItemClassName(location.pathname.startsWith("/screens"))}
+        >
+          Screens
+        </button>
+        <button
+          onClick={() => navigate("/sets")}
+          className={getNavItemClassName(location.pathname === "/sets")}
+        >
+          Sets
+        </button>
+        <button
+          onClick={() => navigate("/calls")}
+          className={getNavItemClassName(location.pathname === "/calls")}
+        >
+          Calls
+        </button>
+        </div>
       </nav>
     </div>
   );

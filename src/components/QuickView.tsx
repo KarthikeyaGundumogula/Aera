@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Info, List, X, Sparkles, History, User } from "lucide-react";
+import { Info, List, X, History, User } from "lucide-react";
 import { TheatreItem } from "../types";
+import { CreditsIcon } from "./AppIcons";
 
 declare global {
   interface Window {
@@ -209,7 +210,7 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
                           <p className="text-sm font-bold">{currentVideo.origins || "Original"}</p>
                         </div>
                         <div className="flex items-center gap-3 px-6 py-3 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
-                          <Sparkles className="w-4 h-4 text-yellow-400" />
+                          <CreditsIcon className="w-4 h-4 text-yellow-400" />
                           <span className="text-sm font-bold">{currentVideo.credits || 0} Credits</span>
                         </div>
                       </div>
@@ -301,7 +302,7 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
                       <div className="space-y-2">
                         <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Recognition</p>
                         <div className="flex items-center gap-3">
-                          <Sparkles className="w-5 h-5 text-yellow-400" />
+                          <CreditsIcon className="w-5 h-5 text-yellow-400" />
                           <p className="text-2xl font-bold">{currentVideo.credits || 0} Credits</p>
                         </div>
                       </div>

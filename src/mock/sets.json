@@ -1,0 +1,23 @@
+[
+  {
+    "id": "set-1",
+    "title": "Neo-Noir",
+    "captain": "V_Kovacs",
+    "type": "Set",
+    "image": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": "set-2",
+    "title": "French Wave",
+    "captain": "Godard_Fan",
+    "type": "Set",
+    "image": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": "set-3",
+    "title": "Sci-Fi Scripts",
+    "captain": "Asimov_X",
+    "type": "Set",
+    "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=800"
+  }
+]

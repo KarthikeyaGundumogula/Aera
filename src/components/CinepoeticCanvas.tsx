@@ -1,9 +1,9 @@
 import { motion, useMotionValue, useSpring, AnimatePresence, useTransform, MotionValue } from "motion/react";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Play, Sparkles, PenTool } from "lucide-react";
 import { TheatreItem, SetSelectedItem } from "../types";
-import { GRID_ITEMS } from "../data/mockData";
+import { GRID_ITEMS } from "../mock";
 import { buildClusters, Cluster as ClusterData, ClusterSlot } from "../lib/clusterBuilder";
+import { CreditsIcon, EditsIcon, PostersIcon, ScriptsIcon } from "./AppIcons";
 import { Tooltip } from "./Tooltip";
 
 interface CinepoeticCanvasProps {
@@ -323,7 +323,7 @@ const Card: React.FC<{ slot: ClusterSlot; item: TheatreItem; setSelectedItem: Se
               
               {/* Main Badge */}
               <div className="relative w-12 h-12 rounded-full bg-black/30 backdrop-blur-2xl border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl">
-                <Play size={18} className="text-white fill-white/10 ml-1 group-hover/play:scale-110 transition-transform duration-500" />
+                <EditsIcon className="h-[18px] w-[18px] text-white fill-white/10 ml-1 group-hover/play:scale-110 transition-transform duration-500" />
                 
                 {/* Scanning Light Effect */}
                 <motion.div 
@@ -354,7 +354,7 @@ const Card: React.FC<{ slot: ClusterSlot; item: TheatreItem; setSelectedItem: Se
             >
               <div className="absolute inset-0 rounded-full bg-white/10 blur-sm scale-125 group-hover/sparkle:bg-white/30 transition-colors duration-500" />
               <div className="relative w-7 h-7 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center overflow-hidden">
-                <Sparkles size={12} className="text-white fill-white/10 group-hover/sparkle:rotate-12 transition-transform" />
+                <PostersIcon className="h-3 w-3 text-white fill-white/10 group-hover/sparkle:rotate-12 transition-transform" />
                 <motion.div 
                   animate={{ x: [-40, 40] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -377,7 +377,7 @@ const Card: React.FC<{ slot: ClusterSlot; item: TheatreItem; setSelectedItem: Se
             >
               <div className="absolute inset-0 rounded-full bg-white/10 blur-sm scale-125 group-hover/pen:bg-white/30 transition-colors duration-500" />
               <div className="relative w-7 h-7 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center overflow-hidden shadow-xl">
-                <PenTool size={12} className="text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-500" />
+                <ScriptsIcon className="h-3 w-3 text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-500" />
                 <motion.div 
                   animate={{ x: [-40, 40] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}

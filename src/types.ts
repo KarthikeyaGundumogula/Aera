@@ -1,13 +1,22 @@
+export interface ScreenArtist {
+  id: string;
+  name: string;
+  image: string;
+  presence: number;
+  releases: number;
+}
+
 export interface Screen {
   id: string;
   title: string;
   description: string;
   coverImage: string;
   stats: {
-    credits: number;
+    presence: number;
     members: number;
     releases: number;
   };
+  topArtists: ScreenArtist[];
   wallOfFame: TheatreItem[];
   releaseDate?: string;
 }
@@ -18,6 +27,7 @@ export interface TheatreItem {
   category?: 'Edit' | 'Poster' | 'Script' | 'Call' | 'Screen';
   origins?: string;
   credits?: number;
+  presence?: number;
   artist?: string;
   artistAvatar?: string;
   set?: string;

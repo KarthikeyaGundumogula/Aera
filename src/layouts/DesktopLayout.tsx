@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, User } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem, SetSelectedItem } from "../types";
 
 import { CinepoeticCanvas } from "../components/CinepoeticCanvas";
@@ -15,8 +16,12 @@ interface DesktopLayoutProps {
 export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const scrollYRef = useRef(0);
-  
   const lastYRef = useRef(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getNavClassName = (active: boolean) =>
+    `text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${active ? "text-white" : "text-white/60 hover:text-white"}`;
   
   const handleScroll = useCallback((y: number) => {
     const dy = y - lastYRef.current;
@@ -59,16 +64,42 @@ export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 bg-black/40 backdrop-blur-xl border-b border-white/5"
       >
         <div className="flex items-center gap-12">
-          <Logo onClick={() => setSelectedItem(null)} />
+          <Logo onClick={() => navigate("/")} />
           <nav className="hidden lg:flex items-center gap-8">
-            <button className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors">Theatre</button>
-            <button className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors">Sets</button>
-            <button className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors">Calls</button>
+            <button
+              onClick={() => navigate("/")}
+              className={getNavClassName(location.pathname === "/")}
+            >
+              Theatre
+            </button>
+            <button
+              onClick={() => navigate("/screens")}
+              className={getNavClassName(location.pathname.startsWith("/screens"))}
+            >
+              Screens
+            </button>
+            <button
+              onClick={() => navigate("/sets")}
+              className={getNavClassName(location.pathname === "/sets")}
+            >
+              Sets
+            </button>
+            <button
+              onClick={() => navigate("/calls")}
+              className={getNavClassName(location.pathname === "/calls")}
+            >
+              Calls
+            </button>
           </nav>
         </div>
         <div className="flex items-center gap-6">
           <button className="text-white/60 hover:text-white transition-colors"><Search className="w-5 h-5" /></button>
-          <button className="text-white/60 hover:text-white transition-colors"><User className="w-5 h-5" /></button>
+          <button
+            onClick={() => navigate("/profile")}
+            className={`transition-colors ${location.pathname === "/profile" ? "text-white" : "text-white/60 hover:text-white"}`}
+          >
+            <User className="w-5 h-5" />
+          </button>
         </div>
       </motion.header>
 
