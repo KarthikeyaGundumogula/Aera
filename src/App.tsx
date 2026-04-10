@@ -5,17 +5,19 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Home } from "./pages/Home";
-import { ScreenPage } from "./pages/ScreenPage";
+import { OriginalPage } from "./pages/OriginalPage";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
+import { TheatrePage } from "./pages/TheatrePage";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/theatre" element={<TheatrePage />} />
         <Route
-          path="/screens"
-          element={<ComingSoonPage label="Screens" description="We’re shaping the dedicated screens experience next. For now, this page is a placeholder while we finish the mobile UI." />}
+          path="/originals"
+          element={<ComingSoonPage label="Originals" description="We’re shaping the dedicated originals experience next. For now, this page is a placeholder while we finish the mobile UI." />}
         />
         <Route
           path="/sets"
@@ -29,7 +31,7 @@ export default function App() {
           path="/profile"
           element={<ComingSoonPage label="Profile" />}
         />
-        <Route path="/screens/:id" element={<ScreenPage />} />
+        <Route path="/originals/:id" element={<OriginalPage />} />
       </Routes>
     </BrowserRouter>
   );

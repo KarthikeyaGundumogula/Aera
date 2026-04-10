@@ -3,13 +3,13 @@ import { Users, Film } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { TheatreItem } from "../types";
-import { SCREENS_DATA } from "../mock";
+import { ORIGINALS_DATA } from "../mock";
 import { QuickView } from "../components/QuickView";
 import { CategoryIcon, PresenceIcon, ReleasesIcon } from "../components/AppIcons";
 
 import { Logo } from "../components/Logo";
 
-export function ScreenPage() {
+export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
@@ -22,13 +22,13 @@ export function ScreenPage() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const screen = id ? SCREENS_DATA[id] : null;
+  const original = id ? ORIGINALS_DATA[id] : null;
 
-  if (!screen) {
+  if (!original) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Screen not found</h1>
+          <h1 className="text-2xl font-bold mb-4">Original not found</h1>
           <button 
             onClick={() => navigate('/')}
             className="px-6 py-2 bg-white text-black rounded-full font-bold"
@@ -41,8 +41,8 @@ export function ScreenPage() {
   }
 
   const artistStripItems = Array.from(
-    { length: Math.max(15, screen.topArtists.length) },
-    (_, index) => screen.topArtists[index % screen.topArtists.length]
+    { length: Math.max(15, original.topArtists.length) },
+    (_, index) => original.topArtists[index % original.topArtists.length]
   );
 
   return (
@@ -50,7 +50,7 @@ export function ScreenPage() {
       {/* Hero Header */}
       <div className="relative h-[50vh] w-full">
         <img
-          src={screen.coverImage}
+          src={original.coverImage}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
@@ -61,7 +61,7 @@ export function ScreenPage() {
           <Logo onClick={() => navigate("/")} showText={false} />
         </div>
 
-        {/* Screen Info */}
+        {/* Original Info */}
         <div className="absolute bottom-0 left-0 p-8 w-full">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -69,20 +69,20 @@ export function ScreenPage() {
           >
             <div className="flex items-center gap-2 mb-4">
               <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
-                Official Screen
+                  Original
               </span>
               <div className="h-px w-8 bg-white/20" />
             </div>
             <h1
               className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
               style={{
-                fontSize: `clamp(2.5rem, ${Math.max(5, 15 - screen.title.length * 0.3)}vw, 7rem)`,
+                fontSize: `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
               }}
             >
-              {screen.title}
+              {original.title}
             </h1>
             <p className="text-sm text-white/60 max-w-md leading-relaxed mb-8">
-              {screen.description}
+              {original.description}
             </p>
 
             {/* Stats */}
@@ -91,7 +91,7 @@ export function ScreenPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <PresenceIcon className="w-3 h-3 text-yellow-400" />
                   <span className="text-lg font-bold">
-                    {screen.stats.presence}
+                    {original.stats.presence}
                   </span>
                 </div>
                 <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
@@ -102,7 +102,7 @@ export function ScreenPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="w-3 h-3 text-blue-400" />
                   <span className="text-lg font-bold">
-                    {screen.stats.members}
+                    {original.stats.members}
                   </span>
                 </div>
                 <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
@@ -113,7 +113,7 @@ export function ScreenPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <Film className="w-3 h-3 text-purple-400" />
                   <span className="text-lg font-bold">
-                    {screen.stats.releases}
+                    {original.stats.releases}
                   </span>
                 </div>
                 <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
@@ -193,12 +193,12 @@ export function ScreenPage() {
         <div className="flex items-center gap-2 mb-8 opacity-40">
           <div className="w-4 h-px bg-white" />
           <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">
-            {screen.title} Wall
+            {original.title} Wall
             </h3>
         </div>
 
         <div className="grid grid-cols-1 gap-12">
-          {screen.wallOfFame.map((item, idx) => (
+          {original.wallOfFame.map((item, idx) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
@@ -249,19 +249,19 @@ export function ScreenPage() {
               Full Description
             </h4>
             <p className="text-sm text-white/80 leading-relaxed">
-              {screen.description} This curated screen represents a pinnacle of
+              {original.description} This curated original represents a pinnacle of
               cinematic achievement, bringing together the most impactful visual
-              and narrative elements from the {screen.title} universe.
+              and narrative elements from the {original.title} universe.
             </p>
           </div>
 
-          {screen.releaseDate && (
+          {original.releaseDate && (
             <div>
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2">
                 Release Date
               </h4>
               <p className="text-sm text-white/80 font-mono tracking-tighter">
-                {screen.releaseDate}
+                {original.releaseDate}
               </p>
             </div>
           )}
@@ -272,7 +272,7 @@ export function ScreenPage() {
         selectedItem={selectedItem}
         setSelectedItem={setSelectedItem}
         isMobile={isMobile}
-        items={screen.wallOfFame}
+        items={original.wallOfFame}
         columns={1}
       />
 

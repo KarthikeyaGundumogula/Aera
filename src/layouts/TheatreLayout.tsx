@@ -8,12 +8,12 @@ import { CinepoeticCanvas } from "../components/CinepoeticCanvas";
 
 import { Logo } from "../components/Logo";
 
-interface DesktopLayoutProps {
+interface TheatreLayoutProps {
   selectedItem: TheatreItem | null;
   setSelectedItem: SetSelectedItem;
 }
 
-export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
+export function TheatreLayout({ setSelectedItem }: TheatreLayoutProps) {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const scrollYRef = useRef(0);
   const lastYRef = useRef(0);
@@ -70,13 +70,19 @@ export function DesktopLayout({ setSelectedItem }: DesktopLayoutProps) {
               onClick={() => navigate("/")}
               className={getNavClassName(location.pathname === "/")}
             >
+              Home
+            </button>
+            <button
+              onClick={() => navigate("/theatre")}
+              className={getNavClassName(location.pathname === "/theatre")}
+            >
               Theatre
             </button>
             <button
-              onClick={() => navigate("/screens")}
-              className={getNavClassName(location.pathname.startsWith("/screens"))}
+              onClick={() => navigate("/originals")}
+              className={getNavClassName(location.pathname.startsWith("/originals"))}
             >
-              Screens
+              Originals
             </button>
             <button
               onClick={() => navigate("/sets")}

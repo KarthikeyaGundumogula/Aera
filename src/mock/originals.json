@@ -1,6 +1,6 @@
 [
   {
-    "id": "alchemist-screen",
+    "id": "alchemist-original",
     "title": "The Alchemist",
     "description": "A cinematic journey through the soul of alchemy. Curated by FRAMEHOUSE_ELITE.",
     "coverImage": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1920",
@@ -19,7 +19,7 @@
     ]
   },
   {
-    "id": "dune-screen",
+    "id": "dune-original",
     "title": "Dune: Part Two",
     "description": "The spice must flow. The official wall of fame for the Arrakis vision.",
     "coverImage": "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=1920",
@@ -37,7 +37,7 @@
     ]
   },
   {
-    "id": "madmax-screen",
+    "id": "madmax-original",
     "title": "Mad Max: Fury Road",
     "description": "Witness the glory of the wasteland. Curated by the War Boys.",
     "coverImage": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=1920",
@@ -54,7 +54,7 @@
     ]
   },
   {
-    "id": "interstellar-screen",
+    "id": "interstellar-original",
     "title": "Interstellar",
     "description": "Love is the one thing that transcends time and space.",
     "coverImage": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=1920",
@@ -71,9 +71,9 @@
     ]
   },
   {
-    "id": "matrix-screen",
+    "id": "matrix-original",
     "title": "The Matrix",
-    "description": "Follow the glitch. A curated screen of code, prophecy, and digital rebellion.",
+    "description": "Follow the glitch. A curated original of code, prophecy, and digital rebellion.",
     "coverImage": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1920",
     "stats": { "presence": 2100, "members": 2600, "releases": 10 },
     "topArtists": [

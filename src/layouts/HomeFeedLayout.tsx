@@ -1,44 +1,79 @@
 import { motion, AnimatePresence } from "motion/react";
 import { memo, useState, useEffect, useRef, useCallback } from "react";
-import { PlayCircle, Search, User, Loader2, History, Users, ChevronRight } from "lucide-react";
+import { PlayCircle, Search, User, Loader2, History, Crown, ChevronRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem, SetSelectedItem } from "../types";
-import { GRID_ITEMS, FEATURED_ITEMS, SETS } from "../mock";
+import { GRID_ITEMS, FEATURED_ITEMS, ORIGINALS } from "../mock";
 import { CategoryIcon, PresenceIcon } from "../components/AppIcons";
 
 import { Logo } from "../components/Logo";
 
-interface MobileLayoutProps {
+interface HomeFeedLayoutProps {
   selectedItem: TheatreItem | null;
   setSelectedItem: SetSelectedItem;
 }
 
-const SetRailItem = memo(function SetRailItem({
-  title,
-  captain,
-  image,
-}: {
-  title?: string;
-  captain?: string;
-  image?: string;
-}) {
+const TopOriginalsAccordion = memo(function TopOriginalsAccordion({ navigate }: { navigate: (path: string) => void }) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  
+  // Top originals by presence (repeated to mock 15 items for layout testing)
+  const baseOriginals = [...ORIGINALS].sort((a, b) => b.stats.presence - a.stats.presence);
+  const topOriginals = [
+    ...baseOriginals,
+    ...baseOriginals.map(org => ({ ...org, id: `${org.id}-copy2` })),
+    ...baseOriginals.map(org => ({ ...org, id: `${org.id}-copy3` }))
+  ];
+
   return (
-    <div className="min-w-[200px]">
-      <div className="aspect-[4/5] rounded-xl overflow-hidden mb-3 relative bg-white/5">
-        <img
-          src={image}
-          alt={title || "Set"}
-          className="w-full h-full object-cover grayscale"
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-4">
-          <p className="text-[8px] font-bold uppercase tracking-widest text-white/60">Captain</p>
-          <p className="text-xs font-bold">{captain}</p>
-        </div>
-      </div>
-      <h4 className="text-sm font-bold uppercase tracking-tight">{title}</h4>
+    <div className="flex h-[300px] md:h-[400px] w-full gap-2 px-6 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
+      {topOriginals.map((org) => {
+        const isActive = activeId === org.id;
+        return (
+          <div
+            key={org.id}
+            className={`relative rounded-xl overflow-hidden snap-center cursor-pointer shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? 'w-[360px] md:w-[520px]' : 'w-[200px] md:w-[260px]'}`}
+            onClick={(e) => {
+              if (isActive) {
+                navigate(`/originals/${org.id}`);
+              } else {
+                setActiveId(org.id);
+                // Trigger native browser smooth centering alongside the CSS transition instantly
+                e.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+              }
+            }}
+          >
+            <img
+              src={org.coverImage}
+              alt={org.title}
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 transition-opacity duration-500 ${isActive ? 'opacity-80' : 'opacity-90'}`} />
+            
+            <div className={`absolute inset-0 p-6 flex flex-col ${isActive ? 'justify-end items-start text-left' : 'justify-center items-center text-center'}`}>
+              <h4 
+                className="font-black uppercase tracking-tighter leading-[0.85] shadow-black drop-shadow-md break-words"
+                style={{ 
+                  fontSize: isActive 
+                    ? `clamp(2rem, ${Math.max(3, 8 - (org.title.length * 0.3))}vw, 3.5rem)`
+                    : `clamp(1.2rem, ${Math.max(2, 5 - (org.title.length * 0.2))}vw, 2rem)` 
+                }}
+              >
+                {org.title}
+              </h4>
+              
+              <div className={`flex items-center gap-2 ${isActive ? 'mt-3' : 'hidden'}`}>
+                <PresenceIcon className="w-4 h-4 text-yellow-400" />
+                <p className="text-sm font-bold text-white/80">{org.stats.presence} Presence</p>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      
+      {/* Spacer to prevent aggressive CSS cutting off on the right-most edge */}
+      <div className="w-2 md:w-6 shrink-0" />
     </div>
   );
 });
@@ -91,7 +126,7 @@ const FeedListItem = memo(function FeedListItem({
   );
 });
 
-export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
+export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [items, setItems] = useState<TheatreItem[]>(() => {
@@ -174,8 +209,8 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
 
   return (
     <div className="bg-[#050505] min-h-screen text-white pb-24">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5">
+      {/* Mobile Header */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5">
         <Logo onClick={() => navigate("/")} />
         <div className="flex items-center gap-4">
           <button className="text-white/60"><Search className="w-5 h-5" /></button>
@@ -185,7 +220,27 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
         </div>
       </header>
 
-      <main className="pt-20">
+      {/* Desktop Header */}
+      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 py-6 bg-black/40 backdrop-blur-xl border-b border-white/5">
+        <div className="flex items-center gap-12">
+          <Logo onClick={() => navigate("/")} />
+          <nav className="flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em]">
+            <button onClick={() => navigate("/")} className={`transition-colors ${location.pathname === "/" ? "text-white" : "text-white/60 hover:text-white"}`}>Home</button>
+            <button onClick={() => navigate("/theatre")} className={`transition-colors ${location.pathname === "/theatre" ? "text-white" : "text-white/60 hover:text-white"}`}>Theatre</button>
+            <button onClick={() => navigate("/originals")} className={`transition-colors ${location.pathname.startsWith("/originals") ? "text-white" : "text-white/60 hover:text-white"}`}>Originals</button>
+            <button onClick={() => navigate("/sets")} className={`transition-colors ${location.pathname === "/sets" ? "text-white" : "text-white/60 hover:text-white"}`}>Sets</button>
+            <button onClick={() => navigate("/calls")} className={`transition-colors ${location.pathname === "/calls" ? "text-white" : "text-white/60 hover:text-white"}`}>Calls</button>
+          </nav>
+        </div>
+        <div className="flex items-center gap-6">
+          <button className="text-white/60 hover:text-white transition-colors"><Search className="w-5 h-5" /></button>
+          <button onClick={() => navigate("/profile")} className={`transition-colors ${location.pathname === "/profile" ? "text-white" : "text-white/60 hover:text-white"}`}>
+            <User className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      <main className="pt-20 md:pt-32 px-0 md:px-8 max-w-7xl mx-auto">
         {/* HERO */}
         <section className="px-4 mb-12">
           <div className="relative h-[65vh] rounded-2xl overflow-hidden bg-black">
@@ -229,7 +284,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
                   >
-                    <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm mb-4 inline-block border border-white/10">Screen</span>
+                    <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm mb-4 inline-block border border-white/10">Original</span>
                     <h2 
                       className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
                       style={{ 
@@ -285,17 +340,13 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
           </div>
         </section>
 
-        {/* SETS */}
+        {/* TOP ORIGINALS */}
         <section className="mb-12">
           <div className="px-6 flex items-center gap-2 mb-6 opacity-40">
-            <Users className="w-4 h-4" />
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">Active Sets</h3>
+            <Crown className="w-4 h-4" />
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">Top Originals</h3>
           </div>
-          <div className="flex gap-4 px-6 overflow-x-auto no-scrollbar">
-            {SETS.map((set) => (
-              <SetRailItem key={set.id} title={set.title} captain={set.captain} image={set.image} />
-            ))}
-          </div>
+          <TopOriginalsAccordion navigate={navigate} />
         </section>
 
         {/* FEED */}
@@ -305,7 +356,7 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
             <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">Theatre Feed</h3>
           </div>
           
-          <div className="space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {items.map((item) => (
               <FeedListItem key={item.id} item={item} items={items} setSelectedItem={setSelectedItem} />
             ))}
@@ -319,19 +370,25 @@ export function MobileLayout({ setSelectedItem }: MobileLayoutProps) {
       </main>
 
       {/* Mobile Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-black/80 px-4 py-4 backdrop-blur-2xl">
-        <div className="grid grid-cols-4 gap-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-black/80 px-4 py-4 backdrop-blur-2xl">
+        <div className="grid grid-cols-5 gap-1">
         <button
           onClick={() => navigate("/")}
           className={getNavItemClassName(location.pathname === "/")}
         >
+          Home
+        </button>
+        <button
+          onClick={() => navigate("/theatre")}
+          className={getNavItemClassName(location.pathname === "/theatre")}
+        >
           Theatre
         </button>
         <button
-          onClick={() => navigate("/screens")}
-          className={getNavItemClassName(location.pathname.startsWith("/screens"))}
+          onClick={() => navigate("/originals")}
+          className={getNavItemClassName(location.pathname.startsWith("/originals"))}
         >
-          Screens
+          Originals
         </button>
         <button
           onClick={() => navigate("/sets")}

@@ -42,7 +42,7 @@ export function PostersIcon({ className = "" }: IconProps) {
   return <Sparkles className={className} />;
 }
 
-export function ScreensIcon({ className = "" }: IconProps) {
+export function OriginalsIcon({ className = "" }: IconProps) {
   return <Tv className={className} />;
 }
 
@@ -72,8 +72,8 @@ export function CategoryIcon({
       return <ScriptsIcon className={className} />;
     case "Poster":
       return <PostersIcon className={className} />;
-    case "Screen":
-      return <ScreensIcon className={className} />;
+    case "Original":
+      return <OriginalsIcon className={className} />;
     case "Call":
       return <CallsIcon className={className} />;
     default:

@@ -1,52 +1,52 @@
 [
   {
-    "id": "screen-1",
+    "id": "original-1",
     "title": "The Alchemist",
-    "category": "Screen",
+    "category": "Original",
     "origins": "Official Wall of Fame",
     "presence": 1240,
     "image": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1920",
-    "type": "Screen",
-    "screenId": "alchemist-screen"
+    "type": "Original",
+    "originalId": "alchemist-original"
   },
   {
-    "id": "screen-2",
+    "id": "original-2",
     "title": "Dune: Part Two",
-    "category": "Screen",
+    "category": "Original",
     "origins": "Official Wall of Fame",
     "presence": 1500,
     "image": "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=1920",
-    "type": "Screen",
-    "screenId": "dune-screen"
+    "type": "Original",
+    "originalId": "dune-original"
   },
   {
-    "id": "screen-3",
+    "id": "original-3",
     "title": "Mad Max: Fury Road",
-    "category": "Screen",
+    "category": "Original",
     "origins": "Official Wall of Fame",
     "presence": 3000,
     "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=1920",
-    "type": "Screen",
-    "screenId": "madmax-screen"
+    "type": "Original",
+    "originalId": "madmax-original"
   },
   {
-    "id": "screen-4",
+    "id": "original-4",
     "title": "Interstellar",
-    "category": "Screen",
+    "category": "Original",
     "origins": "Official Wall of Fame",
     "presence": 842,
     "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=1920",
-    "type": "Screen",
-    "screenId": "interstellar-screen"
+    "type": "Original",
+    "originalId": "interstellar-original"
   },
   {
-    "id": "screen-5",
+    "id": "original-5",
     "title": "The Matrix",
-    "category": "Screen",
+    "category": "Original",
     "origins": "Official Wall of Fame",
     "presence": 2100,
     "image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1920",
-    "type": "Screen",
-    "screenId": "matrix-screen"
+    "type": "Original",
+    "originalId": "matrix-original"
   }
 ]

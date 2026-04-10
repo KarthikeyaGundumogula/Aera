@@ -151,8 +151,8 @@ visual rhythm, not density
 👉 Feels like:
 entering a space, not scrolling content
 
-FrameHouse Screens
-Each movie/series is a Screen:
+FrameHouse Originals
+Each movie/series is a Original:
 For each movie:
 * curated set of edits
 * themed theatre experience
@@ -178,8 +178,8 @@ UI structure never changesOnly mood changes
 
 👉 FrameHouse remains consistent
 
-🧩 16. Screen System
-Each movie = Screen
+🧩 16. Original System
+Each movie = Original
 Defined by:
 * theme
 * cluster sequence

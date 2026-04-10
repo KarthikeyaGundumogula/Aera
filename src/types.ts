@@ -1,4 +1,4 @@
-export interface ScreenArtist {
+export interface OriginalArtist {
   id: string;
   name: string;
   image: string;
@@ -6,7 +6,7 @@ export interface ScreenArtist {
   releases: number;
 }
 
-export interface Screen {
+export interface Original {
   id: string;
   title: string;
   description: string;
@@ -16,7 +16,7 @@ export interface Screen {
     members: number;
     releases: number;
   };
-  topArtists: ScreenArtist[];
+  topArtists: OriginalArtist[];
   wallOfFame: TheatreItem[];
   releaseDate?: string;
 }
@@ -24,7 +24,7 @@ export interface Screen {
 export interface TheatreItem {
   id: string | number;
   title?: string;
-  category?: 'Edit' | 'Poster' | 'Script' | 'Call' | 'Screen';
+  category?: 'Edit' | 'Poster' | 'Script' | 'Call' | 'Original';
   origins?: string;
   credits?: number;
   presence?: number;
@@ -41,7 +41,7 @@ export interface TheatreItem {
   meta?: string;
   type?: string;
   aspectRatio?: number;
-  screenId?: string; // Reference to a Screen
+  originalId?: string; // Reference to a Original
 }
 
 export type SetSelectedItem = (item: TheatreItem | null, items?: TheatreItem[], columns?: number) => void;
