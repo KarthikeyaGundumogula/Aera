@@ -32,11 +32,16 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
     if (selectedItem) {
       const index = items.findIndex(item => item.id === selectedItem.id);
       setCurrentIndex(index !== -1 ? index : 0);
+      document.body.style.overflow = "hidden";
     } else {
       setCurrentIndex(-1);
       setShowQueue(false);
       setShowInfo(false);
+      document.body.style.overflow = "";
     }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [selectedItem, items]);
 
   const handleMove = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
