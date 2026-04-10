@@ -6,8 +6,10 @@ import { TheatreItem } from "../types";
 import { ORIGINALS_DATA } from "../mock";
 import { QuickView } from "../components/QuickView";
 import { CategoryIcon, PresenceIcon, ReleasesIcon } from "../components/AppIcons";
-
 import { Logo } from "../components/Logo";
+import { ArtistCard } from "../components/ArtistCard";
+import { TheatreFeedItem } from "../components/TheatreFeedItem";
+import { SectionHeader } from "../components/SectionHeader";
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
@@ -127,62 +129,16 @@ export function OriginalPage() {
 
       {/* Top Artists */}
       <section className="px-8 pt-10 pb-4">
-        <div className="flex items-center gap-2 mb-6 opacity-40">
-          <div className="w-4 h-px bg-white" />
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">
-            Artist Spotlight
-          </h3>
-        </div>
+        <SectionHeader 
+           iconNode={<div className="w-4 h-px bg-white" />} 
+           title="Artist Spotlight" 
+           containerClassName="mb-6" 
+        />
 
         <div className="overflow-x-auto no-scrollbar pb-2">
           <div className="grid grid-flow-col grid-rows-3 gap-2 auto-cols-[250px] md:auto-cols-[300px] w-max">
             {artistStripItems.map((artist, idx) => (
-              <motion.div
-                key={`${artist.id}-${idx}`}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: (idx % 5) * 0.05 }}
-                className="group relative aspect-[3.2/1] overflow-hidden"
-              >
-                <div className="flex h-full items-center gap-2 px-1 py-1">
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full md:h-11 md:w-11">
-                    <img
-                      src={artist.image}
-                      alt={artist.name}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-
-                  <div className="min-w-0 space-y-1">
-                    <h4 className="truncate text-sm md:text-[15px] font-bold uppercase tracking-tight text-white">
-                      {artist.name}
-                    </h4>
-
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <div>
-                        <p className="mb-0.5 flex items-center gap-1 text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">
-                          <PresenceIcon className="h-3 w-3" />
-                          Presence
-                        </p>
-                        <p className="text-xs md:text-sm font-bold text-white">
-                          {artist.presence}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="mb-0.5 flex items-center gap-1 text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">
-                          <ReleasesIcon className="h-3 w-3" />
-                          Releases
-                        </p>
-                        <p className="text-xs md:text-sm font-bold text-white">
-                          {artist.releases}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+              <ArtistCard key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="default" />
             ))}
           </div>
         </div>
@@ -190,58 +146,31 @@ export function OriginalPage() {
 
       {/* Wall of Fame */}
       <div className="px-8 pt-3 pb-8">
-        <div className="flex items-center gap-2 mb-8 opacity-40">
-          <div className="w-4 h-px bg-white" />
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">
-            {original.title} Wall
-            </h3>
-        </div>
+        <SectionHeader 
+           iconNode={<div className="w-4 h-px bg-white" />} 
+           title={`${original.title} Wall`}
+           containerClassName="mb-8" 
+        />
 
-        <div className="grid grid-cols-1 gap-12">
-          {original.wallOfFame.map((item, idx) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              onClick={() => setSelectedItem(item)}
-              className="group cursor-pointer"
-            >
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-white/5 border border-white/5 mb-4">
-                <img
-                  src={item.image}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute top-4 right-4 px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest">
-                  <CategoryIcon
-                    category={item.category}
-                    className="w-2.5 h-2.5 fill-white/20"
-                  />
-                  {item.category}
-                </div>
-              </div>
-              <h4 className="text-xl font-bold uppercase tracking-tight mb-1">
-                {item.title}
-              </h4>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
-                Featured Release
-              </p>
-            </motion.div>
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 md:gap-6 space-y-4 md:space-y-6">
+          {original.wallOfFame.map((item) => (
+             <TheatreFeedItem
+               key={item.id}
+               item={item}
+               items={original.wallOfFame}
+               setSelectedItem={setSelectedItem}
+             />
           ))}
         </div>
       </div>
 
       {/* Detailed Information */}
       <div className="p-8 pt-0">
-        <div className="flex items-center gap-2 mb-8 opacity-40">
-          <div className="w-4 h-px bg-white" />
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">
-            Detailed Information
-          </h3>
-        </div>
+        <SectionHeader 
+           iconNode={<div className="w-4 h-px bg-white" />} 
+           title="Detailed Information"
+           containerClassName="mb-8" 
+        />
 
         <div className="space-y-8">
           <div>

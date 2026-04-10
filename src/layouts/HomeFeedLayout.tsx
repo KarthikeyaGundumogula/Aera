@@ -16,190 +16,17 @@ import { GRID_ITEMS, FEATURED_ITEMS, ORIGINALS } from "../mock";
 import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../components/AppIcons";
 
 import { Logo } from "../components/Logo";
+import { TopOriginalsAccordion } from "../components/TopOriginalsAccordion";
+import { TheatreFeedItem } from "../components/TheatreFeedItem";
+import { SectionHeader } from "../components/SectionHeader";
+import { ArtistCard } from "../components/ArtistCard";
 
 interface HomeFeedLayoutProps {
   selectedItem: TheatreItem | null;
   setSelectedItem: SetSelectedItem;
 }
 
-const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
-  navigate,
-}: {
-  navigate: (path: string) => void;
-}) {
-  const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Top originals by presence (repeated to mock 15 items for layout testing)
-  const baseOriginals = [...ORIGINALS].sort(
-    (a, b) => b.stats.presence - a.stats.presence,
-  );
-  const topOriginals = [
-    ...baseOriginals,
-    ...baseOriginals.map((org) => ({ ...org, id: `${org.id}-copy2` })),
-    ...baseOriginals.map((org) => ({ ...org, id: `${org.id}-copy3` })),
-  ];
-
-  return (
-    <div className="flex h-[300px] md:h-[400px] w-full gap-2 px-6 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
-      {topOriginals.map((org) => {
-        const isActive = activeId === org.id;
-        return (
-          <div
-            key={org.id}
-            className={`relative rounded-xl overflow-hidden snap-center cursor-pointer shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? "w-[360px] md:w-[520px]" : "w-[200px] md:w-[260px]"}`}
-            onClick={(e) => {
-              if (isActive) {
-                navigate(`/originals/${org.id}`);
-              } else {
-                setActiveId(org.id);
-                // Trigger native browser smooth centering alongside the CSS transition instantly
-                // Only center on mobile and tablet screens. Desktop expands perfectly in place.
-                if (window.innerWidth < 1024) {
-                  e.currentTarget.scrollIntoView({
-                    behavior: "smooth",
-                    inline: "center",
-                    block: "nearest",
-                  });
-                }
-              }
-            }}
-          >
-            <img
-              src={org.coverImage}
-              alt={org.title}
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-            <div
-              className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 transition-opacity duration-500 ${isActive ? "opacity-80" : "opacity-90"}`}
-            />
-
-            <div
-              className={`absolute inset-0 p-6 flex flex-col ${isActive ? "justify-end items-start text-left" : "justify-center items-center text-center"}`}
-            >
-              <h4
-                className="font-black uppercase tracking-tighter leading-[0.85] shadow-black drop-shadow-md break-words"
-                style={{
-                  fontSize: isActive
-                    ? `clamp(2rem, ${Math.max(3, 8 - org.title.length * 0.3)}vw, 3.5rem)`
-                    : `clamp(1.2rem, ${Math.max(2, 5 - org.title.length * 0.2)}vw, 2rem)`,
-                }}
-              >
-                {org.title}
-              </h4>
-
-              <div
-                className={`flex items-center gap-2 ${isActive ? "mt-3" : "hidden"}`}
-              >
-                <PresenceIcon className="w-4 h-4 text-yellow-400" />
-                <p className="text-sm font-bold text-white/80">
-                  {org.stats.presence} Presence
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Spacer to prevent aggressive CSS cutting off on the right-most edge */}
-      <div className="w-2 md:w-6 shrink-0" />
-    </div>
-  );
-});
-
-const FeedListItem = memo(function FeedListItem({ item, items, setSelectedItem }: { item: TheatreItem, items: TheatreItem[], setSelectedItem: SetSelectedItem }) {
-  const isScript = item.category === 'Script';
-  const isPoster = item.category === 'Poster';
-  const isEdit = item.category === 'Edit' || item.type === 'video' || item.isPlay;
-
-  return (
-    <div 
-      className="group cursor-pointer break-inside-avoid w-full inline-block mb-6 md:mb-8"
-      onClick={() => setSelectedItem(item, items, 0)}
-    >
-      <div className={`relative rounded-xl overflow-hidden bg-white/5 border mb-3 ${isPoster ? 'border-transparent group-hover:border-white/10 ring-1 ring-white/5' : 'border-white/5'}`}>
-        
-        {isScript ? (
-          <div className="w-full min-h-[300px] bg-[#f4f1ea] text-[#2a2a2a] p-6 md:p-8 font-mono text-[10px] md:text-xs leading-tight overflow-hidden shadow-inner border border-black/5 flex flex-col justify-center select-text transition-transform duration-700 group-hover:scale-[1.02]">
-            <div className="uppercase mb-2 opacity-40 text-[7px] md:text-[8px] font-bold tracking-widest">Scene {item.id}</div>
-            <div className="mb-2 font-bold uppercase tracking-tighter">{item.origins || 'INT. THE CANVAS - DAY'}</div>
-            <div className="mb-4 italic opacity-70 leading-relaxed text-sm md:text-base">
-              {item.title?.split(':').length > 1 ? item.title.split(':')[1] : (item.text || "A moment of pure cinematic reflection.")}
-            </div>
-            <div className="text-center w-full mb-1 mt-2 font-bold uppercase text-[8px] md:text-[10px] tracking-[0.2em]">{item.artist || 'DIRECTOR'}</div>
-            <div className="text-center w-full px-4 italic opacity-90 text-sm">
-              "{item.title?.split(':')[0]}"
-            </div>
-            <div className="mt-8 pt-4 border-t border-black/5 opacity-30 text-[7px] md:text-[8px] uppercase tracking-widest flex justify-between">
-              <span>Draft v2.4</span>
-              <span>{item.credits || 0} Credits</span>
-            </div>
-          </div>
-        ) : (
-          <div className="relative w-full overflow-hidden flex flex-col">
-            <img 
-               src={item.image} 
-               alt={item.title}
-               className={`w-full object-cover transition-transform duration-700 ${isEdit ? 'group-hover:scale-105' : 'group-hover:scale-[1.02]'}`}
-               style={{ aspectRatio: item.aspectRatio ? `${item.aspectRatio}` : (isEdit ? '9/16' : 'auto') }}
-               referrerPolicy="no-referrer"
-            />
-            {/* Subtle gradient for visual weight */}
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          </div>
-        )}
-
-        {/* Video Indicator */}
-        {isEdit && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-             <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative group/play pointer-events-auto">
-               <div className="absolute inset-0 rounded-full bg-white/10 blur-xl scale-150 group-hover/play:bg-white/30 transition-colors duration-700" />
-               <div className="relative w-14 h-14 rounded-full bg-black/40 backdrop-blur-2xl border border-white/20 flex items-center justify-center overflow-hidden shadow-2xl">
-                 <EditsIcon className="h-5 w-5 text-white fill-white/10 ml-1 group-hover/play:scale-110 transition-transform duration-500" />
-                 <motion.div animate={{ x: [-60, 60] }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }} className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12" />
-               </div>
-             </motion.div>
-          </div>
-        )}
-
-        {/* Poster Indicator */}
-        {isPoster && (
-          <div className="absolute top-4 right-4 z-10">
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative group/sparkle pointer-events-auto">
-              <div className="absolute inset-0 rounded-full bg-white/10 blur-sm scale-125 group-hover/sparkle:bg-white/30 transition-colors duration-500" />
-              <div className="relative w-8 h-8 rounded-full bg-black/50 backdrop-blur-xl border border-white/20 flex items-center justify-center overflow-hidden">
-                 <PostersIcon className="h-3.5 w-3.5 text-white fill-white/10 group-hover/sparkle:rotate-12 transition-transform" />
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Script Indicator */}
-        {isScript && (
-          <div className="absolute top-4 right-4 z-10">
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative group/pen pointer-events-auto">
-              <div className="absolute inset-0 rounded-full bg-black/10 blur-sm scale-125 transition-colors duration-500" />
-              <div className="relative w-8 h-8 rounded-full bg-black/80 backdrop-blur-xl border border-black flex items-center justify-center overflow-hidden shadow-xl">
-                 <ScriptsIcon className="h-3.5 w-3.5 text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-500" />
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </div>
-
-      <div className="px-1 flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <CategoryIcon category={item.category} className="w-3.5 h-3.5 fill-white/20" />
-            <h5 className="text-sm md:text-[15px] font-bold uppercase tracking-tight leading-none">{item.title}</h5>
-          </div>
-          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/40">Origins: {item.origins}</p>
-        </div>
-      </div>
-    </div>
-  );
-});
 
 export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
   const navigate = useNavigate();
@@ -362,10 +189,10 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
         </div>
       </header>
 
-      <main className="pt-20 md:pt-24 px-0 md:px-8 max-w-7xl mx-auto">
+      <main className="pt-20 md:pt-24 px-0 w-full max-w-full overflow-x-hidden">
         {/* HERO - UPCOMING RELEASES */}
-        <section className="px-4 mb-12">
-          <div className="relative h-[65vh] rounded-2xl overflow-hidden bg-black">
+        <section className="px-4 md:px-0 mb-12">
+          <div className="relative h-[65vh] md:h-[80vh] rounded-2xl md:rounded-none overflow-hidden bg-black">
             {/* Background Color Glow */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <AnimatePresence mode="popLayout">
@@ -481,62 +308,12 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
 
         {/* TOP ARTISTS */}
         <section className="mb-12">
-          <div className="px-6 flex items-center gap-2 mb-6 opacity-40">
-            <Users className="w-4 h-4" />
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">
-              Top Artists
-            </h3>
-          </div>
+          <SectionHeader icon={Users} title="Top Artists" containerClassName="px-6 md:px-12 mb-6" />
 
-          <div className="overflow-x-auto no-scrollbar pb-2 px-6">
-            <div className="grid grid-flow-col grid-rows-2 gap-2 auto-cols-[200px] md:auto-cols-[240px] w-max">
+          <div className="overflow-x-auto no-scrollbar pb-2 px-6 md:px-12">
+            <div className="grid grid-flow-col grid-rows-2 gap-2 auto-cols-[200px] md:auto-cols-[320px] w-max">
               {globalArtistStripItems.map((artist, idx) => (
-                <motion.div
-                  key={`${artist.id}-${idx}`}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: (idx % 5) * 0.05 }}
-                  className="group relative aspect-[3.5/1] overflow-hidden"
-                >
-                  <div className="flex h-full items-center gap-2 px-1 py-1">
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full md:h-9 md:w-9">
-                      <img
-                        src={artist.image}
-                        alt={artist.name}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-
-                    <div className="min-w-0 space-y-0.5">
-                      <h4 className="truncate text-xs md:text-sm font-bold uppercase tracking-tight text-white">
-                        {artist.name}
-                      </h4>
-
-                      <div className="flex items-center gap-3 md:gap-4">
-                        <div>
-                          <p className="mb-0.5 flex items-center gap-1 text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">
-                            <PresenceIcon className="h-2 w-2 md:h-3 md:w-3" />
-                            Presence
-                          </p>
-                          <p className="text-[10px] md:text-xs font-bold text-white">
-                            {artist.presence}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="mb-0.5 flex items-center gap-1 text-[7px] md:text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">
-                            <ReleasesIcon className="h-2 w-2 md:h-3 md:w-3" />
-                            Releases
-                          </p>
-                          <p className="text-[10px] md:text-xs font-bold text-white">
-                            {artist.releases}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                <ArtistCard key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="featured" />
               ))}
             </div>
           </div>
@@ -544,27 +321,17 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
 
         {/* TOP ORIGINALS */}
         <section className="mb-12">
-          <div className="px-6 flex items-center gap-2 mb-6 opacity-40">
-            <Crown className="w-4 h-4" />
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">
-              Originals
-            </h3>
-          </div>
+          <SectionHeader icon={Crown} title="Originals" containerClassName="px-6 md:px-12 mb-6" />
           <TopOriginalsAccordion navigate={navigate} />
         </section>
 
-        {/* FEED */}
-        <section className="px-6">
-          <div className="flex items-center gap-2 mb-8 opacity-40">
-            <History className="w-4 h-4" />
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">
-              For You
-            </h3>
-          </div>
+        {/* FOR YOU FEED */}
+        <section className="px-6 md:px-12">
+          <SectionHeader icon={History} title="For You" containerClassName="mb-8" />
 
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 md:gap-6 space-y-4 md:space-y-6 mb-8">
+          <div className="columns-1 sm:columns-2 lg:columns-4 xl:columns-5 2xl:columns-6 gap-4 md:gap-6 space-y-4 md:space-y-6 mb-8">
             {items.map((item) => (
-              <FeedListItem
+              <TheatreFeedItem
                 key={item.id}
                 item={item}
                 items={items}
