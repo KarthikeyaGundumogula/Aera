@@ -10,11 +10,30 @@ import { Logo } from "../components/Logo";
 import { ArtistCard } from "../components/ArtistCard";
 import { TheatreFeedItem } from "../components/TheatreFeedItem";
 import { SectionHeader } from "../components/SectionHeader";
+import { StarProfileCard, StarProfileCardProps } from "../components/StarProfileCard";
+import { StarModal } from "../components/StarModal";
+
+const STARS_MOCK = [
+  { actorName: "Timothée Chalamet", characterName: "Paul Atreides", imageUrl: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Zendaya", characterName: "Chani", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Rebecca Ferguson", characterName: "Lady Jessica", imageUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Oscar Isaac", characterName: "Duke Leto", imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Jason Momoa", characterName: "Duncan Idaho", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" },
+];
+
+const MAKERS_MOCK = [
+  { actorName: "Denis Villeneuve", characterName: "Director", imageUrl: "https://images.unsplash.com/photo-1544168190-79c154273140?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Greig Fraser", characterName: "DoP", imageUrl: "https://images.unsplash.com/photo-1517430554945-aa5c808f2f2c?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Hans Zimmer", characterName: "Music", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Mary Parent", characterName: "Producer", imageUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop" },
+  { actorName: "Jon Spaihts", characterName: "Screenplay", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop" },
+];
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
+  const [selectedStar, setSelectedStar] = useState<StarProfileCardProps | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -127,8 +146,56 @@ export function OriginalPage() {
         </div>
       </div>
 
-      {/* Top Artists */}
+      {/* Star Spotlight */}
       <section className="px-8 pt-10 pb-4">
+        <SectionHeader 
+           iconNode={<div className="w-4 h-px bg-white" />} 
+           title="Stars" 
+           containerClassName="mb-6" 
+        />
+
+        <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
+          <div className="flex gap-4 sm:gap-6 w-max">
+            {STARS_MOCK.map((star, idx) => (
+              <StarProfileCard 
+                key={idx} 
+                actorName={star.actorName} 
+                characterName={star.characterName} 
+                imageUrl={star.imageUrl} 
+                delay={idx * 0.15}
+                onClick={() => setSelectedStar(star)}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Makers Spotlight */}
+      <section className="px-8 pt-6 pb-4">
+        <SectionHeader 
+           iconNode={<div className="w-4 h-px bg-white" />} 
+           title="Makers" 
+           containerClassName="mb-6" 
+        />
+
+        <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
+          <div className="flex gap-4 sm:gap-6 w-max">
+            {MAKERS_MOCK.map((maker, idx) => (
+              <StarProfileCard 
+                key={idx} 
+                actorName={maker.actorName} 
+                characterName={maker.characterName} 
+                imageUrl={maker.imageUrl} 
+                delay={idx * 0.15}
+                onClick={() => setSelectedStar(maker)}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Top Artists */}
+      <section className="px-8 pt-4 pb-4">
         <SectionHeader 
            iconNode={<div className="w-4 h-px bg-white" />} 
            title="Artist Spotlight" 
@@ -207,6 +274,12 @@ export function OriginalPage() {
 
       {/* Footer Space */}
       <div className="h-24" />
+
+      {/* Cinematic Star Modal Overlay */}
+      <StarModal 
+        star={selectedStar} 
+        onClose={() => setSelectedStar(null)} 
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { memo } from "react";
+import { useNavigate } from "react-router-dom";
 import { PresenceIcon, ReleasesIcon } from "./AppIcons";
 import { OriginalArtist } from "../types";
 
@@ -11,14 +12,16 @@ interface ArtistCardProps {
 
 export const ArtistCard = memo(({ artist, index, variant = 'default' }: ArtistCardProps) => {
   const isFeatured = variant === 'featured';
+  const navigate = useNavigate();
 
   return (
     <motion.div
+      onClick={() => navigate(`/artists/${artist.id}`)}
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: (index % 5) * 0.05 }}
-      className={`group relative overflow-hidden ${isFeatured ? 'aspect-[3.5/1]' : 'aspect-[3.2/1]'}`}
+      className={`group relative overflow-hidden cursor-pointer ${isFeatured ? 'aspect-[3.5/1]' : 'aspect-[3.2/1]'}`}
     >
       <div className="flex h-full items-center gap-2 px-1 py-1">
         <div className={`shrink-0 overflow-hidden rounded-full ${isFeatured ? 'h-10 w-10 md:h-14 md:w-14' : 'h-12 w-12 md:h-11 md:w-11'}`}>

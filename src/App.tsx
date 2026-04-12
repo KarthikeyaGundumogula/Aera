@@ -32,6 +32,7 @@ export default function App() {
           element={<ComingSoonPage label="Profile" />}
         />
         <Route path="/originals/:id" element={<OriginalPage />} />
+        <Route path="/artists/:id" element={<ComingSoonPage label="Artist Profile" />} />
       </Routes>
     </BrowserRouter>
   );
