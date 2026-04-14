@@ -158,7 +158,7 @@ export function ReleaseCatalogue({ items, onSelect }: ReleaseCatalogueProps) {
               <h1
                 className="font-black tracking-tighter mb-2 md:mb-4 uppercase leading-[0.82] break-words text-white"
                 style={{
-                  fontSize: `clamp(2.5rem, ${Math.max(5, 15 - activeItem.title.length * 0.3)}vw, 7rem)`,
+                  fontSize: `clamp(2.5rem, ${Math.max(5, 15 - (activeItem.title?.length || 0) * 0.3)}vw, 7rem)`,
                 }}
               >
                 {activeItem.title}

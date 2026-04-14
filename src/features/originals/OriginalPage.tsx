@@ -36,6 +36,31 @@ export function OriginalPage() {
     return () => clearTimeout(timer);
   }, [original]);
 
+  const catalogueItems: TheatreItem[] = useMemo(() => {
+    if (!original) return [];
+    return [
+      {
+        id: `${original.id}-main-poster`,
+        title: original.title,
+        image: original.coverImage,
+      } as TheatreItem,
+      ...(original.heroHighlights || [])
+    ];
+  }, [original]);
+
+  const artistStripItems = useMemo(() => {
+    if (!original) return [];
+    return Array.from(
+      { length: Math.max(15, original.topArtists.length) },
+      (_, index) => original.topArtists[index % original.topArtists.length]
+    );
+  }, [original]);
+
+  const quickViewItems = useMemo(() => {
+    if (!original) return [];
+    return [...catalogueItems, ...original.wallOfFame];
+  }, [catalogueItems, original?.wallOfFame]);
+
   if (!original) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -51,22 +76,6 @@ export function OriginalPage() {
       </div>
     );
   }
-
-  const catalogueItems: TheatreItem[] = useMemo(() => [
-    {
-      id: `${original.id}-main-poster`,
-      title: original.title,
-      image: original.coverImage,
-    } as TheatreItem,
-    ...(original.heroHighlights || [])
-  ], [original.id, original.title, original.coverImage, original.heroHighlights]);
-
-  const artistStripItems = useMemo(() => Array.from(
-    { length: Math.max(15, original.topArtists.length) },
-    (_, index) => original.topArtists[index % original.topArtists.length]
-  ), [original.topArtists]);
-
-  const quickViewItems = useMemo(() => [...catalogueItems, ...original.wallOfFame], [catalogueItems, original.wallOfFame]);
 
   return (
     <div className="min-h-screen bg-[#050505] overflow-y-auto no-scrollbar">
