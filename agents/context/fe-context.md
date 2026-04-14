@@ -40,7 +40,7 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   - **Square** (1 col, 1:1, Video/Poster/Script)
   - **Vertical** (1 col, 9:16, Video)
   - **2:3 Poster** (1 col, 2:3, Poster)
-- **Mobile Container Populating Rules**:
+  - **Mobile Container Populating Rules**:
   1. **IMAX Restrictions**: IMAX containers can *only* hold video works. No posters or scripts.
   2. **IMAX Video Fallbacks**: If no 16:9 (IMAX) aspect ratio video is available for an IMAX container, priority falls to Academy ratio videos, and lastly Square videos.
   3. **IMAX Overflow**: IMAX videos *always* prioritize IMAX containers. If there are more IMAX videos than IMAX containers, overflow IMAX videos are placed into Academy containers.
@@ -48,6 +48,12 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
 - **Layout Engine Focus**: Both platforms rely on deterministic cluster rules emphasizing *visual rhythm over density*.
 - **Theme System**: Each "Original" (movie/series) applies a specific background, color palette, and typography. The *structure remains constant*, only the *mood changes*.
 - **Interaction Model**: Users enter space organically (entering a space, not scrolling a feed) and gradually discover deeper mechanics.
+
+## Originals Experience
+- **Interactive Hero Carousel**: The top of the Original page functions as a seamless entry point. It starts as an immersive, full-width static "anchor" poster and smoothly transitions into a 10s auto-rotating video carousel highlighting featured releases.
+- **Context Preservation**: The main static poster is intrinsically injected into the carousel's rotation loop to preserve context across interactions and populate the unified `QuickView` player.
+- **Video Fallbacks**: Browser-native `<video poster={...}>` implementation combined with explicit `onError` DOM tracking to gracefully downgrade failed or blocked auto-playing media into high-quality static previews instantly.
+- **Cinematic UI**: Navigation avoids bulky UI controls in favor of minimalist dashed paginators and invisible multi-directional swiping gestures driven by `framer-motion`.
 
 ## Technical Implementation Notes
 - **Navigation Architecture**: The mobile bottom navigation (`MobileNavBar`) is a universally mounted global component overlaying the root router (`App.tsx`). It floats above all routes for mobile users while naturally hiding on desktop viewports. The "Calls" feature has been globally deprecated.

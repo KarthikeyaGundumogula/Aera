@@ -10,6 +10,8 @@ export interface TheatreItem {
   set?: string;
   captain?: string;
   image?: string;
+  /** URL for a self-hosted video asset. Falls back to a placeholder when absent. */
+  videoUrl?: string;
   text?: string;
   isQuote?: boolean;
   isPlay?: boolean;

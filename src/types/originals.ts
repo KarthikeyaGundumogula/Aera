@@ -20,5 +20,6 @@ export interface Original {
   };
   topArtists: OriginalArtist[];
   wallOfFame: TheatreItem[];
+  heroHighlights?: TheatreItem[];
   releaseDate?: string;
 }

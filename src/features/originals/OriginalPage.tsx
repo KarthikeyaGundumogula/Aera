@@ -1,7 +1,7 @@
-import { motion } from "motion/react";
-import { Users, Film } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Users, Film, ArrowRight } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
 import { QuickView } from "../shared/QuickView";
@@ -13,15 +13,28 @@ import { SectionHeader } from "../../components/SectionHeader";
 import { StarProfileCard, StarProfileCardProps } from "./components/StarProfileCard";
 import { StarModal } from "./components/StarModal";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { ReleaseCatalogue } from "./components/ReleaseCatalogue";
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
   const [selectedStar, setSelectedStar] = useState<StarProfileCardProps | null>(null);
+  const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const isMobile = useMediaQuery();
 
   const original = id ? ORIGINALS_DATA[id] : null;
+
+  // Reveal interactive catalogue after 3 seconds
+  useEffect(() => {
+    if (!original?.heroHighlights?.length) return;
+    
+    const timer = setTimeout(() => {
+      setIsCatalogueActive(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [original]);
 
   if (!original) {
     return (
@@ -39,88 +52,137 @@ export function OriginalPage() {
     );
   }
 
-  const artistStripItems = Array.from(
+  const catalogueItems: TheatreItem[] = useMemo(() => [
+    {
+      id: `${original.id}-main-poster`,
+      title: original.title,
+      image: original.coverImage,
+    } as TheatreItem,
+    ...(original.heroHighlights || [])
+  ], [original.id, original.title, original.coverImage, original.heroHighlights]);
+
+  const artistStripItems = useMemo(() => Array.from(
     { length: Math.max(15, original.topArtists.length) },
     (_, index) => original.topArtists[index % original.topArtists.length]
-  );
+  ), [original.topArtists]);
+
+  const quickViewItems = useMemo(() => [...catalogueItems, ...original.wallOfFame], [catalogueItems, original.wallOfFame]);
 
   return (
     <div className="min-h-screen bg-[#050505] overflow-y-auto no-scrollbar">
-      {/* Hero Header */}
-      <div className="relative h-[50vh] w-full">
-        <img
-          src={original.coverImage}
-          className="w-full h-full object-cover"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+      {/* Hero Header Transformation */}
+      <div className="relative h-[65vh] md:h-[60vh] w-full overflow-hidden">
+        <AnimatePresence mode="wait">
+          {!isCatalogueActive ? (
+            <motion.div
+              key="static-poster"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              <img
+                src={original.coverImage}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+              
+              {/* Initial Info Overlay (disappears on catalogue reveal) */}
+              <div className="absolute bottom-0 left-0 p-8 w-full">
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
+                        Original Spotlight
+                    </span>
+                    <div className="h-px w-8 bg-white/20" />
+                  </div>
+                  <h1
+                    className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
+                    style={{
+                      fontSize: `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
+                    }}
+                  >
+                    {original.title}
+                  </h1>
+                </motion.div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="interactive-catalogue"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.0 }}
+              className="absolute inset-0 h-full w-full"
+            >
+              <ReleaseCatalogue 
+                items={catalogueItems} 
+                onSelect={(item) => setSelectedItem(item)} 
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Top Controls */}
+        {/* Global Persistent UI */}
         <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
           <Logo onClick={() => navigate("/")} showText={false} />
-        </div>
-
-        {/* Original Info */}
-        <div className="absolute bottom-0 left-0 p-8 w-full">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+          
+          <button 
+            onClick={() => navigate(`/originals/${original.id}/releases`)}
+            className="group absolute right-8 top-8 flex items-center gap-3 transition-all hover:text-white/70 active:scale-95 z-50 text-white"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
-                  Original
+             <span className="text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
+             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Container (Moved below hero for clarity when catalogue is active) */}
+      <div className="px-8 -mt-6 relative z-20">
+        <div className="flex items-center gap-8 md:gap-12 py-6 border-b border-white/5 bg-[#050505]/80 backdrop-blur-md rounded-t-3xl sm:rounded-none">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-1">
+              <PresenceIcon className="w-3 h-3 text-yellow-400" />
+              <span className="text-lg font-bold">
+                {original.stats.presence}
               </span>
-              <div className="h-px w-8 bg-white/20" />
             </div>
-            <h1
-              className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
-              style={{
-                fontSize: `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
-              }}
-            >
-              {original.title}
-            </h1>
-            <p className="text-sm text-white/60 max-w-md leading-relaxed mb-8">
+            <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
+              Presence
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-1">
+              <Users className="w-3 h-3 text-blue-400" />
+              <span className="text-lg font-bold">
+                {original.stats.members}
+              </span>
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
+              Artists
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-1">
+              <Film className="w-3 h-3 text-purple-400" />
+              <span className="text-lg font-bold">
+                {original.stats.releases}
+              </span>
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
+              Releases
+            </span>
+          </div>
+          
+          <div className="hidden md:block ml-auto max-w-sm">
+            <p className="text-[10px] leading-relaxed text-white/40 uppercase font-bold tracking-wider">
               {original.description}
             </p>
-
-            {/* Stats */}
-            <div className="flex items-center gap-8">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-1">
-                  <PresenceIcon className="w-3 h-3 text-yellow-400" />
-                  <span className="text-lg font-bold">
-                    {original.stats.presence}
-                  </span>
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
-                  Presence
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-1">
-                  <Users className="w-3 h-3 text-blue-400" />
-                  <span className="text-lg font-bold">
-                    {original.stats.members}
-                  </span>
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
-                  Artists
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-1">
-                  <Film className="w-3 h-3 text-purple-400" />
-                  <span className="text-lg font-bold">
-                    {original.stats.releases}
-                  </span>
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
-                  Releases
-                </span>
-              </div>
-            </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -134,16 +196,16 @@ export function OriginalPage() {
 
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
-            {STARS_MOCK.map((star, idx) => (
-              <StarProfileCard 
-                key={idx} 
-                actorName={star.actorName} 
-                characterName={star.characterName} 
-                imageUrl={star.imageUrl} 
-                delay={idx * 0.15}
-                onClick={() => setSelectedStar(star)}
-              />
-            ))}
+            {STARS_MOCK.map((star) => (
+            <StarProfileCard 
+              key={star.actorName} 
+              actorName={star.actorName} 
+              characterName={star.characterName} 
+              imageUrl={star.imageUrl} 
+              delay={STARS_MOCK.indexOf(star) * 0.15}
+              onClick={() => setSelectedStar(star)}
+            />
+          ))}
           </div>
         </div>
       </section>
@@ -158,16 +220,16 @@ export function OriginalPage() {
 
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
-            {MAKERS_MOCK.map((maker, idx) => (
-              <StarProfileCard 
-                key={idx} 
-                actorName={maker.actorName} 
-                characterName={maker.characterName} 
-                imageUrl={maker.imageUrl} 
-                delay={idx * 0.15}
-                onClick={() => setSelectedStar(maker)}
-              />
-            ))}
+            {MAKERS_MOCK.map((maker) => (
+            <StarProfileCard 
+              key={maker.actorName} 
+              actorName={maker.actorName} 
+              characterName={maker.characterName} 
+              imageUrl={maker.imageUrl} 
+              delay={MAKERS_MOCK.indexOf(maker) * 0.15}
+              onClick={() => setSelectedStar(maker)}
+            />
+          ))}
           </div>
         </div>
       </section>
@@ -246,7 +308,7 @@ export function OriginalPage() {
         selectedItem={selectedItem}
         setSelectedItem={setSelectedItem}
         isMobile={isMobile}
-        items={original.wallOfFame}
+        items={quickViewItems}
         columns={1}
       />
 

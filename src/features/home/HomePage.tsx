@@ -5,6 +5,9 @@ import { HomeFeedLayout } from "./layouts/HomeFeedLayout";
 import { QuickView } from "../shared/QuickView";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 
+/** Key used to remember that a desktop redirect has already happened this session. */
+const DESKTOP_REDIRECT_KEY = 'hasVisitedDesktop';
+
 export function Home() {
   const isMobile = useMediaQuery();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
@@ -14,9 +17,9 @@ export function Home() {
 
   // Auto-redirect to Theatre for Desktop/Tablet on first load
   useEffect(() => {
-    const hasVisited = sessionStorage.getItem('hasVisitedDesktop');
+    const hasVisited = sessionStorage.getItem(DESKTOP_REDIRECT_KEY);
     if (!isMobile && !hasVisited) {
-      sessionStorage.setItem('hasVisitedDesktop', 'true');
+      sessionStorage.setItem(DESKTOP_REDIRECT_KEY, 'true');
       navigate('/theatre', { replace: true });
     }
   }, [isMobile, navigate]);

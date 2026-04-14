@@ -26,6 +26,10 @@ export function AppRoutes() {
       <Route path="/profile" element={<ComingSoonPage label="Profile" />} />
       <Route path="/originals/:id" element={<OriginalPage />} />
       <Route
+        path="/originals/:id/releases"
+        element={<ComingSoonPage label="Official Releases" />}
+      />
+      <Route
         path="/artists/:id"
         element={<ComingSoonPage label="Artist Profile" />}
       />

@@ -1,0 +1,75 @@
+{
+  "alchemist-original": [
+    {
+      "id": "h-alc-1",
+      "title": "Desert Soul Teaser",
+      "presence": 1240,
+      "image": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      "category": "Edit",
+      "type": "video"
+    },
+    {
+      "id": "h-alc-2",
+      "title": "The Golden Path",
+      "presence": 850,
+      "image": "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&q=80&w=800",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+      "category": "Edit",
+      "type": "video"
+    }
+  ],
+  "dune-original": [
+    {
+      "id": "h-dune-1",
+      "title": "Arrakis Awakening",
+      "presence": 1500,
+      "image": "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=800",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "category": "Edit",
+      "type": "video"
+    },
+    {
+      "id": "h-dune-2",
+      "title": "Eye of the Storm",
+      "presence": 910,
+      "image": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=800",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "category": "Edit",
+      "type": "video"
+    }
+  ],
+  "madmax-original": [
+    {
+      "id": "h-max-1",
+      "title": "Chrome & Dust",
+      "presence": 3000,
+      "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=800",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "category": "Edit",
+      "type": "video"
+    }
+  ],
+  "interstellar-original": [
+    {
+      "id": "h-int-1",
+      "title": "Event Horizon",
+      "presence": 842,
+      "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=800",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "category": "Edit",
+      "type": "video"
+    }
+  ],
+  "matrix-original": [
+    {
+      "id": "h-mat-1",
+      "title": "The Glitch",
+      "presence": 2100,
+      "image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "category": "Edit",
+      "type": "video"
+    }
+  ]
+}

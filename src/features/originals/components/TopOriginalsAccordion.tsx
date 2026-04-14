@@ -7,31 +7,27 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
 }: {
   navigate: (path: string) => void;
 }) {
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   // Top originals by presence (repeated to mock 15 items for layout testing)
   const baseOriginals = [...ORIGINALS].sort(
     (a, b) => b.stats.presence - a.stats.presence,
   );
-  const topOriginals = [
-    ...baseOriginals,
-    ...baseOriginals.map((org) => ({ ...org, id: `${org.id}-copy2` })),
-    ...baseOriginals.map((org) => ({ ...org, id: `${org.id}-copy3` })),
-  ];
+  const topOriginals = Array.from({ length: 15 }, (_, i) => baseOriginals[i % baseOriginals.length]);
 
   return (
     <div className="flex h-[300px] md:h-[400px] w-full gap-2 px-6 md:px-12 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
-      {topOriginals.map((org) => {
-        const isActive = activeId === org.id;
+      {topOriginals.map((org, index) => {
+        const isActive = activeIndex === index;
         return (
           <div
-            key={org.id}
+            key={`${org.id}-${index}`}
             className={`relative rounded-xl overflow-hidden snap-center cursor-pointer shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? "w-[360px] md:w-[520px]" : "w-[200px] md:w-[260px]"}`}
             onClick={(e) => {
               if (isActive) {
                 navigate(`/originals/${org.id}`);
               } else {
-                setActiveId(org.id);
+                setActiveIndex(index);
                 // Trigger native browser smooth centering alongside the CSS transition instantly
                 // Only center on mobile and tablet screens. Desktop expands perfectly in place.
                 if (window.innerWidth < 1024) {

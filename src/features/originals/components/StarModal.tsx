@@ -58,9 +58,6 @@ export const StarModal = memo(({ star, onClose }: StarModalProps) => {
             <div className="absolute left-0 top-0 bottom-0 w-24 flex flex-col items-center justify-center z-40 pointer-events-none mix-blend-overlay sm:mix-blend-normal">
               {/* Main Stacked Outline Name */}
               <div className="absolute flex flex-col items-start -rotate-90 whitespace-nowrap origin-center scale-[105%] sm:scale-100">
-                <style>
-                  {`@import url('https://fonts.googleapis.com/css2?family=Londrina+Outline&display=swap');`}
-                </style>
                 <div
                   className="uppercase text-[42px] sm:text-[52px] tracking-wide leading-[0.85] drop-shadow-xl font-bold"
                   style={{

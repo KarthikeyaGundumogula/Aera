@@ -4,8 +4,8 @@ import { Search, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem, SetSelectedItem } from "../../../types";
 
-import { CinepoeticCanvas } from "../components/CinepoeticCanvas";
-import { MobileTheatreCanvas } from "../components/MobileTheatreCanvas";
+import { DesktopCanvas } from "../components/desktop/DesktopCanvas";
+import { MobileCanvas } from "../components/mobile/MobileCanvas";
 
 import { Logo } from "../../../components/Logo";
 
@@ -113,9 +113,9 @@ export function TheatreLayout({ setSelectedItem, isMobile }: TheatreLayoutProps)
         className="h-full w-full"
       >
         {isMobile ? (
-          <MobileTheatreCanvas setSelectedItem={setSelectedItem} />
+          <MobileCanvas setSelectedItem={setSelectedItem} />
         ) : (
-          <CinepoeticCanvas setSelectedItem={setSelectedItem} onScroll={handleScroll} />
+          <DesktopCanvas setSelectedItem={setSelectedItem} onScroll={handleScroll} />
         )}
       </motion.main>
     </div>

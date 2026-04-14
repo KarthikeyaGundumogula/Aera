@@ -27,6 +27,13 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
   const twitterContainerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartRef = useRef<{ x: number, y: number } | null>(null);
+  // Refs so the timer closure always reads current panel state (avoids stale closure — M3)
+  const showQueueRef = useRef(false);
+  const showInfoRef = useRef(false);
+
+  // Keep refs in sync for use inside timer callbacks
+  useEffect(() => { showQueueRef.current = showQueue; }, [showQueue]);
+  useEffect(() => { showInfoRef.current = showInfo; }, [showInfo]);
 
   useEffect(() => {
     if (selectedItem) {
@@ -91,11 +98,12 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     const timeout = isMobile ? 5000 : 3000;
     timeoutRef.current = setTimeout(() => {
-      if (!showQueue && !showInfo) {
+      // Use refs to avoid stale closure over showQueue / showInfo state
+      if (!showQueueRef.current && !showInfoRef.current) {
         setShowControls(false);
       }
     }, timeout);
-  }, [isMobile, showQueue, showInfo]);
+  }, [isMobile]);
 
   useEffect(() => {
     if (selectedItem) {
@@ -159,7 +167,7 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
               ) : (
                 <video 
                   key={currentVideo.id}
-                  src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" 
+                  src={currentVideo.videoUrl ?? ''} 
                   controls={showControls}
                   autoPlay 
                   className="w-full h-full object-contain"
@@ -318,10 +326,16 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
                     </div>
 
                     <div className="pt-12 border-t border-white/5 space-y-4">
-                      <button className="w-full py-5 bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-white/90 transition-all">
+                      <button
+                        onClick={() => { /* TODO(framehouse): wire Give Credits action */ }}
+                        className="w-full py-5 bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-white/90 transition-all"
+                      >
                         Give Credits
                       </button>
-                      <button className="w-full py-5 bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-white/10 transition-all">
+                      <button
+                        onClick={() => { /* TODO(framehouse): wire View Origins navigation */ }}
+                        className="w-full py-5 bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-white/10 transition-all"
+                      >
                         View Origins
                       </button>
                     </div>
