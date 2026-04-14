@@ -29,7 +29,7 @@ export const ArtistCard = memo(({ artist, index, variant = 'default' }: ArtistCa
             src={artist.image}
             alt={artist.name}
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            referrerPolicy="no-referrer"
+            
           />
         </div>
 

@@ -31,9 +31,9 @@ export const MobileClusterView = memo(function MobileClusterView({
     // ── A: Feature Presentation ───────────────────────────────────────
     case "A":
       return (
-        <div className="w-full flex flex-col gap-1">
+        <div className="w-full flex flex-col gap-[2px]">
           {card(s0)}
-          <div className="grid grid-cols-2 gap-1 w-full">
+          <div className="grid grid-cols-2 gap-[2px] w-full">
             {card(s1)}
             {card(s2)}
           </div>
@@ -43,9 +43,9 @@ export const MobileClusterView = memo(function MobileClusterView({
     // ── B: Asymmetric Left ────────────────────────────────────────────
     case "B":
       return (
-        <div className="flex w-full gap-1">
+        <div className="flex w-full gap-[2px]">
           <div className="w-1/2 flex flex-col">{card(s0, true)}</div>
-          <div className="w-1/2 flex flex-col gap-1">
+          <div className="w-1/2 flex flex-col gap-[2px]">
             {card(s1)}
             {card(s2)}
           </div>
@@ -55,8 +55,8 @@ export const MobileClusterView = memo(function MobileClusterView({
     // ── C: Asymmetric Right ───────────────────────────────────────────
     case "C":
       return (
-        <div className="flex w-full gap-1">
-          <div className="w-1/2 flex flex-col gap-1">
+        <div className="flex w-full gap-[2px]">
+          <div className="w-1/2 flex flex-col gap-[2px]">
             {card(s0)}
             {card(s2)}
           </div>
@@ -67,8 +67,8 @@ export const MobileClusterView = memo(function MobileClusterView({
     // ── D: Pacing Block ───────────────────────────────────────────────
     case "D":
       return (
-        <div className="w-full flex flex-col gap-1">
-          <div className="grid grid-cols-2 gap-1 w-full">
+        <div className="w-full flex flex-col gap-[2px]">
+          <div className="grid grid-cols-2 gap-[2px] w-full">
             {card(s0)}
             {card(s1)}
           </div>
@@ -79,7 +79,7 @@ export const MobileClusterView = memo(function MobileClusterView({
     // ── E: The Gallery ────────────────────────────────────────────────
     case "E":
       return (
-        <div className="grid grid-cols-2 gap-1 w-full">
+        <div className="grid grid-cols-2 gap-[2px] w-full">
           {card(s0)}
           {card(s1)}
         </div>

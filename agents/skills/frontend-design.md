@@ -90,6 +90,10 @@ Do not scatter generic micro-interactions everywhere. One well-directed load seq
 - pick fonts with character
 - pair a distinctive display face with a readable body face when appropriate
 - avoid generic defaults when the page is design-led
+- **Adaptive Title Containment (95% Rule)**: Ensure names and display titles never split or overflow.
+  - Restrict titles to a maximum of 95% of viewport width.
+  - **Shrink-to-fit**: For single-word titles, dynamically decrease font size to keep the word whole and within the 95% boundary.
+  - **Vertical-wrap**: For multi-word titles, allow wrapping to expand height instead of aggressively shrinking font size.
 
 ### Color
 

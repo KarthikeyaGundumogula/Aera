@@ -50,7 +50,6 @@ function PosterContent({ item }: { item: TheatreItem }) {
         alt={item.title}
         loading="lazy"
         className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
-        referrerPolicy="no-referrer"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4 border-[12px] border-transparent group-hover:border-white/10 transition-all duration-500">
@@ -81,7 +80,6 @@ function MediaContent({ item }: { item: TheatreItem }) {
       alt={item.title}
       loading="lazy"
       className="w-full h-full object-cover transition-all duration-700 group-hover:object-contain bg-black/40"
-      referrerPolicy="no-referrer"
     />
   );
 }
@@ -110,9 +108,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{
-        scale: isPoster ? 1.05 : 1.02,
         zIndex: 20,
-        boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
       }}
       onClick={(e) => {
         e.stopPropagation();

@@ -173,7 +173,7 @@ export function DesktopCanvas({ setSelectedItem, onScroll }: DesktopCanvasProps)
         >
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 group-hover:text-white/80 transition-colors flex items-center gap-2">
             <span>
-              Coordinates: {Math.floor(viewport.x)}, {Math.floor(viewport.y)}
+              location: {Math.floor(viewport.x)}, {Math.floor(viewport.y)}
             </span>
             <span className="w-1 h-1 rounded-full bg-white/20 group-hover:bg-white/60 transition-colors" />
             <span className="text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">

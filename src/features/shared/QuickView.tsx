@@ -167,13 +167,15 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
               ) : (
                 <video 
                   key={currentVideo.id}
-                  src={currentVideo.videoUrl ?? ''} 
                   controls={showControls}
+                  crossOrigin="anonymous"
                   autoPlay 
                   className="w-full h-full object-contain"
                   poster={currentVideo.image || ''}
                   onEnded={() => handleMove('down')}
-                />
+                >
+                  <source src={currentVideo.videoUrl ?? ''} type="video/mp4" />
+                </video>
               )}
               
               {/* Overlay Controls */}
@@ -265,7 +267,7 @@ export function QuickView({ selectedItem, setSelectedItem, isMobile, items, colu
                         className={`group cursor-pointer flex gap-6 items-center transition-opacity ${item.id === currentVideo.id ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}
                       >
                         <div className="relative w-32 aspect-video rounded-xl overflow-hidden border border-white/5">
-                          <img src={item.image} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          <img src={item.image} className="w-full h-full object-cover"  />
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-white uppercase tracking-tight mb-1">{item.title}</h4>

@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Londrina+Outline&display=swap');
+@import "tailwindcss";
 
 @theme {
   --color-brand-dark: #1A0F0A;

@@ -10,7 +10,7 @@ export type Bucket = {
 };
 
 export interface ClusterSlot {
-  type: "IMAX" | "WIDE" | "VERTICAL" | "SQUARE";
+  type: "IMAX" | "WIDE" | "VERTICAL" | "SQUARE" | "WIDE_LG" | "WIDE_SM";
   x: number;
   y: number;
   w: number;
@@ -55,6 +55,48 @@ const CLUSTER_TEMPLATES = {
     { type: "WIDE", x: 0, y: 6, w: 6, h: 3 },
     { type: "WIDE", x: 6, y: 6, w: 6, h: 3 },
   ],
+  F: [ // Vertical Anchor — VERTICAL + SQUARE (16×8)
+    { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8 },
+    { type: "SQUARE",   x: 4, y: 0, w: 4, h: 4 },
+    { type: "SQUARE",   x: 8, y: 0, w: 4, h: 4 },
+    { type: "SQUARE",   x: 12, y: 0, w: 4, h: 4 },
+    { type: "SQUARE",   x: 4, y: 4, w: 4, h: 4 },
+    { type: "SQUARE",   x: 8, y: 4, w: 4, h: 4 },
+    { type: "SQUARE",   x: 12, y: 4, w: 4, h: 4 },
+  ],
+  G: [ // IMAX Spotlight — IMAX + SQUARE (16×8)
+    { type: "SQUARE", x: 0, y: 0, w: 4, h: 4 },
+    { type: "IMAX",   x: 4, y: 0, w: 8, h: 8 },
+    { type: "SQUARE", x: 12, y: 0, w: 4, h: 4 },
+    { type: "SQUARE", x: 0, y: 4, w: 4, h: 4 },
+    { type: "SQUARE", x: 12, y: 4, w: 4, h: 4 },
+  ],
+  H: [ // Wide Zig-Zag — WIDE + SQUARE (16×8)
+    { type: "WIDE",   x: 0, y: 0, w: 8, h: 4 },
+    { type: "SQUARE", x: 8, y: 0, w: 4, h: 4 },
+    { type: "SQUARE", x: 12, y: 0, w: 4, h: 4 },
+    { type: "SQUARE", x: 0, y: 4, w: 4, h: 4 },
+    { type: "SQUARE", x: 4, y: 4, w: 4, h: 4 },
+    { type: "WIDE",   x: 8, y: 4, w: 8, h: 4 },
+  ],
+  I: [ // Anchor Wide — VERTICAL + WIDE + SQUARE (16×8)
+    { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8 },
+    { type: "WIDE",     x: 4, y: 0, w: 8, h: 4 },
+    { type: "SQUARE",   x: 12, y: 0, w: 4, h: 4 },
+    { type: "SQUARE",   x: 4, y: 4, w: 4, h: 4 },
+    { type: "SQUARE",   x: 8, y: 4, w: 4, h: 4 },
+    { type: "SQUARE",   x: 12, y: 4, w: 4, h: 4 },
+  ],
+  J: [ // Quad Grid — SQUARE only, max density (16×8)
+    { type: "SQUARE", x: 0, y: 0, w: 4, h: 4 },
+    { type: "SQUARE", x: 4, y: 0, w: 4, h: 4 },
+    { type: "SQUARE", x: 8, y: 0, w: 4, h: 4 },
+    { type: "SQUARE", x: 12, y: 0, w: 4, h: 4 },
+    { type: "SQUARE", x: 0, y: 4, w: 4, h: 4 },
+    { type: "SQUARE", x: 4, y: 4, w: 4, h: 4 },
+    { type: "SQUARE", x: 8, y: 4, w: 4, h: 4 },
+    { type: "SQUARE", x: 12, y: 4, w: 4, h: 4 },
+  ],
 };
 
 export function classify(items: TheatreItem[]): Bucket {
@@ -97,7 +139,18 @@ export function classify(items: TheatreItem[]): Bucket {
   return bucket;
 }
 
-function chooseCluster(bucket: Bucket, imaxWindowSum: number, isFirst: boolean = false): keyof typeof CLUSTER_TEMPLATES {
+function chooseCluster(
+  bucket: Bucket, 
+  imaxWindowSum: number, 
+  isFirst: boolean = false,
+  mode: 'canvas' | 'flow' = 'canvas'
+): keyof typeof CLUSTER_TEMPLATES {
+  if (mode === 'flow') {
+    const flowOptions: (keyof typeof CLUSTER_TEMPLATES)[] = ["F", "G", "H", "I", "J"];
+    // Simply cycle or randomly pick for flow
+    return flowOptions[Math.floor(Math.random() * flowOptions.length)];
+  }
+
   // Force IMAX for the hero section if available
   if (isFirst && bucket.imax.length > 0) return "A";
 
@@ -158,6 +211,8 @@ function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Clus
     switch (slot.type) {
       case "IMAX": item = bucket.imax.shift(); break;
       case "WIDE": item = bucket.wide.shift(); break;
+      case "WIDE_LG": item = bucket.wide.shift(); break;
+      case "WIDE_SM": item = bucket.wide.shift(); break;
       case "VERTICAL": item = bucket.vertical.shift(); break;
       case "SQUARE": item = bucket.square.shift(); break;
     }
@@ -202,7 +257,7 @@ function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Clus
   return { type, slots: slots as ClusterSlot[] };
 }
 
-export function buildClusters(items: TheatreItem[]): Cluster[] {
+export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'canvas'): Cluster[] {
   const bucket = classify([...items]); // Clone to avoid mutation
   const clusters: Cluster[] = [];
   const imaxHistory: number[] = [0, 0]; // Track IMAX count of last 2 clusters
@@ -227,7 +282,7 @@ export function buildClusters(items: TheatreItem[]): Cluster[] {
   while (hasContent(bucket)) {
     const isFirst = clusters.length === 0;
     const imaxWindowSum = imaxHistory.reduce((a, b) => a + b, 0);
-    const type = chooseCluster(bucket, imaxWindowSum, isFirst);
+    const type = chooseCluster(bucket, imaxWindowSum, isFirst, mode);
     const cluster = fillCluster(type, bucket);
     
     clusters.push(cluster);

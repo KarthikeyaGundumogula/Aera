@@ -199,7 +199,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
                   transition={{ duration: 1.5, ease: "easeInOut" }}
                   src={FEATURED_ITEMS[heroIndex].image}
                   className="absolute inset-0 w-full h-full object-cover blur-[72px] scale-125"
-                  referrerPolicy="no-referrer"
+                  
                 />
               </AnimatePresence>
             </div>
@@ -225,7 +225,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
                   className="w-full h-full object-cover"
                   loading="eager"
                   decoding="async"
-                  referrerPolicy="no-referrer"
+                  
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6 w-full">

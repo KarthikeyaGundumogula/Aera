@@ -8,12 +8,13 @@ import { QuickView } from "../shared/QuickView";
 import { CategoryIcon, PresenceIcon, ReleasesIcon } from "../../components/icons/AppIcons";
 import { Logo } from "../../components/Logo";
 import { ArtistCard } from "./components/ArtistCard";
-import { TheatreFeedItem } from "../theatre/components/TheatreFeedItem";
+
 import { SectionHeader } from "../../components/SectionHeader";
 import { StarProfileCard, StarProfileCardProps } from "./components/StarProfileCard";
 import { StarModal } from "./components/StarModal";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleaseCatalogue } from "./components/ReleaseCatalogue";
+import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ export function OriginalPage() {
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
   const [selectedStar, setSelectedStar] = useState<StarProfileCardProps | null>(null);
   const [isCatalogueActive, setIsCatalogueActive] = useState(false);
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
   const isMobile = useMediaQuery();
 
   const original = id ? ORIGINALS_DATA[id] : null;
@@ -43,6 +45,7 @@ export function OriginalPage() {
         id: `${original.id}-main-poster`,
         title: original.title,
         image: original.coverImage,
+        description: original.description,
       } as TheatreItem,
       ...(original.heroHighlights || [])
     ];
@@ -58,8 +61,8 @@ export function OriginalPage() {
 
   const quickViewItems = useMemo(() => {
     if (!original) return [];
-    return [...catalogueItems, ...original.wallOfFame];
-  }, [catalogueItems, original?.wallOfFame]);
+    return [...catalogueItems, ...original.works];
+  }, [catalogueItems, original?.works]);
 
   if (!original) {
     return (
@@ -77,10 +80,18 @@ export function OriginalPage() {
     );
   }
 
+  const heroHeight = isTheaterMode 
+    ? (isMobile ? "h-[56.25vw]" : "h-[85vh]") 
+    : (isMobile ? "h-[65vh]" : "h-[75vh]");
+
   return (
     <div className="min-h-screen bg-[#050505] overflow-y-auto no-scrollbar">
       {/* Hero Header Transformation */}
-      <div className="relative h-[65vh] md:h-[60vh] w-full overflow-hidden">
+      <motion.div 
+        animate={{ height: isTheaterMode ? (isMobile ? "56.25vw" : "85vh") : (isMobile ? "65vh" : "75vh") }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+        className="relative w-full overflow-hidden"
+      >
         <AnimatePresence mode="wait">
           {!isCatalogueActive ? (
             <motion.div
@@ -93,12 +104,12 @@ export function OriginalPage() {
               <img
                 src={original.coverImage}
                 className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
+                
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
               
               {/* Initial Info Overlay (disappears on catalogue reveal) */}
-              <div className="absolute bottom-0 left-0 p-8 w-full">
+              <div className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full max-w-[95vw]">
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -110,13 +121,20 @@ export function OriginalPage() {
                     <div className="h-px w-8 bg-white/20" />
                   </div>
                   <h1
-                    className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
+                    className="font-black tracking-tighter mb-2 uppercase leading-[0.82] whitespace-pre-wrap drop-shadow-2xl"
                     style={{
-                      fontSize: `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
+                      fontSize: !original.title.includes(" ") 
+                        ? `clamp(2.5rem, ${Math.min(14, 90 / (original.title.length * 0.8))}vw, 7rem)`
+                        : `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
+                      wordBreak: "normal",
+                      overflowWrap: "normal"
                     }}
                   >
                     {original.title}
                   </h1>
+                  <p className="text-sm md:text-base text-white/80 font-medium leading-relaxed drop-shadow-md mt-4 max-w-2xl">
+                    {original.description}
+                  </p>
                 </motion.div>
               </div>
             </motion.div>
@@ -130,70 +148,87 @@ export function OriginalPage() {
             >
               <ReleaseCatalogue 
                 items={catalogueItems} 
+                initialIndex={catalogueItems.length > 1 ? 1 : 0}
                 onSelect={(item) => setSelectedItem(item)} 
+                isTheaterMode={isTheaterMode}
+                onToggleTheater={() => setIsTheaterMode(!isTheaterMode)}
               />
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Global Persistent UI */}
-        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
-          <Logo onClick={() => navigate("/")} showText={false} />
-          
-          <button 
-            onClick={() => navigate(`/originals/${original.id}/releases`)}
-            className="group absolute right-8 top-8 flex items-center gap-3 transition-all hover:text-white/70 active:scale-95 z-50 text-white"
-          >
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
-             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-      </div>
+        <AnimatePresence>
+          {!isTheaterMode && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50 pointer-events-none"
+            >
+              <div className="pointer-events-auto">
+                <Logo onClick={() => navigate("/")} showText={false} />
+              </div>
+              
+              <button 
+                onClick={() => navigate(`/originals/${original.id}/releases`)}
+                className="group absolute right-8 top-8 flex items-center gap-3 transition-all hover:text-white/70 active:scale-95 z-50 text-white pointer-events-auto"
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Stats Container (Moved below hero for clarity when catalogue is active) */}
-      <div className="px-8 -mt-6 relative z-20">
-        <div className="flex items-center gap-8 md:gap-12 py-6 border-b border-white/5 bg-[#050505]/80 backdrop-blur-md rounded-t-3xl sm:rounded-none">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1">
-              <PresenceIcon className="w-3 h-3 text-yellow-400" />
-              <span className="text-lg font-bold">
-                {original.stats.presence}
-              </span>
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
-              Presence
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1">
-              <Users className="w-3 h-3 text-blue-400" />
-              <span className="text-lg font-bold">
-                {original.stats.members}
-              </span>
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
-              Artists
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1">
-              <Film className="w-3 h-3 text-purple-400" />
-              <span className="text-lg font-bold">
-                {original.stats.releases}
-              </span>
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-widest text-white/30">
-              Releases
-            </span>
-          </div>
-          
-          <div className="hidden md:block ml-auto max-w-sm">
-            <p className="text-[10px] leading-relaxed text-white/40 uppercase font-bold tracking-wider">
-              {original.description}
-            </p>
-          </div>
-        </div>
-      </div>
+        {/* Stats Container (Moved inside hero overlay) */}
+        <AnimatePresence>
+          {!isTheaterMode && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="absolute bottom-0 left-0 w-full px-8 pb-2 z-20 pointer-events-none"
+            >
+              <div className="flex items-center gap-8 md:gap-12 py-4 border-t border-white/10">
+                <div className="flex flex-col pointer-events-auto">
+                  <div className="flex items-center gap-2 mb-1">
+                    <PresenceIcon className="w-3 h-3 text-yellow-400" />
+                    <span className="text-lg font-bold drop-shadow-2xl">
+                      {original.stats.presence}
+                    </span>
+                  </div>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
+                    Presence
+                  </span>
+                </div>
+                <div className="flex flex-col pointer-events-auto">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="w-3 h-3 text-blue-400" />
+                    <span className="text-lg font-bold drop-shadow-2xl">
+                      {original.stats.members}
+                    </span>
+                  </div>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
+                    Artists
+                  </span>
+                </div>
+                <div className="flex flex-col pointer-events-auto">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Film className="w-3 h-3 text-purple-400" />
+                    <span className="text-lg font-bold drop-shadow-2xl">
+                      {original.stats.releases}
+                    </span>
+                  </div>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
+                    Releases
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Star Spotlight */}
       <section className="px-8 pt-10 pb-4">
@@ -260,25 +295,9 @@ export function OriginalPage() {
         </div>
       </section>
 
-      {/* Wall of Fame */}
-      <div className="px-8 pt-3 pb-8">
-        <SectionHeader 
-           iconNode={<div className="w-4 h-px bg-white" />} 
-           title={`${original.title} Wall`}
-           containerClassName="mb-8" 
-        />
+      {/* Originals Theatre Section */}
+      <OriginalTheatreSection original={original} setSelectedItem={setSelectedItem} />
 
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 md:gap-6 space-y-4 md:space-y-6">
-          {original.wallOfFame.map((item) => (
-             <TheatreFeedItem
-               key={item.id}
-               item={item}
-               items={original.wallOfFame}
-               setSelectedItem={setSelectedItem}
-             />
-          ))}
-        </div>
-      </div>
 
       {/* Detailed Information */}
       <div className="p-8 pt-0">

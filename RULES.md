@@ -14,6 +14,7 @@
 - Bypass security checks or validation hooks.
 - Duplicate existing functionality without a clear reason.
 - Ship code without checking the relevant test suite.
+- Test anything using browser sub agent unless i tell you to do so
 
 ## Agent Format
 - Agents live in `agents/*.md`.

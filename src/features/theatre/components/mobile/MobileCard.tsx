@@ -40,7 +40,7 @@ function PosterContent({ item }: { item: TheatreItem }) {
         alt={item.title}
         loading="lazy"
         className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"}`}
-        referrerPolicy="no-referrer"
+        
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
       <div className="absolute bottom-2 left-2 right-2 flex flex-col items-center">
@@ -66,7 +66,7 @@ function MediaContent({ item }: { item: TheatreItem }) {
       alt={item.title}
       loading="lazy"
       className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"}`}
-      referrerPolicy="no-referrer"
+      
     />
   );
 }

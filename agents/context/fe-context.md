@@ -16,6 +16,12 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
 - **Space over density**
 - **Visual Philosophy**: Structured chaos, cinematic rhythm, and intentional silence.
 
+## Typography & Title Rules
+- **Name & Title Integrity**: Names (Originals, Artists, Persons) must never be split/hyphenated and must never overflow their parent container.
+- **Adaptive Containment (The 95% Rule)**: Title containers are restricted to a maximum of 95% of the viewport/parent width.
+  - **Single-Word Titles**: If a single word title is too long for the regular font size, the font size must dynamically decrease (shrink-to-fit) to ensure it stays within the 95% boundary without wrapping or overflowing.
+  - **Multi-Word Titles**: If a multi-word title exceeds the 95% width, it must wrap to new lines, expanding the container height upwards rather than shrinking the font size aggressively.
+
 ## Core Concepts & Mechanics
 - **Interaction & Recognition**:
   - *Interaction* (Likes, Comments): Drives discovery and visibility. Low friction.

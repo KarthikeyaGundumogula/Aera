@@ -29,7 +29,6 @@ export const StarProfileCard = memo(({ actorName, characterName, imageUrl, delay
           src={imageUrl}
           alt={actorName}
           className="h-full w-full object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-[1.03]"
-          referrerPolicy="no-referrer"
         />
       </div>
 

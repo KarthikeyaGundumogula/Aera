@@ -70,7 +70,7 @@ export const TheatreFeedItem = memo(function TheatreFeedItem({
                     ? "9/16"
                     : "auto",
               }}
-              referrerPolicy="no-referrer"
+              
             />
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>

@@ -97,7 +97,7 @@ export const StarModal = memo(({ star, onClose }: StarModalProps) => {
                   src={star.imageUrl}
                   alt={star.actorName}
                   className="w-full h-full object-cover scale-[1.02]"
-                  referrerPolicy="no-referrer"
+                  
                 />
                 {/* Subtle edge gradients */}
                 <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#020202] via-[#020202]/30 to-transparent pointer-events-none" />

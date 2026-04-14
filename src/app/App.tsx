@@ -3,6 +3,7 @@ import { Home } from "../features/home/HomePage";
 import { OriginalPage } from "../features/originals/OriginalPage";
 import { ComingSoonPage } from "../features/shared/ComingSoonPage";
 import { TheatrePage } from "../features/theatre/TheatrePage";
+import { OriginalsTheatrePage } from "../features/originals/OriginalsTheatrePage";
 
 /**
  * Centralized route definitions for the FrameHouse application.
@@ -25,6 +26,7 @@ export function AppRoutes() {
       <Route path="/sets" element={<ComingSoonPage label="Sets" />} />
       <Route path="/profile" element={<ComingSoonPage label="Profile" />} />
       <Route path="/originals/:id" element={<OriginalPage />} />
+      <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />
       <Route
         path="/originals/:id/releases"
         element={<ComingSoonPage label="Official Releases" />}

@@ -19,7 +19,7 @@ export interface Original {
     releases: number;
   };
   topArtists: OriginalArtist[];
-  wallOfFame: TheatreItem[];
+  works: TheatreItem[];
   heroHighlights?: TheatreItem[];
   releaseDate?: string;
 }
