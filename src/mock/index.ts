@@ -3,6 +3,7 @@ import featuredItemsData from "./featured-items.json";
 import gridItemsData from "./grid-items.json";
 import originalsData from "./originals.json";
 import setsData from "./sets.json";
+import originalStarsData from "./original-stars.json";
 import { Original, TheatreItem } from "../types";
 
 export const FEATURED_MOMENT = featuredMomentData as TheatreItem;
@@ -13,3 +14,5 @@ export const ORIGINALS = originalsData as Original[];
 export const ORIGINALS_DATA: Record<string, Original> = Object.fromEntries(
   ORIGINALS.map((original) => [original.id, original])
 );
+export const STARS_MOCK = originalStarsData.stars;
+export const MAKERS_MOCK = originalStarsData.makers;

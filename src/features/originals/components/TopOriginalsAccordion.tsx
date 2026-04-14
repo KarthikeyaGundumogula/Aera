@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
-import { PresenceIcon } from "./AppIcons";
-import { ORIGINALS } from "../mock";
+import { PresenceIcon } from "../../../components/icons/AppIcons";
+import { ORIGINALS } from "../../../mock";
 
 export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
   navigate,

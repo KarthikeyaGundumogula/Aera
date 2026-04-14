@@ -2,18 +2,20 @@ import { motion } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TheatreItem, SetSelectedItem } from "../types";
+import { TheatreItem, SetSelectedItem } from "../../../types";
 
 import { CinepoeticCanvas } from "../components/CinepoeticCanvas";
+import { MobileTheatreCanvas } from "../components/MobileTheatreCanvas";
 
-import { Logo } from "../components/Logo";
+import { Logo } from "../../../components/Logo";
 
 interface TheatreLayoutProps {
   selectedItem: TheatreItem | null;
   setSelectedItem: SetSelectedItem;
+  isMobile?: boolean;
 }
 
-export function TheatreLayout({ setSelectedItem }: TheatreLayoutProps) {
+export function TheatreLayout({ setSelectedItem, isMobile }: TheatreLayoutProps) {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const scrollYRef = useRef(0);
   const lastYRef = useRef(0);
@@ -90,12 +92,7 @@ export function TheatreLayout({ setSelectedItem }: TheatreLayoutProps) {
             >
               Sets
             </button>
-            <button
-              onClick={() => navigate("/calls")}
-              className={getNavClassName(location.pathname === "/calls")}
-            >
-              Calls
-            </button>
+
           </nav>
         </div>
         <div className="flex items-center gap-6">
@@ -115,7 +112,11 @@ export function TheatreLayout({ setSelectedItem }: TheatreLayoutProps) {
         transition={{ type: "spring", damping: 25, stiffness: 150 }}
         className="h-full w-full"
       >
-        <CinepoeticCanvas setSelectedItem={setSelectedItem} onScroll={handleScroll} />
+        {isMobile ? (
+          <MobileTheatreCanvas setSelectedItem={setSelectedItem} />
+        ) : (
+          <CinepoeticCanvas setSelectedItem={setSelectedItem} onScroll={handleScroll} />
+        )}
       </motion.main>
     </div>
   );

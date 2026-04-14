@@ -1,47 +1,25 @@
 import { motion } from "motion/react";
 import { Users, Film } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { TheatreItem } from "../types";
-import { ORIGINALS_DATA } from "../mock";
-import { QuickView } from "../components/QuickView";
-import { CategoryIcon, PresenceIcon, ReleasesIcon } from "../components/AppIcons";
-import { Logo } from "../components/Logo";
-import { ArtistCard } from "../components/ArtistCard";
-import { TheatreFeedItem } from "../components/TheatreFeedItem";
-import { SectionHeader } from "../components/SectionHeader";
-import { StarProfileCard, StarProfileCardProps } from "../components/StarProfileCard";
-import { StarModal } from "../components/StarModal";
-
-const STARS_MOCK = [
-  { actorName: "Timothée Chalamet", characterName: "Paul Atreides", imageUrl: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Zendaya", characterName: "Chani", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Rebecca Ferguson", characterName: "Lady Jessica", imageUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Oscar Isaac", characterName: "Duke Leto", imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Jason Momoa", characterName: "Duncan Idaho", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" },
-];
-
-const MAKERS_MOCK = [
-  { actorName: "Denis Villeneuve", characterName: "Director", imageUrl: "https://images.unsplash.com/photo-1544168190-79c154273140?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Greig Fraser", characterName: "DoP", imageUrl: "https://images.unsplash.com/photo-1517430554945-aa5c808f2f2c?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Hans Zimmer", characterName: "Music", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Mary Parent", characterName: "Producer", imageUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop" },
-  { actorName: "Jon Spaihts", characterName: "Screenplay", imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop" },
-];
+import { useState } from "react";
+import { TheatreItem } from "../../types";
+import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
+import { QuickView } from "../shared/QuickView";
+import { CategoryIcon, PresenceIcon, ReleasesIcon } from "../../components/icons/AppIcons";
+import { Logo } from "../../components/Logo";
+import { ArtistCard } from "./components/ArtistCard";
+import { TheatreFeedItem } from "../theatre/components/TheatreFeedItem";
+import { SectionHeader } from "../../components/SectionHeader";
+import { StarProfileCard, StarProfileCardProps } from "./components/StarProfileCard";
+import { StarModal } from "./components/StarModal";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
   const [selectedStar, setSelectedStar] = useState<StarProfileCardProps | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = useMediaQuery();
 
   const original = id ? ORIGINALS_DATA[id] : null;
 

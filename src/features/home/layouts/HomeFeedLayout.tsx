@@ -11,15 +11,15 @@ import {
   Users,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TheatreItem, SetSelectedItem } from "../types";
-import { GRID_ITEMS, FEATURED_ITEMS, ORIGINALS } from "../mock";
-import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../components/AppIcons";
+import { TheatreItem, SetSelectedItem } from "../../../types";
+import { GRID_ITEMS, FEATURED_ITEMS, ORIGINALS } from "../../../mock";
+import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../../../components/icons/AppIcons";
 
-import { Logo } from "../components/Logo";
-import { TopOriginalsAccordion } from "../components/TopOriginalsAccordion";
-import { TheatreFeedItem } from "../components/TheatreFeedItem";
-import { SectionHeader } from "../components/SectionHeader";
-import { ArtistCard } from "../components/ArtistCard";
+import { Logo } from "../../../components/Logo";
+import { TopOriginalsAccordion } from "../../originals/components/TopOriginalsAccordion";
+import { TheatreFeedItem } from "../../theatre/components/TheatreFeedItem";
+import { SectionHeader } from "../../../components/SectionHeader";
+import { ArtistCard } from "../../originals/components/ArtistCard";
 
 interface HomeFeedLayoutProps {
   selectedItem: TheatreItem | null;
@@ -168,12 +168,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
             >
               Sets
             </button>
-            <button
-              onClick={() => navigate("/calls")}
-              className={`transition-colors ${location.pathname === "/calls" ? "text-white" : "text-white/60 hover:text-white"}`}
-            >
-              Calls
-            </button>
+
           </nav>
         </div>
         <div className="flex items-center gap-6">
@@ -352,43 +347,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
         </section>
       </main>
 
-      {/* Mobile Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-black/80 px-4 py-4 backdrop-blur-2xl">
-        <div className="grid grid-cols-5 gap-1">
-          <button
-            onClick={() => navigate("/")}
-            className={getNavItemClassName(location.pathname === "/")}
-          >
-            Home
-          </button>
-          <button
-            onClick={() => navigate("/theatre")}
-            className={getNavItemClassName(location.pathname === "/theatre")}
-          >
-            Theatre
-          </button>
-          <button
-            onClick={() => navigate("/originals")}
-            className={getNavItemClassName(
-              location.pathname.startsWith("/originals"),
-            )}
-          >
-            Originals
-          </button>
-          <button
-            onClick={() => navigate("/sets")}
-            className={getNavItemClassName(location.pathname === "/sets")}
-          >
-            Sets
-          </button>
-          <button
-            onClick={() => navigate("/calls")}
-            className={getNavItemClassName(location.pathname === "/calls")}
-          >
-            Calls
-          </button>
-        </div>
-      </nav>
+
     </div>
   );
 }

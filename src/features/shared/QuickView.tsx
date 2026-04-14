@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Info, List, X, History, User } from "lucide-react";
-import { TheatreItem } from "../types";
-import { CreditsIcon } from "./AppIcons";
+import { TheatreItem } from "../../types";
+import { CreditsIcon } from "../../components/icons/AppIcons";
 
 declare global {
   interface Window {

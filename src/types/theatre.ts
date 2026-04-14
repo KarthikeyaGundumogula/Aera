@@ -1,26 +1,3 @@
-export interface OriginalArtist {
-  id: string;
-  name: string;
-  image: string;
-  presence: number;
-  releases: number;
-}
-
-export interface Original {
-  id: string;
-  title: string;
-  description: string;
-  coverImage: string;
-  stats: {
-    presence: number;
-    members: number;
-    releases: number;
-  };
-  topArtists: OriginalArtist[];
-  wallOfFame: TheatreItem[];
-  releaseDate?: string;
-}
-
 export interface TheatreItem {
   id: string | number;
   title?: string;
@@ -41,7 +18,7 @@ export interface TheatreItem {
   meta?: string;
   type?: string;
   aspectRatio?: number;
-  originalId?: string; // Reference to a Original
+  originalId?: string; // Reference to an Original
 }
 
 export type SetSelectedItem = (item: TheatreItem | null, items?: TheatreItem[], columns?: number) => void;

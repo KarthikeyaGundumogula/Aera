@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { memo } from "react";
-import { TheatreItem, SetSelectedItem } from "../types";
-import { CategoryIcon, EditsIcon, PostersIcon, ScriptsIcon } from "./AppIcons";
+import { TheatreItem, SetSelectedItem } from "../../../types";
+import { CategoryIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../../../components/icons/AppIcons";
 
 interface TheatreFeedItemProps {
   item: TheatreItem;

@@ -1,10 +1,10 @@
 import { motion, useMotionValue, useSpring, AnimatePresence, useTransform, MotionValue } from "motion/react";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { TheatreItem, SetSelectedItem } from "../types";
-import { GRID_ITEMS } from "../mock";
-import { buildClusters, Cluster as ClusterData, ClusterSlot } from "../lib/clusterBuilder";
-import { CreditsIcon, EditsIcon, PostersIcon, ScriptsIcon } from "./AppIcons";
-import { Tooltip } from "./Tooltip";
+import { TheatreItem, SetSelectedItem } from "../../../types";
+import { GRID_ITEMS } from "../../../mock";
+import { buildClusters, Cluster as ClusterData, ClusterSlot } from "../engine/clusterBuilder";
+import { CreditsIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../../../components/icons/AppIcons";
+import { Tooltip } from "../../../components/Tooltip";
 
 interface CinepoeticCanvasProps {
   setSelectedItem: SetSelectedItem;

@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { PresenceIcon, ReleasesIcon } from "./AppIcons";
-import { OriginalArtist } from "../types";
+import { PresenceIcon, ReleasesIcon } from "../../../components/icons/AppIcons";
+import { OriginalArtist } from "../../../types";
 
 interface ArtistCardProps {
   artist: OriginalArtist;

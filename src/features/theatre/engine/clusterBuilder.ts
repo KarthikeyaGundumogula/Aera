@@ -1,4 +1,4 @@
-import { TheatreItem } from "../types";
+import { TheatreItem } from "../../../types";
 
 export type Bucket = {
   imax: TheatreItem[];

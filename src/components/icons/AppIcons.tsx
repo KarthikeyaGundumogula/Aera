@@ -10,7 +10,7 @@ import {
   Tv,
   User,
 } from "lucide-react";
-import { TheatreItem } from "../types";
+import { TheatreItem } from "../../types";
 
 type IconProps = {
   className?: string;
