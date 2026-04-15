@@ -1,4 +1,9 @@
 import { TheatreItem } from "../../../types";
+import {
+  isEditWork,
+  isPosterWork,
+  isScriptWork,
+} from "../../shared/work";
 
 export type MobileClusterType = 'A' | 'B' | 'C' | 'D' | 'E';
 
@@ -55,10 +60,6 @@ function findAndRemove(items: TheatreItem[], predicate: (i: TheatreItem) => bool
 function pickBestItem(slotType: string, availableItems: TheatreItem[]): TheatreItem {
   let found: TheatreItem | null = null;
   
-  const isVideo = (i: TheatreItem) => i.category === 'Edit' || i.type === 'video' || !!i.isPlay;
-  const isPoster = (i: TheatreItem) => i.category === 'Poster';
-  const isScript = (i: TheatreItem) => i.category === 'Script';
-  
   const getAspect = (i: TheatreItem) => i.aspectRatio || 1;
   const isImaxRatio = (i: TheatreItem) => getAspect(i) > 1.6; // ~16:9
   const isAcademyRatio = (i: TheatreItem) => getAspect(i) > 1.1 && getAspect(i) <= 1.6; // ~4:3
@@ -67,37 +68,37 @@ function pickBestItem(slotType: string, availableItems: TheatreItem[]): TheatreI
   if (slotType === 'IMAX') {
     // IMAX Container Populating Rules
     // 1. IMAX video
-    found = findAndRemove(availableItems, (i) => isVideo(i) && isImaxRatio(i));
+    found = findAndRemove(availableItems, (i) => isEditWork(i) && isImaxRatio(i));
     // 2. Academy video fallback
-    if (!found) found = findAndRemove(availableItems, (i) => isVideo(i) && isAcademyRatio(i));
+    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isAcademyRatio(i));
     // 3. Square video fallback
-    if (!found) found = findAndRemove(availableItems, (i) => isVideo(i) && isSquareRatio(i));
+    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isSquareRatio(i));
     // 4. Any Video
-    if (!found) found = findAndRemove(availableItems, isVideo);
+    if (!found) found = findAndRemove(availableItems, isEditWork);
   } else if (slotType === 'Academy') {
     // 1. Academy video
-    found = findAndRemove(availableItems, (i) => isVideo(i) && isAcademyRatio(i));
+    found = findAndRemove(availableItems, (i) => isEditWork(i) && isAcademyRatio(i));
     // 2. IMAX video (Overflow rule: if IMAX videos are more, use academy)
-    if (!found) found = findAndRemove(availableItems, (i) => isVideo(i) && isImaxRatio(i));
+    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isImaxRatio(i));
     // 3. Any Video
-    if (!found) found = findAndRemove(availableItems, isVideo);
+    if (!found) found = findAndRemove(availableItems, isEditWork);
   } else if (slotType === 'Vertical') {
-    found = findAndRemove(availableItems, (i) => isVideo(i) && getAspect(i) < 0.9);
-    if (!found) found = findAndRemove(availableItems, isVideo);
+    found = findAndRemove(availableItems, (i) => isEditWork(i) && getAspect(i) < 0.9);
+    if (!found) found = findAndRemove(availableItems, isEditWork);
   } else if (slotType === 'Poster') {
-    found = findAndRemove(availableItems, isPoster);
-    if (!found) found = findAndRemove(availableItems, (i) => !isVideo(i)); // Any non-video
+    found = findAndRemove(availableItems, isPosterWork);
+    if (!found) found = findAndRemove(availableItems, (i) => !isEditWork(i)); // Any non-video
   } else if (slotType === 'Square') {
-    found = findAndRemove(availableItems, isScript); // Give scripts a home first
-    if (!found) found = findAndRemove(availableItems, (i) => isVideo(i) && isSquareRatio(i));
-    if (!found) found = findAndRemove(availableItems, isPoster);
+    found = findAndRemove(availableItems, isScriptWork); // Give scripts a home first
+    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isSquareRatio(i));
+    if (!found) found = findAndRemove(availableItems, isPosterWork);
   }
 
   // Absolute fallback: just take the first item if we fail to find a perfect match
   if (!found && availableItems.length > 0) {
     // Strict IMAX Rule: try to force a video if we randomly fallback
     if (slotType === 'IMAX') {
-      found = findAndRemove(availableItems, isVideo);
+      found = findAndRemove(availableItems, isEditWork);
     }
     if (!found) {
       found = availableItems.splice(0, 1)[0];

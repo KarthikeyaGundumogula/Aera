@@ -205,9 +205,9 @@ export function ReleaseCatalogue({
                     e.stopPropagation();
                     onSelect(activeItem);
                   }}
-                  className="px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 flex items-center gap-2 text-white pointer-events-auto hover:bg-white hover:text-black transition-all active:scale-95"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white backdrop-blur-xl transition-all hover:bg-white hover:text-black active:scale-95 pointer-events-auto"
+                  aria-label="Open full screen"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest pt-0.5">Full Screen</span>
                   <Maximize2 className="w-4 h-4" />
                 </button>
               </motion.div>

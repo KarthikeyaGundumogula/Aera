@@ -5,7 +5,8 @@ import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
 import { QuickView } from "../shared/QuickView";
-import { CategoryIcon, PresenceIcon, ReleasesIcon } from "../../components/icons/AppIcons";
+import { WorkModal } from "../shared/WorkModal";
+import { PresenceIcon } from "../../components/icons/AppIcons";
 import { Logo } from "../../components/Logo";
 import { ArtistCard } from "./components/ArtistCard";
 
@@ -15,11 +16,13 @@ import { StarModal } from "./components/StarModal";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleaseCatalogue } from "./components/ReleaseCatalogue";
 import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
+import { isEditWork } from "../shared/work";
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
+  const [selectedWork, setSelectedWork] = useState<TheatreItem | null>(null);
   const [selectedStar, setSelectedStar] = useState<StarProfileCardProps | null>(null);
   const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
@@ -44,6 +47,7 @@ export function OriginalPage() {
       {
         id: `${original.id}-main-poster`,
         title: original.title,
+        category: "Poster",
         image: original.coverImage,
         description: original.description,
       } as TheatreItem,
@@ -61,8 +65,25 @@ export function OriginalPage() {
 
   const quickViewItems = useMemo(() => {
     if (!original) return [];
-    return [...catalogueItems, ...original.works];
+    return [...catalogueItems, ...original.works].filter(isEditWork);
   }, [catalogueItems, original?.works]);
+
+  const handleSelectWork = (item: TheatreItem | null) => {
+    if (!item) {
+      setSelectedItem(null);
+      setSelectedWork(null);
+      return;
+    }
+
+    if (isEditWork(item)) {
+      setSelectedWork(null);
+      setSelectedItem(item);
+      return;
+    }
+
+    setSelectedItem(null);
+    setSelectedWork(item);
+  };
 
   if (!original) {
     return (
@@ -149,7 +170,7 @@ export function OriginalPage() {
               <ReleaseCatalogue 
                 items={catalogueItems} 
                 initialIndex={catalogueItems.length > 1 ? 1 : 0}
-                onSelect={(item) => setSelectedItem(item)} 
+                onSelect={handleSelectWork} 
                 isTheaterMode={isTheaterMode}
                 onToggleTheater={() => setIsTheaterMode(!isTheaterMode)}
               />
@@ -296,7 +317,7 @@ export function OriginalPage() {
       </section>
 
       {/* Originals Theatre Section */}
-      <OriginalTheatreSection original={original} setSelectedItem={setSelectedItem} />
+      <OriginalTheatreSection original={original} setSelectedItem={handleSelectWork} />
 
 
       {/* Detailed Information */}
@@ -334,11 +355,13 @@ export function OriginalPage() {
 
       <QuickView
         selectedItem={selectedItem}
-        setSelectedItem={setSelectedItem}
+        setSelectedItem={handleSelectWork}
         isMobile={isMobile}
         items={quickViewItems}
         columns={1}
       />
+
+      <WorkModal item={selectedWork} onClose={() => setSelectedWork(null)} />
 
       {/* Footer Space */}
       <div className="h-24" />

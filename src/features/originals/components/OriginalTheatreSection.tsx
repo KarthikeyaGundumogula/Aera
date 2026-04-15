@@ -44,7 +44,7 @@ export function OriginalTheatreSection({
   return (
     <section className="pt-12 pb-8">
       {/* Header stays padded for readability */}
-      <div className="flex justify-between items-end mb-6 px-8">
+      <div className="mb-6 flex items-center justify-between px-8">
         <SectionHeader
           iconNode={<div className="w-4 h-px bg-white" />}
           title="Theatre"
@@ -52,17 +52,17 @@ export function OriginalTheatreSection({
 
         <button
           onClick={() => navigate(`/originals/${original.id}/theatre`)}
-          className="group flex items-center gap-3 text-white/40 hover:text-white transition-all active:scale-95 pb-2"
+          className="group inline-flex items-center gap-2 text-white/40 transition-all hover:text-white active:scale-95"
         >
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] pt-0.5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
             Enter
           </span>
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </button>
       </div>
 
-      {/* Clusters: edge-to-edge on mobile, padded to match page sections on desktop */}
-      <div className="flex flex-col md:px-8" style={{ gap: "2px" }}>
+      {/* Clusters inset to the same page gutter as the surrounding Originals sections */}
+      <div className="flex flex-col px-8" style={{ gap: "2px" }}>
         {isMobile
           ? clusters.mobile.map((cluster) => (
               <MobileClusterView

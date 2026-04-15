@@ -8,19 +8,43 @@ import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "../theatre/components/desktop/StaticDesktopCluster";
 import { MobileClusterView } from "../theatre/components/mobile/MobileClusterView";
 import { QuickView } from "../shared/QuickView";
+import { WorkModal } from "../shared/WorkModal";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatreItem } from "../../types";
+import { isEditWork } from "../shared/work";
 
 export function OriginalsTheatrePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isMobile = useMediaQuery();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
+  const [selectedWork, setSelectedWork] = useState<TheatreItem | null>(null);
 
   const original = id ? ORIGINALS_DATA[id] : null;
 
   // works is pre-assembled by the mock barrel (JOIN via originalId)
   const originalContent = original?.works || [];
+  const quickViewItems = useMemo(
+    () => originalContent.filter(isEditWork),
+    [originalContent],
+  );
+
+  const handleSelectItem = useCallback((item: TheatreItem | null) => {
+    if (!item) {
+      setSelectedItem(null);
+      setSelectedWork(null);
+      return;
+    }
+
+    if (isEditWork(item)) {
+      setSelectedWork(null);
+      setSelectedItem(item);
+      return;
+    }
+
+    setSelectedItem(null);
+    setSelectedWork(item);
+  }, []);
 
   const clusters = useMemo(() => {
     if (!originalContent.length) return { desktop: [], mobile: [] };
@@ -116,7 +140,7 @@ export function OriginalsTheatrePage() {
               <MobileClusterView 
                 key={cluster.id} 
                 cluster={cluster} 
-                setSelectedItem={setSelectedItem} 
+                setSelectedItem={handleSelectItem} 
               />
             ))
           ) : (
@@ -124,7 +148,7 @@ export function OriginalsTheatrePage() {
               <StaticDesktopCluster 
                 key={cluster.id || idx} 
                 cluster={cluster} 
-                setSelectedItem={setSelectedItem} 
+                setSelectedItem={handleSelectItem} 
               />
             ))
           )}
@@ -154,11 +178,13 @@ export function OriginalsTheatrePage() {
 
       <QuickView
         selectedItem={selectedItem}
-        setSelectedItem={setSelectedItem}
+        setSelectedItem={handleSelectItem}
         isMobile={isMobile}
-        items={originalContent}
+        items={quickViewItems}
         columns={1}
       />
+
+      <WorkModal item={selectedWork} onClose={() => setSelectedWork(null)} />
 
       {/* Footer Branding */}
       <footer className="p-12 border-t border-white/5 flex flex-col items-center gap-6 opacity-30">

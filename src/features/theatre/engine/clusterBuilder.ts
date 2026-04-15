@@ -1,4 +1,9 @@
 import { TheatreItem } from "../../../types";
+import {
+  isEditWork,
+  isPosterWork,
+  isScriptWork,
+} from "../../shared/work";
 
 export type Bucket = {
   imax: TheatreItem[];
@@ -112,17 +117,17 @@ export function classify(items: TheatreItem[]): Bucket {
   for (const item of items) {
     const r = item.aspectRatio || 1;
 
-    if (item.category === "Script") {
+    if (isScriptWork(item)) {
       bucket.script.push(item);
       continue;
     }
 
-    if (item.category === "Poster") {
+    if (isPosterWork(item)) {
       bucket.poster.push(item);
       continue;
     }
 
-    if (item.type === "video" || item.category === "Edit" || item.category === undefined) {
+    if (isEditWork(item) || item.category === undefined) {
       if (r >= 2.2) bucket.imax.push(item);
       else if (r >= 1.6) bucket.wide.push(item);
       else if (r <= 0.7) bucket.vertical.push(item);
@@ -200,7 +205,7 @@ function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Clus
   let editCount = 0;
 
   // Helper to check if item is an edit
-  const isEdit = (it: TheatreItem) => it.type === 'video' || it.category === 'Edit';
+  const isEdit = (it: TheatreItem) => isEditWork(it);
 
   // PASS 1: Primary Edits/Images (Highest Priority)
   for (const slot of slots) {

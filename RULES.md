@@ -29,3 +29,4 @@
 - Skill bodies should include practical guidance, tested examples, and clear "When to Use" sections.
 
 1. **Mock Data**: If you are creating any mock data always create that in the src/mock folder and create a different file for each type of data. 
+2. **Context**: Context from the previous works is stored in the `agents/context` folder reference that for better decision making

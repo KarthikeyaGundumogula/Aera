@@ -3,11 +3,11 @@ import { memo } from "react";
 import { EditsIcon, PostersIcon, ScriptsIcon } from "../../../components/icons/AppIcons";
 import { Tooltip } from "../../../components/Tooltip";
 import { TheatreItem } from "../../../types";
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-const isVideo = (item: TheatreItem) =>
-  item.type === "video" || item.category === "Edit" || !!item.isPlay;
+import {
+  isEditWork,
+  isPosterWork,
+  isScriptWork,
+} from "../../shared/work";
 
 // ─── Scanning-light animation shared by all badges ──────────────────────────
 
@@ -24,8 +24,8 @@ function ScanLine({ range = 60 }: { range?: number }) {
 // ─── Variants ───────────────────────────────────────────────────────────────
 
 interface BadgeProps {
-  /** "desktop" = centred play icon with tooltip. "mobile" = small corner chip. */
-  variant: "desktop" | "mobile";
+  /** "desktop" = theatre canvas. "mobile" = theatre mobile chip. "feed" = feed-specific badges. */
+  variant: "desktop" | "mobile" | "feed";
 }
 
 // ─── Video Badge ────────────────────────────────────────────────────────────
@@ -54,6 +54,25 @@ function VideoBadgeMobile() {
   return (
     <div className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center">
       <EditsIcon className="h-3 w-3 text-white fill-white/10 ml-0.5" />
+    </div>
+  );
+}
+
+function VideoBadgeFeed() {
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        className="relative group/play pointer-events-auto"
+      >
+        <div className="absolute inset-0 rounded-full bg-white/10 blur-xl scale-150 group-hover/play:bg-white/30 transition-colors duration-700" />
+        <div className="relative w-14 h-14 rounded-full bg-black/40 backdrop-blur-2xl border border-white/20 flex items-center justify-center overflow-hidden shadow-2xl">
+          <EditsIcon className="h-5 w-5 text-white fill-white/10 ml-1 group-hover/play:scale-110 transition-transform duration-500" />
+          <ScanLine />
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -88,6 +107,24 @@ function PosterBadgeMobile() {
   );
 }
 
+function PosterBadgeFeed() {
+  return (
+    <div className="absolute top-4 right-4 z-10">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        className="relative group/sparkle pointer-events-auto"
+      >
+        <div className="absolute inset-0 rounded-full bg-white/10 blur-sm scale-125 group-hover/sparkle:bg-white/30 transition-colors duration-500" />
+        <div className="relative w-8 h-8 rounded-full bg-black/50 backdrop-blur-xl border border-white/20 flex items-center justify-center overflow-hidden">
+          <PostersIcon className="h-3.5 w-3.5 text-white fill-white/10 group-hover/sparkle:rotate-12 transition-transform" />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Script Badge ───────────────────────────────────────────────────────────
 
 function ScriptBadgeDesktop() {
@@ -118,6 +155,24 @@ function ScriptBadgeMobile() {
   );
 }
 
+function ScriptBadgeFeed() {
+  return (
+    <div className="absolute top-4 right-4 z-10">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        className="relative group/pen pointer-events-auto"
+      >
+        <div className="absolute inset-0 rounded-full bg-black/10 blur-sm scale-125 transition-colors duration-500" />
+        <div className="relative w-8 h-8 rounded-full bg-black/80 backdrop-blur-xl border border-black flex items-center justify-center overflow-hidden shadow-xl">
+          <ScriptsIcon className="h-3.5 w-3.5 text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-500" />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 /**
@@ -130,14 +185,20 @@ export const CategoryBadge = memo(function CategoryBadge({
   item,
   variant,
 }: BadgeProps & { item: TheatreItem }) {
-  if (isVideo(item)) {
-    return variant === "desktop" ? <VideoBadgeDesktop /> : <VideoBadgeMobile />;
+  if (isEditWork(item)) {
+    if (variant === "desktop") return <VideoBadgeDesktop />;
+    if (variant === "feed") return <VideoBadgeFeed />;
+    return <VideoBadgeMobile />;
   }
-  if (item.category === "Poster") {
-    return variant === "desktop" ? <PosterBadgeDesktop /> : <PosterBadgeMobile />;
+  if (isPosterWork(item)) {
+    if (variant === "desktop") return <PosterBadgeDesktop />;
+    if (variant === "feed") return <PosterBadgeFeed />;
+    return <PosterBadgeMobile />;
   }
-  if (item.category === "Script") {
-    return variant === "desktop" ? <ScriptBadgeDesktop /> : <ScriptBadgeMobile />;
+  if (isScriptWork(item)) {
+    if (variant === "desktop") return <ScriptBadgeDesktop />;
+    if (variant === "feed") return <ScriptBadgeFeed />;
+    return <ScriptBadgeMobile />;
   }
   return null;
 });

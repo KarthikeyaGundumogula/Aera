@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { TheatreItem } from "../../types";
 import { HomeFeedLayout } from "./layouts/HomeFeedLayout";
 import { QuickView } from "../shared/QuickView";
+import { WorkModal } from "../shared/WorkModal";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { isEditWork } from "../shared/work";
 
 /** Key used to remember that a desktop redirect has already happened this session. */
 const DESKTOP_REDIRECT_KEY = 'hasVisitedDesktop';
@@ -11,6 +13,7 @@ const DESKTOP_REDIRECT_KEY = 'hasVisitedDesktop';
 export function Home() {
   const isMobile = useMediaQuery();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
+  const [selectedWork, setSelectedWork] = useState<TheatreItem | null>(null);
   const [currentItems, setCurrentItems] = useState<TheatreItem[]>([]);
   const [currentColumns, setCurrentColumns] = useState(1);
   const navigate = useNavigate();
@@ -29,10 +32,24 @@ export function Home() {
       navigate(`/originals/${item.originalId}`);
       return;
     }
+    if (!item) {
+      setSelectedItem(null);
+      setSelectedWork(null);
+      return;
+    }
+
+    if (!isEditWork(item)) {
+      setSelectedItem(null);
+      setSelectedWork(item);
+      return;
+    }
+
+    setSelectedWork(null);
     setSelectedItem(item);
     if (item) {
-      setCurrentItems(items);
-      setCurrentColumns(columns);
+      const quickItems = items.filter(isEditWork);
+      setCurrentItems(quickItems.length > 0 ? quickItems : [item]);
+      setCurrentColumns(columns > 0 ? columns : 1);
     }
   };
 
@@ -47,6 +64,8 @@ export function Home() {
         items={currentItems}
         columns={currentColumns}
       />
+
+      <WorkModal item={selectedWork} onClose={() => setSelectedWork(null)} />
     </div>
   );
 }
