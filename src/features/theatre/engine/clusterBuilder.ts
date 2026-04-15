@@ -3,7 +3,7 @@ import {
   isEditWork,
   isPosterWork,
   isScriptWork,
-} from "../../shared/work";
+} from "../../shared/work/types";
 
 export type Bucket = {
   imax: TheatreItem[];

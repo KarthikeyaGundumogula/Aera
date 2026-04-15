@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { memo, useState, useEffect, useRef, useCallback } from "react";
+import { memo, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   PlayCircle,
   Search,
@@ -17,9 +17,12 @@ import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, Scrip
 
 import { Logo } from "../../../components/Logo";
 import { TopOriginalsAccordion } from "../../originals/components/TopOriginalsAccordion";
-import { TheatreFeedItem } from "../../theatre/components/TheatreFeedItem";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { ArtistCard } from "../../originals/components/ArtistCard";
+import { buildClusters } from "../../theatre/engine/clusterBuilder";
+import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDesktopCluster";
+import { OriginalLink, EditWork, PosterWork, ScriptWork } from "../../shared/work";
+import { getWorkKind } from "../../shared/work/types";
 
 interface HomeFeedLayoutProps {
   selectedItem: TheatreItem | null;
@@ -34,6 +37,8 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
   const [items, setItems] = useState<TheatreItem[]>(() => {
     return [...GRID_ITEMS];
   });
+
+  const desktopClusters = useMemo(() => buildClusters(items, "flow"), [items]);
 
   const getNavItemClassName = (active: boolean) =>
     `flex min-w-0 flex-col items-center justify-center rounded-2xl px-2 py-3 text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${
@@ -205,68 +210,65 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
             </div>
 
             <AnimatePresence mode="popLayout">
-              <motion.div
+              <OriginalLink 
                 key={heroIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.0, ease: "easeInOut" }}
-                onClick={() =>
-                  setSelectedItem(
-                    FEATURED_ITEMS[heroIndex],
-                    FEATURED_ITEMS,
-                    heroIndex,
-                  )
-                }
+                item={FEATURED_ITEMS[heroIndex]} 
                 className="absolute inset-0 z-10"
               >
-                <img
-                  src={FEATURED_ITEMS[heroIndex].image}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                  
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6 w-full">
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                  >
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
-                        Original
-                      </span>
-                      <span className="px-2 py-0.5 bg-yellow-400/20 backdrop-blur-md text-yellow-400 text-[8px] font-bold uppercase tracking-widest rounded-sm border border-yellow-400/20">
-                        Coming Soon
-                      </span>
-                    </div>
-                    <h2
-                      className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
-                      style={{
-                        fontSize: `clamp(2rem, ${Math.max(4, 12 - FEATURED_ITEMS[heroIndex].title.length * 0.3)}vw, 4rem)`,
-                      }}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.0, ease: "easeInOut" }}
+                  className="w-full h-full"
+                >
+                  <img
+                    src={FEATURED_ITEMS[heroIndex].image}
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-6 w-full">
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
                     >
-                      {FEATURED_ITEMS[heroIndex].title}
-                    </h2>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <PresenceIcon className="w-3 h-3 text-yellow-400" />
-                          <span className="text-[10px] font-bold text-white/80">
-                            {FEATURED_ITEMS[heroIndex].presence} Presence
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">
-                          {FEATURED_ITEMS[heroIndex].origins}
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
+                          Original
+                        </span>
+                        <span className="px-2 py-0.5 bg-yellow-400/20 backdrop-blur-md text-yellow-400 text-[8px] font-bold uppercase tracking-widest rounded-sm border border-yellow-400/20">
+                          Coming Soon
                         </span>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-white/20" />
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
+                      <h2
+                        className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
+                        style={{
+                          fontSize: `clamp(2rem, ${Math.max(4, 12 - FEATURED_ITEMS[heroIndex].title.length * 0.3)}vw, 4rem)`,
+                        }}
+                      >
+                        {FEATURED_ITEMS[heroIndex].title}
+                      </h2>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <PresenceIcon className="w-3 h-3 text-yellow-400" />
+                            <span className="text-[10px] font-bold text-white/80">
+                              {FEATURED_ITEMS[heroIndex].presence} Presence
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                            {FEATURED_ITEMS[heroIndex].origins}
+                          </span>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-white/20" />
+                      </div>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </OriginalLink>
             </AnimatePresence>
 
             {/* Carousel Indicators */}
@@ -321,17 +323,42 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
         </section>
 
         {/* FOR YOU FEED */}
-        <section className="px-6 md:px-12">
-          <SectionHeader icon={History} title="For You" containerClassName="mb-8" />
+        <section className="px-0 sm:px-12 mb-12">
+          <SectionHeader icon={History} title="For You" containerClassName="px-6 sm:px-0 mb-8" />
 
-          <div className="columns-1 sm:columns-2 lg:columns-4 xl:columns-5 2xl:columns-6 gap-4 md:gap-6 space-y-4 md:space-y-6 mb-8">
-            {items.map((item) => (
-              <TheatreFeedItem
-                key={item.id}
-                item={item}
-                items={items}
+          {/* Desktop Theatre Clusters */}
+          <div className="hidden sm:flex flex-col gap-[2px]">
+            {desktopClusters.map((cluster, idx) => (
+              <StaticDesktopCluster
+                key={`home-cluster-${idx}`}
+                cluster={cluster}
                 setSelectedItem={setSelectedItem}
               />
+            ))}
+          </div>
+
+          {/* Mobile Single Column Stack */}
+          <div className="flex sm:hidden flex-col gap-6">
+            {items.map((item) => (
+              <div 
+                key={item.id} 
+                className="w-full px-6"
+                onClick={() => setSelectedItem(item, items, 1)}
+              >
+                <div 
+                  className="relative rounded-xl overflow-hidden border border-white/5 bg-white/5"
+                  style={{ aspectRatio: item.aspectRatio || 1 }}
+                >
+                  {(() => {
+                    const kind = getWorkKind(item);
+                    switch (kind) {
+                      case "script": return <ScriptWork item={item} variant="theatre-mobile" />;
+                      case "poster": return <PosterWork item={item} variant="theatre-mobile" />;
+                      default: return <EditWork item={item} variant="theatre-mobile" />;
+                    }
+                  })()}
+                </div>
+              </div>
             ))}
           </div>
 

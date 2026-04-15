@@ -2,12 +2,10 @@ import { motion } from "motion/react";
 import { memo } from "react";
 import { TheatreItem, SetSelectedItem } from "../../../../types";
 import { ClusterSlot } from "../../engine/clusterBuilder";
-import {
-  EditWork,
-  PosterWork,
-  ScriptWork,
-  getWorkKind,
-} from "../../../shared/work";
+import { EditWork } from "../../../shared/work/EditWork";
+import { PosterWork } from "../../../shared/work/PosterWork";
+import { ScriptWork } from "../../../shared/work/ScriptWork";
+import { getWorkKind } from "../../../shared/work/types";
 
 // ─── Desktop Canvas Card ────────────────────────────────────────────────────
 

@@ -7,7 +7,7 @@ import {
   isEditWork,
   isPosterWork,
   isScriptWork,
-} from "../../shared/work";
+} from "../../shared/work/types";
 
 // ─── Scanning-light animation shared by all badges ──────────────────────────
 

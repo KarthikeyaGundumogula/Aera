@@ -128,3 +128,14 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
 - **Backdrop**: Uses an ultra-dark cinematic canvas (`bg-black/90`) with a subtle grain/noise texture overlay and high-strength backdrop blur.
 - **Interaction**: Buttons use a consistent glass-morphism style (`backdrop-blur-xl`, `border-white/20`, 10% white background).
 - **Hierarchy**: Art is the primary focus. Title and metadata are secondary elements placed strictly below the card boundary.
+
+## Theatre Layout Orchestration (Home Feed)
+- **Dual-Mode Rendering**:
+  - **Desktop**: Leverages the Cluster Engine in `flow` mode. This uses 16x8 templates (F-J) specifically designed for vertical page flow, emphasizing asymmetric variety and cinematic rhythm.
+  - **Mobile**: Strictly enforced 1-column cinematic stack. Every card is full-width, bypassing clusters to guarantee maximum impact on small screens.
+- **Native Interaction Pattern**:
+  - **Navigation**: Landing pages (Originals) are wrapped in the `OriginalLink` component, which handles its own `navigate` logic.
+  - **Viewers**: Works (Posters/Scripts/Edits) signal their selection to the page, which chooses between the `WorkModal` (static art) and `QuickView` (video).
+- **Immersive Modal (Precision Fit)**:
+  - Container sizing logic: `width: min(92vw, calc(75vh * aspect))`.
+  - Zero-Gaps Policy: The modal card perfectly shrink-wraps the artwork, eliminating black bars (letterboxing) while ensuring zero cropping and zero stretching.

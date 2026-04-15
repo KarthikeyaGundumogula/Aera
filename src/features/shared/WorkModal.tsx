@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { memo, useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { Info, Eye, EyeOff, LayoutPanelLeft } from "lucide-react";
 
 import { TheatreItem } from "../../types";
@@ -29,16 +29,13 @@ function PosterModalCard({
     }
   };
 
-  // Sizing logic: We stay within 75vh height and 92vw width, 
-  // but snap the other dimension to the exact aspect ratio.
+  // Sizing logic: Guarantee the container perfectly shrink-wraps the image
+  // by using the tighter of the two viewport constraints (92vw width or 75vh height).
   const containerStyle = {
-    maxWidth: "92vw",
-    maxHeight: "75vh",
-    // Calculate width based on which constraint is tighter
-    width: naturalAspect > (92 / 75) // if image is wider than viewport ratio
-      ? "92vw" 
-      : `calc(75vh * ${naturalAspect})`,
+    width: `min(92vw, calc(75vh * ${naturalAspect}))`,
     aspectRatio: `${naturalAspect}`,
+    maxHeight: "75vh",
+    maxWidth: "92vw",
   };
 
   return (
@@ -54,11 +51,11 @@ function PosterModalCard({
            className="w-full h-full relative preserve-3d"
         >
           {/* Front Side: Immersive Poster */}
-          <div className="absolute inset-0 backface-hidden rounded-lg sm:rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-transparent">
+          <div className="absolute inset-0 backface-hidden rounded-lg sm:rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-[#0a0a0a]">
             <img 
               src={item.image} 
               alt={item.title} 
-              className="w-full h-full object-cover" // object-cover is safe now because container is snapped to naturalAspect
+              className="w-full h-full object-contain" 
               onLoad={handleImageLoad}
             />
             

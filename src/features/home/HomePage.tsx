@@ -28,10 +28,6 @@ export function Home() {
   }, [isMobile, navigate]);
 
   const handleSelectItem = (item: TheatreItem | null, items: TheatreItem[] = [], columns: number = 1) => {
-    if (item?.originalId) {
-      navigate(`/originals/${item.originalId}`);
-      return;
-    }
     if (!item) {
       setSelectedItem(null);
       setSelectedWork(null);

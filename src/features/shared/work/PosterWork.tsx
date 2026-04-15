@@ -41,37 +41,16 @@ export function PosterWork({
         }`}
       />
 
-      {showPosterMeta && (
-        <div
-          className={`pointer-events-none absolute inset-0 flex flex-col p-4 ${
-            variant === "theatre-mobile"
-              ? "items-center justify-end"
-              : "items-center justify-center border-[12px] border-transparent transition-all duration-500 group-hover:border-white/10"
-          }`}
-        >
-          <div className="text-center">
-            <h2
-              className={`font-serif italic tracking-tighter text-white/90 ${
-                variant === "theatre-mobile"
-                  ? "mb-1 line-clamp-1 text-sm leading-none"
-                  : "mb-1 text-lg leading-none"
-              }`}
-            >
+      {/* Title Overlay: Constant discovery on feed, hover on theatre-mobile/desktop */}
+      {(variant === "feed" || variant === "theatre-desktop" || variant === "theatre-mobile") && (
+        <div className="absolute inset-0 pointer-events-none flex flex-col justify-end p-3 sm:p-4">
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          <div className="relative z-10">
+            <h3 className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.3em] text-white/90 line-clamp-1 mb-0.5 sm:mb-1">
               {item.title}
-            </h2>
-            <div
-              className={`mx-auto bg-white/30 ${
-                variant === "theatre-mobile" ? "my-1 h-[1px] w-6" : "my-2 h-[1px] w-8"
-              }`}
-            />
-            <p
-              className={`uppercase text-white/50 ${
-                variant === "theatre-mobile"
-                  ? "text-[5px] tracking-[0.4em]"
-                  : "text-[6px] tracking-[0.4em]"
-              }`}
-            >
-              {item.origins}
+            </h3>
+            <p className="text-[6px] sm:text-[7px] font-bold uppercase tracking-[0.4em] text-white/40">
+              {item.artist || item.origins || "Original"}
             </p>
           </div>
         </div>
