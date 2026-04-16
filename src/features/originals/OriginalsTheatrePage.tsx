@@ -7,43 +7,23 @@ import { buildClusters } from "../theatre/engine/clusterBuilder";
 import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "../theatre/components/desktop/StaticDesktopCluster";
 import { MobileClusterView } from "../theatre/components/mobile/MobileClusterView";
-import { QuickView } from "../shared/QuickView";
-import { WorkModal } from "../shared/WorkModal";
+import { PosterModal, ScriptModal, EditModal } from "../shared/modals";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatreItem } from "../../types";
-import { isEditWork } from "../shared/work";
+
 
 export function OriginalsTheatrePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isMobile = useMediaQuery();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
-  const [selectedWork, setSelectedWork] = useState<TheatreItem | null>(null);
 
   const original = id ? ORIGINALS_DATA[id] : null;
 
-  // works is pre-assembled by the mock barrel (JOIN via originalId)
   const originalContent = original?.works || [];
-  const quickViewItems = useMemo(
-    () => originalContent.filter(isEditWork),
-    [originalContent],
-  );
 
   const handleSelectItem = useCallback((item: TheatreItem | null) => {
-    if (!item) {
-      setSelectedItem(null);
-      setSelectedWork(null);
-      return;
-    }
-
-    if (isEditWork(item)) {
-      setSelectedWork(null);
-      setSelectedItem(item);
-      return;
-    }
-
-    setSelectedItem(null);
-    setSelectedWork(item);
+    setSelectedItem(item);
   }, []);
 
   const clusters = useMemo(() => {
@@ -176,15 +156,15 @@ export function OriginalsTheatrePage() {
         )}
       </main>
 
-      <QuickView
-        selectedItem={selectedItem}
-        setSelectedItem={handleSelectItem}
-        isMobile={isMobile}
-        items={quickViewItems}
-        columns={1}
-      />
-
-      <WorkModal item={selectedWork} onClose={() => setSelectedWork(null)} />
+      {selectedItem?.category === "Edit" && (
+        <EditModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
+      {selectedItem?.category === "Poster" && (
+        <PosterModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
+      {selectedItem?.category === "Script" && (
+        <ScriptModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
 
       {/* Footer Branding */}
       <footer className="p-12 border-t border-white/5 flex flex-col items-center gap-6 opacity-30">

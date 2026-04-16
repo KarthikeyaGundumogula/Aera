@@ -15,7 +15,7 @@ import artistsData from "./artists.json";
 import starsData from "./stars.json";
 import makersData from "./makers.json";
 import setsData from "./sets.json";
-import { Original, OriginalArtist, TheatreItem } from "../types";
+import { Original, OriginalArtist, OriginalStar, OriginalMaker, TheatreItem } from "../types";
 
 // ─── Raw table casts ────────────────────────────────────────────────────────
 
@@ -42,9 +42,8 @@ export const GRID_ITEMS: TheatreItem[] = ALL_WORKS;
  */
 export const ORIGINALS: Original[] = (originalsData as Array<Omit<Original, "topArtists" | "works" | "heroHighlights">>).map(org => {
   const orgWorks = ALL_WORKS.filter(w => w.originalId === org.id);
-  const orgArtists = ALL_ARTISTS
-    .filter(a => a.originalId === org.id)
-    .map(({ originalId: _, ...rest }) => rest as OriginalArtist);
+  // Phase 1: Use the entire artist pool for all projects to ensure rich population
+  const orgArtists = ALL_ARTISTS.map(({ originalId: _, ...rest }) => rest as OriginalArtist);
   const highlights = orgWorks.filter(w => w.videoUrl);
 
   return {
@@ -87,23 +86,13 @@ export const FEATURED_MOMENT: TheatreItem = ALL_WORKS[0];
  * STARS_MOCK — All stars (real actors/characters) as a flat array.
  * Used by: OriginalPage stars section.
  */
-export const STARS_MOCK = starsData as Array<{
-  actorName: string;
-  characterName: string;
-  imageUrl: string;
-  originalId: string;
-}>;
+export const STARS_MOCK = starsData as OriginalStar[];
 
 /**
  * MAKERS_MOCK — All makers (real crew) as a flat array.
  * Used by: OriginalPage makers section.
  */
-export const MAKERS_MOCK = makersData as Array<{
-  actorName: string;
-  characterName: string;
-  imageUrl: string;
-  originalId: string;
-}>;
+export const MAKERS_MOCK = makersData as OriginalMaker[];
 
 /**
  * SETS — Curated collections.

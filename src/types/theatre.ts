@@ -13,6 +13,8 @@ export interface TheatreItem {
   image?: string;
   /** URL for a self-hosted video asset. Falls back to a placeholder when absent. */
   videoUrl?: string;
+  platform?: 'youtube' | 'twitter';
+  embedUrl?: string;
   text?: string;
   isQuote?: boolean;
   isPlay?: boolean;

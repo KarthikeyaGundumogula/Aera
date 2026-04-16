@@ -2,25 +2,49 @@
   {
     "actorName": "Denis Villeneuve",
     "characterName": "Director",
-    "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
-    "originalId": "dune-original"
+    "imageUrl": "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=800&auto=format&fit=crop",
+    "originalId": "dune-original",
+    "workedOn": [
+      { "id": "dune-original", "title": "Dune: Part Two" },
+      { "id": "alchemist-original", "title": "The Alchemist" },
+      { "id": "interstellar-original", "title": "Interstellar" },
+      { "id": "matrix-original", "title": "The Matrix" }
+    ]
   },
   {
     "actorName": "Greig Fraser",
     "characterName": "DoP",
     "imageUrl": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?q=80&w=800&auto=format&fit=crop",
-    "originalId": "dune-original"
+    "originalId": "dune-original",
+    "workedOn": [
+      { "id": "dune-original", "title": "Dune: Part Two" },
+      { "id": "madmax-original", "title": "Mad Max" },
+      { "id": "alchemist-original", "title": "The Alchemist" },
+      { "id": "interstellar-original", "title": "Interstellar" }
+    ]
   },
   {
     "actorName": "Hans Zimmer",
     "characterName": "Music",
     "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-    "originalId": "dune-original"
+    "originalId": "dune-original",
+    "workedOn": [
+      { "id": "interstellar-original", "title": "Interstellar" },
+      { "id": "dune-original", "title": "Dune: Part Two" },
+      { "id": "madmax-original", "title": "Mad Max" },
+      { "id": "matrix-original", "title": "The Matrix" }
+    ]
   },
   {
     "actorName": "Mary Parent",
     "characterName": "Producer",
     "imageUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop",
-    "originalId": "dune-original"
+    "originalId": "dune-original",
+    "workedOn": [
+      { "id": "dune-original", "title": "Dune: Part Two" },
+      { "id": "alchemist-original", "title": "The Alchemist" },
+      { "id": "matrix-original", "title": "The Matrix" },
+      { "id": "madmax-original", "title": "Mad Max" }
+    ]
   }
 ]

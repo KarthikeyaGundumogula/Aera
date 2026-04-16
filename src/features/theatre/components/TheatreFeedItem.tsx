@@ -64,21 +64,6 @@ export const TheatreFeedItem = memo(function TheatreFeedItem({
       >
         {renderWork(item)}
       </div>
-
-      {/* Title Footer */}
-      <div className="px-1 flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <CategoryIcon category={item.category} className="w-3.5 h-3.5 fill-white/20" />
-            <h5 className="text-sm md:text-[15px] font-bold uppercase tracking-tight leading-none">
-              {item.title}
-            </h5>
-          </div>
-          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/40">
-            Origins: {item.origins || "Original"}
-          </p>
-        </div>
-      </div>
     </div>
   );
 });

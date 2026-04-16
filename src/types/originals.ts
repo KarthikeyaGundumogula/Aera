@@ -5,8 +5,25 @@ export interface OriginalArtist {
   name: string;
   image: string;
   presence: number;
-  releases: number;
+  works: number;
+  bio?: string;
+  socials?: {
+    instagram?: string;
+    twitter?: string;
+    youtube?: string;
+  };
+  workedOn?: { id: string; title: string; color?: string }[];
 }
+
+export interface OriginalStar {
+  actorName: string;
+  characterName: string;
+  imageUrl: string;
+  originalId: string;
+  workedOn?: { id: string; title: string; color?: string }[];
+}
+
+export interface OriginalMaker extends OriginalStar {}
 
 export interface Original {
   id: string;

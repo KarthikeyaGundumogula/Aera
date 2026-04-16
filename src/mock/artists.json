@@ -1,26 +1,56 @@
 [
-  { "id": "art-1", "name": "FRAMEHOUSE_ELITE", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800", "presence": 1240, "releases": 18, "originalId": "alchemist-original" },
-  { "id": "art-2", "name": "Desert_Frame", "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800", "presence": 980, "releases": 11, "originalId": "alchemist-original" },
-  { "id": "art-3", "name": "Soul_Cut", "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800", "presence": 860, "releases": 9, "originalId": "alchemist-original" },
-  { "id": "art-4", "name": "Golden_Dust", "image": "https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&q=80&w=800", "presence": 730, "releases": 7, "originalId": "alchemist-original" },
-
-  { "id": "art-5", "name": "Spice_Lord", "image": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?auto=format&fit=crop&q=80&w=800", "presence": 1500, "releases": 14, "originalId": "dune-original" },
-  { "id": "art-6", "name": "Sand_Echo", "image": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=800", "presence": 1290, "releases": 10, "originalId": "dune-original" },
-  { "id": "art-7", "name": "Arrakis_Vault", "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800", "presence": 910, "releases": 6, "originalId": "dune-original" },
-  { "id": "art-8", "name": "Worm_Rider", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800", "presence": 845, "releases": 5, "originalId": "dune-original" },
-
-  { "id": "art-9", "name": "War_Boy", "image": "https://images.unsplash.com/photo-1504257432389-52343af06ae3?auto=format&fit=crop&q=80&w=800", "presence": 3000, "releases": 20, "originalId": "madmax-original" },
-  { "id": "art-10", "name": "Chrome_Saint", "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800", "presence": 2140, "releases": 13, "originalId": "madmax-original" },
-  { "id": "art-11", "name": "Dust_Revolt", "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800", "presence": 1805, "releases": 9, "originalId": "madmax-original" },
-  { "id": "art-12", "name": "Fury_Frame", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800", "presence": 1400, "releases": 8, "originalId": "madmax-original" },
-
-  { "id": "art-13", "name": "Nolanite", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800", "presence": 842, "releases": 7, "originalId": "interstellar-original" },
-  { "id": "art-14", "name": "Tesseract_Edit", "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800", "presence": 780, "releases": 6, "originalId": "interstellar-original" },
-  { "id": "art-15", "name": "Murph_Writes", "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800", "presence": 690, "releases": 4, "originalId": "interstellar-original" },
-  { "id": "art-16", "name": "Cosmic_Farm", "image": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=800", "presence": 510, "releases": 3, "originalId": "interstellar-original" },
-
-  { "id": "art-17", "name": "Neo", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800", "presence": 2100, "releases": 12, "originalId": "matrix-original" },
-  { "id": "art-18", "name": "Code_Weaver", "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800", "presence": 1740, "releases": 9, "originalId": "matrix-original" },
-  { "id": "art-19", "name": "RedPill_Edit", "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800", "presence": 1320, "releases": 8, "originalId": "matrix-original" },
-  { "id": "art-20", "name": "Oracle_Frame", "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800", "presence": 920, "releases": 5, "originalId": "matrix-original" }
+  {
+    "id": "fh-001",
+    "name": "Karthik G",
+    "bio": "Cinematic visualist specializing in high-fidelity motion design and obsidian-themed aesthetics. Pushing the boundaries of FrameHouse.",
+    "presence": 1540,
+    "works": 24,
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    "socials": {
+      "instagram": "@karthik_g",
+      "twitter": "@karthik_g",
+      "youtube": "KarthikGVisuals"
+    },
+    "workedOn": [
+      { "id": "alchemist-original", "title": "The Alchemist" },
+      { "id": "dune-original", "title": "Dune: Part Two" },
+      { "id": "madmax-original", "title": "Mad Max" },
+      { "id": "interstellar-original", "title": "Interstellar" }
+    ]
+  },
+  {
+    "id": "fh-002",
+    "name": "Sarah Chen",
+    "bio": "Lead archivist at FrameHouse. Specializes in neon-noir color grading and immersive digital storytelling.",
+    "presence": 842,
+    "works": 12,
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800&auto=format&fit=crop",
+    "socials": {
+      "instagram": "@sarah_archives",
+      "twitter": "@schen_vfx"
+    },
+    "workedOn": [
+      { "id": "matrix-original", "title": "The Matrix" },
+      { "id": "interstellar-original", "title": "Interstellar" },
+      { "id": "alchemist-original", "title": "The Alchemist" },
+      { "id": "dune-original", "title": "Dune: Part Two" }
+    ]
+  },
+  {
+    "id": "fh-003",
+    "name": "Marcus Vane",
+    "bio": "Obsidian sculptor and interface designer. Crafting the future of cinematic interactivity within the pool.",
+    "presence": 620,
+    "works": 8,
+    "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    "socials": {
+      "instagram": "@m_vane_design"
+    },
+    "workedOn": [
+      { "id": "madmax-original", "title": "Mad Max" },
+      { "id": "matrix-original", "title": "The Matrix" },
+      { "id": "dune-original", "title": "Dune: Part Two" },
+      { "id": "alchemist-original", "title": "The Alchemist" }
+    ]
+  }
 ]

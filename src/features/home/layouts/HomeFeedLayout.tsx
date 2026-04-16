@@ -18,7 +18,7 @@ import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, Scrip
 import { Logo } from "../../../components/Logo";
 import { TopOriginalsAccordion } from "../../originals/components/TopOriginalsAccordion";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { ArtistCard } from "../../originals/components/ArtistCard";
+import { ArtistProfile } from "../../shared/profile";
 import { buildClusters } from "../../theatre/engine/clusterBuilder";
 import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDesktopCluster";
 import { OriginalLink, EditWork, PosterWork, ScriptWork } from "../../shared/work";
@@ -310,7 +310,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
           <div className="overflow-x-auto no-scrollbar pb-2 px-6 md:px-12">
             <div className="grid grid-flow-col grid-rows-2 gap-2 auto-cols-[200px] md:auto-cols-[320px] w-max">
               {globalArtistStripItems.map((artist, idx) => (
-                <ArtistCard key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="featured" />
+                <ArtistProfile key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="featured" />
               ))}
             </div>
           </div>

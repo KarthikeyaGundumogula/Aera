@@ -113,7 +113,7 @@ export function ScriptWork({
               {item.title}
             </h3>
             <p className="text-[6px] sm:text-[7px] font-bold uppercase tracking-[0.4em] text-white/40">
-              {item.artist || item.origins || "Original"}
+              {item.artist || "Original Artist"}
             </p>
           </div>
         </div>

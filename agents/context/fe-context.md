@@ -139,3 +139,27 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
 - **Immersive Modal (Precision Fit)**:
   - Container sizing logic: `width: min(92vw, calc(75vh * aspect))`.
   - Zero-Gaps Policy: The modal card perfectly shrink-wraps the artwork, eliminating black bars (letterboxing) while ensuring zero cropping and zero stretching.
+
+## Immersive Profile System (Talent HUD)
+- **3D Talent Interface**:
+  - Artists, Stars, and Makers utilize a dual-sided 3D card system for identity and filmography.
+  - **Global Flip Interaction**: Removed explicit toggle buttons. The user flips the card by clicking anywhere on the card body.
+  - **Interactive Safeguard**: The global flip handler MUST ignore clicks originating from `button` or `a` elements to prevent accidental card rotation during navigation (e.g., clicking Social Links or CreditTags).
+  - **Divergent Fronts**: 
+    - **Artists**: Maintain the "Classic ID Card" aesthetic with isolated portrait tilt to emphasize community identity.
+    - **Stars & Makers**: Utilize immersive **"Film Strip"** fronts featuring horizontal perforations, `Londrina Outline` overlays, and sliding name-reveal animations on the card triggers.
+  - **Parallax Portrait**: Applicable to the Artist's ID-card portrait specifically.
+- **The Neon Vault (Portfolio Archive)**:
+  - The "Back" of every talent card is a cinematic archive of their contributions.
+  - **Cinematic Quotes**: Footers replaced technical security strings with curated cinematic quotes to enhance storytelling and premium feel.
+  - **The CreditTag System**:
+    - Credits are rendered as minimalist **Neon Pills** (`rounded-full`, `w-fit`).
+    - **Tight Coupling**: Padding is restricted to ensure the tag size is dictated strictly by the original title length.
+    - **Dynamic Coloration**: Neon colors are pulled from a randomized cinematic palette (`Cyan, Gold, Flame, Purple, Matrix Green, Pink`) in the UI layer, removing the need for manual data mapping.
+    - **Navigation**: Each tag is a functional portal that navigates to the Original page while protecting the card's flip state (`e.stopPropagation()`).
+- **Data Population Strategy (Phase 1)**:
+  - **Social Density**: Artists are decoupled from project IDs in the mock layer. Every Original displays the **entire FrameHouse artist pool** to guarantee a sense of active community.
+  - **Depth Requirement**: All talent records MUST include at least 4 project references in their `workedOn` array to ensure a robust Vault experience.
+- **Safety Guardrails**:
+  - **Archive Integrity**: Project-level viewers (OriginalPage) must implement immediate redirects/fallbacks for non-existent IDs to prevent runtime black screens.
+  - **Array Resilience**: Components mapping talent lists must handle null/empty source arrays to prevent `undefined` access crashes during layout generation.

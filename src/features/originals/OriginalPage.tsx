@@ -4,26 +4,23 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
-import { QuickView } from "../shared/QuickView";
-import { WorkModal } from "../shared/WorkModal";
+import { PosterModal, ScriptModal, EditModal } from "../shared/modals";
 import { PresenceIcon } from "../../components/icons/AppIcons";
 import { Logo } from "../../components/Logo";
-import { ArtistCard } from "./components/ArtistCard";
+import { ArtistProfile, StarProfile } from "../shared/profile";
 
 import { SectionHeader } from "../../components/SectionHeader";
-import { StarProfileCard, StarProfileCardProps } from "./components/StarProfileCard";
-import { StarModal } from "./components/StarModal";
+
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleaseCatalogue } from "./components/ReleaseCatalogue";
 import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
-import { isEditWork } from "../shared/work";
+
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
-  const [selectedWork, setSelectedWork] = useState<TheatreItem | null>(null);
-  const [selectedStar, setSelectedStar] = useState<StarProfileCardProps | null>(null);
+
   const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const isMobile = useMediaQuery();
@@ -63,26 +60,8 @@ export function OriginalPage() {
     );
   }, [original]);
 
-  const quickViewItems = useMemo(() => {
-    if (!original) return [];
-    return [...catalogueItems, ...original.works].filter(isEditWork);
-  }, [catalogueItems, original?.works]);
-
   const handleSelectWork = (item: TheatreItem | null) => {
-    if (!item) {
-      setSelectedItem(null);
-      setSelectedWork(null);
-      return;
-    }
-
-    if (isEditWork(item)) {
-      setSelectedWork(null);
-      setSelectedItem(item);
-      return;
-    }
-
-    setSelectedItem(null);
-    setSelectedWork(item);
+    setSelectedItem(item);
   };
 
   if (!original) {
@@ -262,13 +241,10 @@ export function OriginalPage() {
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
             {STARS_MOCK.map((star) => (
-            <StarProfileCard 
+            <StarProfile 
               key={star.actorName} 
-              actorName={star.actorName} 
-              characterName={star.characterName} 
-              imageUrl={star.imageUrl} 
+              person={star} 
               delay={STARS_MOCK.indexOf(star) * 0.15}
-              onClick={() => setSelectedStar(star)}
             />
           ))}
           </div>
@@ -286,13 +262,11 @@ export function OriginalPage() {
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
             {MAKERS_MOCK.map((maker) => (
-            <StarProfileCard 
+            <StarProfile 
               key={maker.actorName} 
-              actorName={maker.actorName} 
-              characterName={maker.characterName} 
-              imageUrl={maker.imageUrl} 
+              person={maker} 
               delay={MAKERS_MOCK.indexOf(maker) * 0.15}
-              onClick={() => setSelectedStar(maker)}
+              type="Maker"
             />
           ))}
           </div>
@@ -310,7 +284,7 @@ export function OriginalPage() {
         <div className="overflow-x-auto no-scrollbar pb-2">
           <div className="grid grid-flow-col grid-rows-3 gap-2 auto-cols-[250px] md:auto-cols-[300px] w-max">
             {artistStripItems.map((artist, idx) => (
-              <ArtistCard key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="default" />
+              <ArtistProfile key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="default" />
             ))}
           </div>
         </div>
@@ -353,24 +327,20 @@ export function OriginalPage() {
         </div>
       </div>
 
-      <QuickView
-        selectedItem={selectedItem}
-        setSelectedItem={handleSelectWork}
-        isMobile={isMobile}
-        items={quickViewItems}
-        columns={1}
-      />
-
-      <WorkModal item={selectedWork} onClose={() => setSelectedWork(null)} />
+      {selectedItem?.category === "Edit" && (
+        <EditModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
+      {selectedItem?.category === "Poster" && (
+        <PosterModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
+      {selectedItem?.category === "Script" && (
+        <ScriptModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
 
       {/* Footer Space */}
       <div className="h-24" />
 
-      {/* Cinematic Star Modal Overlay */}
-      <StarModal 
-        star={selectedStar} 
-        onClose={() => setSelectedStar(null)} 
-      />
+
     </div>
   );
 }
