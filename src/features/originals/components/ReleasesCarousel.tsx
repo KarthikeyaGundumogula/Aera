@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Maximize2, X } from "lucide-react";
+import { Maximize2, X, Play } from "lucide-react";
 import { TheatreItem } from "../../../types";
 
-interface ReleaseCatalogueProps {
+interface ReleasesCarouselProps {
   items: TheatreItem[];
   onSelect: (item: TheatreItem) => void;
   initialIndex?: number;
@@ -11,30 +11,31 @@ interface ReleaseCatalogueProps {
   onToggleTheater?: () => void;
 }
 
-export function ReleaseCatalogue({ 
+export function ReleasesCarousel({ 
   items, 
   onSelect, 
   initialIndex = 0,
   isTheaterMode = false,
   onToggleTheater
-}: ReleaseCatalogueProps) {
+}: ReleasesCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [direction, setDirection] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [videoErrors, setVideoErrors] = useState<Record<string, boolean>>({});
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const nextSlide = useCallback(() => {
     setDirection(1);
     setActiveIndex((prev) => (prev + 1) % items.length);
+    setIsIframeLoaded(false);
   }, [items.length]);
 
   const prevSlide = useCallback(() => {
     setDirection(-1);
     setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+    setIsIframeLoaded(false);
   }, [items.length]);
 
-  // Auto-rotation (10 seconds) - Disable in theater mode
+  // Auto-rotation (12 seconds) - Disable in theater mode
   useEffect(() => {
     if (isTheaterMode) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -45,42 +46,43 @@ export function ReleaseCatalogue({
     
     timerRef.current = setInterval(() => {
       nextSlide();
-    }, 10000);
+    }, 12000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [nextSlide, activeIndex, isTheaterMode]);
 
-  // Swipe handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Swipe handlers using Framer Motion's Pan gestures
+  const handlePanEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
     if (isTheaterMode) return;
-    setTouchStart(e.touches[0].clientX);
-  };
+    
+    // Threshold for swipe: 50px or significant velocity
+    const SWIPE_THRESHOLD = 50;
+    const VELOCITY_THRESHOLD = 500;
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (isTheaterMode || !touchStart) return;
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) nextSlide();
-      else prevSlide();
+    if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -VELOCITY_THRESHOLD) {
+      nextSlide();
+    } else if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > VELOCITY_THRESHOLD) {
+      prevSlide();
     }
-    setTouchStart(null);
   };
 
   if (!items.length) return null;
 
   const activeItem = items[activeIndex];
+  const isYouTube = activeItem.platform === 'youtube';
+  
+  // Extract YouTube ID safely
+  const getYoutubeId = (url: string) => {
+    if (!url) return '';
+    const parts = url.split('/');
+    const lastPart = parts[parts.length - 1];
+    return lastPart.split('?')[0];
+  };
 
-  // Ensure the video plays immediately upon mounting
-  const handleVideoRef = useCallback((node: HTMLVideoElement | null) => {
-    if (node) {
-      node.currentTime = 0;
-      node.play().catch(() => {});
-    }
-  }, []);
+  const youtubeId = getYoutubeId(activeItem.embedUrl || '');
+  const embedUrl = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0&rel=0&modestbranding=1`;
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -103,13 +105,12 @@ export function ReleaseCatalogue({
   };
 
   return (
-    <div 
+    <motion.div 
       className={`relative w-full h-full overflow-hidden bg-[#050505] group ${
         String(activeItem.id).includes('main-poster') && !isTheaterMode ? 'cursor-default' : 'cursor-pointer'
       }`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onClick={() => {
+      onPanEnd={handlePanEnd}
+      onTap={() => {
         if (!isTheaterMode && !String(activeItem.id).includes('main-poster')) {
           onToggleTheater?.();
         }
@@ -130,54 +131,65 @@ export function ReleaseCatalogue({
           className="absolute inset-0 w-full h-full"
         >
           <div className="absolute inset-0 w-full h-full bg-black overflow-hidden">
-            {/* Ambient background blur in theater mode */}
-            {isTheaterMode && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.4 }}
-                className="absolute inset-0 w-full h-full"
-              >
-                <img
-                  src={activeItem.image}
-                  className="w-full h-full object-cover blur-3xl scale-110"
-                  alt=""
-                />
-              </motion.div>
-            )}
-
-            {activeItem.videoUrl && !videoErrors[activeItem.videoUrl] ? (
-              <video
-                key={`${activeItem.videoUrl}-${isTheaterMode}`}
-                ref={handleVideoRef}
-                poster={activeItem.image}
-                muted={!isTheaterMode}
-                controls={isTheaterMode}
-                crossOrigin="anonymous"
-                playsInline
-                loop
-                autoPlay
-                className={`w-full h-full transition-all duration-700 ${
-                  isTheaterMode ? "object-contain pointer-events-auto" : "object-cover pointer-events-none"
-                }`}
-                style={{ opacity: isTheaterMode ? 1 : 0.8 }}
-                onError={() => {
-                  setVideoErrors(prev => ({ ...prev, [activeItem.videoUrl!]: true }));
-                }}
-              >
-                <source src={activeItem.videoUrl} type="video/mp4" />
-              </video>
-            ) : (
+            {/* Ambient background blur */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isTheaterMode ? 0.4 : 0.6 }}
+              className="absolute inset-0 w-full h-full z-0"
+            >
               <img
                 src={activeItem.image}
-                className={`w-full h-full transition-all duration-700 ${
-                  isTheaterMode ? "object-contain" : "object-cover"
-                }`}
-                style={{ opacity: isTheaterMode ? 0.9 : 0.6 }}
-                alt={activeItem.title}
+                className="w-full h-full object-cover blur-3xl scale-110"
+                alt=""
               />
-            )}
+            </motion.div>
+
+            {/* Main Content Area */}
+            <div className={`relative w-full h-full flex items-center justify-center z-10 ${isTheaterMode ? "p-4 md:p-12" : "p-0"}`}>
+               {/* Poster Image (Always visible as fallback/placeholder) */}
+               <motion.img
+                  src={activeItem.image}
+                  className={`w-full h-full transition-all duration-700 ${
+                    isTheaterMode ? "object-contain rounded-xl shadow-2xl" : "object-cover"
+                  }`}
+                  style={{ 
+                    opacity: (isTheaterMode && isYouTube && isIframeLoaded) ? 0 : (isTheaterMode ? 1 : 0.8) 
+                  }}
+                  alt={activeItem.title}
+                />
+
+                {/* YouTube Embed Layer */}
+                {isYouTube && isTheaterMode && (
+                  <div className="absolute inset-0 p-4 md:p-12 flex items-center justify-center">
+                    <div className="w-full max-w-[1280px] aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-black">
+                      <iframe
+                        src={`${embedUrl}&autoplay=1`}
+                        className="w-full h-full border-none"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        title={activeItem.title}
+                        onLoad={() => setIsIframeLoaded(true)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Play Overlay Hint (Gallery Mode Only) */}
+                {!isTheaterMode && isYouTube && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors pointer-events-none">
+                     <motion.div
+                       initial={{ scale: 0.8, opacity: 0 }}
+                       animate={{ scale: 1, opacity: 1 }}
+                       className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center"
+                     >
+                       <Play className="w-6 h-6 text-white fill-current translate-x-0.5" />
+                     </motion.div>
+                  </div>
+                )}
+            </div>
+
             {!isTheaterMode && (
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none z-20" />
             )}
           </div>
 
@@ -206,7 +218,7 @@ export function ReleaseCatalogue({
                     onSelect(activeItem);
                   }}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white backdrop-blur-xl transition-all hover:bg-white hover:text-black active:scale-95 pointer-events-auto"
-                  aria-label="Open full screen"
+                  aria-label="Open Archive Record"
                 >
                   <Maximize2 className="w-4 h-4" />
                 </button>
@@ -221,7 +233,7 @@ export function ReleaseCatalogue({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full z-10 pointer-events-none flex flex-col md:flex-row md:justify-between md:items-end gap-6"
+                className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full z-30 pointer-events-none flex flex-col md:flex-row md:justify-between md:items-end gap-6"
               >
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
@@ -241,7 +253,7 @@ export function ReleaseCatalogue({
                     style={{
                       fontSize: !(activeItem.title || "").includes(" ") 
                         ? `clamp(2.5rem, ${Math.min(14, 90 / ((activeItem.title?.length || 1) * 0.8))}vw, 7rem)`
-                        : `clamp(2.5rem, ${Math.max(5, 15 - (activeItem.title?.length || 0) * 0.3)}vw, 7rem)`,
+                        : `clamp(2.5rem, ${Math.max(4.5, 14 - (activeItem.title?.length || 0) * 0.25)}vw, 7rem)`,
                       wordBreak: "normal",
                       overflowWrap: "normal"
                     }}
@@ -264,6 +276,7 @@ export function ReleaseCatalogue({
                         key={idx}
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (activeIndex === idx) return;
                           setDirection(idx > activeIndex ? 1 : -1);
                           setActiveIndex(idx);
                         }}
@@ -281,6 +294,6 @@ export function ReleaseCatalogue({
           </AnimatePresence>
         </motion.div>
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

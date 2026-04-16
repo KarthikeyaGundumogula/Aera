@@ -42,9 +42,14 @@ export const GRID_ITEMS: TheatreItem[] = ALL_WORKS;
  */
 export const ORIGINALS: Original[] = (originalsData as Array<Omit<Original, "topArtists" | "works" | "heroHighlights">>).map(org => {
   const orgWorks = ALL_WORKS.filter(w => w.originalId === org.id);
-  // Phase 1: Use the entire artist pool for all projects to ensure rich population
+  // Use the entire artist pool to ensure design density
   const orgArtists = ALL_ARTISTS.map(({ originalId: _, ...rest }) => rest as OriginalArtist);
-  const highlights = orgWorks.filter(w => w.videoUrl);
+  
+  // Highlights: Strictly include only YouTube video edits for the ReleasesCarousel
+  const highlights = orgWorks.filter(w => 
+    (w.category === 'Edit' || w.type === 'video') && 
+    w.platform === 'youtube'
+  );
 
   return {
     ...org,

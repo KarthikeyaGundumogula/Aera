@@ -224,7 +224,10 @@ export const StarProfile = memo(({ person, delay = 0, type = 'Star' }: StarProfi
                       <div className="flex-1 px-6 py-6 flex flex-col justify-start items-center gap-4 z-10 overflow-y-auto no-scrollbar">
                         <h3 className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 text-center mb-4">Filmography</h3>
                         
-                        <div className="flex flex-row flex-wrap justify-center gap-2 w-full">
+                        <div 
+                          className="flex flex-row flex-wrap justify-center gap-2 w-full"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           {person.workedOn?.map((project, pIdx) => (
                             <CreditTag 
                               key={project.id}

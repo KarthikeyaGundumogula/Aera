@@ -316,7 +316,10 @@ export const ArtistProfile = memo(
                             Collected Originals
                           </h3>
 
-                          <div className="flex flex-row flex-wrap justify-center gap-3">
+                          <div 
+                            className="flex flex-row flex-wrap justify-center gap-3"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {artist.workedOn?.map((project, pIdx) => (
                               <CreditTag
                                 key={project.id}

@@ -41,6 +41,9 @@ export function EditModal({ item, onClose }: EditModalProps) {
       if ((window as any).twttr?.widgets) {
         (window as any).twttr.widgets.load().then(() => {
           setIsLoaded(true);
+        }).catch(() => {
+          // If Twitter fails to load (ad-blockers, network), still reveal the modal
+          setIsLoaded(true);
         });
       }
     };

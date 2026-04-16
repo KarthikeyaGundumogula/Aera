@@ -12,7 +12,7 @@ import { ArtistProfile, StarProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
 
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { ReleaseCatalogue } from "./components/ReleaseCatalogue";
+import { ReleasesCarousel } from "./components/ReleasesCarousel";
 import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
 
 
@@ -40,16 +40,7 @@ export function OriginalPage() {
 
   const catalogueItems: TheatreItem[] = useMemo(() => {
     if (!original) return [];
-    return [
-      {
-        id: `${original.id}-main-poster`,
-        title: original.title,
-        category: "Poster",
-        image: original.coverImage,
-        description: original.description,
-      } as TheatreItem,
-      ...(original.heroHighlights || [])
-    ];
+    return original.heroHighlights || [];
   }, [original]);
 
   const artistStripItems = useMemo(() => {
@@ -146,7 +137,7 @@ export function OriginalPage() {
               transition={{ duration: 1.0 }}
               className="absolute inset-0 h-full w-full"
             >
-              <ReleaseCatalogue 
+              <ReleasesCarousel 
                 items={catalogueItems} 
                 initialIndex={catalogueItems.length > 1 ? 1 : 0}
                 onSelect={handleSelectWork} 
