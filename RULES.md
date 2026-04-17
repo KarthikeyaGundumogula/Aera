@@ -18,7 +18,7 @@
 
 ## Agent Format
 - Agents live in `agents/*.md`.
-- Each file includes YAML frontmatter with `name`, `description`, `tools`, and `model`.
+- Each file includes YAML frontmatter with `name`, `description`, `tools`.
 - File names are lowercase with hyphens and must match the agent name.
 - Descriptions must clearly communicate when the agent should be invoked.
 
@@ -29,4 +29,8 @@
 - Skill bodies should include practical guidance, tested examples, and clear "When to Use" sections.
 
 1. **Mock Data**: If you are creating any mock data always create that in the src/mock folder and create a different file for each type of data. 
-2. **Context**: Context from the previous works is stored in the `agents/context` folder reference that for better decision making
+2. **Context**: Context from the previous works is stored in the `agents/context` folder reference that for better decision making.
+3. **Design Quality (Web)**: Do not ship generic templates. Frontend must have clear hierarchy, intentional typography, depth/layering, and avoid uniform padding everywhere. Use the `agents/rules/web/design-quality.md` as a strict checklist.
+4. **Patterns (Web)**: Use compound components, url-as-state, and separate server/client state perfectly. Follow `agents/rules/web/patterns.md`.
+5. **Coding Style (TypeScript)**: Strictly avoid `any`, strongly type all public APIs or component props, prefer immutable updates, and use standard error handling. See `agents/rules/typescript/coding-style.md`.
+6. **Refactoring & Cleaning**: Read and rely on `agents/refactor-cleaner.md` guidelines for dead-code elimination, duplicate elimination, and keeping the codebase pristine. Do not hesitate to rename or refactor components/patterns if they don't match functionality or flow.7. **Code Review**: Whenever a code review is requested, strictly follow the protocols, checklists, and severity levels defined in `agents/rules/common/code-review.md`. Ensure all mandatory triggers are met before completion.

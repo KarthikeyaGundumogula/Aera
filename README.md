@@ -29,7 +29,7 @@ FrameHouse is a React-based web application that serves as a cinematic gallery, 
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
@@ -37,3 +37,7 @@ FrameHouse is a React-based web application that serves as a cinematic gallery, 
    `npm run dev`
 3. Type-check the app:
    `npm run lint`
+
+## Usage Credits
+
+- **Agents:** All the Agents configs and skills are taken from the [Everything Claude Code](https://github.com/affaan-m/everything-claude-code) repository.

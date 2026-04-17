@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import { ORIGINALS_DATA } from "../../mock";
-import { buildClusters } from "../theatre/engine/clusterBuilder";
-import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
+import { buildClusters, Cluster } from "../theatre/engine/clusterBuilder";
+import { buildMobileClusters, MobileCluster } from "../theatre/engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "../theatre/components/desktop/StaticDesktopCluster";
 import { MobileClusterView } from "../theatre/components/mobile/MobileClusterView";
 import { WorkModal } from "../shared/modals";
@@ -34,8 +34,8 @@ export function OriginalsTheatrePage() {
     };
   }, [originalContent]);
 
-  const [visibleDesktop, setVisibleDesktop] = useState<any[]>([]);
-  const [visibleMobile, setVisibleMobile] = useState<any[]>([]);
+  const [visibleDesktop, setVisibleDesktop] = useState<Cluster[]>([]);
+  const [visibleMobile, setVisibleMobile] = useState<MobileCluster[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const bottomObserverTarget = useRef<HTMLDivElement>(null);
 
@@ -55,11 +55,11 @@ export function OriginalsTheatrePage() {
     setTimeout(() => {
       setVisibleDesktop(prev => [
         ...prev, 
-        ...clusters.desktop.map(c => ({ ...c, id: `${c.id}-clone-${Math.random()}` }))
+        ...clusters.desktop.map(c => ({ ...c, id: `${c.id}-clone-${crypto.randomUUID()}` }))
       ]);
       setVisibleMobile(prev => [
         ...prev, 
-        ...clusters.mobile.map(c => ({ ...c, id: `${c.id}-clone-${Math.random()}` }))
+        ...clusters.mobile.map(c => ({ ...c, id: `${c.id}-clone-${crypto.randomUUID()}` }))
       ]);
       setIsLoading(false);
     }, 600);

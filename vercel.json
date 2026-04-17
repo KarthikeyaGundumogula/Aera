@@ -10,10 +10,7 @@
       "source": "/(.*)",
       "headers": [
         {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://platform.twitter.com https://cdn.syndication.twitter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: https:; frame-src 'self' https://platform.twitter.com https://syndication.twitter.com https://*.twitter.com https://www.youtube.com https://*.youtube.com; connect-src 'self' https://platform.twitter.com ws://localhost:* http://localhost:*; shadow-root 'self';"
-        },
-        {
+
           "key": "X-Frame-Options",
           "value": "SAMEORIGIN"
         },

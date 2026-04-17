@@ -313,7 +313,7 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
   const clusters: Cluster[] = [];
   const imaxHistory: number[] = [0, 0]; 
 
-  const shuffle = (array: any[]) => {
+  const shuffle = <T,>(array: T[]) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
