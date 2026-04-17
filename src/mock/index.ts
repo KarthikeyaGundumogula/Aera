@@ -42,8 +42,8 @@ export const GRID_ITEMS: TheatreItem[] = ALL_WORKS;
  */
 export const ORIGINALS: Original[] = (originalsData as Array<Omit<Original, "topArtists" | "works" | "heroHighlights">>).map(org => {
   const orgWorks = ALL_WORKS.filter(w => w.originalId === org.id);
-  // Use artists associated with this specific original
-  const orgArtists = ALL_ARTISTS.filter(a => a.originalId === org.id).map(({ originalId: _, ...rest }) => rest as OriginalArtist);
+  // Use the entire artist pool to ensure design density (as per fe-context)
+  const orgArtists = ALL_ARTISTS.map(({ ...rest }) => rest as OriginalArtist);
   
   // Highlights: Strictly include only YouTube video edits for the ReleasesCarousel
   const highlights = orgWorks.filter(w => 

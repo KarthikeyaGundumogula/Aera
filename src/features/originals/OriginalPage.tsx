@@ -26,9 +26,19 @@ export function OriginalPage() {
 
   const original = id ? ORIGINALS_DATA[id] : null;
 
+  // Reset states when navigating between originals
+  useEffect(() => {
+    setIsCatalogueActive(false);
+    setIsTheaterMode(false);
+    setSelectedItem(null);
+  }, [id]);
+
   // Reveal interactive catalogue after 3 seconds
   useEffect(() => {
-    if (!original?.heroHighlights?.length) return;
+    if (!original?.heroHighlights?.length) {
+      setIsCatalogueActive(false);
+      return;
+    }
     
     const timer = setTimeout(() => {
       setIsCatalogueActive(true);

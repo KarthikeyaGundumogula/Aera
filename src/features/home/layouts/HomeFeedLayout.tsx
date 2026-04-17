@@ -119,10 +119,12 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
     new Map(ORIGINALS.flatMap((org) => org.topArtists).map((a) => [a.id, a])).values()
   ).sort((a, b) => b.presence - a.presence);
 
-  const globalArtistStripItems = Array.from(
-    { length: 10 },
-    (_, index) => baseGlobalArtists[index % baseGlobalArtists.length]
-  );
+  const globalArtistStripItems = baseGlobalArtists.length > 0 
+    ? Array.from(
+        { length: 10 },
+        (_, index) => baseGlobalArtists[index % baseGlobalArtists.length]
+      )
+    : [];
 
   return (
     <div className="bg-[#050505] min-h-screen text-white pb-24">
