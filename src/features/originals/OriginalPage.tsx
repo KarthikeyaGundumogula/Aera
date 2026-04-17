@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
-import { PresenceIcon } from "../../components/icons/AppIcons";
 import { Logo } from "../../components/Logo";
 import { ArtistProfile, PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
