@@ -9,6 +9,8 @@ import { MobileCanvas } from "../components/mobile/MobileCanvas";
 
 import { Logo } from "../../../components/Logo";
 
+import { useHeaderVisibility } from "../hooks/useHeaderVisibility";
+
 interface TheatreLayoutProps {
   selectedItem: TheatreItem | null;
   setSelectedItem: SetSelectedItem;
@@ -16,45 +18,12 @@ interface TheatreLayoutProps {
 }
 
 export function TheatreLayout({ setSelectedItem, isMobile }: TheatreLayoutProps) {
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const scrollYRef = useRef(0);
-  const lastYRef = useRef(0);
+  const { isHeaderVisible, handleScroll } = useHeaderVisibility();
   const navigate = useNavigate();
   const location = useLocation();
 
   const getNavClassName = (active: boolean) =>
     `text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${active ? "text-white" : "text-white/60 hover:text-white"}`;
-  
-  const handleScroll = useCallback((y: number) => {
-    const dy = y - lastYRef.current;
-    lastYRef.current = y;
-    scrollYRef.current = y;
-
-    // Show header if we're near the top or scrolling up
-    if (y > -10) {
-      setIsHeaderVisible(true);
-    } else if (dy > 2) {
-      setIsHeaderVisible(true);
-    } else if (dy < -2) {
-      setIsHeaderVisible(false);
-    }
-  }, []);
-
-  // Header visibility logic via mouse
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      // If mouse is near top, show header
-      if (e.clientY < 60) {
-        setIsHeaderVisible(true);
-      } else if (Math.abs(scrollYRef.current) > 10) {
-        // Only hide if we're not at the top
-        setIsHeaderVisible(false);
-      }
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
 
   return (
     <div className="bg-[#050505] h-screen text-white selection:bg-brand-accent/30 overflow-hidden">

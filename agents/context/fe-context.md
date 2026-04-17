@@ -56,7 +56,8 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
 - **Interaction Model**: Users enter space organically (entering a space, not scrolling a feed) and gradually discover deeper mechanics.
 
 ## Originals Experience
-- **Interactive Hero Carousel**: The top of the Original page functions as a seamless entry point. It starts as an immersive, full-width static "anchor" poster and smoothly transitions into a 10s auto-rotating video carousel highlighting featured releases.
+- **Interactive Hero Carousel**: The top of the Original page functions as a seamless entry point. It starts as an immersive, full-width static "anchor" poster and smoothly transitions into a **5s auto-rotating** video carousel highlighting featured releases.
+- **Interactive Drag Feedback**: The carousel supports full **X-axis dragging** (`drag="x"`) where slides physically follow the user's touch. This is tuned with `dragElastic` and a dedicated `isDragging` state guard to perfectly distinguish between a navigational swipe and a tap to enter Theater Mode.
 - **Context Preservation**: The main static poster is intrinsically injected into the carousel's rotation loop to preserve context across interactions and populate the unified `QuickView` player.
 - **Video Fallbacks & Security**:
   - **CORB/CSP Resolution**: All `<video>` tags explicitly use `crossOrigin="anonymous"` and the `<source type="video/mp4" />` sub-element to bypass browser security intercepts on cross-origin media.
@@ -107,6 +108,8 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   - Page-level selectors in Home, Theatre, Original Page, and Originals Theatre now route selected works by type:
     - video -> `QuickView`
     - poster/script -> `WorkModal`
+- **Global Scroll Restoration**: 
+  - To maintain a "top-of-page" cinematic focus during deep navigation, the platform utilizes a global `ScrollToTop` trigger (`App.tsx`). This resets the scroll position of both the window and any internal `overflow-y-auto` containers on every route change.
 
 ## Work Modal Design & Immersive UX
 - **Pixel-Perfect Adaptive Display**:
@@ -121,8 +124,14 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   - This prevents UI elements from overlapping the art and guarantees visibility regardless of viewport width or poster aspect ratio.
 - **Simplified Navigation**:
   - For posters, the close interaction is purely backdrop-driven (click outside) or key-driven (Esc). Decorative "X" buttons are removed to maximize visual immersion.
-- **Backside Details**:
-  - The "Info" side of the flip utilizes a blurred, high-ambient version of the poster as its background, maintaining an emotional connection to the work while displaying metadata (Artist, Origins, Credits, Description).
+- **Backside Details & Navigation**:
+  - The "Info" side of the flip utilizes metadata (Artist, Original, Credits, Format) presented in a cinematic grid.
+  - **Interactive Discovery**: 
+    - **Artist**: Clicking the artist name performs a real-time lookup in the `ARTISTS_MOCK` pool to open their full `ArtistProfile` modal.
+    - **Original**: Backgrounded works display their "Original" series; clicking this closes the modal and navigates the user to the source page (e.g., `/originals/aera`).
+  - **Visual Hints**: Navigation-ready fields (Artist, Original) are punctuated with **inclined arrows** (`ArrowUpRight`) to visually signal their interactive nature.
+- **Profile Modal Standalone Capability**: 
+  - `ArtistProfile` and `StarProfile` have been refactored to support standalone modal usage (via an `onClose` prop). This allows them to be summoned from within other modals or metadata fields without rendering a redundant film-strip card trigger.
 
 ## Visual Identity Standards (Modal)
 - **Backdrop**: Uses an ultra-dark cinematic canvas (`bg-black/90`) with a subtle grain/noise texture overlay and high-strength backdrop blur.
@@ -156,7 +165,20 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
     - Credits are rendered as minimalist **Neon Pills** (`rounded-full`, `w-fit`).
     - **Tight Coupling**: Padding is restricted to ensure the tag size is dictated strictly by the original title length.
     - **Dynamic Coloration**: Neon colors are pulled from a randomized cinematic palette (`Cyan, Gold, Flame, Purple, Matrix Green, Pink`) in the UI layer, removing the need for manual data mapping.
-    - **Navigation**: Each tag is a functional portal that navigates to the Original page while protecting the card's flip state (`e.stopPropagation()`).
+  - **3D Render Stability (Bleed-Through Fix)**: 
+    - The dual-sided 3D cards utilize `backface-visibility: hidden`.
+    - However, high `z-index` elements on the visually hidden side can intercept clicks in some rendering engines.
+    - **Rule**: `pointer-events-none` MUST be conditionally applied to the hidden side 
+      (`isFlipped ? "pointer-events-none" : ""` on the front face, and vice versa on the back face) to guarantee correct hit-testing.
+  - **State Isolation**: Modals MUST execute `setIsFlipped(false)` within a cleanup `useEffect` tied to `isOpen` to guarantee the card presents its front face every time it is summoned.
+
+## Originals Experience (Refined)
+- **Interactive Releases Carousel**: The top of the Original page functions as a seamless entry point utilizing the `ReleasesCarousel`.
+  - **Videos Only Policy**: Only works with `platform="youtube"` and type `video` or `Edit` are included in the Carousel. Static posters and scripts are strictly excluded from the top header slot to preserve a cinematic feel.
+  - **Gallery Mode (Visual First)**: Cycles through high-fidelity placeholder thumbnails.
+  - **Theater Mode (Interactive)**: Tapping a slide expands it edge-to-edge and automatically resolves the actual YouTube `iframe` with `autoplay=1`. This lazy-load architecture guarantees ultra-fast page paint without sacrificing interactive media.
+  - **Motion Gestures**: The carousel navigation utilizes Framer Motion's velocity-sensitive `onPanEnd` instead of standard swiping or scrolling to distinguish between intent to swipe vs intent to tap.
+
 - **Data Population Strategy (Phase 1)**:
   - **Social Density**: Artists are decoupled from project IDs in the mock layer. Every Original displays the **entire FrameHouse artist pool** to guarantee a sense of active community.
   - **Depth Requirement**: All talent records MUST include at least 4 project references in their `workedOn` array to ensure a robust Vault experience.

@@ -5,6 +5,31 @@ import {
   isScriptWork,
 } from "../../shared/work/types";
 
+/**
+ * Deterministic PRNG to ensure layout stability across re-renders.
+ * Standard LCG (Linear Congruential Generator).
+ */
+function createPRNG(seed: number) {
+  let state = seed;
+  return function() {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}
+
+/**
+ * Generates a stable numeric seed from an array of TheatreItems.
+ */
+function getSeedFromItems(items: TheatreItem[]): number {
+  const str = items.map(it => it.id).join("");
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
 export type Bucket = {
   imax: TheatreItem[];
   wide: TheatreItem[];
@@ -127,13 +152,7 @@ export function classify(items: TheatreItem[]): Bucket {
       continue;
     }
 
-    if (isEditWork(item) || item.category === undefined) {
-      if (r >= 2.2) bucket.imax.push(item);
-      else if (r >= 1.6) bucket.wide.push(item);
-      else if (r <= 0.7) bucket.vertical.push(item);
-      else bucket.square.push(item);
-    } else {
-      // Fallback for other types if any
+    if (isEditWork(item) || item.category === undefined || item.category === "Edit") {
       if (r >= 2.2) bucket.imax.push(item);
       else if (r >= 1.6) bucket.wide.push(item);
       else if (r <= 0.7) bucket.vertical.push(item);
@@ -148,30 +167,23 @@ function chooseCluster(
   bucket: Bucket, 
   imaxWindowSum: number, 
   isFirst: boolean = false,
-  mode: 'canvas' | 'flow' = 'canvas'
+  mode: 'canvas' | 'flow' = 'canvas',
+  rng: () => number
 ): keyof typeof CLUSTER_TEMPLATES {
   if (mode === 'flow') {
     const flowOptions: (keyof typeof CLUSTER_TEMPLATES)[] = ["F", "G", "H", "I", "J"];
-    // Simply cycle or randomly pick for flow
-    return flowOptions[Math.floor(Math.random() * flowOptions.length)];
+    return flowOptions[Math.floor(rng() * flowOptions.length)];
   }
 
-  // Force IMAX for the hero section if available
   if (isFirst && bucket.imax.length > 0) return "A";
-
-  // If we have many posters, favor Template D
-  if (bucket.poster.length > 4 && Math.random() < 0.5) return "D";
-
-  // Limit Template A (Ultra Wide) to 30% chance even if available
-  if (bucket.imax.length > 0 && imaxWindowSum < 2 && Math.random() < 0.3) return "A";
-  
-  // Favor Template C (Vertical/Square) over Template B (Wide)
-  if (bucket.vertical.length >= 2 || Math.random() < 0.6) return "C";
+  if (bucket.poster.length > 4 && rng() < 0.5) return "D";
+  if (bucket.imax.length > 0 && imaxWindowSum < 2 && rng() < 0.3) return "A";
+  if (bucket.vertical.length >= 2 || rng() < 0.6) return "C";
   
   return "B";
 }
 
-function createFallback(id: string, w: number, h: number): TheatreItem {
+function createFallback(id: string, w: number, h: number, rng: () => number): TheatreItem {
   const isSquare3x3 = w === 3 && h === 3;
   if (isSquare3x3) {
     return {
@@ -180,7 +192,7 @@ function createFallback(id: string, w: number, h: number): TheatreItem {
       artist: "FRAMEHOUSE SYSTEM",
       category: "Script",
       type: "image",
-      image: "https://picsum.photos/seed/script/800/1200",
+      image: `https://picsum.photos/seed/${id}/800/1200`,
       aspectRatio: 0.75,
       origins: "INT. THE GRID - NIGHT",
       credits: 1.0,
@@ -193,23 +205,26 @@ function createFallback(id: string, w: number, h: number): TheatreItem {
     artist: "FRAMEHOUSE SYSTEM",
     category: "Edit",
     type: "image",
-    image: `https://picsum.photos/seed/media-${id}/${w * 200}/${h * 200}`,
+    image: `https://picsum.photos/seed/${id}/${w * 200}/${h * 200}`,
     aspectRatio: w / h,
     isPlay: false
   };
 }
 
-function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Cluster {
+function fillCluster(
+  type: keyof typeof CLUSTER_TEMPLATES, 
+  bucket: Bucket, 
+  masterBucket: Bucket,
+  rng: () => number
+): Cluster {
   const template = CLUSTER_TEMPLATES[type];
   const slots: ClusterSlot[] = template.map(s => ({ ...s, item: undefined })) as ClusterSlot[];
   let editCount = 0;
 
-  // Helper to check if item is an edit
   const isEdit = (it: TheatreItem) => isEditWork(it);
 
-  // PASS 1: Primary Edits/Images (Highest Priority)
+  // PASS 1: Primary items
   for (const slot of slots) {
-    // Density control: Max 6 edits per cluster
     if (editCount >= 6) break; 
     
     let item: TheatreItem | undefined = undefined;
@@ -228,7 +243,7 @@ function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Clus
     }
   }
 
-  // PASS 2: Posters (Secondary Priority for Vertical/Square)
+  // PASS 2: Posters
   for (const slot of slots) {
     if (slot.item) continue;
     if (slot.type === "VERTICAL" || slot.type === "SQUARE") {
@@ -240,10 +255,9 @@ function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Clus
     }
   }
 
-  // PASS 3: Scripts (Lower Priority - "Extra Chance" - ONLY in 3x3)
+  // PASS 3: Scripts
   for (const slot of slots) {
     if (slot.item) continue;
-    // Rule: Scripts only in 3x3 square cards
     if (slot.w === 3 && slot.h === 3) {
       const item = bucket.script.shift();
       if (item) {
@@ -252,10 +266,35 @@ function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Clus
     }
   }
 
-  // PASS 4: Fallbacks (Absolute Last Resort)
+  // PASS 4: Strategic Duplication
   for (let i = 0; i < slots.length; i++) {
-    if (!slots[i].item) {
-      slots[i].item = createFallback(`${type}-${i}-${Math.random()}`, slots[i].w, slots[i].h);
+    const slot = slots[i];
+    if (slot.item) continue;
+
+    let repeatedItem: TheatreItem | undefined = undefined;
+    const getRandom = (arr: TheatreItem[]) => arr.length > 0 ? arr[Math.floor(rng() * arr.length)] : undefined;
+
+    switch (slot.type) {
+      case "IMAX": repeatedItem = getRandom(masterBucket.imax); break;
+      case "WIDE": repeatedItem = getRandom(masterBucket.wide); break;
+      case "VERTICAL": repeatedItem = getRandom(masterBucket.vertical); break;
+      case "SQUARE": repeatedItem = getRandom(masterBucket.square); break;
+    }
+
+    if (!repeatedItem) {
+      const anyEdits = [...masterBucket.imax, ...masterBucket.wide, ...masterBucket.vertical, ...masterBucket.square];
+      repeatedItem = getRandom(anyEdits);
+    }
+
+    if (!repeatedItem) {
+      const allMedia = [...masterBucket.imax, ...masterBucket.wide, ...masterBucket.vertical, ...masterBucket.square, ...masterBucket.poster, ...masterBucket.script];
+      repeatedItem = getRandom(allMedia);
+    }
+
+    if (repeatedItem) {
+      slots[i].item = { ...repeatedItem, id: `${repeatedItem.id}-dup-${i}-${rng().toString(36).substr(2, 9)}` };
+    } else {
+      slots[i].item = createFallback(`${type}-${i}-${rng()}`, slots[i].w, slots[i].h, rng);
     }
   }
 
@@ -263,14 +302,20 @@ function fillCluster(type: keyof typeof CLUSTER_TEMPLATES, bucket: Bucket): Clus
 }
 
 export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'canvas'): Cluster[] {
-  const bucket = classify([...items]); // Clone to avoid mutation
-  const clusters: Cluster[] = [];
-  const imaxHistory: number[] = [0, 0]; // Track IMAX count of last 2 clusters
+  if (!items.length) return [];
+  
+  const seed = getSeedFromItems(items);
+  const rng = createPRNG(seed);
 
-  // Shuffle for variety
+  const masterItems = [...items];
+  const masterBucket = classify(masterItems);
+  const bucket = classify([...items]); 
+  const clusters: Cluster[] = [];
+  const imaxHistory: number[] = [0, 0]; 
+
   const shuffle = (array: any[]) => {
     for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(rng() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
     }
   };
@@ -287,17 +332,15 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
   while (hasContent(bucket)) {
     const isFirst = clusters.length === 0;
     const imaxWindowSum = imaxHistory.reduce((a, b) => a + b, 0);
-    const type = chooseCluster(bucket, imaxWindowSum, isFirst, mode);
-    const cluster = fillCluster(type, bucket);
+    const type = chooseCluster(bucket, imaxWindowSum, isFirst, mode, rng);
+    const cluster = fillCluster(type, bucket, masterBucket, rng);
     
     clusters.push(cluster);
     
-    // Update history for density control (Max 2 IMAX in 3 clusters)
-    const currentImaxCount = cluster.slots.filter(s => s.type === 'IMAX' && s.item && (s.item.type === 'video' || s.item.category === 'Edit')).length;
+    const currentImaxCount = cluster.slots.filter(s => s.type === 'IMAX' && s.item && (isEditWork(s.item))).length;
     imaxHistory.push(currentImaxCount);
     if (imaxHistory.length > 2) imaxHistory.shift();
 
-    // Safety break to prevent infinite loop if bucket isn't shrinking
     if (clusters.length > 100) break; 
   }
 

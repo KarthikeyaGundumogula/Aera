@@ -1,38 +1,122 @@
 [
   {
-    "actorName": "Timothée Chalamet",
-    "characterName": "Paul Atreides",
+    "actorName": "Pawan Kalyan",
+    "characterName": "OG",
     "imageUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=800&auto=format&fit=crop",
-    "originalId": "dune-original",
+    "originalId": "og-original",
     "workedOn": [
-      { "id": "dune-original", "title": "Dune: Part Two" },
-      { "id": "interstellar-original", "title": "Interstellar" },
-      { "id": "alchemist-original", "title": "The Alchemist" },
-      { "id": "madmax-original", "title": "Mad Max" }
+      { "id": "og-original", "title": "OG" },
+      { "id": "baahubali-original", "title": "Baahubali" },
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "kgf-original", "title": "KGF: Chapter 2" }
     ]
   },
   {
-    "actorName": "Zendaya",
-    "characterName": "Chani",
-    "imageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800&auto=format&fit=crop",
-    "originalId": "dune-original",
-    "workedOn": [
-      { "id": "dune-original", "title": "Dune: Part Two" },
-      { "id": "matrix-original", "title": "The Matrix" },
-      { "id": "madmax-original", "title": "Mad Max" },
-      { "id": "alchemist-original", "title": "The Alchemist" }
-    ]
-  },
-  {
-    "actorName": "Austin Butler",
-    "characterName": "Feyd-Rautha",
+    "actorName": "Ram Charan",
+    "characterName": "Ram",
     "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
-    "originalId": "dune-original",
+    "originalId": "rrr-original",
     "workedOn": [
-      { "id": "dune-original", "title": "Dune: Part Two" },
-      { "id": "madmax-original", "title": "Mad Max" },
-      { "id": "interstellar-original", "title": "Interstellar" },
-      { "id": "matrix-original", "title": "The Matrix" }
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "og-original", "title": "OG" },
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "kgf-original", "title": "KGF: Chapter 2" }
+    ]
+  },
+  {
+    "actorName": "Jr. NTR",
+    "characterName": "Bheem",
+    "imageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800&auto=format&fit=crop",
+    "originalId": "rrr-original",
+    "workedOn": [
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "baahubali-original", "title": "Baahubali" },
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "og-original", "title": "OG" }
+    ]
+  },
+  {
+    "actorName": "Yash",
+    "characterName": "Rocky Bhai",
+    "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    "originalId": "kgf-original",
+    "workedOn": [
+      { "id": "kgf-original", "title": "KGF: Chapter 2" },
+      { "id": "og-original", "title": "OG" },
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "baahubali-original", "title": "Baahubali" }
+    ]
+  },
+  {
+    "actorName": "Prabhas",
+    "characterName": "Baahubali",
+    "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    "originalId": "baahubali-original",
+    "workedOn": [
+      { "id": "baahubali-original", "title": "Baahubali" },
+      { "id": "og-original", "title": "OG" },
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "vikram-original", "title": "Vikram" }
+    ]
+  },
+  {
+    "actorName": "Kamal Haasan",
+    "characterName": "Vikram",
+    "imageUrl": "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=800&auto=format&fit=crop",
+    "originalId": "vikram-original",
+    "workedOn": [
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "baahubali-original", "title": "Baahubali" },
+      { "id": "kgf-original", "title": "KGF: Chapter 2" },
+      { "id": "og-original", "title": "OG" }
+    ]
+  },
+  {
+    "actorName": "Vijay Sethupathi",
+    "characterName": "Rolex",
+    "imageUrl": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?q=80&w=800&auto=format&fit=crop",
+    "originalId": "vikram-original",
+    "workedOn": [
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "og-original", "title": "OG" },
+      { "id": "kgf-original", "title": "KGF: Chapter 2" }
+    ]
+  },
+  {
+    "actorName": "Fahadh Faasil",
+    "characterName": "Amar",
+    "imageUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop",
+    "originalId": "vikram-original",
+    "workedOn": [
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "baahubali-original", "title": "Baahubali" },
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "og-original", "title": "OG" }
+    ]
+  },
+  {
+    "actorName": "Deepika Padukone",
+    "characterName": "Sita",
+    "imageUrl": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop",
+    "originalId": "baahubali-original",
+    "workedOn": [
+      { "id": "baahubali-original", "title": "Baahubali" },
+      { "id": "kgf-original", "title": "KGF: Chapter 2" },
+      { "id": "og-original", "title": "OG" },
+      { "id": "rrr-original", "title": "RRR" }
+    ]
+  },
+  {
+    "actorName": "Alia Bhatt",
+    "characterName": "Sita",
+    "imageUrl": "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=800&auto=format&fit=crop",
+    "originalId": "rrr-original",
+    "workedOn": [
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "og-original", "title": "OG" },
+      { "id": "baahubali-original", "title": "Baahubali" }
     ]
   }
 ]

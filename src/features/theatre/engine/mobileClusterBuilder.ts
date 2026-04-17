@@ -57,7 +57,7 @@ function findAndRemove(items: TheatreItem[], predicate: (i: TheatreItem) => bool
   return null;
 }
 
-function pickBestItem(slotType: string, availableItems: TheatreItem[]): TheatreItem {
+function pickBestItem(slotType: string, availableItems: TheatreItem[], masterItems: TheatreItem[]): TheatreItem {
   let found: TheatreItem | null = null;
   
   const getAspect = (i: TheatreItem) => i.aspectRatio || 1;
@@ -65,43 +65,61 @@ function pickBestItem(slotType: string, availableItems: TheatreItem[]): TheatreI
   const isAcademyRatio = (i: TheatreItem) => getAspect(i) > 1.1 && getAspect(i) <= 1.6; // ~4:3
   const isSquareRatio = (i: TheatreItem) => getAspect(i) >= 0.9 && getAspect(i) <= 1.1; // ~1:1
 
-  if (slotType === 'IMAX') {
-    // IMAX Container Populating Rules
-    // 1. IMAX video
-    found = findAndRemove(availableItems, (i) => isEditWork(i) && isImaxRatio(i));
-    // 2. Academy video fallback
-    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isAcademyRatio(i));
-    // 3. Square video fallback
-    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isSquareRatio(i));
-    // 4. Any Video
-    if (!found) found = findAndRemove(availableItems, isEditWork);
-  } else if (slotType === 'Academy') {
-    // 1. Academy video
-    found = findAndRemove(availableItems, (i) => isEditWork(i) && isAcademyRatio(i));
-    // 2. IMAX video (Overflow rule: if IMAX videos are more, use academy)
-    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isImaxRatio(i));
-    // 3. Any Video
-    if (!found) found = findAndRemove(availableItems, isEditWork);
-  } else if (slotType === 'Vertical') {
-    found = findAndRemove(availableItems, (i) => isEditWork(i) && getAspect(i) < 0.9);
-    if (!found) found = findAndRemove(availableItems, isEditWork);
-  } else if (slotType === 'Poster') {
-    found = findAndRemove(availableItems, isPosterWork);
-    if (!found) found = findAndRemove(availableItems, (i) => !isEditWork(i)); // Any non-video
-  } else if (slotType === 'Square') {
-    found = findAndRemove(availableItems, isScriptWork); // Give scripts a home first
-    if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isSquareRatio(i));
-    if (!found) found = findAndRemove(availableItems, isPosterWork);
+  // Primary Pass: Exhaust the available pool first
+  if (availableItems.length > 0) {
+    if (slotType === 'IMAX') {
+      found = findAndRemove(availableItems, (i) => isEditWork(i) && isImaxRatio(i));
+      if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isAcademyRatio(i));
+      if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isSquareRatio(i));
+      if (!found) found = findAndRemove(availableItems, isEditWork);
+    } else if (slotType === 'Academy') {
+      found = findAndRemove(availableItems, (i) => isEditWork(i) && isAcademyRatio(i));
+      if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isImaxRatio(i));
+      if (!found) found = findAndRemove(availableItems, isEditWork);
+    } else if (slotType === 'Vertical') {
+      found = findAndRemove(availableItems, (i) => isEditWork(i) && getAspect(i) < 0.9);
+      if (!found) found = findAndRemove(availableItems, isEditWork);
+    } else if (slotType === 'Poster') {
+      found = findAndRemove(availableItems, isPosterWork);
+      if (!found) found = findAndRemove(availableItems, (i) => !isEditWork(i)); 
+    } else if (slotType === 'Square') {
+      found = findAndRemove(availableItems, isScriptWork); 
+      if (!found) found = findAndRemove(availableItems, (i) => isEditWork(i) && isSquareRatio(i));
+      if (!found) found = findAndRemove(availableItems, isPosterWork);
+    }
+
+    if (!found && availableItems.length > 0) {
+      if (slotType === 'IMAX') found = findAndRemove(availableItems, isEditWork);
+      if (!found) found = availableItems.splice(0, 1)[0];
+    }
   }
 
-  // Absolute fallback: just take the first item if we fail to find a perfect match
-  if (!found && availableItems.length > 0) {
-    // Strict IMAX Rule: try to force a video if we randomly fallback
+  // Secondary Pass: Strategic Duplication from master pool if availableItems exhausted
+  if (!found && masterItems.length > 0) {
+    const getRandom = (arr: TheatreItem[]) => arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : null;
+    
     if (slotType === 'IMAX') {
-      found = findAndRemove(availableItems, isEditWork);
+      found = getRandom(masterItems.filter(i => isEditWork(i) && isImaxRatio(i)));
+      if (!found) found = getRandom(masterItems.filter(isEditWork));
+    } else if (slotType === 'Academy') {
+      found = getRandom(masterItems.filter(i => isEditWork(i) && isAcademyRatio(i)));
+      if (!found) found = getRandom(masterItems.filter(isEditWork));
+    } else if (slotType === 'Vertical') {
+      found = getRandom(masterItems.filter(i => isEditWork(i) && getAspect(i) < 0.9));
+      if (!found) found = getRandom(masterItems.filter(isEditWork));
+    } else if (slotType === 'Poster') {
+      found = getRandom(masterItems.filter(isPosterWork));
+    } else if (slotType === 'Square') {
+      found = getRandom(masterItems.filter(isScriptWork));
+      if (!found) found = getRandom(masterItems.filter(i => isEditWork(i) && isSquareRatio(i)));
     }
-    if (!found) {
-      found = availableItems.splice(0, 1)[0];
+
+    // Ultimate fallback for duplication
+    if (!found) found = masterItems[Math.floor(Math.random() * masterItems.length)];
+    
+    // Assign unique ID to prevent React key collisions for duplicates
+    if (found) {
+      found = { ...found, id: `${found.id}-mdup-${Math.random().toString(36).substr(2, 9)}` };
     }
   }
 
@@ -109,35 +127,35 @@ function pickBestItem(slotType: string, availableItems: TheatreItem[]): TheatreI
 }
 
 export function buildMobileClusters(items: TheatreItem[]): MobileCluster[] {
+  const masterItems = [...items];
   const availableItems = [...items];
   let seqIndex = 0;
   const clusters: MobileCluster[] = [];
 
-  while (availableItems.length > 0) {
+  if (masterItems.length === 0) return [];
+
+  // Goal: Ensure at least 5 clusters exist to maintain cinematic rhythm
+  // Continue until we've exhausted original items AND met minimum cluster count
+  while (availableItems.length > 0 || clusters.length < 5) {
     const clusterType = SEQUENCE[seqIndex % SEQUENCE.length];
     const template = TEMPLATES[clusterType];
     
-    // Check if we have enough items for this template
-    if (availableItems.length < template.length) {
-      break; 
-    }
-
     const slots: MobileSlot[] = template.map((tmpl) => ({
       ...tmpl,
-      item: pickBestItem(tmpl.type, availableItems)
+      item: pickBestItem(tmpl.type, availableItems, masterItems)
     }));
 
-    if (slots.some(s => !s.item)) {
-       break;
-    }
+    if (slots.some(s => !s.item)) break;
 
     clusters.push({
-      id: `mcluster-${clusters.length}`,
+      id: `mcluster-${clusters.length}-${Math.random().toString(36).substr(2, 5)}`,
       type: clusterType,
       slots
     });
 
     seqIndex++;
+
+    if (clusters.length > 40) break; // Safety break
   }
   return clusters;
 }

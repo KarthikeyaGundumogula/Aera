@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TheatreItem } from "../../types";
 import { HomeFeedLayout } from "./layouts/HomeFeedLayout";
-import { PosterModal, ScriptModal, EditModal } from "../shared/modals";
+import { WorkModal } from "../shared/modals";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 /** Key used to remember that a desktop redirect has already happened this session. */
@@ -30,15 +30,10 @@ export function Home() {
     <div className="min-h-screen font-sans selection:bg-brand-accent/30">
       <HomeFeedLayout selectedItem={selectedItem} setSelectedItem={handleSelectItem} />
       
-      {selectedItem?.category === "Edit" && (
-        <EditModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
-      {selectedItem?.category === "Poster" && (
-        <PosterModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
-      {selectedItem?.category === "Script" && (
-        <ScriptModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
+      <WorkModal 
+        item={selectedItem} 
+        onClose={() => setSelectedItem(null)} 
+      />
     </div>
   );
 }

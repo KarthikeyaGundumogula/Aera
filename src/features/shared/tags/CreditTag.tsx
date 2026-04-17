@@ -1,16 +1,18 @@
 import { motion } from "motion/react";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 interface CreditTagProps {
   id: string;
   title: string;
-  onClick: (id: string) => void;
+  onClick?: (id: string) => void;
   index: number;
 }
 
 const NEON_COLORS = ['#00E5FF', '#FFD700', '#FF4D00', '#7C4DFF', '#00FF41', '#FF00E5'];
 
 export const CreditTag: React.FC<CreditTagProps> = ({ id, title, onClick, index }) => {
+  const navigate = useNavigate();
   const color = NEON_COLORS[index % NEON_COLORS.length];
 
   return (
@@ -19,7 +21,8 @@ export const CreditTag: React.FC<CreditTagProps> = ({ id, title, onClick, index 
       whileTap={{ scale: 0.95 }}
       onClick={(e) => {
         e.stopPropagation();
-        onClick(id);
+        navigate(`/originals/${id}`);
+        if (onClick) onClick(id);
       }}
       className="relative w-fit px-3 py-1.5 bg-white/5 border rounded-full group overflow-hidden transition-all duration-300"
       style={{ 

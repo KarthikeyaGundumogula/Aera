@@ -1,42 +1,42 @@
 [
   {
-    "id": "alchemist-original",
-    "title": "The Alchemist",
-    "description": "A cinematic journey through the soul of alchemy. Curated by FRAMEHOUSE_ELITE.",
+    "id": "og-original",
+    "title": "OG",
+    "description": "They call him OG. Pawan Kalyan's most raw, unstoppable avatar — and the internet is still not over it. The FrameHouse tribute wall is live.",
     "coverImage": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1920",
-    "stats": { "presence": 1240, "members": 850, "releases": 12 },
-    "releaseDate": "March 15, 2024"
+    "stats": { "presence": 2480, "members": 1620, "releases": 18 },
+    "releaseDate": "2025"
   },
   {
-    "id": "dune-original",
-    "title": "Dune: Part Two",
-    "description": "The spice must flow. The official wall of fame for the Arrakis vision.",
+    "id": "rrr-original",
+    "title": "RRR",
+    "description": "Rise. Roar. Revolt. The legend of Ram and Bheem — assembled by the FrameHouse collective.",
     "coverImage": "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=1920",
     "stats": { "presence": 1500, "members": 2100, "releases": 8 },
-    "releaseDate": "February 28, 2024"
+    "releaseDate": "March 25, 2022"
   },
   {
-    "id": "madmax-original",
-    "title": "Mad Max: Fury Road",
-    "description": "Witness the glory of the wasteland. Curated by the War Boys.",
+    "id": "kgf-original",
+    "title": "KGF: Chapter 2",
+    "description": "Rocky Bhai doesn't bow. The empire of Kolar Gold Fields — the FrameHouse raw cut.",
     "coverImage": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=1920",
     "stats": { "presence": 3000, "members": 4500, "releases": 15 },
-    "releaseDate": "May 15, 2015"
+    "releaseDate": "April 14, 2022"
   },
   {
-    "id": "interstellar-original",
-    "title": "Interstellar",
-    "description": "Love is the one thing that transcends time and space.",
+    "id": "baahubali-original",
+    "title": "Baahubali",
+    "description": "Why did Kattappa kill Baahubali? The saga that shook the world — archived by FrameHouse.",
     "coverImage": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=1920",
     "stats": { "presence": 842, "members": 1200, "releases": 5 },
-    "releaseDate": "November 7, 2014"
+    "releaseDate": "July 10, 2015"
   },
   {
-    "id": "matrix-original",
-    "title": "The Matrix",
-    "description": "Follow the glitch. A curated original of code, prophecy, and digital rebellion.",
+    "id": "vikram-original",
+    "title": "Vikram",
+    "description": "Karnan returns. A multi-star collision of vengeance and loyalty — curated by the FrameHouse vault.",
     "coverImage": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1920",
     "stats": { "presence": 2100, "members": 2600, "releases": 10 },
-    "releaseDate": "March 31, 1999"
+    "releaseDate": "June 3, 2022"
   }
 ]

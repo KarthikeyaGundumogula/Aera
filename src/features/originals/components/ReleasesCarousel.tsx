@@ -22,6 +22,7 @@ export function ReleasesCarousel({
   const [direction, setDirection] = useState(0);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isDragging = useRef(false);
 
   const nextSlide = useCallback(() => {
     setDirection(1);
@@ -46,26 +47,35 @@ export function ReleasesCarousel({
     
     timerRef.current = setInterval(() => {
       nextSlide();
-    }, 12000);
+    }, 5000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [nextSlide, activeIndex, isTheaterMode]);
 
-  // Swipe handlers using Framer Motion's Pan gestures
-  const handlePanEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
+  // Swipe handlers: draggable and responsive
+  const handleDragStart = () => {
+    isDragging.current = true;
+  };
+
+  const handleDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
     if (isTheaterMode) return;
     
-    // Threshold for swipe: 50px or significant velocity
-    const SWIPE_THRESHOLD = 50;
-    const VELOCITY_THRESHOLD = 500;
+    // Lower threshold for a lighter swipe feel
+    const SWIPE_THRESHOLD = 30;
+    const VELOCITY_THRESHOLD = 400;
 
     if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -VELOCITY_THRESHOLD) {
       nextSlide();
     } else if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > VELOCITY_THRESHOLD) {
       prevSlide();
     }
+    
+    // Clear drag state slightly after end to catch any pending tap events
+    setTimeout(() => {
+      isDragging.current = false;
+    }, 100);
   };
 
   if (!items.length) return null;
@@ -82,7 +92,9 @@ export function ReleasesCarousel({
   };
 
   const youtubeId = getYoutubeId(activeItem.embedUrl || '');
-  const embedUrl = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0&rel=0&modestbranding=1`;
+  const embedUrl = youtubeId 
+    ? `https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&modestbranding=1`
+    : null;
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -105,16 +117,10 @@ export function ReleasesCarousel({
   };
 
   return (
-    <motion.div 
+    <div 
       className={`relative w-full h-full overflow-hidden bg-[#050505] group ${
         String(activeItem.id).includes('main-poster') && !isTheaterMode ? 'cursor-default' : 'cursor-pointer'
       }`}
-      onPanEnd={handlePanEnd}
-      onTap={() => {
-        if (!isTheaterMode && !String(activeItem.id).includes('main-poster')) {
-          onToggleTheater?.();
-        }
-      }}
     >
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
@@ -127,6 +133,16 @@ export function ReleasesCarousel({
           transition={{
             x: { type: "spring", stiffness: 300, damping: 30 },
             opacity: { duration: 0.2 }
+          }}
+          drag={isTheaterMode ? false : "x"}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.1}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onTap={() => {
+            if (!isDragging.current && !isTheaterMode && !String(activeItem.id).includes('main-poster')) {
+              onToggleTheater?.();
+            }
           }}
           className="absolute inset-0 w-full h-full"
         >
@@ -159,7 +175,7 @@ export function ReleasesCarousel({
                 />
 
                 {/* YouTube Embed Layer */}
-                {isYouTube && isTheaterMode && (
+                {isYouTube && isTheaterMode && embedUrl && (
                   <div className="absolute inset-0 p-4 md:p-12 flex items-center justify-center">
                     <div className="w-full max-w-[1280px] aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-black">
                       <iframe
@@ -294,6 +310,6 @@ export function ReleasesCarousel({
           </AnimatePresence>
         </motion.div>
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

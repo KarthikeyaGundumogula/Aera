@@ -4,16 +4,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
-import { PosterModal, ScriptModal, EditModal } from "../shared/modals";
 import { PresenceIcon } from "../../components/icons/AppIcons";
 import { Logo } from "../../components/Logo";
-import { ArtistProfile, StarProfile } from "../shared/profile";
-
+import { ArtistProfile, PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
 
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleasesCarousel } from "./components/ReleasesCarousel";
 import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
+import { OriginalStats } from "./components/OriginalStats";
+import { WorkModal } from "../shared/modals";
 
 
 export function OriginalPage() {
@@ -172,53 +172,7 @@ export function OriginalPage() {
           )}
         </AnimatePresence>
 
-        {/* Stats Container (Moved inside hero overlay) */}
-        <AnimatePresence>
-          {!isTheaterMode && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-0 left-0 w-full px-8 pb-2 z-20 pointer-events-none"
-            >
-              <div className="flex items-center gap-8 md:gap-12 py-4 border-t border-white/10">
-                <div className="flex flex-col pointer-events-auto">
-                  <div className="flex items-center gap-2 mb-1">
-                    <PresenceIcon className="w-3 h-3 text-yellow-400" />
-                    <span className="text-lg font-bold drop-shadow-2xl">
-                      {original.stats.presence}
-                    </span>
-                  </div>
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
-                    Presence
-                  </span>
-                </div>
-                <div className="flex flex-col pointer-events-auto">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Users className="w-3 h-3 text-blue-400" />
-                    <span className="text-lg font-bold drop-shadow-2xl">
-                      {original.stats.members}
-                    </span>
-                  </div>
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
-                    Artists
-                  </span>
-                </div>
-                <div className="flex flex-col pointer-events-auto">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Film className="w-3 h-3 text-purple-400" />
-                    <span className="text-lg font-bold drop-shadow-2xl">
-                      {original.stats.releases}
-                    </span>
-                  </div>
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
-                    Releases
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <OriginalStats stats={original.stats} isTheaterMode={isTheaterMode} />
       </motion.div>
 
       {/* Star Spotlight */}
@@ -232,12 +186,13 @@ export function OriginalPage() {
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
             {STARS_MOCK.map((star) => (
-            <StarProfile 
-              key={star.actorName} 
-              person={star} 
-              delay={STARS_MOCK.indexOf(star) * 0.15}
-            />
-          ))}
+              <PersonProfile 
+                key={star.actorName} 
+                person={star} 
+                delay={STARS_MOCK.indexOf(star) * 0.15}
+                type="Star"
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -253,13 +208,12 @@ export function OriginalPage() {
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
             {MAKERS_MOCK.map((maker) => (
-            <StarProfile 
-              key={maker.actorName} 
-              person={maker} 
-              delay={MAKERS_MOCK.indexOf(maker) * 0.15}
-              type="Maker"
-            />
-          ))}
+              <MakerProfile 
+                key={maker.actorName} 
+                person={maker} 
+                delay={MAKERS_MOCK.indexOf(maker) * 0.15}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -318,15 +272,10 @@ export function OriginalPage() {
         </div>
       </div>
 
-      {selectedItem?.category === "Edit" && (
-        <EditModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
-      {selectedItem?.category === "Poster" && (
-        <PosterModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
-      {selectedItem?.category === "Script" && (
-        <ScriptModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
+      <WorkModal 
+        item={selectedItem} 
+        onClose={() => setSelectedItem(null)} 
+      />
 
       {/* Footer Space */}
       <div className="h-24" />

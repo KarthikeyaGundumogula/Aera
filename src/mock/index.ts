@@ -100,6 +100,11 @@ export const STARS_MOCK = starsData as OriginalStar[];
 export const MAKERS_MOCK = makersData as OriginalMaker[];
 
 /**
+ * ARTISTS_MOCK — All fan creators as a flat array.
+ */
+export const ARTISTS_MOCK = ALL_ARTISTS.map(({ originalId: _, ...rest }) => rest as OriginalArtist);
+
+/**
  * SETS — Curated collections.
  */
 export const SETS = setsData as TheatreItem[];

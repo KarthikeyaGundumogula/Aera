@@ -1,8 +1,11 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, { useState } from "react";
-import { Info, Eye, EyeOff, RotateCw } from "lucide-react";
-import { TheatreItem } from "../../../types";
+import { Info, Eye, EyeOff, RotateCw, ArrowUpRight } from "lucide-react";
+import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
+import { useNavigate } from "react-router-dom";
+import { ArtistProfile } from "../profile";
+import { ARTISTS_MOCK } from "../../../mock";
 
 interface PosterModalProps {
   item: TheatreItem | null;
@@ -12,7 +15,9 @@ interface PosterModalProps {
 export function PosterModal({ item, onClose }: PosterModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isClutterFree, setIsClutterFree] = useState(false);
+  const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [naturalAspect, setNaturalAspect] = useState(item?.aspectRatio || 2 / 3);
+  const navigate = useNavigate();
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = e.currentTarget;
@@ -32,7 +37,7 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
 
   return (
     <ModalWrapper isOpen={!!item} onClose={onClose}>
-      <div className="relative group/modal-item flex flex-col items-center justify-center w-full max-w-full gap-4 sm:gap-8" onClick={(e) => e.stopPropagation()}>
+      <div className="relative group/modal-item flex flex-col items-center justify-center w-fit max-w-full gap-4 sm:gap-8" onClick={(e) => e.stopPropagation()}>
         <div 
           className="relative perspective-1000 shrink-0 min-w-[300px]"
           style={containerStyle}
@@ -108,18 +113,47 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 sm:gap-8">
-                     <div>
-                        <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Artist</p>
-                        <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate">{item.artist || item.origins || "Unknown"}</p>
-                     </div>
-                     <div>
-                        <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Origins</p>
-                        <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate">{item.origins || "Independent"}</p>
-                     </div>
-                     <div>
-                        <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Credits</p>
-                        <p className="text-xs sm:text-sm font-bold text-yellow-500 font-mono">{item.credits || 0}</p>
-                     </div>
+                      <div 
+                        className="cursor-pointer group/artist"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const artistData = ARTISTS_MOCK.find(a => a.name === item.artist);
+                          setSelectedArtist(artistData || {
+                            id: String(item.id),
+                            name: item.artist || "Anonymous",
+                            avatar: item.artistAvatar,
+                            presence: item.presence || 0,
+                            role: "Collective Artist",
+                            image: item.artistAvatar || item.image
+                          });
+                        }}
+                      >
+                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2 group-hover/artist:text-white/50 transition-colors">Artist</p>
+                         <div className="flex items-center gap-1.5">
+                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/artist:text-yellow-400 transition-colors underline decoration-white/0 group-hover/artist:decoration-yellow-400/30 underline-offset-4">{item.artist || "Aera Collective"}</p>
+                           <ArrowUpRight size={10} className="text-white/10 group-hover/artist:text-yellow-400/50 transition-colors" />
+                         </div>
+                      </div>
+                      <div 
+                        className="cursor-pointer group/orig"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.originalId) {
+                            onClose();
+                            navigate(`/originals/${item.originalId}`);
+                          }
+                        }}
+                      >
+                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2 group-hover/orig:text-white/50 transition-colors">Original</p>
+                         <div className="flex items-center gap-1.5">
+                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/orig:text-yellow-400 transition-colors uppercase tracking-widest">{item.origins || "Independent"}</p>
+                           <ArrowUpRight size={10} className="text-white/10 group-hover/orig:text-yellow-400/50 transition-colors" />
+                         </div>
+                      </div>
+                      <div>
+                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Credits</p>
+                         <p className="text-xs sm:text-sm font-bold text-yellow-500 font-mono">{item.credits || 0}</p>
+                      </div>
                      <div>
                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Format</p>
                         <p className="text-xs sm:text-sm font-bold text-[#EAEAEA]">Poster / Fragment</p>
@@ -172,6 +206,12 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
             </button>
         </div>
       </div>
+      
+      {/* Artist Profile Integration */}
+      <ArtistProfile 
+        artist={selectedArtist} 
+        onClose={() => setSelectedArtist(null)} 
+      />
     </ModalWrapper>
   );
 }

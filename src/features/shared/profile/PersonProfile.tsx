@@ -1,16 +1,16 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { memo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { OriginalStar } from "../../../types";
+import { OriginalStar, OriginalMaker } from "../../../types";
 import { CreditTag } from "../tags";
 
-interface StarProfileProps {
-  person: OriginalStar;
+interface PersonProfileProps {
+  person: OriginalStar | OriginalMaker;
   delay?: number;
   type?: 'Star' | 'Maker';
 }
 
-export const StarProfile = memo(({ person, delay = 0, type = 'Star' }: StarProfileProps) => {
+export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonProfileProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
     const navigate = useNavigate();
@@ -27,18 +27,25 @@ export const StarProfile = memo(({ person, delay = 0, type = 'Star' }: StarProfi
       };
     }, [isOpen]);
 
+    // Reset flip state when modal closes
+    useEffect(() => {
+      if (!isOpen) {
+        setIsFlipped(false);
+      }
+    }, [isOpen]);
+
+
     const nameParts = person.actorName.split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    const handleProjectClick = (id: string) => {
+    const handleProjectClick = () => {
       setIsOpen(false);
-      navigate(`/originals/${id}`);
     };
 
     return (
       <>
-        {/* STAR CARD (TRIGGER - FILM STRIP STYLE) */}
+        {/* PROFILE CARD (TRIGGER - FILM STRIP STYLE) */}
         <motion.div
           onClick={() => setIsOpen(true)}
           initial={{ opacity: 0, y: 24 }}
@@ -119,14 +126,15 @@ export const StarProfile = memo(({ person, delay = 0, type = 'Star' }: StarProfi
                   onClick={(e) => {
                     e.stopPropagation();
                     // Prevent flipping if an interactive element (like CreditTag) was clicked
-                    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('a')) return;
+                    const target = e.target as HTMLElement;
+                    if (target.closest('button') || target.closest('a')) return;
                     setIsFlipped(!isFlipped);
                   }}
                   className="relative w-full h-full cursor-pointer"
                 >
                   {/* FRONT SIDE (FILM STRIP MODAL STYLE) */}
                   <div 
-                    className="w-full backface-hidden"
+                    className={`w-full backface-hidden ${isFlipped ? "pointer-events-none" : ""}`}
                     style={{ backfaceVisibility: "hidden" }}
                   >
                     <div className="relative w-full aspect-[2/3] bg-[#0A0A0A] rounded-[24px] overflow-hidden flex shadow-2xl border border-white/10">
@@ -210,7 +218,7 @@ export const StarProfile = memo(({ person, delay = 0, type = 'Star' }: StarProfi
 
                   {/* BACK SIDE (THE NEON VAULT) */}
                   <div 
-                    className="absolute inset-0 w-full h-full rotate-y-180 backface-hidden"
+                    className={`absolute inset-0 w-full h-full rotate-y-180 backface-hidden ${!isFlipped ? "pointer-events-none" : ""}`}
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                   >
                     <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-[#050505] border border-white/10 shadow-2xl flex flex-col backdrop-blur-3xl aspect-[2/3]">
@@ -230,7 +238,7 @@ export const StarProfile = memo(({ person, delay = 0, type = 'Star' }: StarProfi
                         >
                           {person.workedOn?.map((project, pIdx) => (
                             <CreditTag 
-                              key={project.id}
+                              key={project.projectMeta?.id || project.id}
                               id={project.id}
                               title={project.title}
                               index={pIdx}

@@ -1,9 +1,12 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useEffect, useState, useRef } from "react";
-import { Info, Eye, EyeOff, RotateCw } from "lucide-react";
-import { TheatreItem } from "../../../types";
+import { Info, Eye, EyeOff, RotateCw, ArrowUpRight } from "lucide-react";
+import { TheatreItem, OriginalArtist } from "../../../types";
 import { Logo } from "../../../components/Logo";
 import { ModalWrapper } from "./ModalWrapper";
+import { useNavigate } from "react-router-dom";
+import { ORIGINALS_DATA, ARTISTS_MOCK } from "../../../mock";
+import { ArtistProfile } from "../profile";
 
 interface EditModalProps {
   item: TheatreItem | null;
@@ -13,7 +16,9 @@ interface EditModalProps {
 export function EditModal({ item, onClose }: EditModalProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const navigate = useNavigate();
 
   // Reset states when item changes
   useEffect(() => {
@@ -37,18 +42,36 @@ export function EditModal({ item, onClose }: EditModalProps) {
   useEffect(() => {
     if (!item || item.platform !== 'twitter' || isFlipped) return;
 
+    let isMounted = true;
+    let fallbackTimeout: NodeJS.Timeout;
+
+    // Safety fallback: if Twitter takes too long, just show the content
+    fallbackTimeout = setTimeout(() => {
+      if (isMounted && !isLoaded) {
+        setIsLoaded(true);
+      }
+    }, 3500);
+
     const loadTwitter = () => {
-      if ((window as any).twttr?.widgets) {
-        (window as any).twttr.widgets.load().then(() => {
-          setIsLoaded(true);
+      if (!isMounted) return;
+      
+      const twttr = (window as any).twttr;
+      
+      if (twttr?.widgets) {
+        twttr.widgets.load().then(() => {
+          if (isMounted) setIsLoaded(true);
         }).catch(() => {
-          // If Twitter fails to load (ad-blockers, network), still reveal the modal
-          setIsLoaded(true);
+          if (isMounted) setIsLoaded(true);
         });
+      } else if (isMounted) {
+        // If twttr is defined but not ready, check again in a moment
+        setTimeout(loadTwitter, 100);
       }
     };
 
-    if (!(window as any).twttr) {
+    const existingScript = document.querySelector('script[src*="platform.twitter.com/widgets.js"]');
+    
+    if (!(window as any).twttr && !existingScript) {
       const script = document.createElement("script");
       script.src = "https://platform.twitter.com/widgets.js";
       script.async = true;
@@ -57,6 +80,11 @@ export function EditModal({ item, onClose }: EditModalProps) {
     } else {
       loadTwitter();
     }
+
+    return () => {
+      isMounted = false;
+      clearTimeout(fallbackTimeout);
+    };
   }, [item, isFlipped]); // Re-run hydration when flipping back
 
   if (!item) return null;
@@ -102,6 +130,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
                 <div className="w-full aspect-video rounded-lg overflow-hidden border border-white/5 shadow-2xl">
                   <iframe
                     ref={iframeRef}
+                    id={`yt-player-${item.id}`}
                     src={youtubeUrl}
                     className="w-full h-full border-none"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -175,18 +204,51 @@ export function EditModal({ item, onClose }: EditModalProps) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-6 sm:gap-y-8">
-                  <div className="space-y-1 sm:space-y-1.5">
-                    <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">Artist</p>
-                    <p className="text-xs sm:text-sm font-bold text-white/90 truncate">{item.artist || "Anonymous"}</p>
+                <div className="grid grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-6 sm:gap-y-8 pb-4">
+                  <div 
+                    className="space-y-1 sm:space-y-1.5 cursor-pointer group/artist"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const artistData = ARTISTS_MOCK.find(a => a.name === item.artist);
+                      setSelectedArtist(artistData || {
+                        id: String(item.id),
+                        name: item.artist || "Anonymous",
+                        avatar: item.artistAvatar,
+                        presence: item.presence || 0,
+                        role: "Collective Artist",
+                        image: item.artistAvatar || item.image // Fallback img
+                      });
+                    }}
+                  >
+                    <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 group-hover/artist:text-white/40 transition-colors">Artist</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs sm:text-sm font-bold text-white/90 truncate group-hover/artist:text-yellow-400 transition-colors underline decoration-white/0 group-hover/artist:decoration-yellow-400/30 underline-offset-4">
+                        {item.artist || "Aera Collective"}
+                      </p>
+                      <ArrowUpRight size={10} className="text-white/10 group-hover/artist:text-yellow-400/50 transition-colors" />
+                    </div>
                   </div>
                   <div className="space-y-1 sm:space-y-1.5">
                     <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">Credits</p>
                     <p className="text-xs sm:text-sm font-bold text-yellow-500 font-mono tracking-tighter">{item.credits || 0}</p>
                   </div>
-                  <div className="space-y-1.5">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">Platform</p>
-                    <p className="text-sm font-bold text-white/90 uppercase tracking-widest">{item.platform}</p>
+                  <div 
+                    className="space-y-1.5 cursor-pointer group/orig"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (item.originalId) {
+                        onClose();
+                        navigate(`/originals/${item.originalId}`);
+                      }
+                    }}
+                  >
+                    <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 group-hover/orig:text-white/40 transition-colors">Original</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-white/90 uppercase tracking-widest group-hover/orig:text-yellow-400 transition-colors truncate">
+                        {item.origins || "Archive"}
+                      </p>
+                      <ArrowUpRight size={10} className="text-white/10 group-hover/orig:text-yellow-400/50 transition-colors" />
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">Format</p>
@@ -211,6 +273,12 @@ export function EditModal({ item, onClose }: EditModalProps) {
           </div>
         </motion.div>
       </div>
+      
+      {/* Artist Profile Integration */}
+      <ArtistProfile 
+        artist={selectedArtist} 
+        onClose={() => setSelectedArtist(null)} 
+      />
     </ModalWrapper>
   );
 }

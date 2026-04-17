@@ -1,9 +1,13 @@
 import { motion } from "motion/react";
 import React from "react";
-import { LayoutPanelLeft, X } from "lucide-react";
-import { TheatreItem } from "../../../types";
+import { LayoutPanelLeft, X, ArrowUpRight } from "lucide-react";
+import { TheatreItem, OriginalArtist } from "../../../types";
 import { ScriptWork } from "../work/ScriptWork";
 import { ModalWrapper } from "./ModalWrapper";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArtistProfile } from "../profile";
+import { ARTISTS_MOCK } from "../../../mock";
 
 interface ScriptModalProps {
   item: TheatreItem | null;
@@ -11,6 +15,9 @@ interface ScriptModalProps {
 }
 
 export function ScriptModal({ item, onClose }: ScriptModalProps) {
+  const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
+  const navigate = useNavigate();
+
   if (!item) return null;
 
   return (
@@ -75,26 +82,62 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
           </div>
 
           <div className="flex items-center justify-between border-t border-black/8 px-5 py-4 sm:px-7">
-            <div className="flex items-center gap-3 text-[#1f1d19]">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/5">
+            <div 
+              className="flex items-center gap-3 text-[#1f1d19] cursor-pointer group/artist"
+              onClick={(e) => {
+                e.stopPropagation();
+                const artistData = ARTISTS_MOCK.find(a => a.name === item.artist);
+                setSelectedArtist(artistData || {
+                  id: String(item.id),
+                  name: item.artist || "Anonymous",
+                  avatar: item.artistAvatar,
+                  presence: item.presence || 0,
+                  role: "Collective Artist",
+                  image: item.artistAvatar || item.image
+                });
+              }}
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/5 group-hover/artist:bg-black group-hover/artist:text-white transition-all">
                 <LayoutPanelLeft className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-black/35">
-                  Credits
+                <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-black/35 group-hover/artist:text-black/50 transition-colors">
+                  Artist Credits
                 </p>
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em]">
-                  {item.credits || 0}
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] group-hover/artist:text-brand-accent transition-colors">
+                  {item.artist || "Aera Collective"}
                 </p>
+                <ArrowUpRight size={10} className="absolute -top-1 -right-4 text-black/10 group-hover/artist:text-brand-accent/50 transition-colors" />
               </div>
             </div>
 
-            <p className="max-w-[45%] text-right text-[9px] font-bold uppercase tracking-[0.22em] text-black/35">
-              {item.origins || "FrameHouse Script Archive"}
-            </p>
+            <div 
+              className="max-w-[45%] text-right cursor-pointer group/orig"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (item.originalId) {
+                  onClose();
+                  navigate(`/originals/${item.originalId}`);
+                }
+              }}
+            >
+               <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-black/25 mb-1 group-hover/orig:text-black/40 transition-colors">Original</p>
+               <div className="flex items-center justify-end gap-1">
+                 <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/35 group-hover/orig:text-black transition-colors">
+                   {item.origins || "Archive"}
+                 </p>
+                 <ArrowUpRight size={10} className="text-black/10 group-hover/orig:text-black/40 transition-colors" />
+               </div>
+            </div>
           </div>
         </div>
       </motion.div>
+      
+      {/* Artist Profile Integration */}
+      <ArtistProfile 
+        artist={selectedArtist} 
+        onClose={() => setSelectedArtist(null)} 
+      />
     </ModalWrapper>
   );
 }

@@ -1,3 +1,3 @@
 export * from "./ArtistProfile";
-export * from "./StarProfile";
+export * from "./PersonProfile";
 export * from "./MakerProfile";

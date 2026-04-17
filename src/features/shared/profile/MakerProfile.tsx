@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { StarProfile } from "./StarProfile";
+import { PersonProfile } from "./PersonProfile";
 import { OriginalMaker } from "../../../types";
 
 interface MakerProfileProps {
@@ -9,5 +9,5 @@ interface MakerProfileProps {
 }
 
 export const MakerProfile = memo((props: MakerProfileProps) => (
-  <StarProfile {...props} type="Maker" />
+  <PersonProfile {...props} type="Maker" />
 ));

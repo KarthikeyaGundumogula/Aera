@@ -7,7 +7,7 @@ import { buildClusters } from "../theatre/engine/clusterBuilder";
 import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "../theatre/components/desktop/StaticDesktopCluster";
 import { MobileClusterView } from "../theatre/components/mobile/MobileClusterView";
-import { PosterModal, ScriptModal, EditModal } from "../shared/modals";
+import { WorkModal } from "../shared/modals";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatreItem } from "../../types";
 
@@ -156,15 +156,10 @@ export function OriginalsTheatrePage() {
         )}
       </main>
 
-      {selectedItem?.category === "Edit" && (
-        <EditModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
-      {selectedItem?.category === "Poster" && (
-        <PosterModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
-      {selectedItem?.category === "Script" && (
-        <ScriptModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-      )}
+      <WorkModal 
+        item={selectedItem} 
+        onClose={() => setSelectedItem(null)} 
+      />
 
       {/* Footer Branding */}
       <footer className="p-12 border-t border-white/5 flex flex-col items-center gap-6 opacity-30">

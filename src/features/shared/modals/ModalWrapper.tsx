@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, { useEffect, ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalWrapperProps {
   isOpen: boolean;
@@ -31,7 +32,7 @@ export function ModalWrapper({
     };
   }, [isOpen, onClose]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -43,17 +44,18 @@ export function ModalWrapper({
           onClick={onClose}
         >
           {/* Cinematic Noise Texture Layer */}
-          <div className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+          <div className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22n%22 x=%220%22 y=%220%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22 opacity=%220.4%22/%3E%3C/svg%3E')]" />
           
           {/* Subtle Ambient Glows */}
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.03),transparent_40%),radial-gradient(circle_at_bottom,rgba(202,168,121,0.05),transparent_40%)]" />
 
           {/* Modal Content - Zenters content and provides full-width canvas for expansion */}
-          <div className="relative z-10 w-full flex justify-center p-2">
+          <div className="relative z-10 flex justify-center p-2">
             {children}
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

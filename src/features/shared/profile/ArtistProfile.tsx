@@ -12,15 +12,27 @@ import { OriginalArtist } from "../../../types";
 import { CreditTag } from "../tags";
 
 interface ArtistProfileProps {
-  artist: OriginalArtist;
-  index: number;
+  artist: OriginalArtist | null;
+  onClose?: () => void;
+  index?: number;
   variant?: "default" | "featured";
 }
 
 export const ArtistProfile = memo(
-  ({ artist, index, variant = "default" }: ArtistProfileProps) => {
-    const [isOpen, setIsOpen] = useState(false);
+  ({ artist, index = 0, variant = "default", onClose }: ArtistProfileProps) => {
+    const [localIsOpen, setLocalIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
+    
+    // Support both internal (click card) and external (WorkModal) triggers
+    const isOpen = onClose ? !!artist : localIsOpen;
+    const setIsOpen = (val: boolean) => {
+      if (onClose && !val) {
+        onClose();
+      } else {
+        setLocalIsOpen(val);
+      }
+    };
+
     const isFeatured = variant === "featured";
     const portraitRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
@@ -65,80 +77,84 @@ export const ArtistProfile = memo(
       };
     }, [isOpen]);
 
+    if (!artist) return null;
+
     const fhUid = `FH-ID-${artist.id.toUpperCase().replace("-", "")}`;
 
-    const handleProjectClick = (id: string) => {
+    const handleProjectClick = () => {
       setIsOpen(false);
-      navigate(`/originals/${id}`);
     };
 
     return (
       <>
-        <motion.div
-          onClick={() => setIsOpen(true)}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: (index % 5) * 0.05 }}
-          className={`group relative overflow-hidden cursor-pointer ${isFeatured ? "aspect-[3.5/1]" : "aspect-[3.2/1]"}`}
-        >
-          <div className="flex h-full items-center gap-2 px-1 py-1">
-            <div
-              className={`shrink-0 overflow-hidden rounded-full ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
-            >
-              <img
-                src={artist.image}
-                alt={artist.name}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-            </div>
-
-            <div
-              className={`min-w-0 ${isFeatured ? "space-y-0.5 md:space-y-1" : "space-y-1"}`}
-            >
-              <h4
-                className={`truncate font-bold uppercase tracking-tight text-white ${isFeatured ? "text-xs md:text-base" : "text-sm md:text-[15px]"}`}
+        {/* CARD TRIGGER - Film Strip Style (Only show if not an external modal) */}
+        {!onClose && (
+          <motion.div
+            onClick={() => setIsOpen(true)}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: (index % 5) * 0.05 }}
+            className={`group relative overflow-hidden cursor-pointer ${isFeatured ? "aspect-[3.5/1]" : "aspect-[3.2/1]"}`}
+          >
+            <div className="flex h-full items-center gap-2 px-1 py-1">
+              <div
+                className={`shrink-0 overflow-hidden rounded-full ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
               >
-                {artist.name}
-              </h4>
+                <img
+                  src={artist.image}
+                  alt={artist.name}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
 
               <div
-                className={`flex items-center ${isFeatured ? "gap-3 md:gap-5" : "gap-3 md:gap-4"}`}
+                className={`min-w-0 ${isFeatured ? "space-y-0.5 md:space-y-1" : "space-y-1"}`}
               >
-                <div>
-                  <p
-                    className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
-                  >
-                    <PresenceIcon
-                      className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
-                    />
-                    Presence
-                  </p>
-                  <p
-                    className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
-                  >
-                    {artist.presence}
-                  </p>
-                </div>
-                <div>
-                  <p
-                    className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
-                  >
-                    <ReleasesIcon
-                      className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
-                    />
-                    Works
-                  </p>
-                  <p
-                    className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
-                  >
-                    {artist.works}
-                  </p>
+                <h4
+                  className={`truncate font-bold uppercase tracking-tight text-white ${isFeatured ? "text-xs md:text-base" : "text-sm md:text-[15px]"}`}
+                >
+                  {artist.name}
+                </h4>
+
+                <div
+                  className={`flex items-center ${isFeatured ? "gap-3 md:gap-5" : "gap-3 md:gap-4"}`}
+                >
+                  <div>
+                    <p
+                      className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
+                    >
+                      <PresenceIcon
+                        className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
+                      />
+                      Presence
+                    </p>
+                    <p
+                      className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
+                    >
+                      {artist.presence}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
+                    >
+                      <ReleasesIcon
+                        className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
+                      />
+                      Works
+                    </p>
+                    <p
+                      className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
+                    >
+                      {artist.works}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         <AnimatePresence>
           {isOpen && (
@@ -162,18 +178,15 @@ export const ArtistProfile = memo(
                   onClick={(e) => {
                     e.stopPropagation();
                     // Prevent flipping if an interactive element (like CreditTag or Social Link) was clicked
-                    if (
-                      (e.target as HTMLElement).closest("button") ||
-                      (e.target as HTMLElement).closest("a")
-                    )
-                      return;
+                    const target = e.target as HTMLElement;
+                    if (target.closest("button") || target.closest("a")) return;
                     setIsFlipped(!isFlipped);
                   }}
                   className="relative w-full h-full cursor-pointer"
                 >
                   {/* FRONT SIDE (RESTORED CLASSIC ID CARD) */}
                   <div
-                    className="w-full backface-hidden"
+                    className={`w-full backface-hidden ${isFlipped ? "pointer-events-none" : ""}`}
                     style={{ backfaceVisibility: "hidden" }}
                   >
                     <div className="relative w-full rounded-[32px] overflow-hidden bg-black/40 border border-white/5 shadow-2xl flex flex-col backdrop-blur-3xl">
@@ -292,7 +305,7 @@ export const ArtistProfile = memo(
 
                   {/* BACK SIDE (THE NEON VAULT) */}
                   <div
-                    className="absolute inset-0 w-full h-full rotate-y-180 backface-hidden"
+                    className={`absolute inset-0 w-full h-full rotate-y-180 backface-hidden ${!isFlipped ? "pointer-events-none" : ""}`}
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",

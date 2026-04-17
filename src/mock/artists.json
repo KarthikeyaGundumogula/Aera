@@ -2,7 +2,7 @@
   {
     "id": "fh-001",
     "name": "Karthik G",
-    "bio": "Cinematic visualist specializing in high-fidelity motion design and obsidian-themed aesthetics. Pushing the boundaries of FrameHouse.",
+    "bio": "Cinematic visualist from Hyderabad. Specializes in high-fidelity motion design and south-noir aesthetics. Pushing the boundaries of FrameHouse.",
     "presence": 1540,
     "works": 24,
     "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
@@ -12,45 +12,45 @@
       "youtube": "KarthikGVisuals"
     },
     "workedOn": [
-      { "id": "alchemist-original", "title": "The Alchemist" },
-      { "id": "dune-original", "title": "Dune: Part Two" },
-      { "id": "madmax-original", "title": "Mad Max" },
-      { "id": "interstellar-original", "title": "Interstellar" }
+      { "id": "og-original", "title": "OG" },
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "kgf-original", "title": "KGF: Chapter 2" },
+      { "id": "baahubali-original", "title": "Baahubali" }
     ]
   },
   {
     "id": "fh-002",
-    "name": "Sarah Chen",
-    "bio": "Lead archivist at FrameHouse. Specializes in neon-noir color grading and immersive digital storytelling.",
+    "name": "Priya Nair",
+    "bio": "Lead archivist from Chennai. Specializes in golden-hour color grading and immersive South Indian cinematic storytelling.",
     "presence": 842,
     "works": 12,
     "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800&auto=format&fit=crop",
     "socials": {
-      "instagram": "@sarah_archives",
-      "twitter": "@schen_vfx"
+      "instagram": "@priya_archives",
+      "twitter": "@priya_nair_vfx"
     },
     "workedOn": [
-      { "id": "matrix-original", "title": "The Matrix" },
-      { "id": "interstellar-original", "title": "Interstellar" },
-      { "id": "alchemist-original", "title": "The Alchemist" },
-      { "id": "dune-original", "title": "Dune: Part Two" }
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "baahubali-original", "title": "Baahubali" },
+      { "id": "og-original", "title": "OG" },
+      { "id": "rrr-original", "title": "RRR" }
     ]
   },
   {
     "id": "fh-003",
-    "name": "Marcus Vane",
-    "bio": "Obsidian sculptor and interface designer. Crafting the future of cinematic interactivity within the pool.",
+    "name": "Arjun Reddy",
+    "bio": "Visual sculptor from Bangalore. Crafting the future of cinematic interactivity around the Tollywood and Kollywood universes.",
     "presence": 620,
     "works": 8,
     "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
     "socials": {
-      "instagram": "@m_vane_design"
+      "instagram": "@arjun_reddy_cuts"
     },
     "workedOn": [
-      { "id": "madmax-original", "title": "Mad Max" },
-      { "id": "matrix-original", "title": "The Matrix" },
-      { "id": "dune-original", "title": "Dune: Part Two" },
-      { "id": "alchemist-original", "title": "The Alchemist" }
+      { "id": "kgf-original", "title": "KGF: Chapter 2" },
+      { "id": "vikram-original", "title": "Vikram" },
+      { "id": "rrr-original", "title": "RRR" },
+      { "id": "og-original", "title": "OG" }
     ]
   }
 ]
