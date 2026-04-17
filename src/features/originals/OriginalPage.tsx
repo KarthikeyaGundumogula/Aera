@@ -75,7 +75,7 @@ export function OriginalPage() {
     : (isMobile ? "h-[65vh]" : "h-[75vh]");
 
   return (
-    <div className="min-h-screen bg-[#050505] overflow-y-auto no-scrollbar">
+    <div className={`min-h-screen bg-[#050505] overflow-y-auto no-scrollbar transition-all duration-300 ${!isTheaterMode ? "pt-[68px] md:pt-[72px]" : ""}`}>
       {/* Hero Header Transformation */}
       <motion.div 
         animate={{ height: isTheaterMode ? (isMobile ? "56.25vw" : "85vh") : (isMobile ? "65vh" : "75vh") }}
