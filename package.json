@@ -11,21 +11,21 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "@vitejs/plugin-react": "^6.0.1",
-    "lucide-react": "^",
-    "motion": "^12.38.0",
-    "react": "^",
-    "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.1",
-    "vite": "^8.0.8"
+    "@tailwindcss/vite": "4.2.2",
+    "@vitejs/plugin-react": "6.0.1",
+    "lucide-react": "^0.454.0",
+    "motion": "12.38.0",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-router-dom": "7.14.1",
+    "vite": "8.0.8"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "autoprefixer": "^10.5.0",
-    "tailwindcss": "^4.2.2",
-    "tsx": "^4.21.0",
+    "@types/node": "25.6.0",
+    "autoprefixer": "10.5.0",
+    "tailwindcss": "4.2.2",
+    "tsx": "4.21.0",
     "typescript": "~6.0.3",
-    "vite": "^8.0.8"
+    "vite": "8.0.8"
   }
 }
