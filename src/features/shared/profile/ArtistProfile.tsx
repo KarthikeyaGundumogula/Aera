@@ -20,6 +20,8 @@ interface ArtistProfileProps {
 
 export const ArtistProfile = memo(
   ({ artist, index = 0, variant = "default", onClose }: ArtistProfileProps) => {
+    if (!artist) return null;
+
     const [localIsOpen, setLocalIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
     

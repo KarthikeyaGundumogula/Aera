@@ -89,13 +89,13 @@ export function EditModal({ item, onClose }: EditModalProps) {
 
   if (!item) return null;
 
-  const maxWidthClass = item.platform === 'youtube' ? 'max-w-[1000px]' : 'max-w-[640px]';
+  const maxWidthClass = item.platform === 'youtube' ? 'max-w-[1000px]' : 'max-w-[560px]';
   const youtubeUrl = item.platform === 'youtube' 
     ? `${item.embedUrl}${item.embedUrl.includes('?') ? '&' : '?'}enablejsapi=1` 
     : '';
 
   return (
-    <ModalWrapper isOpen={!!item} onClose={onClose}>
+    <ModalWrapper isOpen={!!item} onClose={onClose} isImmersive>
       <div 
         className={`relative w-full ${maxWidthClass} min-w-[300px] h-fit perspective-2000`}
         onClick={(e) => e.stopPropagation()}

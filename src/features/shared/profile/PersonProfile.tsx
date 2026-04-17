@@ -11,6 +11,8 @@ interface PersonProfileProps {
 }
 
 export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonProfileProps) => {
+    if (!person) return null;
+    
     const [isOpen, setIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
     const navigate = useNavigate();
@@ -238,7 +240,7 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                         >
                           {person.workedOn?.map((project, pIdx) => (
                             <CreditTag 
-                              key={project.projectMeta?.id || project.id}
+                              key={project.id}
                               id={project.id}
                               title={project.title}
                               index={pIdx}

@@ -148,27 +148,35 @@ export function OriginalPage() {
           )}
         </AnimatePresence>
 
-        {/* Global Persistent UI */}
+        {/* Sticky Header */}
         <AnimatePresence>
           {!isTheaterMode && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50 pointer-events-none"
+            <motion.header 
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              className="fixed top-0 left-0 right-0 z-[100] px-6 py-4 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5 transition-all duration-300"
             >
-              <div className="pointer-events-auto">
+              <div className="flex-1 flex items-center">
                 <Logo onClick={() => navigate("/")} showText={false} />
               </div>
-              
-              <button 
-                onClick={() => navigate(`/originals/${original.id}/releases`)}
-                className="group absolute right-8 top-8 flex items-center gap-3 transition-all hover:text-white/70 active:scale-95 z-50 text-white pointer-events-auto"
-              >
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </button>
-            </motion.div>
+
+              <div className="flex-[2] text-center px-4">
+                <h1 className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.5em] text-white/90 truncate max-w-[200px] md:max-w-none mx-auto">
+                  {original.title}
+                </h1>
+              </div>
+
+              <div className="flex-1 flex justify-end">
+                <button 
+                  onClick={() => navigate(`/originals/${original.id}/releases`)}
+                  className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
+                >
+                  <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </button>
+              </div>
+            </motion.header>
           )}
         </AnimatePresence>
 
