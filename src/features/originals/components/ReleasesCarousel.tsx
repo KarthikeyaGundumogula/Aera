@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Maximize2, X, Play } from "lucide-react";
 import { TheatreItem } from "../../../types";
-import { buildEmbedUrl } from "../../../utils/embed";
+import { buildEmbedUrl, getYoutubeFallbackThumbnail } from "../../../utils/embed";
 import { WorkModal } from "../../shared/modals";
 
 interface ReleasesCarouselProps {
@@ -164,6 +164,20 @@ export function ReleasesCarousel({
                   }`}
                   style={{ 
                     opacity: (isTheaterMode && isYouTube && isIframeLoaded) ? 0 : (isTheaterMode ? 1 : 0.8) 
+                  }}
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth === 120 && img.src.includes("maxresdefault")) {
+                      if (isYouTube && activeItem.srcId) {
+                        img.src = getYoutubeFallbackThumbnail(activeItem.srcId);
+                      }
+                    }
+                  }}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (isYouTube && activeItem.srcId) {
+                      target.src = getYoutubeFallbackThumbnail(activeItem.srcId);
+                    }
                   }}
                   alt={activeItem.title}
                 />

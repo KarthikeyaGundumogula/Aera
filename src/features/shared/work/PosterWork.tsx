@@ -4,6 +4,7 @@ import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
 import { WorkModal } from "../modals/WorkModal";
+import { getYoutubeFallbackThumbnail } from "../../../utils/embed";
 
 export function PosterWork({
   item,
@@ -28,11 +29,20 @@ export function PosterWork({
       onClick={() => setIsModalOpen(true)}
     >
       <img
-        onLoad={() => setIsLoaded(true)}
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          if (img.naturalWidth === 120 && img.src.includes("maxresdefault")) {
+            if (item.platform === "youtube" && item.srcId) {
+              img.src = getYoutubeFallbackThumbnail(item.srcId);
+            }
+          } else {
+            setIsLoaded(true);
+          }
+        }}
         onError={(e) => {
           const target = e.currentTarget;
-          if (target.src.includes("maxresdefault.jpg")) {
-            target.src = target.src.replace("maxresdefault.jpg", "hqdefault.jpg");
+          if (item.platform === "youtube" && item.srcId) {
+            target.src = getYoutubeFallbackThumbnail(item.srcId);
           }
         }}
         src={item.image}

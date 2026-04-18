@@ -29,7 +29,8 @@ export function buildEmbedUrl(platform: EmbedPlatform, srcId: string): string {
 
 /**
  * Build the preview thumbnail URL for a given platform and srcId.
- * Falls back to hqdefault if maxresdefault is unavailable (handled via onError in <img>).
+ * Note: YouTube maxresdefault.jpg depends on the upload quality; 
+ * use getYoutubeFallbackThumbnail() if the primary URL 404s.
  */
 export function buildThumbnail(platform: EmbedPlatform, srcId: string): string {
   switch (platform) {
@@ -41,6 +42,14 @@ export function buildThumbnail(platform: EmbedPlatform, srcId: string): string {
     default:
       return "";
   }
+}
+
+/**
+ * Returns a high-quality fallback (640x480) for YouTube videos that
+ * do not have a max-resolution thumbnail.
+ */
+export function getYoutubeFallbackThumbnail(srcId: string): string {
+  return `https://img.youtube.com/vi/${srcId}/hqdefault.jpg`;
 }
 
 // ─── Extraction (Upload flow only — extracts srcId from a pasted URL) ────────
