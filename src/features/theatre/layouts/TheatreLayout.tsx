@@ -1,13 +1,12 @@
 import { motion } from "motion/react";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, User } from "lucide-react";
+import { Search } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TheatreItem } from "../../../types";
 
 import { DesktopCanvas } from "../components/desktop/DesktopCanvas";
 import { MobileCanvas } from "../components/mobile/MobileCanvas";
 
 import { Logo } from "../../../components/Logo";
+import { ProfileNav } from "../../../components/ProfileNav";
 
 import { useHeaderVisibility } from "../hooks/useHeaderVisibility";
 
@@ -62,14 +61,10 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
 
           </nav>
         </div>
+        
         <div className="flex items-center gap-6">
           <button className="text-white/60 hover:text-white transition-colors"><Search className="w-5 h-5" /></button>
-          <button
-            onClick={() => navigate("/profile")}
-            className={`transition-colors ${location.pathname === "/profile" ? "text-white" : "text-white/60 hover:text-white"}`}
-          >
-            <User className="w-5 h-5" />
-          </button>
+          <ProfileNav />
         </div>
       </motion.header>
 

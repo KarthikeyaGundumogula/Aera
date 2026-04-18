@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Film, ArrowRight } from "lucide-react";
+import { Users, Film, ArrowRight, ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
@@ -160,7 +160,14 @@ export function OriginalPage() {
               exit={{ y: -20, opacity: 0 }}
               className="fixed top-0 left-0 right-0 z-[100] px-6 py-4 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5 transition-all duration-300"
             >
-              <div className="flex-1 flex items-center">
+              <div className="flex-1 flex items-center gap-4">
+                <button 
+                  onClick={() => navigate("/")}
+                  className="group p-2 -ml-2 rounded-full hover:bg-white/5 transition-all active:scale-90"
+                  aria-label="Back to Home"
+                >
+                  <ArrowLeft className="w-5 h-5 text-white/60 group-hover:text-white transition-colors group-hover:-translate-x-0.5" />
+                </button>
                 <Logo onClick={() => navigate("/")} showText={false} />
               </div>
 

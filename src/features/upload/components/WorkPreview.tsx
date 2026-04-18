@@ -8,7 +8,7 @@ interface WorkPreviewProps {
   formData: {
     title: string;
     category: "Edit" | "Poster";
-    originalId: string;
+    originalIds: string[];
     contentUrl: string;
     aspectRatio: number;
     platform: "youtube" | "twitter";
@@ -23,11 +23,13 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
     // Extract the raw platform ID from whatever the user pasted
     const srcId = extractSrcId(formData.platform, formData.contentUrl) ?? undefined;
 
-    // Derive thumbnail for YouTube; for Twitter use the originalCover or fallback
-    const image =
-      srcId && formData.platform === "youtube"
-        ? buildThumbnail("youtube", srcId)
-        : (originalCover ?? FALLBACK_IMAGE);
+    // For Posters, the contentUrl is the image itself (blob or link)
+    // For Edits, we derive the thumbnail for YouTube.
+    const image = formData.category === "Poster" && formData.contentUrl
+      ? formData.contentUrl
+      : (srcId && formData.platform === "youtube"
+          ? buildThumbnail("youtube", srcId)
+          : (originalCover ?? FALLBACK_IMAGE));
 
     return {
       id: "preview-id",
@@ -36,7 +38,7 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
       image,
       aspectRatio: formData.aspectRatio,
       artist: "You", // Locked to current user
-      originalIds: formData.originalId ? [formData.originalId] : [],
+      originalIds: formData.originalIds,
       platform: formData.platform,
       srcId,
     };

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Monitor, Tv, Smartphone, Square, Film } from
 import { WorkPreview } from "../WorkPreview";
 import { THEATRE_FORMATS } from "../../../../constants/formats";
 
-interface GeometryStepProps {
+interface FormatStepProps {
   formData: any;
   currentOriginal: any;
   setFormData: (data: any) => void;
@@ -12,10 +12,10 @@ interface GeometryStepProps {
   onBack: () => void;
 }
 
-export function GeometryStep({ formData, currentOriginal, setFormData, onNext, onBack }: GeometryStepProps) {
+export function FormatStep({ formData, currentOriginal, setFormData, onNext, onBack }: FormatStepProps) {
   return (
     <motion.div
-      key="step-geometry"
+      key="step-format"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.05 }}
@@ -29,8 +29,8 @@ export function GeometryStep({ formData, currentOriginal, setFormData, onNext, o
       {/* Visual Selector Side */}
       <div className="w-full lg:w-1/3 space-y-6">
         <div className="mb-8 text-center lg:text-left">
-          <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2 text-white/80">The Geometry</h2>
-          <p className="text-white/40 text-xs">Calibrate the container for your release</p>
+          <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2 text-white/80">The Format</h2>
+          <p className="text-white/40 text-xs">Select how your release is framed in the theatre</p>
         </div>
         
         <div className="grid grid-cols-1 gap-3">
@@ -100,7 +100,7 @@ export function GeometryStep({ formData, currentOriginal, setFormData, onNext, o
             onClick={onNext} 
             className="px-8 py-3 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 transition-all flex items-center gap-2"
           >
-            Seal Release <ChevronRight className="w-4 h-4" />
+            Review Release <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

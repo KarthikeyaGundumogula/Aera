@@ -1,59 +1,84 @@
 import { motion } from "motion/react";
 import { Film, Image as ImageIcon, ChevronRight } from "lucide-react";
 
-interface IntelStepProps {
+interface IdentityStepProps {
   category: "Edit" | "Poster";
   title: string;
   setFormData: (data: any) => void;
   onNext: () => void;
 }
 
-export function IntelStep({ category, title, setFormData, onNext }: IntelStepProps) {
+export function IdentityStep({
+  category,
+  title,
+  setFormData,
+  onNext,
+}: IdentityStepProps) {
   return (
     <motion.div
-      key="step-intel"
+      key="step-identity"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -30 }}
       className="w-full max-w-xl"
     >
       <div className="text-center mb-12">
-        <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2">The Identity</h2>
-        <p className="text-white/40 text-xs text-balance">Define the entry point of your release</p>
+        <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2">
+          The Identity
+        </h2>
+        <p className="text-white/40 text-xs text-balance">
+          Give your release a name and a category
+        </p>
       </div>
-      
+
       <div className="space-y-8">
         <div className="flex gap-4">
-          <button 
+          <button
             onClick={() => setFormData({ category: "Edit" })}
             className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
-              category === "Edit" ? "bg-white text-black border-white" : "bg-white/5 text-white border-white/10 hover:border-white/20"
+              category === "Edit"
+                ? "bg-white text-black border-white"
+                : "bg-white/5 text-white border-white/10 hover:border-white/20"
             }`}
           >
             <Film className="w-6 h-6 mb-3" />
             <div className="text-left">
-              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">Cinematic Edit</div>
-              <div className={`text-[9px] font-bold uppercase tracking-widest ${category === "Edit" ? "text-black/40" : "text-white/30"}`}>Motion Art</div>
+              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">
+                Cinematic Edit
+              </div>
+              <div
+                className={`text-[9px] font-bold uppercase tracking-widest ${category === "Edit" ? "text-black/40" : "text-white/30"}`}
+              >
+                Motion Art
+              </div>
             </div>
           </button>
-          <button 
+          <button
             onClick={() => setFormData({ category: "Poster" })}
             className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
-              category === "Poster" ? "bg-white text-black border-white" : "bg-white/5 text-white border-white/10 hover:border-white/20"
+              category === "Poster"
+                ? "bg-white text-black border-white"
+                : "bg-white/5 text-white border-white/10 hover:border-white/20"
             }`}
           >
             <ImageIcon className="w-6 h-6 mb-3" />
             <div className="text-left">
-              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">Cinematic Poster</div>
-              <div className={`text-[9px] font-bold uppercase tracking-widest ${category === "Poster" ? "text-black/40" : "text-white/30"}`}>Static Visual</div>
+              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">
+                Cinematic Poster
+              </div>
+              <div
+                className={`text-[9px] font-bold uppercase tracking-widest ${category === "Poster" ? "text-black/40" : "text-white/30"}`}
+              >
+                Static Visual
+              </div>
             </div>
           </button>
         </div>
 
         <div className="space-y-4">
-          <input 
+          <input
             type="text"
-            placeholder="Title of Release"
+            placeholder="Name your release"
             autoFocus
             value={title}
             onChange={(e) => setFormData({ title: e.target.value })}
@@ -62,12 +87,12 @@ export function IntelStep({ category, title, setFormData, onNext }: IntelStepPro
         </div>
 
         <div className="flex items-center justify-end pt-4">
-          <button 
+          <button
             disabled={!title}
-            onClick={onNext} 
+            onClick={onNext}
             className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2"
           >
-            Establish Transmission <ChevronRight className="w-4 h-4" />
+            Connect Source <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Sparkles, Clapperboard } from "lucide-react";
 import { WorkPreview } from "../WorkPreview";
 
-interface SealStepProps {
+interface ReviewStepProps {
   isSubmitting: boolean;
   formData: any;
   currentOriginal: any;
@@ -10,7 +10,7 @@ interface SealStepProps {
   onBack: () => void;
 }
 
-export function SealStep({ isSubmitting, formData, currentOriginal, onRelease, onBack }: SealStepProps) {
+export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease, onBack }: ReviewStepProps) {
   if (isSubmitting) {
     return (
       <div className="text-center py-20">
@@ -55,7 +55,7 @@ export function SealStep({ isSubmitting, formData, currentOriginal, onRelease, o
 
   return (
     <motion.div
-      key="step-seal"
+      key="step-review"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       className="w-full max-w-lg"
@@ -66,10 +66,10 @@ export function SealStep({ isSubmitting, formData, currentOriginal, onRelease, o
                   <Sparkles className="w-8 h-8 text-white/50 animate-pulse" />
               </div>
               <div>
-                  <h1 className="text-3xl font-black uppercase tracking-[0.2em] mb-4">Mastering Ready</h1>
+                  <h1 className="text-3xl font-black uppercase tracking-[0.2em] mb-4">Final Review</h1>
                   <p className="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">
                       Your release is calibrated and assigned. 
-                      Perform the final check before we broadcast to the network.
+                      One last check before we broadcast to the network.
                   </p>
               </div>
            </div>
@@ -86,16 +86,16 @@ export function SealStep({ isSubmitting, formData, currentOriginal, onRelease, o
                  <p className="text-sm font-bold text-white">{formData.category === "Edit" ? "Cinematic Edit" : "Cinematic Poster"}</p>
                </div>
                <div className="space-y-1">
-                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Network</p>
-                 <p className="text-sm font-bold text-white capitalize">{formData.platform}</p>
+                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source</p>
+                 <p className="text-sm font-bold text-white capitalize">{formData.category === "Poster" ? "Local Archive" : formData.platform}</p>
                </div>
                <div className="space-y-1">
-                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Project</p>
+                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Associated Film</p>
                  <p className="text-sm font-bold text-white truncate">{currentOriginal?.title ?? "—"}</p>
                </div>
              </div>
              <div className="border-t border-white/5 pt-4 space-y-1">
-               <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source ID</p>
+               <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source URL</p>
                <p className="text-xs font-mono text-white/60 break-all">{formData.contentUrl || "—"}</p>
              </div>
            </div>
@@ -112,10 +112,10 @@ export function SealStep({ isSubmitting, formData, currentOriginal, onRelease, o
                   onClick={onRelease}
                   className="w-full py-6 bg-white text-black rounded-2xl text-sm font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
               >
-                  <span className="group-hover:translate-x-1 transition-transform">Release Artifact</span> <Sparkles className="w-5 h-5" />
+                  <span className="group-hover:translate-x-1 transition-transform">Finalize Release</span> <Sparkles className="w-5 h-5" />
               </button>
               <button onClick={onBack} className="text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-widest py-2">
-                  Calibrate Parameters
+                  Adjust Parameters
               </button>
            </div>
       </div>

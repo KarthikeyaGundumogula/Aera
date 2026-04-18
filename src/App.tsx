@@ -38,7 +38,7 @@ export default function App() {
         />
         <Route path="/sets" element={<ComingSoonPage label="Sets" />} />
         <Route path="/profile" element={<ComingSoonPage label="Profile" />} />
-        <Route path="/upload" element={<UploadPage />} />
+        <Route path="/submit" element={<UploadPage />} />
         
         <Route path="/originals/:id" element={<OriginalPage />} />
         <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />

@@ -3,7 +3,6 @@ import { memo, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   PlayCircle,
   Search,
-  User,
   Loader2,
   History,
   Crown,
@@ -14,6 +13,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem } from "../../../types";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../../../components/icons/AppIcons";
+import { ProfileNav } from "../../../components/ProfileNav";
 
 import { Logo } from "../../../components/Logo";
 import { TopOriginalsAccordion } from "../../originals/components/TopOriginalsAccordion";
@@ -132,14 +132,7 @@ export function HomeFeedLayout() {
           <button className="text-white/60">
             <Search className="w-5 h-5" />
           </button>
-          <button
-            onClick={() => navigate("/submit")}
-            className={
-              location.pathname === "/submit" ? "text-white" : "text-white/60"
-            }
-          >
-            <User className="w-5 h-5" />
-          </button>
+          <ProfileNav />
         </div>
       </header>
 
@@ -179,12 +172,7 @@ export function HomeFeedLayout() {
           <button className="text-white/60 hover:text-white transition-colors">
             <Search className="w-5 h-5" />
           </button>
-          <button
-            onClick={() => navigate("/submit")}
-            className={`transition-colors ${location.pathname === "/submit" ? "text-white" : "text-white/60 hover:text-white"}`}
-          >
-            <User className="w-5 h-5" />
-          </button>
+          <ProfileNav />
         </div>
       </header>
 
