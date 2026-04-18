@@ -51,9 +51,11 @@ export const GRID_ITEMS: TheatreItem[] = ALL_WORKS;
  * Assembled by joining works + artists onto each original via originalId.
  */
 export const ORIGINALS: Original[] = (originalsData as Array<Omit<Original, "topArtists" | "works" | "heroHighlights">>).map(org => {
-  const orgWorks = ALL_WORKS.filter(w => w.originalIds?.includes(org.id));
-  // Use the entire artist pool to ensure design density (as per fe-context)
-  const orgArtists = ALL_ARTISTS.map(({ ...rest }) => rest as OriginalArtist);
+  const orgWorks = ALL_WORKS.filter(w => w.originalIds?.includes(org.id) || w.originalId === org.id);
+  // Strictly filter artists who actually worked on this original
+  const orgArtists = ALL_ARTISTS.filter(a => 
+    a.workedOn?.some(wo => wo.id === org.id)
+  ).map(({ ...rest }) => rest as OriginalArtist);
   
   // Highlights: Strictly include only YouTube video edits for the ReleasesCarousel
   const highlights = orgWorks.filter(w => 

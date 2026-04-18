@@ -67,13 +67,15 @@ export function extractSrcId(
 
   switch (platform) {
     case "youtube": {
+      // Hardened regex for YouTube to handle watch?, embed/, shorts/, youtu.be, and additional params
       const match = url.match(
-        /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/|u\/\w\/|.*[?&]v=))([^#&?]{11})/
+        /^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:v\/|e\/|embed\/|watch\?v=|shorts\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
       );
       return match?.[1] ?? null;
     }
     case "twitter": {
-      const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+      // Robust regex for Twitter/X status links
+      const match = url.match(/^(?:https?:\/\/)?(?:www\.|mobile\.)?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
       return match?.[1] ?? null;
     }
     default:
