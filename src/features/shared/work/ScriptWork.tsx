@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
+import { WorkModal } from "../modals/WorkModal";
 
 function getScriptBody(title?: string, text?: string) {
   if (title && title.split(":").length > 1) {
@@ -14,21 +15,22 @@ function getScriptBody(title?: string, text?: string) {
 export function ScriptWork({
   item,
   variant,
-  onSelect,
   className = "",
   showBadge = true,
   priority = "lazy",
 }: BaseWorkProps) {
   const body = useMemo(() => getScriptBody(item.title, item.text), [item.text, item.title]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const compact = variant === "theatre-mobile";
   const spacious = variant === "feed";
 
   return (
+    <>
     <div
       className={`group relative h-full w-full overflow-hidden bg-[#f4f1ea] text-[#2a2a2a] ${
         variant === "feed" ? "min-h-[300px] transition-transform duration-700 group-hover:scale-[1.02]" : ""
       } ${className}`}
-      onClick={onSelect ? () => onSelect(item) : undefined}
+      onClick={() => setIsModalOpen(true)}
       data-loading-priority={priority}
     >
       <div
@@ -54,7 +56,7 @@ export function ScriptWork({
             compact ? "mb-2 line-clamp-1" : "mb-2"
           }`}
         >
-          {item.origins || "INT. THE CANVAS - DAY"}
+          INT. THE CANVAS - DAY
         </div>
         <div
           className={`italic opacity-70 ${
@@ -108,5 +110,10 @@ export function ScriptWork({
       {/* Title Overlay */}
       <WorkOverlay item={item} variant={variant} />
     </div>
+
+    {isModalOpen && (
+      <WorkModal item={item} onClose={() => setIsModalOpen(false)} />
+    )}
+    </>
   );
 }

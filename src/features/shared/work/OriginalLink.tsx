@@ -21,8 +21,8 @@ export function OriginalLink({ item, children, className = "", onClick }: Origin
     e.stopPropagation();
     if (onClick) onClick();
     
-    if (item.originalId) {
-      navigate(`/originals/${item.originalId}`);
+    if (item.originalIds?.[0]) {
+      navigate(`/originals/${item.originalIds[0]}`);
     }
   };
 

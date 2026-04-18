@@ -54,7 +54,6 @@ export function ModalWrapper({
           {/* Subtle Ambient Glows */}
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.03),transparent_40%),radial-gradient(circle_at_bottom,rgba(202,168,121,0.05),transparent_40%)]" />
  
-          {/* Modal Content - Centers content and provides layout canvas */}
           <div 
             className={`relative z-10 w-full flex justify-center ${isImmersive ? 'p-0 sm:p-2' : 'p-2'}`}
             onClick={(e) => e.stopPropagation()}

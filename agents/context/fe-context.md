@@ -68,7 +68,8 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
 - **Navigation Architecture**: The mobile bottom navigation (`MobileNavBar`) is a universally mounted global component overlaying the root router (`App.tsx`). It floats above all routes for mobile users while naturally hiding on desktop viewports. The "Calls" feature has been globally deprecated.
 - **Mobile Theatre Layout**: The `MobileTheatreCanvas` maps sequences of layout clusters onto a rigid Y-axis grid, utilizing robust flexbox/CSS grid stretching rules instead of fragile masonry libraries.
 - **Performance & Virtualization**: 
-  - Off-screen layout parsing and rendering is blocked natively using CSS `content-visibility: auto` paired with `contain-intrinsic-size` on clusters. This mimics robust list virtualization with virtually zero JS computation overhead.
+  - The platform utilizes native browser lazy-loading (`loading="lazy"`, `decoding="async"`) and a robust infinite-scroll design using `IntersectionObserver`.
+  - Unstable CSS virtualization (`content-visibility: auto`) has been removed to guarantee cross-browser stability, especially on mobile Chrome.
   - Infinite scroll utilizes a pre-emptive `IntersectionObserver` sentinel to trigger lazy background hydration without user blocking.
 - **Media**: Relies on `object-fit: cover` and native HTML `loading="lazy"`.
 - **Data Flow**: classify → bucket → cluster → render.
@@ -89,7 +90,11 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
     - `Script` = `category === "Script"`
 - **Surface Integration**:
   - `MobileCard`, `DesktopCanvasCard`, and `TheatreFeedItem` are now thin wrappers that apply layout/frame behavior and delegate rendering to the shared work components.
-  - Cluster builders remain untouched architecturally and still decide placement/container selection.
+  - These wrappers no longer manage modal state or selection callbacks.
+- **Decentralized Modal Architecture**:
+  - The `WorkModal` state is now entirely self-contained within the `EditWork`, `PosterWork`, and `ScriptWork` components.
+  - Clicks on any work card automatically trigger the internal modal state, removing the need for page-level `onSelect` or `selectedItem` state.
+  - This guarantees that work previewed in the "Upload Rite" behaves identically to work in the main Theatre.
 - **Category Visual Hints**:
   - Category badges are still a separate reusable system, but their placement is now owned by the shared work components instead of page/surface wrappers.
   - `CategoryBadge` now supports:
@@ -105,9 +110,10 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   - Posters and scripts now open a dedicated `WorkModal` instead of `QuickView`.
   - This interaction split is enforced at the page/container level, not inside the low-level work rendering components.
 - **Selection Handling**:
-  - Page-level selectors in Home, Theatre, Original Page, and Originals Theatre now route selected works by type:
-    - video -> `QuickView`
-    - poster/script -> `WorkModal`
+  - Deprecated. All work components manage their own modal triggers internally.
+- **Data Identification**:
+  - `originalId` (string) migrated to `originalIds` (string[]) to support content appearing in multiple collections.
+  - Works are identified by `{ platform, srcId }` instead of hardcoded URLs.
 - **Global Scroll Restoration**: 
   - To maintain a "top-of-page" cinematic focus during deep navigation, the platform utilizes a global `ScrollToTop` trigger (`App.tsx`). This resets the scroll position of both the window and any internal `overflow-y-auto` containers on every route change.
 

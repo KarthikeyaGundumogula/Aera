@@ -1,6 +1,6 @@
 import { useMotionValue, useSpring, AnimatePresence } from "motion/react";
 import React, { useEffect, useRef, useMemo, useState } from "react";
-import { SetSelectedItem } from "../../../../types";
+
 import { GRID_ITEMS } from "../../../../mock";
 import { buildClusters } from "../../engine/clusterBuilder";
 import { DesktopCluster } from "./DesktopCluster";
@@ -9,7 +9,6 @@ import { CLUSTER_WIDTH, CLUSTER_HEIGHT, CLUSTER_GAP } from "../../constants";
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface DesktopCanvasProps {
-  setSelectedItem: SetSelectedItem;
   /** Receives the camera Y spring value — used by TheatreLayout for header auto-hide. */
   onScroll?: (y: number) => void;
 }
@@ -43,7 +42,7 @@ function clampOrigin(value: number) {
  * - Camera position uses `useSpring` for 60fps interpolation.
  * - Cluster data is pre-computed once via `buildClusters`.
  */
-export function DesktopCanvas({ setSelectedItem, onScroll }: DesktopCanvasProps) {
+export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, w: 0, h: 0 });
 
@@ -156,7 +155,6 @@ export function DesktopCanvas({ setSelectedItem, onScroll }: DesktopCanvasProps)
               cluster={clusterPool[index]}
               camX={springX}
               camY={springY}
-              setSelectedItem={setSelectedItem}
             />
           );
         })}

@@ -15,7 +15,9 @@ interface WorkModalProps {
 export function WorkModal({ item, onClose }: WorkModalProps) {
   if (!item) return null;
 
-  switch (item.category) {
+  const category = item.category || "Edit";
+
+  switch (category) {
     case "Edit":
       return <EditModal item={item} onClose={onClose} />;
     case "Poster":
@@ -23,7 +25,7 @@ export function WorkModal({ item, onClose }: WorkModalProps) {
     case "Script":
       return <ScriptModal item={item} onClose={onClose} />;
     default:
-      console.warn(`Unknown work category: ${item.category}`);
+      console.warn(`Unknown work category: ${category}`);
       return null;
   }
 }

@@ -16,11 +16,21 @@ import starsData from "./stars.json";
 import makersData from "./makers.json";
 import setsData from "./sets.json";
 import { Original, OriginalArtist, OriginalStar, OriginalMaker, TheatreItem } from "../types";
+import { buildThumbnail } from "../utils/embed";
 
 // ─── Raw table casts ────────────────────────────────────────────────────────
 
-/** All fan-made works (edits, posters, scripts). */
-const ALL_WORKS = worksData as TheatreItem[];
+/** All fan-made works (edits, posters, scripts).
+ *  Derives `image` from srcId at assembly time so the JSON stays lean. */
+const ALL_WORKS: TheatreItem[] = (worksData as any[]).map((w) => ({
+  ...w,
+  // Hydrate thumbnail: prefer explicit image, else build from srcId
+  image:
+    w.image ??
+    (w.platform && w.srcId ? buildThumbnail(w.platform, w.srcId) : undefined),
+  // Handle rename transition: singular to array
+  originalIds: w.originalIds ?? (w.originalId ? [w.originalId] : []),
+}));
 
 /** All fan creators. */
 interface ArtistRow extends OriginalArtist {
@@ -41,13 +51,13 @@ export const GRID_ITEMS: TheatreItem[] = ALL_WORKS;
  * Assembled by joining works + artists onto each original via originalId.
  */
 export const ORIGINALS: Original[] = (originalsData as Array<Omit<Original, "topArtists" | "works" | "heroHighlights">>).map(org => {
-  const orgWorks = ALL_WORKS.filter(w => w.originalId === org.id);
+  const orgWorks = ALL_WORKS.filter(w => w.originalIds?.includes(org.id));
   // Use the entire artist pool to ensure design density (as per fe-context)
   const orgArtists = ALL_ARTISTS.map(({ ...rest }) => rest as OriginalArtist);
   
   // Highlights: Strictly include only YouTube video edits for the ReleasesCarousel
   const highlights = orgWorks.filter(w => 
-    (w.category === 'Edit' || w.type === 'video') && 
+    w.category === 'Edit' && 
     w.platform === 'youtube'
   );
 
@@ -67,20 +77,7 @@ export const ORIGINALS_DATA: Record<string, Original> = Object.fromEntries(
   ORIGINALS.map((original) => [original.id, original])
 );
 
-/**
- * FEATURED_ITEMS — Originals shaped as TheatreItems for the home hero carousel.
- * Used by: HomeFeedLayout hero section.
- */
-export const FEATURED_ITEMS: TheatreItem[] = ORIGINALS.map(org => ({
-  id: `featured-${org.id}`,
-  title: org.title,
-  category: "Original" as const,
-  origins: "Official Wall of Fame",
-  presence: org.stats.presence,
-  image: org.coverImage,
-  type: "Original",
-  originalId: org.id,
-}));
+// FEATURED_ITEMS removed in favor of using ORIGINALS directly in HomeFeedLayout
 
 /**
  * FEATURED_MOMENT — A single highlighted work for the home page.

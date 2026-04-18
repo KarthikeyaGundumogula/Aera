@@ -76,7 +76,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
           </div>
 
           <div className="flex-1 p-4 sm:p-6 overflow-y-auto max-h-[70vh] no-scrollbar">
-            <div className="mx-auto max-w-3xl rounded-[22px] border border-black/10 bg-[#f4f1ea] shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
+            <div className="mx-auto max-w-3xl rounded-[22px] border border-black/10 bg-[#f4f1ea] shadow-[0_30px_80px_rgba(0,0,0,0.12)] pointer-events-none select-none">
               <ScriptWork item={item} variant="feed" priority="eager" />
             </div>
           </div>
@@ -90,10 +90,9 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                 setSelectedArtist(artistData || {
                   id: String(item.id),
                   name: item.artist || "Anonymous",
-                  avatar: item.artistAvatar,
-                  presence: item.presence || 0,
-                  role: "Collective Artist",
-                  image: item.artistAvatar || item.image
+                  presence: 0,
+                  works: 0,
+                  image: item.artistAvatar || item.image || ""
                 });
               }}
             >
@@ -115,16 +114,16 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
               className="max-w-[45%] text-right cursor-pointer group/orig"
               onClick={(e) => {
                 e.stopPropagation();
-                if (item.originalId) {
+                if (item.originalIds?.[0]) {
                   onClose();
-                  navigate(`/originals/${item.originalId}`);
+                  navigate(`/originals/${item.originalIds[0]}`);
                 }
               }}
             >
                <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-black/25 mb-1 group-hover/orig:text-black/40 transition-colors">Original</p>
                <div className="flex items-center justify-end gap-1">
                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/35 group-hover/orig:text-black transition-colors">
-                   {item.origins || "Archive"}
+                   Archive
                  </p>
                  <ArrowUpRight size={10} className="text-black/10 group-hover/orig:text-black/40 transition-colors" />
                </div>

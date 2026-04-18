@@ -9,9 +9,8 @@
     "artist": "PowerStar_FC",
     "artistId": "art-1",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/GG1_DsScm6U"
+    "srcId": "GG1_DsScm6U"
   },
   {
     "id": "w-og-2",
@@ -23,9 +22,9 @@
     "artist": "PK_Edits",
     "artistId": "art-2",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/og_movie_cover_1776424627501.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/TSrajnth/status/2044620780550427076"
+    "srcId": "2044620780550427076"
   },
   {
     "id": "w-og-3",
@@ -36,7 +35,7 @@
     "artist": "Andhra_Cuts",
     "artistId": "art-3",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/og_movie_cover_1776424627501.png"
   },
   {
     "id": "w-og-4",
@@ -47,7 +46,7 @@
     "artist": "Jungle_Quill",
     "artistId": "art-4",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/og_movie_cover_1776424627501.png"
   },
   {
     "id": "w-og-5",
@@ -59,9 +58,9 @@
     "artist": "PowerStar_FC",
     "artistId": "art-1",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/og_movie_cover_1776424627501.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/ArjunPalwai33/status/2044700154788503958"
+    "srcId": "2044700154788503958"
   },
   {
     "id": "w-og-7",
@@ -73,9 +72,8 @@
     "artist": "Andhra_Cuts",
     "artistId": "art-3",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/pI-q561vBLE"
+    "srcId": "ePOglweqy7o"
   },
   {
     "id": "w-og-8",
@@ -87,9 +85,9 @@
     "artist": "PowerStar_FC",
     "artistId": "art-1",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/og_movie_cover_1776424627501.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/ArjunPalwai33/status/2045037128900587880"
+    "srcId": "2045037128900587880"
   },
   {
     "id": "w-og-9",
@@ -100,7 +98,7 @@
     "artist": "Jungle_Quill",
     "artistId": "art-4",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/og_movie_cover_1776424627501.png"
   },
   {
     "id": "w-og-10",
@@ -112,11 +110,9 @@
     "artist": "PK_Edits",
     "artistId": "art-2",
     "originalId": "og-original",
-    "image": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/D9O20qxyvT0"
+    "srcId": "D9O20qxyvT0"
   },
-
   {
     "id": "w-rrr-1",
     "title": "Naatu Naatu Hype",
@@ -127,9 +123,8 @@
     "artist": "Ram_Charan_FC",
     "artistId": "art-5",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/D9O20qxyvT0"
+    "srcId": "D9O20qxyvT0"
   },
   {
     "id": "w-rrr-2",
@@ -141,9 +136,9 @@
     "artist": "NTR_Edits",
     "artistId": "art-6",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/rrr_movie_cover_1776424657174.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/ArjunPalwai33/status/2044700154788503958"
+    "srcId": "2044700154788503958"
   },
   {
     "id": "w-rrr-3",
@@ -154,7 +149,7 @@
     "artist": "Telugu_Talkies",
     "artistId": "art-7",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1605806616949-1e87b487fc2f?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/rrr_movie_cover_1776424657174.png"
   },
   {
     "id": "w-rrr-4",
@@ -165,9 +160,8 @@
     "artist": "Komaram_Fan",
     "artistId": "art-8",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/1qYdfLA_zlY"
+    "srcId": "1qYdfLA_zlY"
   },
   {
     "id": "w-rrr-5",
@@ -179,9 +173,8 @@
     "artist": "Ram_Charan_FC",
     "artistId": "art-5",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/5StsXMWRBqQ"
+    "srcId": "5StsXMWRBqQ"
   },
   {
     "id": "w-rrr-6",
@@ -192,7 +185,7 @@
     "artist": "NTR_Edits",
     "artistId": "art-6",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1464746133101-a2c3f88e0ad9?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/rrr_movie_cover_1776424657174.png"
   },
   {
     "id": "w-rrr-7",
@@ -204,9 +197,9 @@
     "artist": "Telugu_Talkies",
     "artistId": "art-7",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/rrr_movie_cover_1776424657174.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/ArjunPalwai33/status/2045037128900587880"
+    "srcId": "2045037128900587880"
   },
   {
     "id": "w-rrr-8",
@@ -217,9 +210,8 @@
     "artist": "Komaram_Fan",
     "artistId": "art-8",
     "originalId": "rrr-original",
-    "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/rrr_movie_cover_1776424657174.png"
   },
-
   {
     "id": "w-kgf-1",
     "title": "Rocky Bhai Entry",
@@ -230,9 +222,8 @@
     "artist": "KGF_Yash_FC",
     "artistId": "art-9",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/us9PTfKlvuY"
+    "srcId": "us9PTfKlvuY"
   },
   {
     "id": "w-kgf-2",
@@ -244,9 +235,9 @@
     "artist": "Kannada_Kali",
     "artistId": "art-10",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/kgf_movie_cover_1776424693565.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/PavanTargaryen/status/2044268137387045334"
+    "srcId": "2044268137387045334"
   },
   {
     "id": "w-kgf-3",
@@ -257,7 +248,7 @@
     "artist": "Kolar_Frames",
     "artistId": "art-11",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1449156001935-d287057576ba?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/kgf_movie_cover_1776424693565.png"
   },
   {
     "id": "w-kgf-4",
@@ -268,7 +259,7 @@
     "artist": "Adheera_FC",
     "artistId": "art-12",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/kgf_movie_cover_1776424693565.png"
   },
   {
     "id": "w-kgf-5",
@@ -280,9 +271,8 @@
     "artist": "KGF_Yash_FC",
     "artistId": "art-9",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/1qYdfLA_zlY"
+    "srcId": "1qYdfLA_zlY"
   },
   {
     "id": "w-kgf-6",
@@ -293,7 +283,7 @@
     "artist": "Kannada_Kali",
     "artistId": "art-10",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/kgf_movie_cover_1776424693565.png"
   },
   {
     "id": "w-kgf-7",
@@ -305,9 +295,9 @@
     "artist": "Kolar_Frames",
     "artistId": "art-11",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/kgf_movie_cover_1776424693565.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/Santhosh_rcf/status/2044774541948543143"
+    "srcId": "2044774541948543143"
   },
   {
     "id": "w-kgf-8",
@@ -318,9 +308,8 @@
     "artist": "Adheera_FC",
     "artistId": "art-12",
     "originalId": "kgf-original",
-    "image": "https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/kgf_movie_cover_1776424693565.png"
   },
-
   {
     "id": "w-bah-1",
     "title": "Kattappa Betrayal",
@@ -331,9 +320,8 @@
     "artist": "Mahishmati_FC",
     "artistId": "art-13",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/_8J8LwoVH_0"
+    "srcId": "_8J8LwoVH_0"
   },
   {
     "id": "w-bah-2",
@@ -345,9 +333,9 @@
     "artist": "Prabhas_Nation",
     "artistId": "art-14",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/baahubali_movie_cover_1776424741780.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/JerryMaguire45/status/2044773283690852773"
+    "srcId": "2044773283690852773"
   },
   {
     "id": "w-bah-3",
@@ -358,7 +346,7 @@
     "artist": "Sivagami_Fan",
     "artistId": "art-15",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/baahubali_movie_cover_1776424741780.png"
   },
   {
     "id": "w-bah-4",
@@ -369,7 +357,7 @@
     "artist": "Sivagami_Fan",
     "artistId": "art-15",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/baahubali_movie_cover_1776424741780.png"
   },
   {
     "id": "w-bah-5",
@@ -381,9 +369,8 @@
     "artist": "Amarendra_FC",
     "artistId": "art-16",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/6cXee4ynQuE"
+    "srcId": "3NQRhE772b0"
   },
   {
     "id": "w-bah-6",
@@ -394,7 +381,7 @@
     "artist": "Mahishmati_FC",
     "artistId": "art-13",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1464746133101-a2c3f88e0ad9?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/baahubali_movie_cover_1776424741780.png"
   },
   {
     "id": "w-bah-7",
@@ -406,9 +393,9 @@
     "artist": "Prabhas_Nation",
     "artistId": "art-14",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/baahubali_movie_cover_1776424741780.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/parveen__tyagi/status/2033091078199603682"
+    "srcId": "2033091078199603682"
   },
   {
     "id": "w-bah-8",
@@ -419,9 +406,8 @@
     "artist": "Amarendra_FC",
     "artistId": "art-16",
     "originalId": "baahubali-original",
-    "image": "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/baahubali_movie_cover_1776424741780.png"
   },
-
   {
     "id": "w-vkm-1",
     "title": "Karnan Returns",
@@ -432,9 +418,8 @@
     "artist": "Kamal_FC",
     "artistId": "art-17",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/GG1_DsScm6U"
+    "srcId": "GG1_DsScm6U"
   },
   {
     "id": "w-vkm-2",
@@ -446,9 +431,9 @@
     "artist": "Fahadh_Fan",
     "artistId": "art-18",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1514539079130-25950c84af65?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/vikram_movie_cover_1776424795575.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/TSrajnth/status/2044620780550427076"
+    "srcId": "2044620780550427076"
   },
   {
     "id": "w-vkm-3",
@@ -459,7 +444,7 @@
     "artist": "Vijay_Sethupathi_FC",
     "artistId": "art-19",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/vikram_movie_cover_1776424795575.png"
   },
   {
     "id": "w-vkm-4",
@@ -470,7 +455,7 @@
     "artist": "Kollywood_Vault",
     "artistId": "art-20",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/vikram_movie_cover_1776424795575.png"
   },
   {
     "id": "w-vkm-5",
@@ -482,9 +467,8 @@
     "artist": "Kamal_FC",
     "artistId": "art-17",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/P02FTZptXxc"
+    "srcId": "P02FTZptXxc"
   },
   {
     "id": "w-vkm-6",
@@ -495,7 +479,7 @@
     "artist": "Fahadh_Fan",
     "artistId": "art-18",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1449156001935-d287057576ba?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/vikram_movie_cover_1776424795575.png"
   },
   {
     "id": "w-vkm-7",
@@ -507,9 +491,9 @@
     "artist": "Vijay_Sethupathi_FC",
     "artistId": "art-19",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/vikram_movie_cover_1776424795575.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/ArjunPalwai33/status/2044700154788503958"
+    "srcId": "2044700154788503958"
   },
   {
     "id": "w-vkm-8",
@@ -520,9 +504,8 @@
     "artist": "Kollywood_Vault",
     "artistId": "art-20",
     "originalId": "vikram-original",
-    "image": "https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/vikram_movie_cover_1776424795575.png"
   },
-
   {
     "id": "w-gen-1",
     "title": "Prabhas Era: Vertical Edit",
@@ -531,9 +514,9 @@
     "aspectRatio": 0.56,
     "credits": 1200,
     "artist": "StarDust_FC",
-    "image": "https://images.unsplash.com/photo-1514539079130-25950c84af65?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/og_movie_cover_1776424627501.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/ArjunPalwai33/status/2045037128900587880"
+    "srcId": "2045037128900587880"
   },
   {
     "id": "w-gen-2",
@@ -542,7 +525,7 @@
     "aspectRatio": 0.7,
     "credits": 600,
     "artist": "Tollywood_Lens",
-    "image": "https://images.unsplash.com/photo-1464746133101-a2c3f88e0ad9?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/og_movie_cover_1776424627501.png"
   },
   {
     "id": "w-gen-3",
@@ -552,9 +535,8 @@
     "aspectRatio": 1.77,
     "credits": 2100,
     "artist": "Kollywood_King",
-    "image": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
     "platform": "youtube",
-    "embedUrl": "https://www.youtube.com/embed/yKBbKPa6QcE"
+    "srcId": "yKBbKPa6QcE"
   },
   {
     "id": "w-gen-4",
@@ -564,9 +546,9 @@
     "aspectRatio": 1.85,
     "credits": 200,
     "artist": "Hyderabad_Frames",
-    "image": "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&q=80&w=800",
+    "image": "/posters/og_movie_cover_1776424627501.png",
     "platform": "twitter",
-    "embedUrl": "https://twitter.com/PavanTargaryen/status/2044268137387045334"
+    "srcId": "2044268137387045334"
   },
   {
     "id": "w-gen-5",
@@ -575,6 +557,6 @@
     "aspectRatio": 1.0,
     "credits": 300,
     "artist": "Frame_Scholar",
-    "image": "https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800"
+    "image": "/posters/og_movie_cover_1776424627501.png"
   }
 ]

@@ -7,7 +7,6 @@ import { buildClusters, Cluster } from "../theatre/engine/clusterBuilder";
 import { buildMobileClusters, MobileCluster } from "../theatre/engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "../theatre/components/desktop/StaticDesktopCluster";
 import { MobileClusterView } from "../theatre/components/mobile/MobileClusterView";
-import { WorkModal } from "../shared/modals";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatreItem } from "../../types";
 
@@ -16,15 +15,9 @@ export function OriginalsTheatrePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isMobile = useMediaQuery();
-  const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
 
   const original = id ? ORIGINALS_DATA[id] : null;
-
   const originalContent = original?.works || [];
-
-  const handleSelectItem = useCallback((item: TheatreItem | null) => {
-    setSelectedItem(item);
-  }, []);
 
   const clusters = useMemo(() => {
     if (!originalContent.length) return { desktop: [], mobile: [] };
@@ -53,13 +46,14 @@ export function OriginalsTheatrePage() {
 
     // Simulate network delay
     setTimeout(() => {
+      const pageId = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
       setVisibleDesktop(prev => [
         ...prev, 
-        ...clusters.desktop.map(c => ({ ...c, id: `${c.id}-clone-${crypto.randomUUID()}` }))
+        ...clusters.desktop.map((c, i) => ({ ...c, id: `${c.id}-clone-${pageId}-${i}` }))
       ]);
       setVisibleMobile(prev => [
         ...prev, 
-        ...clusters.mobile.map(c => ({ ...c, id: `${c.id}-clone-${crypto.randomUUID()}` }))
+        ...clusters.mobile.map((c, i) => ({ ...c, id: `${c.id}-clone-${pageId}-${i}` }))
       ]);
       setIsLoading(false);
     }, 600);
@@ -120,7 +114,6 @@ export function OriginalsTheatrePage() {
               <MobileClusterView 
                 key={cluster.id} 
                 cluster={cluster} 
-                setSelectedItem={handleSelectItem} 
               />
             ))
           ) : (
@@ -128,7 +121,6 @@ export function OriginalsTheatrePage() {
               <StaticDesktopCluster 
                 key={cluster.id || idx} 
                 cluster={cluster} 
-                setSelectedItem={handleSelectItem} 
               />
             ))
           )}
@@ -155,11 +147,6 @@ export function OriginalsTheatrePage() {
             </div>
         )}
       </main>
-
-      <WorkModal 
-        item={selectedItem} 
-        onClose={() => setSelectedItem(null)} 
-      />
 
       {/* Footer Branding */}
       <footer className="p-12 border-t border-white/5 flex flex-col items-center gap-6 opacity-30">

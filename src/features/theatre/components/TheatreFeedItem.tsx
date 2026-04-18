@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { TheatreItem, SetSelectedItem } from "../../../types";
+import { TheatreItem } from "../../../types";
 import { CategoryIcon } from "../../../components/icons/AppIcons";
 import {
   EditWork,
@@ -10,8 +10,6 @@ import {
 
 interface TheatreFeedItemProps {
   item: TheatreItem;
-  items: TheatreItem[];
-  setSelectedItem: SetSelectedItem;
 }
 
 /**
@@ -22,8 +20,6 @@ interface TheatreFeedItemProps {
  */
 export const TheatreFeedItem = memo(function TheatreFeedItem({
   item,
-  items,
-  setSelectedItem,
 }: TheatreFeedItemProps) {
   const workKind = getWorkKind(item);
 
@@ -41,7 +37,6 @@ export const TheatreFeedItem = memo(function TheatreFeedItem({
   return (
     <div
       className="group cursor-pointer break-inside-avoid w-full inline-block mb-6 md:mb-8"
-      onClick={() => setSelectedItem(item, items, 0)}
     >
       {/* Media Container */}
       <div

@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
 import { memo } from "react";
-import { TheatreItem, SetSelectedItem } from "../../../../types";
+import { motion } from "motion/react";
+import { TheatreItem } from "../../../../types";
 import { ClusterSlot } from "../../engine/clusterBuilder";
 import { EditWork } from "../../../shared/work/EditWork";
 import { PosterWork } from "../../../shared/work/PosterWork";
@@ -12,7 +12,6 @@ import { getWorkKind } from "../../../shared/work/types";
 interface DesktopCanvasCardProps {
   slot: ClusterSlot;
   item: TheatreItem;
-  setSelectedItem: SetSelectedItem;
 }
 
 /**
@@ -22,7 +21,6 @@ interface DesktopCanvasCardProps {
 export const DesktopCanvasCard = memo(function DesktopCanvasCard({
   slot,
   item,
-  setSelectedItem,
 }: DesktopCanvasCardProps) {
   const isPoster = getWorkKind(item) === "poster";
 
@@ -61,10 +59,6 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{
         zIndex: 20,
-      }}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelectedItem(item, [item], 1);
       }}
       className={`relative group overflow-hidden border border-white/10 bg-zinc-900/20 rounded-sm transition-all duration-500 ${isPoster ? "ring-1 ring-white/5" : ""}`}
       style={{

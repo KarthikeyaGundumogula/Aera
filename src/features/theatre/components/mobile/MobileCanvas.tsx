@@ -1,22 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { SetSelectedItem } from "../../../../types";
+
 import { GRID_ITEMS } from "../../../../mock";
 import { buildMobileClusters, MobileCluster } from "../../engine/mobileClusterBuilder";
 import { MobileClusterView } from "./MobileClusterView";
 
-interface MobileCanvasProps {
-  setSelectedItem: SetSelectedItem;
-}
-
-/**
- * The mobile Y-axis scrolling theatre canvas.
- *
- * Performance model:
- * - `content-visibility: auto` on each cluster for native CSS virtualization.
- * - `IntersectionObserver` sentinel at the bottom triggers infinite loading.
- * - All media uses native `loading="lazy"`.
- */
-export function MobileCanvas({ setSelectedItem }: MobileCanvasProps) {
+export function MobileCanvas() {
   const [clusters, setClusters] = useState<MobileCluster[]>([]);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(0);
@@ -70,14 +58,9 @@ export function MobileCanvas({ setSelectedItem }: MobileCanvasProps) {
           <div
             key={cluster.id}
             className="w-full"
-            style={{
-              contentVisibility: "auto",
-              containIntrinsicSize: "auto 650px",
-            }}
           >
             <MobileClusterView
               cluster={cluster}
-              setSelectedItem={setSelectedItem}
             />
           </div>
         ))}

@@ -1,11 +1,9 @@
 import { memo } from "react";
-import { SetSelectedItem } from "../../../../types";
 import { MobileCluster } from "../../engine/mobileClusterBuilder";
 import { MobileCard } from "./MobileCard";
 
 interface MobileClusterViewProps {
   cluster: MobileCluster;
-  setSelectedItem: SetSelectedItem;
 }
 
 /**
@@ -20,11 +18,10 @@ interface MobileClusterViewProps {
  */
 export const MobileClusterView = memo(function MobileClusterView({
   cluster,
-  setSelectedItem,
 }: MobileClusterViewProps) {
   const [s0, s1, s2] = cluster.slots;
   const card = (slot: typeof s0, fill = false) => (
-    <MobileCard slot={slot} setSelectedItem={setSelectedItem} forceFill={fill} />
+    <MobileCard slot={slot} forceFill={fill} />
   );
 
   switch (cluster.type) {

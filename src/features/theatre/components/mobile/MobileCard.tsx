@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { TheatreItem, SetSelectedItem } from "../../../../types";
+import { TheatreItem } from "../../../../types";
 import { MobileSlot } from "../../engine/mobileClusterBuilder";
 import {
   EditWork,
@@ -12,7 +12,6 @@ import {
 
 interface MobileCardProps {
   slot: MobileSlot;
-  setSelectedItem: SetSelectedItem;
   /** When true, the card stretches to fill its parent height instead of using its aspect class. */
   forceFill?: boolean;
 }
@@ -24,7 +23,6 @@ interface MobileCardProps {
  */
 export const MobileCard = memo(function MobileCard({
   slot,
-  setSelectedItem,
   forceFill = false,
 }: MobileCardProps) {
   const { item } = slot;
@@ -42,7 +40,6 @@ export const MobileCard = memo(function MobileCard({
 
   return (
     <div
-      onClick={() => setSelectedItem(item)}
       className={`relative w-full overflow-hidden bg-zinc-900/40 border border-white/5 active:scale-[0.98] transition-transform ${
         forceFill ? "h-full" : slot.aspectClass
       } ${getWorkKind(item) === "script" ? "bg-[#f4f1ea] border-black/5" : ""}`}

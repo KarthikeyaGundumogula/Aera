@@ -1,11 +1,10 @@
 import { memo } from "react";
-import { SetSelectedItem } from "../../../../types";
+import { motion, useTransform, MotionValue } from "motion/react";
 import { Cluster } from "../../engine/clusterBuilder";
 import { DesktopCanvasCard } from "./DesktopCanvasCard";
 
 interface StaticDesktopClusterProps {
   cluster: Cluster;
-  setSelectedItem: SetSelectedItem;
 }
 
 /**
@@ -15,7 +14,6 @@ interface StaticDesktopClusterProps {
  */
 export const StaticDesktopCluster = memo(function StaticDesktopCluster({
   cluster,
-  setSelectedItem,
 }: StaticDesktopClusterProps) {
   // Derive grid dimensions from the template's own slot data
   const cols = cluster.slots.reduce((max, s) => Math.max(max, s.x + s.w), 0);
@@ -38,7 +36,6 @@ export const StaticDesktopCluster = memo(function StaticDesktopCluster({
             key={`${cluster.type}-${idx}-${slot.x}-${slot.y}`}
             slot={slot}
             item={slot.item}
-            setSelectedItem={setSelectedItem}
           />
         )
       )}

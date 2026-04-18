@@ -5,7 +5,6 @@ export type WorkVariant = "theatre-mobile" | "theatre-desktop" | "feed";
 export interface BaseWorkProps {
   item: TheatreItem;
   variant: WorkVariant;
-  onSelect?: (item: TheatreItem) => void;
   className?: string;
   showBadge?: boolean;
   showHoverOverlay?: boolean;
@@ -15,7 +14,7 @@ export interface BaseWorkProps {
 export type WorkKind = "edit" | "poster" | "script";
 
 export function isEditWork(item: TheatreItem): boolean {
-  return item.category === "Edit" || item.type === "video" || !!item.isPlay;
+  return item.category === "Edit" || item.category === undefined;
 }
 
 export function isPosterWork(item: TheatreItem): boolean {

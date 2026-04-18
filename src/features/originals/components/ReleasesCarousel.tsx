@@ -2,10 +2,11 @@ import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Maximize2, X, Play } from "lucide-react";
 import { TheatreItem } from "../../../types";
+import { buildEmbedUrl } from "../../../utils/embed";
+import { WorkModal } from "../../shared/modals";
 
 interface ReleasesCarouselProps {
   items: TheatreItem[];
-  onSelect: (item: TheatreItem) => void;
   initialIndex?: number;
   isTheaterMode?: boolean;
   onToggleTheater?: () => void;
@@ -13,13 +14,13 @@ interface ReleasesCarouselProps {
 
 export function ReleasesCarousel({ 
   items, 
-  onSelect, 
   initialIndex = 0,
   isTheaterMode = false,
   onToggleTheater
 }: ReleasesCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [direction, setDirection] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isDragging = useRef(false);
@@ -82,19 +83,12 @@ export function ReleasesCarousel({
 
   const activeItem = items[activeIndex];
   const isYouTube = activeItem.platform === 'youtube';
-  
-  // Extract YouTube ID safely
-  const getYoutubeId = (url: string) => {
-    if (!url) return '';
-    const parts = url.split('/');
-    const lastPart = parts[parts.length - 1];
-    return lastPart.split('?')[0];
-  };
 
-  const youtubeId = getYoutubeId(activeItem.embedUrl || '');
-  const embedUrl = youtubeId 
-    ? `https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&modestbranding=1`
-    : null;
+  // Build embed URL from srcId — no URL parsing needed
+  const embedUrl =
+    isYouTube && activeItem.srcId
+      ? buildEmbedUrl("youtube", activeItem.srcId).replace("?enablejsapi=1", "?autoplay=0&rel=0&modestbranding=1")
+      : null;
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -231,7 +225,7 @@ export function ReleasesCarousel({
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelect(activeItem);
+                    setIsModalOpen(true);
                   }}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white backdrop-blur-xl transition-all hover:bg-white hover:text-black active:scale-95 pointer-events-auto"
                   aria-label="Open Archive Record"
@@ -241,6 +235,12 @@ export function ReleasesCarousel({
               </motion.div>
             )}
           </AnimatePresence>
+
+          <WorkModal 
+            item={isModalOpen ? activeItem : null} 
+            onClose={() => setIsModalOpen(false)} 
+          />
+
 
           {/* Metadata Overlay & Pagination */}
           <AnimatePresence>
@@ -277,11 +277,11 @@ export function ReleasesCarousel({
                     {activeItem.title}
                   </h1>
 
-                  {activeItem.description && (
+                  
                     <p className="text-sm md:text-base text-white/80 font-medium leading-relaxed drop-shadow-md mt-4 max-w-2xl">
-                      {activeItem.description}
+                      there will be a reckoning soon
                     </p>
-                  )}
+                  
                 </motion.div>
 
                 {/* Visual pagination dots/dashes */}

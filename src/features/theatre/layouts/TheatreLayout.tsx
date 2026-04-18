@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TheatreItem, SetSelectedItem } from "../../../types";
+import { TheatreItem } from "../../../types";
 
 import { DesktopCanvas } from "../components/desktop/DesktopCanvas";
 import { MobileCanvas } from "../components/mobile/MobileCanvas";
@@ -12,12 +12,10 @@ import { Logo } from "../../../components/Logo";
 import { useHeaderVisibility } from "../hooks/useHeaderVisibility";
 
 interface TheatreLayoutProps {
-  selectedItem: TheatreItem | null;
-  setSelectedItem: SetSelectedItem;
   isMobile?: boolean;
 }
 
-export function TheatreLayout({ setSelectedItem, isMobile }: TheatreLayoutProps) {
+export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
   const { isHeaderVisible, handleScroll } = useHeaderVisibility();
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,9 +80,9 @@ export function TheatreLayout({ setSelectedItem, isMobile }: TheatreLayoutProps)
         className="h-full w-full"
       >
         {isMobile ? (
-          <MobileCanvas setSelectedItem={setSelectedItem} />
+          <MobileCanvas />
         ) : (
-          <DesktopCanvas setSelectedItem={setSelectedItem} onScroll={handleScroll} />
+          <DesktopCanvas onScroll={handleScroll} />
         )}
       </motion.main>
     </div>

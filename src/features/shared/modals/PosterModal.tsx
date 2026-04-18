@@ -69,7 +69,7 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                       <div className="space-y-0.5 sm:space-y-1">
                          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 leading-none">Artist</p>
                          <p className="text-xs sm:text-sm font-bold text-white tracking-tight truncate max-w-[150px] sm:max-w-none">
-                           {item.artist || item.origins || "Anonymous Artist"}
+                           {item.artist || "Anonymous Artist"}
                          </p>
                       </div>
                     </div>
@@ -96,9 +96,9 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                         <h2 
                           className="font-black text-white uppercase tracking-tighter leading-[0.85] mb-2"
                           style={{
-                            fontSize: !item.title.includes(" ") 
-                              ? `clamp(1.2rem, ${Math.min(6, 50 / (item.title.length * 0.8))}vw, 2rem)`
-                              : `clamp(1.2rem, ${Math.max(2.5, 8 - item.title.length * 0.2)}vw, 2.5rem)`,
+                            fontSize: !item.title?.includes(" ") 
+                              ? `clamp(1.2rem, ${Math.min(6, 50 / ((item.title?.length || 10) * 0.8))}vw, 2rem)`
+                              : `clamp(1.2rem, ${Math.max(2.5, 8 - (item.title?.length || 10) * 0.2)}vw, 2.5rem)`,
                           }}
                         >
                            {item.title || "Untitled Fragment"}
@@ -121,10 +121,9 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                           setSelectedArtist(artistData || {
                             id: String(item.id),
                             name: item.artist || "Anonymous",
-                            avatar: item.artistAvatar,
-                            presence: item.presence || 0,
-                            role: "Collective Artist",
-                            image: item.artistAvatar || item.image
+                            presence: 0,
+                            works: 0,
+                            image: item.artistAvatar || item.image || ""
                           });
                         }}
                       >
@@ -138,15 +137,15 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                         className="cursor-pointer group/orig"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (item.originalId) {
+                          if (item.originalIds?.[0]) {
                             onClose();
-                            navigate(`/originals/${item.originalId}`);
+                            navigate(`/originals/${item.originalIds[0]}`);
                           }
                         }}
                       >
                          <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2 group-hover/orig:text-white/50 transition-colors">Original</p>
                          <div className="flex items-center gap-1.5">
-                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/orig:text-yellow-400 transition-colors uppercase tracking-widest">{item.origins || "Independent"}</p>
+                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/orig:text-yellow-400 transition-colors uppercase tracking-widest">Independent</p>
                            <ArrowUpRight size={10} className="text-white/10 group-hover/orig:text-yellow-400/50 transition-colors" />
                          </div>
                       </div>
@@ -160,14 +159,7 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                      </div>
                   </div>
 
-                  {item.description && (
-                     <div>
-                        <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Description</p>
-                        <p className="text-[10px] sm:text-xs text-white/60 leading-relaxed font-medium line-clamp-3 sm:line-clamp-4 italic">
-                           "{item.description}"
-                        </p>
-                     </div>
-                  )}
+
                </div>
             </div>
           </motion.div>

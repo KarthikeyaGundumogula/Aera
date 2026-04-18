@@ -1,8 +1,6 @@
-import { ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
-
-import { Original, TheatreItem, SetSelectedItem } from "../../../types";
+import { useNavigate } from "react-router-dom";
+import { Original, TheatreItem } from "../../../types";
 
 import { buildClusters } from "../../theatre/engine/clusterBuilder";
 import { buildMobileClusters } from "../../theatre/engine/mobileClusterBuilder";
@@ -10,15 +8,14 @@ import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDes
 import { MobileClusterView } from "../../theatre/components/mobile/MobileClusterView";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { SectionHeader } from "../../../components/SectionHeader";
+import { ArrowRight } from "lucide-react";
 
 interface OriginalTheatreSectionProps {
   original: Original;
-  setSelectedItem: SetSelectedItem;
 }
 
 export function OriginalTheatreSection({
   original,
-  setSelectedItem,
 }: OriginalTheatreSectionProps) {
   const navigate = useNavigate();
   const isMobile = useMediaQuery();
@@ -68,14 +65,12 @@ export function OriginalTheatreSection({
               <MobileClusterView
                 key={cluster.id}
                 cluster={cluster}
-                setSelectedItem={setSelectedItem}
               />
             ))
           : clusters.desktop.map((cluster, idx) => (
               <StaticDesktopCluster
                 key={idx}
                 cluster={cluster}
-                setSelectedItem={setSelectedItem}
               />
             ))}
       </div>

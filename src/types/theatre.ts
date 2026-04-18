@@ -1,29 +1,21 @@
 export interface TheatreItem {
   id: string | number;
   title?: string;
-  description?: string;
   category?: 'Edit' | 'Poster' | 'Script' | 'Call' | 'Original';
-  origins?: string;
-  credits?: number;
-  presence?: number;
+  credits?: number; 
   artist?: string;
+  artistId?: string;
   artistAvatar?: string;
-  set?: string;
-  captain?: string;
   image?: string;
-  /** URL for a self-hosted video asset. Falls back to a placeholder when absent. */
-  videoUrl?: string;
   platform?: 'youtube' | 'twitter';
-  embedUrl?: string;
+  /**
+   * Platform-specific content identifier.
+   * YouTube → video ID (11-char, e.g. "GG1_DsScm6U")
+   * Twitter → tweet ID (numeric string, e.g. "2044620780550427076")
+   * All embed URLs and thumbnails are derived from this via src/utils/embed.ts.
+   */
+  srcId?: string;
   text?: string;
-  isQuote?: boolean;
-  isPlay?: boolean;
-  isEvent?: boolean;
-  twitterId?: string;
-  meta?: string;
-  type?: string;
-  aspectRatio?: number;
-  originalId?: string; // Reference to an Original
+  aspectRatio?: number; 
+  originalIds?: string[]; // Reference to Originals (can be multiple)
 }
-
-export type SetSelectedItem = (item: TheatreItem | null, items?: TheatreItem[], columns?: number) => void;

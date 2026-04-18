@@ -11,8 +11,8 @@ import {
   Users,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TheatreItem, SetSelectedItem } from "../../../types";
-import { GRID_ITEMS, FEATURED_ITEMS, ORIGINALS } from "../../../mock";
+import { TheatreItem } from "../../../types";
+import { GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../../../components/icons/AppIcons";
 
 import { Logo } from "../../../components/Logo";
@@ -24,14 +24,11 @@ import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDes
 import { OriginalLink, EditWork, PosterWork, ScriptWork } from "../../shared/work";
 import { getWorkKind } from "../../shared/work/types";
 
-interface HomeFeedLayoutProps {
-  selectedItem: TheatreItem | null;
-  setSelectedItem: SetSelectedItem;
-}
+// HomeFeedLayoutProps empty for now
 
 
 
-export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
+export function HomeFeedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [items, setItems] = useState<TheatreItem[]>(() => {
@@ -68,7 +65,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
 
       if (newProgress >= 100) {
         setDirection(1);
-        setHeroIndex((prev) => (prev + 1) % FEATURED_ITEMS.length);
+        setHeroIndex((prev) => (prev + 1) % ORIGINALS.length);
       } else {
         setProgress(newProgress);
       }
@@ -136,9 +133,9 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
             <Search className="w-5 h-5" />
           </button>
           <button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/submit")}
             className={
-              location.pathname === "/profile" ? "text-white" : "text-white/60"
+              location.pathname === "/submit" ? "text-white" : "text-white/60"
             }
           >
             <User className="w-5 h-5" />
@@ -183,8 +180,8 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
             <Search className="w-5 h-5" />
           </button>
           <button
-            onClick={() => navigate("/profile")}
-            className={`transition-colors ${location.pathname === "/profile" ? "text-white" : "text-white/60 hover:text-white"}`}
+            onClick={() => navigate("/submit")}
+            className={`transition-colors ${location.pathname === "/submit" ? "text-white" : "text-white/60 hover:text-white"}`}
           >
             <User className="w-5 h-5" />
           </button>
@@ -204,7 +201,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
                   animate={{ opacity: 0.3 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
-                  src={FEATURED_ITEMS[heroIndex].image}
+                  src={ORIGINALS[heroIndex].coverImage}
                   className="absolute inset-0 w-full h-full object-cover blur-[72px] scale-125"
                   
                 />
@@ -214,7 +211,8 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
             <AnimatePresence mode="popLayout">
               <OriginalLink 
                 key={heroIndex}
-                item={FEATURED_ITEMS[heroIndex]} 
+                // Mock a TheatreItem format for the OriginalLink component
+                item={{ id: ORIGINALS[heroIndex].id, originalIds: [ORIGINALS[heroIndex].id], category: "Original" }} 
                 className="absolute inset-0 z-10"
               >
                 <motion.div
@@ -225,7 +223,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
                   className="w-full h-full"
                 >
                   <img
-                    src={FEATURED_ITEMS[heroIndex].image}
+                    src={ORIGINALS[heroIndex].coverImage}
                     className="w-full h-full object-cover"
                     loading="eager"
                     decoding="async"
@@ -248,21 +246,21 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
                       <h2
                         className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
                         style={{
-                          fontSize: `clamp(2rem, ${Math.max(4, 12 - FEATURED_ITEMS[heroIndex].title.length * 0.3)}vw, 4rem)`,
+                          fontSize: `clamp(2rem, ${Math.max(4, 12 - ORIGINALS[heroIndex].title.length * 0.3)}vw, 4rem)`,
                         }}
                       >
-                        {FEATURED_ITEMS[heroIndex].title}
+                        {ORIGINALS[heroIndex].title}
                       </h2>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <PresenceIcon className="w-3 h-3 text-yellow-400" />
                             <span className="text-[10px] font-bold text-white/80">
-                              {FEATURED_ITEMS[heroIndex].presence} Presence
+                              {ORIGINALS[heroIndex].stats.presence} Presence
                             </span>
                           </div>
                           <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">
-                            {FEATURED_ITEMS[heroIndex].origins}
+                            Official Wall of Fame
                           </span>
                         </div>
                         <ChevronRight className="w-5 h-5 text-white/20" />
@@ -275,7 +273,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
 
             {/* Carousel Indicators */}
             <div className="absolute top-1/2 -translate-y-1/2 right-6 flex flex-col gap-3 z-40">
-              {FEATURED_ITEMS.map((_, idx) => (
+              {ORIGINALS.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={(e) => {
@@ -294,7 +292,7 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
                       <motion.div
                         className="absolute bottom-0 left-0 right-0 bg-white"
                         style={{ height: `${progress}%` }}
-                        transition={{ type: "linear", duration: 0.05 }}
+                        transition={{ ease: "linear", duration: 0.05 }}
                       />
                     )}
                     {/* Future bars: remain bg-white/10 from parent */}
@@ -334,7 +332,6 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
               <StaticDesktopCluster
                 key={`home-cluster-${idx}`}
                 cluster={cluster}
-                setSelectedItem={setSelectedItem}
               />
             ))}
           </div>
@@ -345,7 +342,6 @@ export function HomeFeedLayout({ setSelectedItem }: HomeFeedLayoutProps) {
               <div 
                 key={item.id} 
                 className="w-full px-6"
-                onClick={() => setSelectedItem(item, items, 1)}
               >
                 <div 
                   className="relative rounded-xl overflow-hidden border border-white/5 bg-white/5"

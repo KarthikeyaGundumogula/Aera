@@ -4,29 +4,38 @@ import { motion } from "motion/react";
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
+import { WorkModal } from "../modals/WorkModal";
 
 export function EditWork({
   item,
   variant,
-  onSelect,
   className = "",
   showBadge = true,
   showHoverOverlay,
   priority = "lazy",
 }: BaseWorkProps) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const shouldShowHoverOverlay = useMemo(
     () => showHoverOverlay ?? variant !== "theatre-mobile",
     [showHoverOverlay, variant],
   );
 
   return (
-    <div
-      className={`group relative h-full w-full overflow-hidden bg-black/40 ${className}`}
-      onClick={onSelect ? () => onSelect(item) : undefined}
-    >
+    <>
+      <div
+        className={`group relative h-full w-full overflow-hidden bg-black/40 ${className}`}
+        onClick={() => setIsModalOpen(true)}
+      >
       <img
         onLoad={() => setIsLoaded(true)}
+        onError={(e) => {
+          const target = e.currentTarget;
+          if (target.src.includes("maxresdefault.jpg")) {
+            target.src = target.src.replace("maxresdefault.jpg", "hqdefault.jpg");
+          }
+        }}
         src={item.image}
         alt={item.title}
         loading={priority}
@@ -53,5 +62,10 @@ export function EditWork({
       {/* Title Overlay */}
       <WorkOverlay item={item} variant={variant} />
     </div>
+
+    {isModalOpen && (
+      <WorkModal item={item} onClose={() => setIsModalOpen(false)} />
+    )}
+    </>
   );
 }

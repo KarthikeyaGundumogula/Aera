@@ -1,6 +1,5 @@
 import { motion, useTransform, MotionValue } from "motion/react";
 import { memo } from "react";
-import { SetSelectedItem } from "../../../../types";
 import { Cluster } from "../../engine/clusterBuilder";
 import { DesktopCanvasCard } from "./DesktopCanvasCard";
 import { CLUSTER_WIDTH, CLUSTER_HEIGHT, CLUSTER_GAP } from "../../constants";
@@ -14,7 +13,6 @@ interface DesktopClusterProps {
   /** Spring-animated camera position supplied by the parent canvas. */
   camX: MotionValue<number>;
   camY: MotionValue<number>;
-  setSelectedItem: SetSelectedItem;
 }
 
 /**
@@ -29,7 +27,6 @@ export const DesktopCluster = memo(function DesktopCluster({
   cluster,
   camX,
   camY,
-  setSelectedItem,
 }: DesktopClusterProps) {
   const worldX = gridX * (CLUSTER_WIDTH + CLUSTER_GAP);
   const worldY = gridY * (CLUSTER_HEIGHT + CLUSTER_GAP);
@@ -58,7 +55,6 @@ export const DesktopCluster = memo(function DesktopCluster({
                 key={`${slot.x}-${slot.y}`}
                 slot={slot}
                 item={slot.item}
-                setSelectedItem={setSelectedItem}
               />
             ),
         )}

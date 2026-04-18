@@ -12,13 +12,11 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleasesCarousel } from "./components/ReleasesCarousel";
 import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
 import { OriginalStats } from "./components/OriginalStats";
-import { WorkModal } from "../shared/modals";
 
 
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [selectedItem, setSelectedItem] = useState<TheatreItem | null>(null);
 
   const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
@@ -30,7 +28,6 @@ export function OriginalPage() {
   useEffect(() => {
     setIsCatalogueActive(false);
     setIsTheaterMode(false);
-    setSelectedItem(null);
   }, [id]);
 
   // Reveal interactive catalogue after 3 seconds
@@ -60,9 +57,7 @@ export function OriginalPage() {
     );
   }, [original]);
 
-  const handleSelectWork = (item: TheatreItem | null) => {
-    setSelectedItem(item);
-  };
+
 
   if (!original) {
     return (
@@ -148,8 +143,7 @@ export function OriginalPage() {
             >
               <ReleasesCarousel 
                 items={catalogueItems} 
-                initialIndex={catalogueItems.length > 1 ? 1 : 0}
-                onSelect={handleSelectWork} 
+                initialIndex={catalogueItems.length > 1 ? 1 : 0} 
                 isTheaterMode={isTheaterMode}
                 onToggleTheater={() => setIsTheaterMode(!isTheaterMode)}
               />
@@ -253,7 +247,7 @@ export function OriginalPage() {
       </section>
 
       {/* Originals Theatre Section */}
-      <OriginalTheatreSection original={original} setSelectedItem={handleSelectWork} />
+      <OriginalTheatreSection original={original} />
 
 
       {/* Detailed Information */}
@@ -289,10 +283,7 @@ export function OriginalPage() {
         </div>
       </div>
 
-      <WorkModal 
-        item={selectedItem} 
-        onClose={() => setSelectedItem(null)} 
-      />
+
 
       {/* Footer Space */}
       <div className="h-24" />

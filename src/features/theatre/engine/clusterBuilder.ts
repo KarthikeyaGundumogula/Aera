@@ -49,6 +49,7 @@ export interface ClusterSlot {
 }
 
 export interface Cluster {
+  id?: string;
   type: string;
   slots: ClusterSlot[];
 }
@@ -190,24 +191,19 @@ function createFallback(id: string, w: number, h: number, rng: () => number): Th
       id: `fallback-script-${id}`,
       title: "THE VOID: A Cinematic Reflection",
       artist: "FRAMEHOUSE SYSTEM",
-      category: "Script",
-      type: "image",
+      category: "Script" as const,
       image: `https://picsum.photos/seed/${id}/800/1200`,
       aspectRatio: 0.75,
-      origins: "INT. THE GRID - NIGHT",
       credits: 1.0,
-      isPlay: false
     };
   }
   return {
     id: `fallback-media-${id}`,
     title: "FRAMEHOUSE SYSTEM // ARCHIVE",
     artist: "FRAMEHOUSE SYSTEM",
-    category: "Edit",
-    type: "image",
+    category: "Edit" as const,
     image: `https://picsum.photos/seed/${id}/${w * 200}/${h * 200}`,
     aspectRatio: w / h,
-    isPlay: false
   };
 }
 
