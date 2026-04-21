@@ -14,6 +14,7 @@ import { ComingSoonPage } from "./features/shared/ComingSoonPage";
 import { TheatrePage } from "./features/theatre/TheatrePage";
 import { OriginalsTheatrePage } from "./features/originals/OriginalsTheatrePage";
 import UploadPage from "./features/upload/UploadPage";
+import ArtistSetupPage from "./features/profile/ArtistSetupPage";
 
 /**
  * App Component
@@ -37,7 +38,7 @@ export default function App() {
           }
         />
         <Route path="/sets" element={<ComingSoonPage label="Sets" />} />
-        <Route path="/profile" element={<ComingSoonPage label="Profile" />} />
+        <Route path="/profile" element={<ArtistSetupPage />} />
         <Route path="/submit" element={<UploadPage />} />
         
         <Route path="/originals/:id" element={<OriginalPage />} />

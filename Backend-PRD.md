@@ -1,6 +1,7 @@
 # FrameHouse Backend PRD & Core Schema
 
 ## 1. Product Scope & Objective
+
 This PRD defines the backend requirements to power **FrameHouse**, a highly cinematic, deterministic spatial platform where fans share edits, posters, and theories.
 
 The backend must be built for **Performance** and **Deterministic Paging** because the frontend utilizes structured layout engines (virtualized CSS Grids/Clusters) that rely on precision payload structures.
@@ -8,17 +9,21 @@ The backend must be built for **Performance** and **Deterministic Paging** becau
 ## 2. Core Entities & Database Models
 
 ### 2.1 Profiles (Users / Artists)
+
 - Regular users authenticate and build "Presence" over time by securing Credits.
 - Once enough Presence is met, they upgrade to "Artist" status.
 
 ### 2.2 Works
+
 Works are the assets. They break down perfectly into categories defining dimensions for the frontend:
+
 - `Edit`/`video` (requires `platform` and `platformId` like YouTube UUID)
 - `Poster` (requires `image`)
 - `Script` (requires `image` context and long-form data)
 
 ### 2.3 Originals
-The "Movie" or "Series" that acts as the focal anchor for works (e.g., *RRR*, *OG*).
+
+The "Movie" or "Series" that acts as the focal anchor for works (e.g., _RRR_, _OG_).
 
 ---
 
@@ -27,9 +32,11 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., *RRR*, *O
 ### A. Works Engine
 
 #### `GET /api/works`
+
 **Purpose:** Fetches global works for the home theatre layout. For mobile, it must populate deterministic layout rules (e.g., making sure IMAX slots get `aspectRatio: 1.77` edits contextually).
 **Query Params:** `?page=1&limit=5&category=Edit&clientPlatform=mobile` (use `limit=12` for desktop clusters)
 **Expected JSON Response:**
+
 ```json
 {
   "success": true,
@@ -43,10 +50,10 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., *RRR*, *O
       "credits": 2480,
       "artist": "PowerStar_FC",
       "artistId": "art-uuid-1",
-      "originalId": "og-uuid",
+      "originalIds": ["og-uuid-1", "og-uuid-2"],
       "image": "https://cloudfront.net/posters/poster1.jpg",
       "platform": "youtube",
-      "platformId": "uuid"
+      "srcId": "dQw4w9WgXcQ"
     }
   ],
   "meta": {
@@ -56,14 +63,51 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., *RRR*, *O
 }
 ```
 
+#### `GET /api/works/upload-url`
+
+**Purpose:** Generates a secure, short-lived Presigned URL for direct client-to-cloud upload.
+**Query Params:** `?fileName=poster.png&fileType=image/png`
+**Expected JSON Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "uploadUrl": "https://s3.amazonaws.com/framehouse-assets/tmp-uuid?signature=...",
+    "downloadUrl": "https://cdn.framehouse.com/works/uuid.png"
+  }
+}
+```
+
 #### `POST /api/works`
-**Purpose:** Submission of new artworks. Images and Videos must be processed asynchronously and served geographically closest via edge-CDN. Request must include the `aspectRatio` dynamically calculated by the client to inform backend tagging.
+
+**Purpose:** Finalizes the transmission of new cinematic artifacts.
+**Content-Type:** `application/json`
+**Expected JSON Body:**
+
+```json
+{
+  "title": "OG Intro Blast",
+  "category": "Edit",
+  "originalIds": ["og-uuid-1"],
+  "aspectRatio": 1.77,
+  "platform": "youtube",
+  "srcId": "dQw4w9WgXcQ",
+  "image": "https://cdn.framehouse.com/works/uuid.png"
+}
+```
+
+**Behavior:** For Edits, the `image` field is derived from `srcId` via Youtube/Twitter thumbnails if not provided. For Posters, the `image` field must be the `downloadUrl` obtained from the `/upload-url` step.
+
+Request must include the `aspectRatio` dynamically calculated by the client to inform deterministic grid placement.
 
 ### B. Original (Theatres) Engine
 
 #### `GET /api/originals`
+
 **Purpose:** Fetches the anchored movies for the home navigation loops.
 **Expected JSON Response:**
+
 ```json
 {
   "success": true,
@@ -87,8 +131,10 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., *RRR*, *O
 ### C. Artist Vault & Presence Engine
 
 #### `GET /api/artists/:artistId`
+
 **Purpose:** Serves the 3D Profile Talent HUDs. Must return an array of `workedOn` records (origins) for flip-card validation.
 **Expected JSON Response:**
+
 ```json
 {
   "success": true,
@@ -116,7 +162,7 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., *RRR*, *O
 ## 4. Systems, Performance & Reliability
 
 1. **CDN Delivery & Edge Caching:**
-   Because all images represent *art*, lossy compression should be minimized. Deliver WEBP/AVIF formatted outputs over an Edge CDN to strictly enforce fast Largest Contentful Paint (LCP) in theatre layouts.
+   Because all images represent _art_, lossy compression should be minimized. Deliver WEBP/AVIF formatted outputs over an Edge CDN to strictly enforce fast Largest Contentful Paint (LCP) in theatre layouts.
 2. **Deterministic Layout Generation (Optional Backend Overdrive):**
    Ideally, `/api/layout/mobile` explicitly provides grid placement sequences: `{ type: 'IMAX', work: {...} }, { type: 'Vertical', work: {...} }` rather than the frontend rolling the dice. This stabilizes layout thrashing upon hydration.
 3. **Optimistic UI Updates:**
