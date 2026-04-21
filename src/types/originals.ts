@@ -39,4 +39,5 @@ export interface Original {
   works: TheatreItem[];
   heroHighlights?: TheatreItem[];
   releaseDate?: string;
+  genre?: string[];
 }

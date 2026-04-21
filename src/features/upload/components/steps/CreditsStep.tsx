@@ -1,5 +1,6 @@
-import { motion } from "motion/react";
-import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Search, X } from "lucide-react";
 import { Original } from "../../../../types";
 
 interface CreditsStepProps {
@@ -11,6 +12,21 @@ interface CreditsStepProps {
 }
 
 export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBack }: CreditsStepProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const selectedOriginals = useMemo(() => 
+    originals.filter(o => selectedIds.includes(o.id)),
+  [originals, selectedIds]);
+
+  const filteredResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return originals.filter(o => 
+      o.title.toLowerCase().includes(query) || 
+      o.id.toLowerCase().includes(query)
+    );
+  }, [originals, searchQuery]);
+
   const toggleSelection = (id: string) => {
     const newIds = selectedIds.includes(id)
       ? selectedIds.filter(i => i !== id)
@@ -24,39 +40,116 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -30 }}
-      className="w-full"
+      className="w-full max-w-4xl mx-auto"
     >
-      <div className="text-center mb-12">
-        <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2">The Credits</h2>
-        <p className="text-white/40 text-xs text-balance">Select all official FrameHouse projects associated with this release</p>
-      </div>
-      
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 px-4 max-h-[50vh] overflow-y-auto no-scrollbar pb-8">
-        {originals.map((org) => {
-          const isSelected = selectedIds.includes(org.id);
-          return (
-            <motion.button
-              key={org.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => toggleSelection(org.id)}
-              className={`relative aspect-[2/3] group rounded-xl overflow-hidden border-2 transition-all duration-500 ${
-                isSelected ? "border-white shadow-[0_0_30px_rgba(255,255,255,0.1)]" : "border-transparent"
-              }`}
-            >
-              <img src={org.coverImage} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-              <div className={`absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4 transition-opacity duration-300 ${
-                isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-              }`}>
-                 <CheckCircle2 className={`w-10 h-10 mb-4 transition-all duration-500 ${isSelected ? "scale-100 opacity-100" : "scale-0 opacity-0"}`} />
-                <span className="text-[10px] font-black uppercase tracking-widest text-center">{org.title}</span>
-              </div>
-            </motion.button>
-          );
-        })}
+      <div className="text-center mb-10">
+        <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2 text-white/90">The Credits</h2>
+        <p className="text-white/40 text-[10px] uppercase tracking-widest text-balance">Associate official FrameHouse projects with this release</p>
       </div>
 
-      <div className="mt-12 flex items-center justify-between px-4">
+      <div className="space-y-10 px-4">
+        {/* ─── Search Interface ──────────────────────────────────────── */}
+        <div className="relative group">
+          <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-white/60 transition-colors">
+            <Search className="w-5 h-5" />
+          </div>
+          <input 
+            type="text"
+            placeholder="Search local archives by title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-6 pl-16 pr-6 text-base font-medium focus:ring-2 focus:ring-white/20 focus:bg-white/[0.05] outline-none transition-all placeholder:text-white/10"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery("")}
+              className="absolute right-6 top-1/2 -translate-y-1/2 p-1 rounded-full bg-white/5 hover:bg-white/10 text-white/40 transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* ─── Selected Dock ─────────────────────────────────────────── */}
+        <AnimatePresence>
+          {selectedOriginals.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-4"
+            >
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30 px-2">Current Selection</h3>
+              <div className="flex flex-wrap gap-3 p-2">
+                {selectedOriginals.map((org) => (
+                  <motion.div
+                    key={`selected-${org.id}`}
+                    layoutId={`org-${org.id}`}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="relative group w-16 aspect-square rounded-lg overflow-hidden border border-white/20"
+                  >
+                    <img src={org.coverImage} className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => toggleSelection(org.id)}
+                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ─── Search Results ────────────────────────────────────────── */}
+        <div className="min-h-[200px]">
+          {searchQuery.trim() ? (
+            filteredResults.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-8 h-[300px] overflow-y-auto no-scrollbar scroll-smooth">
+                {filteredResults.map((org) => {
+                  const isSelected = selectedIds.includes(org.id);
+                  return (
+                    <motion.button
+                      key={org.id}
+                      layoutId={`org-${org.id}`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => toggleSelection(org.id)}
+                      className={`relative aspect-[3/4] group rounded-xl overflow-hidden border transition-all duration-500 ${
+                        isSelected ? "border-white shadow-[0_0_30px_rgba(255,255,255,0.1)]" : "border-white/5 hover:border-white/20 bg-white/[0.02]"
+                      }`}
+                    >
+                      <img src={org.coverImage} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className={`absolute inset-0 flex flex-col items-center justify-center p-4 transition-all duration-300 ${
+                        isSelected ? "bg-black/60 opacity-100" : "bg-black/40 opacity-0 group-hover:opacity-100"
+                      }`}>
+                         <CheckCircle2 className={`w-8 h-8 mb-3 transition-all duration-500 ${isSelected ? "scale-100 opacity-100" : "scale-0 opacity-0"}`} />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-center leading-tight">{org.title}</span>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-white/20 border-2 border-dashed border-white/5 rounded-2xl">
+                <Search className="w-8 h-8 mb-4 opacity-20" />
+                <p className="text-[10px] font-black uppercase tracking-widest">No matching artifacts found</p>
+              </div>
+            )
+          ) : !selectedOriginals.length && (
+            <div className="flex flex-col items-center justify-center py-20 text-white/10 uppercase tracking-[0.4em] font-black text-[11px]">
+              <div className="h-px w-12 bg-white/5 mb-4" />
+              Begin search to assign credits
+              <div className="h-px w-12 bg-white/5 mt-4" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ─── Footer Navigation ─────────────────────────────────────── */}
+      <div className="mt-12 flex items-center justify-between px-4 border-t border-white/5 pt-8">
           <button onClick={onBack} className="text-white/40 hover:text-white flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-colors">
               <ChevronLeft className="w-4 h-4" /> Back
           </button>
@@ -64,7 +157,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
           <button 
             disabled={selectedIds.length === 0}
             onClick={onNext} 
-            className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2"
+            className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2 shadow-[0_20px_40px_rgba(255,255,255,0.05)]"
           >
             Connect Source <ChevronRight className="w-4 h-4" />
           </button>

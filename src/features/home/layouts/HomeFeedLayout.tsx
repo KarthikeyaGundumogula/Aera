@@ -23,6 +23,8 @@ import { buildClusters } from "../../theatre/engine/clusterBuilder";
 import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDesktopCluster";
 import { OriginalLink, EditWork, PosterWork, ScriptWork } from "../../shared/work";
 import { getWorkKind } from "../../shared/work/types";
+import { RollingTicker } from "../components/RollingTicker";
+import { ContactCTA } from "../components/ContactCTA";
 
 // HomeFeedLayoutProps empty for now
 
@@ -178,7 +180,7 @@ export function HomeFeedLayout() {
 
       <main className="pt-20 md:pt-24 px-0 w-full max-w-full overflow-x-hidden">
         {/* HERO - UPCOMING RELEASES */}
-        <section className="px-4 md:px-0 mb-12">
+        <section className="px-4 md:px-0 mb-0">
           <div className="relative h-[65vh] md:h-[80vh] rounded-2xl md:rounded-none overflow-hidden bg-black">
             {/* Background Color Glow */}
             <div className="absolute inset-0 z-0 overflow-hidden">
@@ -291,8 +293,10 @@ export function HomeFeedLayout() {
           </div>
         </section>
 
+        <RollingTicker />
+
         {/* TOP ARTISTS */}
-        <section className="mb-12">
+        <section className="mt-12 mb-12">
           <SectionHeader icon={Users} title="Top Artists" containerClassName="px-6 md:px-12 mb-6" />
 
           <div className="overflow-x-auto no-scrollbar pb-2 px-6 md:px-12">
@@ -347,6 +351,9 @@ export function HomeFeedLayout() {
               </div>
             ))}
           </div>
+
+          {/* Contact Entry for Beta */}
+          <ContactCTA />
 
           {/* Bottom Sentinel */}
           <div

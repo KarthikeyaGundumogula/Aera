@@ -77,7 +77,7 @@ export default function ArtistSetupPage() {
   }, [isReadyToSave]);
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-[#050505] text-white overflow-y-auto font-sans selection:bg-white selection:text-black">
 
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">

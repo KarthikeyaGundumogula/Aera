@@ -15,6 +15,8 @@ import { TheatrePage } from "./features/theatre/TheatrePage";
 import { OriginalsTheatrePage } from "./features/originals/OriginalsTheatrePage";
 import UploadPage from "./features/upload/UploadPage";
 import ArtistSetupPage from "./features/profile/ArtistSetupPage";
+import OriginalCreatePage from "./features/originals/OriginalCreatePage";
+import ContactPage from "./features/contact/ContactPage";
 
 /**
  * App Component
@@ -40,6 +42,8 @@ export default function App() {
         <Route path="/sets" element={<ComingSoonPage label="Sets" />} />
         <Route path="/profile" element={<ArtistSetupPage />} />
         <Route path="/submit" element={<UploadPage />} />
+        <Route path="/originals/create" element={<OriginalCreatePage />} />
+        <Route path="/contact" element={<ContactPage />} />
         
         <Route path="/originals/:id" element={<OriginalPage />} />
         <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />

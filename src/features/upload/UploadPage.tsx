@@ -60,7 +60,7 @@ export default function UploadPage() {
   }, [navigate]);
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-[#050505] text-white overflow-y-auto font-sans selection:bg-white selection:text-black">
       {/* Cinematic Background Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/[0.03] blur-[120px] rounded-full animate-pulse" />
@@ -68,7 +68,7 @@ export default function UploadPage() {
         <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-12 flex flex-col min-h-screen">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">
         {/* GLOBAL EXIT ACTION */}
         <motion.button
           initial={{ opacity: 0 }}

@@ -204,6 +204,19 @@ An Artist’s identity is defined by:
 
 ---
 
+## 🎭 6a. The Identity Rite
+
+The onboarding gate into the Artist community.
+
+* audiences configure their public persona
+* portrait, stage name, and tagline (mission statement)
+* social linkage
+
+👉 Result:
+Audience members officially "claim their identity" and become Artists.
+
+---
+
 ## 🧑‍🤝‍🧑 7. Community Layer
 
 ### 🔹 Sets

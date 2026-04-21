@@ -191,3 +191,23 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
 - **Safety Guardrails**:
   - **Archive Integrity**: Project-level viewers (OriginalPage) must implement immediate redirects/fallbacks for non-existent IDs to prevent runtime black screens.
   - **Array Resilience**: Components mapping talent lists must handle null/empty source arrays to prevent `undefined` access crashes during layout generation.
+
+## The Identity Rite (Artist Profile Setup)
+- **Concept**: A dedicated onboarding space where audiences officially transition into Artists by defining their presence.
+- **Route**: Accessible via `/profile`.
+- **Navigation Architecture Update**: 
+  - The `ProfileNav` (User icon in top-right) now routes directly to `/profile` instead of the submission flow.
+  - The "Release Rite" (work upload) is now secondary, accessible via a cinematic ghost pill button ("Begin Release Rite") within the Profile Setup page.
+- **Visual Identity**: 
+  - Matches the "Release Rite" aesthetic: Ultra-dark (`#050505`), noise grain overlay, and ambient white glow orbs.
+  - Utilizes a single-scroll ritualistic flow instead of multi-step wizards to maintain cinematic rhythm.
+- **Core Sections**:
+  1. **I — Portrait**: A high-fidelity file upload zone. 
+     - Supports drag-and-drop and native file picking.
+     - Uses local `object URLs` for instant, high-performance circular previews without backend latency.
+  2. **II — Identity**: 
+     - **Name**: XL font input for the primary stage name.
+     - **Tagline**: Single-line input (max 120 chars) for defining the artist's craft (replaces paragraph-style bios for higher impact).
+  3. **III — Socials**: Dynamic rows for Instagram, Twitter, and YouTube.
+     - Icons use adaptive brightness: `white/25` when empty, `white/70` when content is present to provide immediate visual feedback.
+- **Technical state**: Portrait state manages both the raw `File` object (for future persistence) and a temporary `previewUrl`. Memory safety is enforced via `URL.revokeObjectURL` on cleanup or image replacement.
