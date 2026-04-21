@@ -296,7 +296,7 @@ export function HomeFeedLayout() {
         <RollingTicker />
 
         {/* TOP ARTISTS */}
-        <section className="mt-12 mb-12">
+        <section className="mt-4 mb-12">
           <SectionHeader icon={Users} title="Top Artists" containerClassName="px-6 md:px-12 mb-6" />
 
           <div className="overflow-x-auto no-scrollbar pb-2 px-6 md:px-12">
