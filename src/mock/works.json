@@ -22,7 +22,7 @@
     "artist": "PK_Edits",
     "artistId": "art-2",
     "originalId": "og-original",
-    "image": "/posters/og_movie_cover_1776424627501.png",
+    "image": "/posters/og.jpeg",
     "platform": "twitter",
     "srcId": "2044620780550427076"
   },
@@ -35,7 +35,7 @@
     "artist": "Andhra_Cuts",
     "artistId": "art-3",
     "originalId": "og-original",
-    "image": "/posters/og_movie_cover_1776424627501.png"
+    "image": "/posters/og.jpeg"
   },
   {
     "id": "w-og-4",
@@ -46,7 +46,7 @@
     "artist": "Jungle_Quill",
     "artistId": "art-4",
     "originalId": "og-original",
-    "image": "/posters/og_movie_cover_1776424627501.png"
+    "image": "/posters/og.jpeg"
   },
   {
     "id": "w-og-5",
@@ -58,7 +58,7 @@
     "artist": "PowerStar_FC",
     "artistId": "art-1",
     "originalId": "og-original",
-    "image": "/posters/og_movie_cover_1776424627501.png",
+    "image": "/posters/og.jpeg",
     "platform": "twitter",
     "srcId": "2044700154788503958"
   },
@@ -98,7 +98,7 @@
     "artist": "PowerStar_FC",
     "artistId": "art-1",
     "originalId": "og-original",
-    "image": "/posters/og_movie_cover_1776424627501.png",
+    "image": "/posters/og.jpeg",
     "platform": "twitter",
     "srcId": "2045037128900587880"
   },
@@ -111,7 +111,7 @@
     "artist": "Jungle_Quill",
     "artistId": "art-4",
     "originalId": "og-original",
-    "image": "/posters/og_movie_cover_1776424627501.png"
+    "image": "/posters/og.jpeg"
   },
   {
     "id": "w-og-10",
@@ -149,7 +149,7 @@
     "artist": "NTR_Edits",
     "artistId": "art-6",
     "originalId": "rrr-original",
-    "image": "/posters/rrr_movie_cover_1776424657174.png",
+    "image": "/posters/rrr.jpeg",
     "platform": "twitter",
     "srcId": "2044700154788503958"
   },
@@ -162,7 +162,7 @@
     "artist": "Telugu_Talkies",
     "artistId": "art-7",
     "originalId": "rrr-original",
-    "image": "/posters/rrr_movie_cover_1776424657174.png"
+    "image": "/posters/rrr.jpeg"
   },
   {
     "id": "w-rrr-4",
@@ -198,7 +198,7 @@
     "artist": "NTR_Edits",
     "artistId": "art-6",
     "originalId": "rrr-original",
-    "image": "/posters/rrr_movie_cover_1776424657174.png"
+    "image": "/posters/rrr.jpeg"
   },
   {
     "id": "w-rrr-7",
@@ -210,7 +210,7 @@
     "artist": "Telugu_Talkies",
     "artistId": "art-7",
     "originalId": "rrr-original",
-    "image": "/posters/rrr_movie_cover_1776424657174.png",
+    "image": "/posters/rrr.jpeg",
     "platform": "twitter",
     "srcId": "2045037128900587880"
   },
@@ -223,7 +223,7 @@
     "artist": "Komaram_Fan",
     "artistId": "art-8",
     "originalId": "rrr-original",
-    "image": "/posters/rrr_movie_cover_1776424657174.png"
+    "image": "/posters/rrr.jpeg"
   },
   {
     "id": "w-kgf-1",
@@ -248,7 +248,7 @@
     "artist": "Kannada_Kali",
     "artistId": "art-10",
     "originalId": "kgf-original",
-    "image": "/posters/kgf_movie_cover_1776424693565.png",
+    "image": "/posters/kgf.jpeg",
     "platform": "twitter",
     "srcId": "2044268137387045334"
   },
@@ -261,7 +261,7 @@
     "artist": "Kolar_Frames",
     "artistId": "art-11",
     "originalId": "kgf-original",
-    "image": "/posters/kgf_movie_cover_1776424693565.png"
+    "image": "/posters/kgf.jpeg"
   },
   {
     "id": "w-kgf-4",
@@ -272,7 +272,7 @@
     "artist": "Adheera_FC",
     "artistId": "art-12",
     "originalId": "kgf-original",
-    "image": "/posters/kgf_movie_cover_1776424693565.png"
+    "image": "/posters/kgf.jpeg"
   },
   {
     "id": "w-kgf-5",
@@ -296,7 +296,7 @@
     "artist": "Kannada_Kali",
     "artistId": "art-10",
     "originalId": "kgf-original",
-    "image": "/posters/kgf_movie_cover_1776424693565.png"
+    "image": "/posters/kgf.jpeg"
   },
   {
     "id": "w-kgf-7",
@@ -308,7 +308,7 @@
     "artist": "Kolar_Frames",
     "artistId": "art-11",
     "originalId": "kgf-original",
-    "image": "/posters/kgf_movie_cover_1776424693565.png",
+    "image": "/posters/kgf.jpeg",
     "platform": "twitter",
     "srcId": "2044774541948543143"
   },
@@ -321,7 +321,7 @@
     "artist": "Adheera_FC",
     "artistId": "art-12",
     "originalId": "kgf-original",
-    "image": "/posters/kgf_movie_cover_1776424693565.png"
+    "image": "/posters/kgf.jpeg"
   },
   {
     "id": "w-bah-1",
@@ -346,7 +346,7 @@
     "artist": "Prabhas_Nation",
     "artistId": "art-14",
     "originalId": "baahubali-original",
-    "image": "/posters/baahubali_movie_cover_1776424741780.png",
+    "image": "/posters/bahubali.jpeg",
     "platform": "twitter",
     "srcId": "2044773283690852773"
   },
@@ -359,7 +359,7 @@
     "artist": "Sivagami_Fan",
     "artistId": "art-15",
     "originalId": "baahubali-original",
-    "image": "/posters/baahubali_movie_cover_1776424741780.png"
+    "image": "/posters/bahubali.jpeg"
   },
   {
     "id": "w-bah-4",
@@ -370,7 +370,7 @@
     "artist": "Sivagami_Fan",
     "artistId": "art-15",
     "originalId": "baahubali-original",
-    "image": "/posters/baahubali_movie_cover_1776424741780.png"
+    "image": "/posters/bahubali.jpeg"
   },
   {
     "id": "w-bah-5",
@@ -394,7 +394,7 @@
     "artist": "Mahishmati_FC",
     "artistId": "art-13",
     "originalId": "baahubali-original",
-    "image": "/posters/baahubali_movie_cover_1776424741780.png"
+    "image": "/posters/bahubali.jpeg"
   },
   {
     "id": "w-bah-7",
@@ -406,7 +406,7 @@
     "artist": "Prabhas_Nation",
     "artistId": "art-14",
     "originalId": "baahubali-original",
-    "image": "/posters/baahubali_movie_cover_1776424741780.png",
+    "image": "/posters/bahubali.jpeg",
     "platform": "twitter",
     "srcId": "2033091078199603682"
   },
@@ -419,7 +419,7 @@
     "artist": "Amarendra_FC",
     "artistId": "art-16",
     "originalId": "baahubali-original",
-    "image": "/posters/baahubali_movie_cover_1776424741780.png"
+    "image": "/posters/bahubali.jpeg"
   },
   {
     "id": "w-vkm-1",
@@ -444,7 +444,7 @@
     "artist": "Fahadh_Fan",
     "artistId": "art-18",
     "originalId": "vikram-original",
-    "image": "/posters/vikram_movie_cover_1776424795575.png",
+    "image": "/posters/vikram.jpeg",
     "platform": "twitter",
     "srcId": "2044620780550427076"
   },
@@ -457,7 +457,7 @@
     "artist": "Vijay_Sethupathi_FC",
     "artistId": "art-19",
     "originalId": "vikram-original",
-    "image": "/posters/vikram_movie_cover_1776424795575.png"
+    "image": "/posters/vikram.jpeg"
   },
   {
     "id": "w-vkm-4",
@@ -468,7 +468,7 @@
     "artist": "Kollywood_Vault",
     "artistId": "art-20",
     "originalId": "vikram-original",
-    "image": "/posters/vikram_movie_cover_1776424795575.png"
+    "image": "/posters/vikram.jpeg"
   },
   {
     "id": "w-vkm-5",
@@ -492,7 +492,7 @@
     "artist": "Fahadh_Fan",
     "artistId": "art-18",
     "originalId": "vikram-original",
-    "image": "/posters/vikram_movie_cover_1776424795575.png"
+    "image": "/posters/vikram.jpeg"
   },
   {
     "id": "w-vkm-7",
@@ -504,7 +504,7 @@
     "artist": "Vijay_Sethupathi_FC",
     "artistId": "art-19",
     "originalId": "vikram-original",
-    "image": "/posters/vikram_movie_cover_1776424795575.png",
+    "image": "/posters/vikram.jpeg",
     "platform": "twitter",
     "srcId": "2044700154788503958"
   },
@@ -517,7 +517,7 @@
     "artist": "Kollywood_Vault",
     "artistId": "art-20",
     "originalId": "vikram-original",
-    "image": "/posters/vikram_movie_cover_1776424795575.png"
+    "image": "/posters/vikram.jpeg"
   },
   {
     "id": "w-gen-1",
@@ -527,7 +527,7 @@
     "aspectRatio": 0.56,
     "credits": 1200,
     "artist": "StarDust_FC",
-    "image": "/posters/og_movie_cover_1776424627501.png",
+    "image": "/posters/og.jpeg",
     "platform": "twitter",
     "srcId": "2045037128900587880"
   },
@@ -538,7 +538,7 @@
     "aspectRatio": 0.7,
     "credits": 600,
     "artist": "Tollywood_Lens",
-    "image": "/posters/og_movie_cover_1776424627501.png"
+    "image": "/posters/og.jpeg"
   },
   {
     "id": "w-gen-3",
@@ -559,7 +559,7 @@
     "aspectRatio": 1.85,
     "credits": 200,
     "artist": "Hyderabad_Frames",
-    "image": "/posters/og_movie_cover_1776424627501.png",
+    "image": "/posters/og.jpeg",
     "platform": "twitter",
     "srcId": "2044268137387045334"
   },
@@ -570,6 +570,6 @@
     "aspectRatio": 1.0,
     "credits": 300,
     "artist": "Frame_Scholar",
-    "image": "/posters/og_movie_cover_1776424627501.png"
+    "image": "/posters/og.jpeg"
   }
 ]

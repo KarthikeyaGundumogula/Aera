@@ -3,7 +3,7 @@
     "id": "og-original",
     "title": "OG",
     "description": "They call him OG. Pawan Kalyan's most raw, unstoppable avatar — and the internet is still not over it. The FrameHouse tribute wall is live.",
-    "coverImage": "/posters/og_movie_cover_1776424627501.png",
+    "coverImage": "/posters/og.jpeg",
     "stats": { "presence": 2480, "members": 1620, "releases": 18 },
     "releaseDate": "2025"
   },
@@ -11,7 +11,7 @@
     "id": "rrr-original",
     "title": "RRR",
     "description": "Rise. Roar. Revolt. The legend of Ram and Bheem — assembled by the FrameHouse collective.",
-    "coverImage": "/posters/rrr_movie_cover_1776424657174.png",
+    "coverImage": "/posters/rrr.jpeg",
     "stats": { "presence": 1500, "members": 2100, "releases": 8 },
     "releaseDate": "March 25, 2022"
   },
@@ -19,7 +19,7 @@
     "id": "kgf-original",
     "title": "KGF: Chapter 2",
     "description": "Rocky Bhai doesn't bow. The empire of Kolar Gold Fields — the FrameHouse raw cut.",
-    "coverImage": "/posters/kgf_movie_cover_1776424693565.png",
+    "coverImage": "/posters/kgf.jpeg",
     "stats": { "presence": 3000, "members": 4500, "releases": 15 },
     "releaseDate": "April 14, 2022"
   },
@@ -27,7 +27,7 @@
     "id": "baahubali-original",
     "title": "Baahubali",
     "description": "Why did Kattappa kill Baahubali? The saga that shook the world — archived by FrameHouse.",
-    "coverImage": "/posters/baahubali_movie_cover_1776424741780.png",
+    "coverImage": "/posters/bahubali.jpeg",
     "stats": { "presence": 842, "members": 1200, "releases": 5 },
     "releaseDate": "July 10, 2015"
   },
@@ -35,7 +35,7 @@
     "id": "vikram-original",
     "title": "Vikram",
     "description": "Karnan returns. A multi-star collision of vengeance and loyalty — curated by the FrameHouse vault.",
-    "coverImage": "/posters/vikram_movie_cover_1776424795575.png",
+    "coverImage": "/posters/vikram.jpeg",
     "stats": { "presence": 2100, "members": 2600, "releases": 10 },
     "releaseDate": "June 3, 2022"
   }
