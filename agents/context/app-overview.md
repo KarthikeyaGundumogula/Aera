@@ -46,10 +46,11 @@ Artists create from existing media called **Works**:
 * alternate perspectives
 * symbolic expressions
 
-### 📝 Theories
+### 📝 Theories / Scripts
 
-* fan theories
+* visual explainers
 * narrative expansions
+* cinematic storyboard collections (up to 10 images)
 * analytical or poetic breakdowns
 
 ---
@@ -246,7 +247,7 @@ Supported formats:
 
 * Edits (video)
 * Posters (image)
-* Theories (text)
+* Theories / Scripts (visual explainers / storyboard collections)
 
 ---
 

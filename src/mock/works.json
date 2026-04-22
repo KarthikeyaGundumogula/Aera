@@ -46,7 +46,19 @@
     "artist": "Jungle_Quill",
     "artistId": "art-4",
     "originalId": "og-original",
-    "image": "/posters/og.jpeg"
+    "image": "/posters/og.jpeg",
+    "images": [
+      "/posters/og.jpeg",
+      "/posters/rrr.jpeg",
+      "/posters/kgf.jpeg",
+      "/posters/bahubali.jpeg",
+      "/posters/vikram.jpeg",
+      "/posters/og.jpeg",
+      "/posters/rrr.jpeg",
+      "/posters/kgf.jpeg",
+      "/posters/bahubali.jpeg",
+      "/posters/vikram.jpeg"
+    ]
   },
   {
     "id": "w-og-5",
@@ -173,8 +185,12 @@
     "artist": "Komaram_Fan",
     "artistId": "art-8",
     "originalId": "rrr-original",
-    "platform": "youtube",
-    "srcId": "1qYdfLA_zlY"
+    "image": "/posters/rrr.jpeg",
+    "images": [
+      "/posters/rrr.jpeg",
+      "/posters/bahubali.jpeg",
+      "/posters/vikram.jpeg"
+    ]
   },
   {
     "id": "w-rrr-5",
@@ -272,7 +288,16 @@
     "artist": "Adheera_FC",
     "artistId": "art-12",
     "originalId": "kgf-original",
-    "image": "/posters/kgf.jpeg"
+    "image": "/posters/kgf.jpeg",
+    "images": [
+      "/posters/kgf.jpeg",
+      "/posters/og.jpeg",
+      "/posters/rrr.jpeg",
+      "/posters/bahubali.jpeg",
+      "/posters/vikram.jpeg",
+      "/posters/kgf.jpeg",
+      "/posters/og.jpeg"
+    ]
   },
   {
     "id": "w-kgf-5",
@@ -370,7 +395,10 @@
     "artist": "Sivagami_Fan",
     "artistId": "art-15",
     "originalId": "baahubali-original",
-    "image": "/posters/bahubali.jpeg"
+    "image": "/posters/bahubali.jpeg",
+    "images": [
+      "/posters/bahubali.jpeg"
+    ]
   },
   {
     "id": "w-bah-5",
@@ -468,7 +496,14 @@
     "artist": "Kollywood_Vault",
     "artistId": "art-20",
     "originalId": "vikram-original",
-    "image": "/posters/vikram.jpeg"
+    "image": "/posters/vikram.jpeg",
+    "images": [
+      "/posters/vikram.jpeg",
+      "/posters/kgf.jpeg",
+      "/posters/og.jpeg",
+      "/posters/rrr.jpeg",
+      "/posters/bahubali.jpeg"
+    ]
   },
   {
     "id": "w-vkm-5",

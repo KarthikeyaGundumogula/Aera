@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, { useState } from "react";
-import { Info, Eye, EyeOff, RotateCw, ArrowUpRight } from "lucide-react";
+import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
@@ -158,8 +158,6 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                         <p className="text-xs sm:text-sm font-bold text-[#EAEAEA]">Poster / Fragment</p>
                      </div>
                   </div>
-
-
                </div>
             </div>
           </motion.div>
@@ -195,6 +193,15 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
               title="Show Info"
             >
               <Info size={20} strokeWidth={2.5} />
+            </button>
+
+            <button 
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              className="w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-all hover:bg-white hover:text-black active:scale-95 shadow-2xl"
+              aria-label="Close modal"
+              title="Close"
+            >
+              <X size={20} strokeWidth={2.5} />
             </button>
         </div>
       </div>

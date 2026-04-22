@@ -211,3 +211,32 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   3. **III — Socials**: Dynamic rows for Instagram, Twitter, and YouTube.
      - Icons use adaptive brightness: `white/25` when empty, `white/70` when content is present to provide immediate visual feedback.
 - **Technical state**: Portrait state manages both the raw `File` object (for future persistence) and a temporary `previewUrl`. Memory safety is enforced via `URL.revokeObjectURL` on cleanup or image replacement.
+
+## Script Modal Evolution (Comic-Book Pager)
+- **Concept**: Scripts are no longer just text; they are "Explainers" or "Collections" of up to 10 images, behaving like a cinematic comic book or storyboard.
+- **The Pager Interaction**:
+  - **Natural Sizing**: Each page is rendered at its **exact natural aspect ratio** (detected via `onLoad`). The modal UI snaps to the image's geometry on every page change.
+  - **Swipe Navigation**: Supports mobile-native touch gestures (left/right swipe) and desktop chevron navigation.
+  - **Instant Transition**: Replaces heavy AnimatePresence slide animations with instant image swaps (`key={pageIndex}`) to eliminate performance overhead and layout stutter.
+  - **The "Details" Flip**: Each page acts as an independent 3D card.
+    - **Front**: Pure artwork with a subtle top-left `RotateCw` indicator.
+    - **Back**: Cinematic captions, page notes, and page numbers.
+- **Visual Retheming**:
+  - **Unified Dark Mode**: All script surfaces (both front and back of cards) use the `#0d0c0a` cinematic theme, eliminating the white-to-black contrast jarring.
+  - **Side-Bar Deprecation**: The legacy vertical script sidebar is removed to allow for a more focused, centered single-column layout.
+
+## Immersive Modal Navigation & Accessibility
+- **The "X" Mandate**: All immersive work modals (Poster, Edit, Script) now include an explicit circular **Close Button** (`X` icon) to ensure intuitive exit strategies on all devices.
+  - **Poster Modal**: Close button is unified into the bottom control row.
+  - **Edit/Script Modal**: Close button is positioned in the top-right corner of the content container.
+- **Small-Screen Resilience (The SE Rule)**:
+  - Modals no longer force `max-height` caps that result in tiny, unreadable content on small devices.
+  - **Backdrop-Level Scroll**: The `ModalWrapper` backdrop (`fixed inset-0`) is now the primary scroll container (`overflow-y-auto`).
+  - **Flex Alignment**: Modals pin to `items-start` on mobile to ensure they start at the top of the scrollable area, while remaining `items-center` on desktop for perfect symmetry.
+
+## Universal Scroll Resilience (iOS Fix)
+- **Problem**: Standard `overflow: hidden` fails to block "momentum scrolling" on iOS Safari.
+- **Solution (Position: Fixed Pattern)**:
+  - When any modal opens, the `body` is instantly set to `position: fixed` with its `top` offset set to the negative value of the current `window.scrollY`.
+  - This "pins" the background page exactly where it is, blocking all touch-driven scrolling.
+  - On close, the `body` is restored and the browser is manually scrolled back to the saved `scrollY` position, ensuring zero layout jumps or orientation loss.

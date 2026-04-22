@@ -128,6 +128,7 @@ export function ReleasesCarousel({
             x: { type: "spring", stiffness: 300, damping: 30 },
             opacity: { duration: 0.2 }
           }}
+          style={{ willChange: "transform, opacity" }}
           drag={isTheaterMode ? false : "x"}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.1}
@@ -213,7 +214,7 @@ export function ReleasesCarousel({
             </div>
 
             {!isTheaterMode && (
-              <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none z-20" />
+              <div className="absolute inset-x-0 bottom-0 h-32 md:h-64 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-20" />
             )}
           </div>
 
@@ -263,7 +264,7 @@ export function ReleasesCarousel({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full z-30 pointer-events-none flex flex-col md:flex-row md:justify-between md:items-end gap-6"
+                className="absolute bottom-4 md:bottom-24 left-0 px-8 py-4 w-full z-30 pointer-events-none flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-6"
               >
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
@@ -279,11 +280,11 @@ export function ReleasesCarousel({
                   </div>
                   
                   <h1
-                    className="font-black tracking-tighter mb-2 uppercase leading-[0.82] text-white whitespace-pre-wrap drop-shadow-2xl"
+                    className="font-black tracking-tighter mb-1 uppercase leading-[0.82] text-white whitespace-pre-wrap drop-shadow-2xl"
                     style={{
                       fontSize: !(activeItem.title || "").includes(" ") 
-                        ? `clamp(2.5rem, ${Math.min(14, 90 / ((activeItem.title?.length || 1) * 0.8))}vw, 7rem)`
-                        : `clamp(2.5rem, ${Math.max(4.5, 14 - (activeItem.title?.length || 0) * 0.25)}vw, 7rem)`,
+                        ? `clamp(1.5rem, ${Math.min(10, 80 / ((activeItem.title?.length || 1) * 0.8))}vw, 5rem)`
+                        : `clamp(1.5rem, ${Math.max(3.5, 10 - (activeItem.title?.length || 0) * 0.2)}vw, 5rem)`,
                       wordBreak: "normal",
                       overflowWrap: "normal"
                     }}
@@ -292,7 +293,7 @@ export function ReleasesCarousel({
                   </h1>
 
                   
-                    <p className="text-sm md:text-base text-white/80 font-medium leading-relaxed drop-shadow-md mt-4 max-w-2xl">
+                    <p className="text-[10px] md:text-base text-white/60 font-medium leading-relaxed drop-shadow-md mt-2 max-w-2xl uppercase tracking-wider">
                       there will be a reckoning soon
                     </p>
                   

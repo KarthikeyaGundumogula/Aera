@@ -28,19 +28,19 @@ export function ProfileNav({ className = "" }: { className?: string }) {
 
   const menuItems = [
     {
-      label: "Identity Rite",
+      label: "Profile",
       icon: <UserCircle className="w-4 h-4" />,
       path: "/profile",
       description: "Shape your presence"
     },
     {
-      label: "Creation Rite",
+      label: "Create",
       icon: <Plus className="w-4 h-4" />,
       path: "/originals/create",
       description: "Initiate new original"
     },
     {
-      label: "Release Rite",
+      label: "Release",
       icon: <Film className="w-4 h-4" />,
       path: "/submit",
       description: "Deliver your work"
@@ -49,7 +49,7 @@ export function ProfileNav({ className = "" }: { className?: string }) {
       label: "Contact Founder",
       icon: <MessageSquare className="w-4 h-4" />,
       path: "/contact",
-      description: "Direct beta signal"
+      description: "Slap your thoughts"
     }
   ];
 

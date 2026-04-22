@@ -20,6 +20,7 @@ export function OriginalPage() {
 
   const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const isMobile = useMediaQuery();
 
   const original = id ? ORIGINALS_DATA[id] : null;
@@ -28,12 +29,14 @@ export function OriginalPage() {
   useEffect(() => {
     setIsCatalogueActive(false);
     setIsTheaterMode(false);
+    setResetKey(0);
   }, [id]);
 
   // Reveal interactive catalogue after 3 seconds
   useEffect(() => {
+    setIsCatalogueActive(false); // Reset to poster view first
+    
     if (!original?.heroHighlights?.length) {
-      setIsCatalogueActive(false);
       return;
     }
     
@@ -42,7 +45,7 @@ export function OriginalPage() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [original]);
+  }, [original, resetKey]);
 
   const catalogueItems: TheatreItem[] = useMemo(() => {
     if (!original) return [];
@@ -83,7 +86,11 @@ export function OriginalPage() {
     <div className={`min-h-screen bg-[#050505] overflow-y-auto no-scrollbar transition-all duration-300 ${!isTheaterMode ? "pt-[68px] md:pt-[72px]" : ""}`}>
       {/* Hero Header Transformation */}
       <motion.div 
-        animate={{ height: isTheaterMode ? (isMobile ? "56.25vw" : "85vh") : (isMobile ? "65vh" : "75vh") }}
+        animate={{ 
+          height: (isMobile && isCatalogueActive) || isTheaterMode 
+            ? (isMobile ? "56.25vw" : "85vh") 
+            : (isMobile ? "65vh" : "75vh") 
+        }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className="relative w-full overflow-hidden"
       >
@@ -172,9 +179,17 @@ export function OriginalPage() {
               </div>
 
               <div className="flex-[2] text-center px-4">
-                <h1 className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.5em] text-white/90 truncate max-w-[200px] md:max-w-none mx-auto">
-                  {original.title}
-                </h1>
+                <button 
+                  onClick={() => {
+                    setResetKey(prev => prev + 1);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="group transition-all active:scale-95"
+                >
+                  <h1 className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.5em] text-white/90 truncate max-w-[200px] md:max-w-none mx-auto group-hover:text-white transition-colors">
+                    {original.title}
+                  </h1>
+                </button>
               </div>
 
               <div className="flex-1 flex justify-end">
@@ -190,7 +205,9 @@ export function OriginalPage() {
           )}
         </AnimatePresence>
 
-        <OriginalStats stats={original.stats} isTheaterMode={isTheaterMode} />
+        {!isCatalogueActive && (
+          <OriginalStats stats={original.stats} isTheaterMode={isTheaterMode} />
+        )}
       </motion.div>
 
       {/* Star Spotlight */}

@@ -1,9 +1,9 @@
 import { motion } from "motion/react";
 
 const TAGLINES = [
-  "A Divine Revelation is about to Begin",
   "The Founders have arrived. Let the Rite begin.",
   "The Theatre belongs to those who build it.",
+  "A Divine Revelation is about to Begin",
   "This is just the first layer of the Dream.",
   "Founded by Art. Maintained by the Collective.",
 ];
@@ -20,6 +20,7 @@ export function RollingTicker() {
         animate={{
           x: ["0%", "-50%"],
         }}
+        style={{ willChange: "transform" }}
         transition={{
           duration: 35,
           repeat: Infinity,

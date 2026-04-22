@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { RotateCw, ArrowUpRight } from "lucide-react";
+import { RotateCw, ArrowUpRight, X } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { Logo } from "../../../components/Logo";
 import { ModalWrapper } from "./ModalWrapper";
@@ -219,6 +219,15 @@ export function EditModal({ item, onClose }: EditModalProps) {
                 />
               </div>
             </div>
+
+            {/* Close Button (FRONT) */}
+            <button
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              className="absolute top-3.5 right-3.5 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/50 backdrop-blur-md transition-all hover:bg-white hover:text-black active:scale-95 z-[60]"
+              aria-label="Close modal"
+            >
+              <X size={18} />
+            </button>
           </div>
 
           {/* ── BACK SIDE (The Archive Details) ─────────────────────────── */}
