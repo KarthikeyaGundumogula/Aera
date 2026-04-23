@@ -44,7 +44,13 @@ function clampOrigin(value: number) {
  */
 export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // React state for sizing
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, w: 0, h: 0 });
+  
+  // Culling state: only updates when camera moves significantly to prevent 60fps re-renders
+  const [cullingViewport, setCullingViewport] = useState<Viewport>({ x: 0, y: 0, w: 0, h: 0 });
+  const lastCullingPos = useRef({ x: 0, y: 0 });
 
   // Pre-compute cluster pool once from mock data
   const clusterPool = useMemo(() => buildClusters(GRID_ITEMS), []);
@@ -60,23 +66,37 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
     const sync = () => {
       if (!containerRef.current) return;
       const { width, height } = containerRef.current.getBoundingClientRect();
-      setViewport((prev) => ({ ...prev, w: width, h: height }));
+      const initialViewport = { x: 0, y: 0, w: width, h: height };
+      setViewport(initialViewport);
+      setCullingViewport(initialViewport);
     };
     sync();
     window.addEventListener("resize", sync);
     return () => window.removeEventListener("resize", sync);
   }, []);
 
-  // ── Sync viewport position with spring camera ─────────────────────────
+  // ── Sync culling position with spring camera (THROTTLED) ────────────────
   useEffect(() => {
-    const syncPos = () =>
-      setViewport((prev) => ({ ...prev, x: -springX.get(), y: -springY.get() }));
+    const syncPos = () => {
+      const x = -springX.get();
+      const y = -springY.get();
+      
+      // Update header visibility on every frame (cheap, doesn't re-render Canvas)
+      onScroll?.(-y);
+
+      // Only update culling state if camera moved > 50px
+      // This reduces React re-renders from 60fps to near-zero during slow pans
+      const dx = Math.abs(x - lastCullingPos.current.x);
+      const dy = Math.abs(y - lastCullingPos.current.y);
+      
+      if (dx > 50 || dy > 50) {
+        lastCullingPos.current = { x, y };
+        setCullingViewport(prev => ({ ...prev, x, y }));
+      }
+    };
 
     const unsubX = springX.on("change", syncPos);
-    const unsubY = springY.on("change", (v) => {
-      syncPos();
-      onScroll?.(v);
-    });
+    const unsubY = springY.on("change", syncPos);
     return () => {
       unsubX();
       unsubY();
@@ -88,10 +108,11 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
     const cellW = CLUSTER_WIDTH + CLUSTER_GAP;
     const cellH = CLUSTER_HEIGHT + CLUSTER_GAP;
 
-    const startCol = Math.floor(viewport.x / cellW) - 1;
-    const endCol = Math.ceil((viewport.x + viewport.w) / cellW) + 1;
-    const startRow = Math.floor(viewport.y / cellH) - 1;
-    const endRow = Math.ceil((viewport.y + viewport.h) / cellH) + 1;
+    // Use cullingViewport (stable) instead of raw frame-by-frame position
+    const startCol = Math.floor(cullingViewport.x / cellW) - 1;
+    const endCol = Math.ceil((cullingViewport.x + cullingViewport.w) / cellW) + 1;
+    const startRow = Math.floor(cullingViewport.y / cellH) - 1;
+    const endRow = Math.ceil((cullingViewport.y + cullingViewport.h) / cellH) + 1;
 
     const cells: { x: number; y: number }[] = [];
     for (let col = startCol; col <= endCol; col++) {
@@ -100,7 +121,7 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
       }
     }
     return cells;
-  }, [viewport.x, viewport.y, viewport.w, viewport.h]);
+  }, [cullingViewport]);
 
   // ── Input Handlers ────────────────────────────────────────────────────
   const isDragging = useRef(false);
@@ -171,7 +192,7 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
         >
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 group-hover:text-white/80 transition-colors flex items-center gap-2">
             <span>
-              location: {Math.floor(viewport.x)}, {Math.floor(viewport.y)}
+              location: {Math.floor(cullingViewport.x)}, {Math.floor(cullingViewport.y)}
             </span>
             <span className="w-1 h-1 rounded-full bg-white/20 group-hover:bg-white/60 transition-colors" />
             <span className="text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">

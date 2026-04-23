@@ -12,7 +12,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem } from "../../../types";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
-import { CategoryIcon, PresenceIcon, ReleasesIcon, EditsIcon, PostersIcon, ScriptsIcon } from "../../../components/icons/AppIcons";
+import { PresenceIcon} from "../../../components/icons/AppIcons";
 import { ProfileNav } from "../../../components/ProfileNav";
 
 import { Logo } from "../../../components/Logo";
@@ -29,6 +29,26 @@ import { ContactCTA } from "../components/ContactCTA";
 // HomeFeedLayoutProps empty for now
 
 
+
+const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
+  const kind = getWorkKind(item);
+  return (
+    <div className="w-full px-6">
+      <div 
+        className="relative rounded-xl overflow-hidden border border-white/5 bg-white/5"
+        style={{ aspectRatio: item.aspectRatio || 1 }}
+      >
+        {kind === "script" ? (
+          <ScriptWork item={item} variant="theatre-mobile" />
+        ) : kind === "poster" ? (
+          <PosterWork item={item} variant="theatre-mobile" />
+        ) : (
+          <EditWork item={item} variant="theatre-mobile" />
+        )}
+      </div>
+    </div>
+  );
+});
 
 export function HomeFeedLayout() {
   const navigate = useNavigate();
@@ -114,16 +134,16 @@ export function HomeFeedLayout() {
     };
   }, [loadMoreDown]);
 
-  const baseGlobalArtists = Array.from(
+  const baseGlobalArtists = useMemo(() => Array.from(
     new Map(ORIGINALS.flatMap((org) => org.topArtists).map((a) => [a.id, a])).values()
-  ).sort((a, b) => b.presence - a.presence);
+  ).sort((a, b) => b.presence - a.presence), []);
 
-  const globalArtistStripItems = baseGlobalArtists.length > 0 
+  const globalArtistStripItems = useMemo(() => baseGlobalArtists.length > 0 
     ? Array.from(
         { length: 10 },
         (_, index) => baseGlobalArtists[index % baseGlobalArtists.length]
       )
-    : [];
+    : [], [baseGlobalArtists]);
 
   return (
     <div className="bg-[#050505] min-h-screen text-white pb-24">
@@ -331,24 +351,7 @@ export function HomeFeedLayout() {
           {/* Mobile Single Column Stack */}
           <div className="flex sm:hidden flex-col gap-6">
             {items.map((item) => (
-              <div 
-                key={item.id} 
-                className="w-full px-6"
-              >
-                <div 
-                  className="relative rounded-xl overflow-hidden border border-white/5 bg-white/5"
-                  style={{ aspectRatio: item.aspectRatio || 1 }}
-                >
-                  {(() => {
-                    const kind = getWorkKind(item);
-                    switch (kind) {
-                      case "script": return <ScriptWork item={item} variant="theatre-mobile" />;
-                      case "poster": return <PosterWork item={item} variant="theatre-mobile" />;
-                      default: return <EditWork item={item} variant="theatre-mobile" />;
-                    }
-                  })()}
-                </div>
-              </div>
+              <MobileFeedItem key={item.id} item={item} />
             ))}
           </div>
 
@@ -361,7 +364,12 @@ export function HomeFeedLayout() {
             className="h-40 flex items-center justify-center"
           >
             {isLoadingDown && (
-              <Loader2 className="w-6 h-6 text-white/20 animate-spin" />
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="w-6 h-6 text-white/20 animate-spin" />
+                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white/10 animate-pulse">
+                  Setting the Stage...
+                </p>
+              </div>
             )}
           </div>
         </section>

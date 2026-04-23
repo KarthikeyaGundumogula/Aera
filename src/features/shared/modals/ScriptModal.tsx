@@ -37,7 +37,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
 
   const pages = (item.images ?? []).slice(0, 10);
   const total = pages.length;
-  const caption = PAGE_CAPTIONS[pageIndex % PAGE_CAPTIONS.length];
+  const caption = item.captions?.[pageIndex] || PAGE_CAPTIONS[pageIndex % PAGE_CAPTIONS.length];
 
   const goTo = (idx: number) => {
     setIsFlipped(false);

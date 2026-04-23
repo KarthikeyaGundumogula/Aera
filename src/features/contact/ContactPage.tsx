@@ -10,18 +10,18 @@ export default function ContactPage() {
     {
       id: "phone",
       label: "Direct Line",
-      value: "+91 999 999 9999",
+      value: "+91 9392591958",
       icon: <Phone className="w-5 h-5" />,
-      href: "tel:+919999999999",
-      description: "Available for urgent sequence discussion"
+      href: "tel:+919392571958",
+      description: "Available for urgent sequence discussion",
     },
     {
       id: "email",
       label: "Electronic Mail",
-      value: "founder@thecreatorz.world",
+      value: "ashokgolla@gmail.com",
       icon: <Mail className="w-5 h-5" />,
-      href: "mailto:founder@thecreatorz.world",
-      description: "For long-form vision and collaboration"
+      href: "mailto:ashokgolla@gmail.com",
+      description: "For long-form vision and collaboration",
     },
     {
       id: "instagram",
@@ -29,7 +29,7 @@ export default function ContactPage() {
       value: "@aera.collective",
       icon: <Instagram className="w-5 h-5" />,
       href: "https://instagram.com",
-      description: "Visual updates and process behind the scenes"
+      description: "Visual updates and process behind the scenes",
     },
     {
       id: "twitter",
@@ -37,8 +37,8 @@ export default function ContactPage() {
       value: "@aeraworld",
       icon: <Twitter className="w-5 h-5" />,
       href: "https://twitter.com",
-      description: "Real-time updates and community signals"
-    }
+      description: "Real-time updates and community signals",
+    },
   ];
 
   return (
@@ -141,9 +141,9 @@ export default function ContactPage() {
         >
             <div className="flex items-center gap-4">
                 <MessageSquare className="w-4 h-4" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.3em]">Response time: ~2-4 cinematic cycles</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.3em]">Response time: ~2-4 shifts</span>
             </div>
-            <div className="text-[9px] font-medium uppercase tracking-[0.2em]">Founded with love in our community</div>
+            <div className="text-[9px] font-medium uppercase tracking-[0.2em]">Founded with rage from neg prs</div>
         </motion.div>
       </main>
     </div>

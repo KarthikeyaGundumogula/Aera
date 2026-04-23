@@ -10,24 +10,12 @@ const TAGLINES = [
 
 export function RollingTicker() {
   return (
-    <div className="relative w-full overflow-hidden bg-black/80 backdrop-blur-2xl border-y border-white/5 py-4">
+    <div className="relative w-full overflow-hidden bg-black/95 md:bg-black/80 md:backdrop-blur-xl border-y border-white/5 py-4">
       {/* Cinematic Gradient Overlays for smooth edges */}
       <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-      <motion.div
-        className="flex w-max whitespace-nowrap items-center"
-        animate={{
-          x: ["0%", "-50%"],
-        }}
-        style={{ willChange: "transform" }}
-        transition={{
-          duration: 35,
-          repeat: Infinity,
-          ease: "linear",
-          repeatType: "loop"
-        }}
-      >
+      <div className="flex w-max whitespace-nowrap items-center animate-marquee">
         {/* Render the set twice for a perfect seamless loop */}
         {[...TAGLINES, ...TAGLINES].map((text, i) => (
           <div key={`${text}-${i}`} className="flex items-center gap-12 pr-12">
@@ -38,7 +26,7 @@ export function RollingTicker() {
             <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

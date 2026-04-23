@@ -83,8 +83,10 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., _RRR_, _O
 
 **Purpose:** Finalizes the transmission of new cinematic artifacts.
 **Content-Type:** `application/json`
-**Expected JSON Body:**
 
+**Polymorphic JSON Body Examples:**
+
+**1. Cinematic Edit (Motion Art)**
 ```json
 {
   "title": "OG Intro Blast",
@@ -93,13 +95,44 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., _RRR_, _O
   "aspectRatio": 1.77,
   "platform": "youtube",
   "srcId": "dQw4w9WgXcQ",
-  "image": "https://cdn.framehouse.com/works/uuid.png"
+  "image": "https://cdn.framehouse.com/works/thumb-uuid.png"
 }
 ```
 
-**Behavior:** For Edits, the `image` field is derived from `srcId` via Youtube/Twitter thumbnails if not provided. For Posters, the `image` field must be the `downloadUrl` obtained from the `/upload-url` step.
+**2. Cinematic Poster (Static Visual)**
+```json
+{
+  "title": "Aera Official Poster",
+  "category": "Poster",
+  "originalIds": ["og-uuid-1"],
+  "aspectRatio": 0.666,
+  "image": "https://cdn.framehouse.com/works/poster-uuid.png"
+}
+```
 
-Request must include the `aspectRatio` dynamically calculated by the client to inform deterministic grid placement.
+**3. Cinematic Script (Narrative Arc / Storyboard)**
+```json
+{
+  "title": "Aera Narrative Arc",
+  "category": "Script",
+  "originalIds": ["og-uuid-1"],
+  "aspectRatio": 1.0,
+  "images": [
+    "https://cdn.framehouse.com/works/page1.png",
+    "https://cdn.framehouse.com/works/page2.png"
+  ],
+  "captions": [
+    "The first act begins in silence — before the storm finds its name.",
+    "A single frame can hold the weight of a thousand unspoken lines."
+  ]
+}
+```
+
+**Behavioral Logic:**
+- **Edits:** If `image` is omitted, the backend derives it from the `srcId` via `buildThumbnail` (YouTube/Twitter).
+- **Posters:** The `image` field is mandatory and must point to a finalized S3/CDN URL.
+- **Scripts:** Requires the `images` array (max 10) and an optional `captions` array of matching length. The `image` field (cover) defaults to `images[0]` if not explicitly provided.
+- **Aspect Ratio:** Must be provided dynamically by the client (`width / height`) to inform the deterministic grid layout.
 
 ### B. Original (Theatres) Engine
 

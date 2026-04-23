@@ -117,7 +117,7 @@ export function SocialsSection({ socials, onChange }: SocialsSectionProps) {
           label="YouTube"
           prefix=""
           value={socials.youtube}
-          placeholder="Channel name"
+          placeholder="Stage handle (e.g. @yourname)"
           onChange={(v) => onChange("youtube", v)}
           delay={0.12}
         />

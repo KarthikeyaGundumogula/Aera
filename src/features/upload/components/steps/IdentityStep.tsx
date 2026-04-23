@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
-import { Film, Image as ImageIcon, ChevronRight } from "lucide-react";
+import { Film, Image as ImageIcon, BookOpen, ChevronRight } from "lucide-react";
 
 interface IdentityStepProps {
-  category: "Edit" | "Poster";
+  category: "Edit" | "Poster" | "Script";
   title: string;
   setFormData: (data: any) => void;
   onNext: () => void;
@@ -70,6 +70,26 @@ export function IdentityStep({
                 className={`text-[9px] font-bold uppercase tracking-widest ${category === "Poster" ? "text-black/40" : "text-white/30"}`}
               >
                 Static Visual
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => setFormData({ category: "Script" })}
+            className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
+              category === "Script"
+                ? "bg-white text-black border-white"
+                : "bg-white/5 text-white border-white/10 hover:border-white/20"
+            }`}
+          >
+            <BookOpen className="w-6 h-6 mb-3" />
+            <div className="text-left">
+              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">
+                Cinematic Script
+              </div>
+              <div
+                className={`text-[9px] font-bold uppercase tracking-widest ${category === "Script" ? "text-black/40" : "text-white/30"}`}
+              >
+                Narrative Arc
               </div>
             </div>
           </button>

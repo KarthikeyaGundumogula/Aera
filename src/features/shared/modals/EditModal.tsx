@@ -33,6 +33,10 @@ export function EditModal({ item, onClose }: EditModalProps) {
   );
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const twitterContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Ref for Twitter widget polling interval
+  const twitterPollRef = useRef<NodeJS.Timeout | number | null>(null);
+  
   // Incremented on every renderTweet call; async callbacks compare against
   // current value before running — discards stale calls from previous renders.
   const renderGenRef = useRef(0);
@@ -105,14 +109,20 @@ export function EditModal({ item, onClose }: EditModalProps) {
         script.onload = doLoad;
         document.body.appendChild(script);
       } else {
-        const poll = setInterval(() => {
+        if (twitterPollRef.current) clearInterval(twitterPollRef.current as any);
+        twitterPollRef.current = setInterval(() => {
           if (window.twttr?.widgets) {
-            clearInterval(poll);
+            if (twitterPollRef.current) clearInterval(twitterPollRef.current as any);
+            twitterPollRef.current = null;
             doLoad();
           }
         }, 100);
+        
         setTimeout(() => {
-          clearInterval(poll);
+          if (twitterPollRef.current) {
+            clearInterval(twitterPollRef.current as any);
+            twitterPollRef.current = null;
+          }
           if (renderGenRef.current === generation) setIsLoaded(true);
         }, 5000);
       }
@@ -123,7 +133,13 @@ export function EditModal({ item, onClose }: EditModalProps) {
     if (!item || item.platform !== "twitter") return;
     const fallback = setTimeout(() => setIsLoaded(true), 5000);
     renderTweet();
-    return () => clearTimeout(fallback);
+    return () => {
+        clearTimeout(fallback);
+        if (twitterPollRef.current) {
+            clearInterval(twitterPollRef.current as any);
+            twitterPollRef.current = null;
+        }
+    };
   }, [item?.id, item?.platform, renderTweet, isFlipped]);
 
   if (!item) return null;

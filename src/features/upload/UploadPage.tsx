@@ -13,6 +13,7 @@ import { FormatStep } from "./components/steps/FormatStep";
 import { ReviewStep } from "./components/steps/ReviewStep";
 
 type Step = "IDENTITY" | "CREDITS" | "SOURCE" | "FORMAT" | "REVIEW";
+const UPLOAD_STEPS: Step[] = ["IDENTITY", "CREDITS", "SOURCE", "FORMAT", "REVIEW"];
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -22,8 +23,9 @@ export default function UploadPage() {
   const [formData, setFormData] = useState({
     originalIds: [] as string[],
     title: "",
-    category: "Edit" as "Edit" | "Poster",
+    category: "Edit" as "Edit" | "Poster" | "Script",
     contentUrl: "",
+    scriptPages: [] as { url: string; text: string }[],
     aspectRatio: THEATRE_FORMATS.IMAX.ratio as number,
     platform: "youtube" as "youtube" | "twitter",
   });
@@ -37,18 +39,16 @@ export default function UploadPage() {
   }, []);
 
   const handleNext = useCallback(() => {
-    const steps: Step[] = ["IDENTITY", "CREDITS", "SOURCE", "FORMAT", "REVIEW"];
-    const currentIndex = steps.indexOf(step);
-    if (currentIndex < steps.length - 1) {
-      setStep(steps[currentIndex + 1]);
+    const currentIndex = UPLOAD_STEPS.indexOf(step);
+    if (currentIndex < UPLOAD_STEPS.length - 1) {
+      setStep(UPLOAD_STEPS[currentIndex + 1]);
     }
   }, [step]);
 
   const handleBack = useCallback(() => {
-    const steps: Step[] = ["IDENTITY", "CREDITS", "SOURCE", "FORMAT", "REVIEW"];
-    const currentIndex = steps.indexOf(step);
+    const currentIndex = UPLOAD_STEPS.indexOf(step);
     if (currentIndex > 0) {
-      setStep(steps[currentIndex - 1]);
+      setStep(UPLOAD_STEPS[currentIndex - 1]);
     }
   }, [step]);
 
@@ -100,11 +100,11 @@ export default function UploadPage() {
             
             {/* PROGRESS INDICATOR */}
             <div className="flex gap-2">
-              {(["IDENTITY", "CREDITS", "SOURCE", "FORMAT", "REVIEW"] as Step[]).map((s, i) => (
+              {UPLOAD_STEPS.map((s, i) => (
                 <div 
                   key={s} 
                   className={`h-1 w-8 rounded-full transition-all duration-500 ${
-                    i <= ["IDENTITY", "CREDITS", "SOURCE", "FORMAT", "REVIEW"].indexOf(step) 
+                    i <= UPLOAD_STEPS.indexOf(step) 
                       ? "bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
                       : "bg-white/10"
                   }`} 
@@ -139,6 +139,7 @@ export default function UploadPage() {
                 category={formData.category}
                 platform={formData.platform} 
                 contentUrl={formData.contentUrl} 
+                scriptPages={formData.scriptPages}
                 originalIds={formData.originalIds}
                 setFormData={updateFormData} 
                 onNext={handleNext} 

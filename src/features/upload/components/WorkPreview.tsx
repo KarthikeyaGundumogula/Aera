@@ -2,14 +2,16 @@ import { useMemo } from "react";
 import { TheatreItem } from "../../../types";
 import { EditWork } from "../../shared/work/EditWork";
 import { PosterWork } from "../../shared/work/PosterWork";
+import { ScriptWork } from "../../shared/work/ScriptWork";
 import { extractSrcId, buildThumbnail } from "../../../utils/embed";
 
 interface WorkPreviewProps {
   formData: {
     title: string;
-    category: "Edit" | "Poster";
+    category: "Edit" | "Poster" | "Script";
     originalIds: string[];
     contentUrl: string;
+    scriptPages: { url: string; text: string }[];
     aspectRatio: number;
     platform: "youtube" | "twitter";
   };
@@ -23,19 +25,24 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
     // Extract the raw platform ID from whatever the user pasted
     const srcId = extractSrcId(formData.platform, formData.contentUrl) ?? undefined;
 
-    // For Posters, the contentUrl is the image itself (blob or link)
-    // For Edits, we derive the thumbnail for YouTube.
-    const image = formData.category === "Poster" && formData.contentUrl
-      ? formData.contentUrl
-      : (srcId && formData.platform === "youtube"
-          ? buildThumbnail("youtube", srcId)
-          : (originalCover ?? FALLBACK_IMAGE));
+    // Resolve cover image
+    let image = originalCover ?? FALLBACK_IMAGE;
+    
+    if (formData.category === "Poster" && formData.contentUrl) {
+      image = formData.contentUrl;
+    } else if (formData.category === "Script" && formData.scriptPages.length > 0) {
+      image = formData.scriptPages[0].url;
+    } else if (srcId && formData.platform === "youtube") {
+      image = buildThumbnail("youtube", srcId);
+    }
 
     return {
       id: "preview-id",
       title: formData.title || "Untitled Work",
       category: formData.category,
       image,
+      images: formData.scriptPages.map(p => p.url),
+      captions: formData.scriptPages.map(p => p.text),
       aspectRatio: formData.aspectRatio,
       artist: "You", // Locked to current user
       originalIds: formData.originalIds,
@@ -62,8 +69,14 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
             showBadge={true}
             showHoverOverlay={true}
           />
-        ) : (
+        ) : formData.category === "Poster" ? (
           <PosterWork
+            item={mockItem}
+            variant="feed"
+            showBadge={true}
+          />
+        ) : (
+          <ScriptWork
             item={mockItem}
             variant="feed"
             showBadge={true}

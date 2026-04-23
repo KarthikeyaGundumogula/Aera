@@ -17,6 +17,7 @@ export interface TheatreItem {
   srcId?: string;
   text?: string;
   images?: string[]; // Script comic pages — up to 10 images, each is a flippable page
+  captions?: string[]; // Optional captions/text for each script page
   aspectRatio?: number; 
   originalIds?: string[]; // Reference to Originals (can be multiple)
 }

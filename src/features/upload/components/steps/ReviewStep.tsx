@@ -81,23 +81,32 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Title</p>
                  <p className="text-sm font-bold text-white truncate">{formData.title}</p>
                </div>
-               <div className="space-y-1">
-                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Category</p>
-                 <p className="text-sm font-bold text-white">{formData.category === "Edit" ? "Cinematic Edit" : "Cinematic Poster"}</p>
-               </div>
-               <div className="space-y-1">
-                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source</p>
-                 <p className="text-sm font-bold text-white capitalize">{formData.category === "Poster" ? "Local Archive" : formData.platform}</p>
-               </div>
+                <div className="space-y-1">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Category</p>
+                  <p className="text-sm font-bold text-white">
+                    {formData.category === "Edit" ? "Cinematic Edit" : formData.category === "Poster" ? "Cinematic Poster" : "Cinematic Script"}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source</p>
+                  <p className="text-sm font-bold text-white capitalize">
+                    {(formData.category === "Poster" || formData.category === "Script") ? "Local Archive" : formData.platform}
+                  </p>
+                </div>
                <div className="space-y-1">
                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Associated Film</p>
                  <p className="text-sm font-bold text-white truncate">{currentOriginal?.title ?? "—"}</p>
                </div>
              </div>
-             <div className="border-t border-white/5 pt-4 space-y-1">
-               <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source URL</p>
-               <p className="text-xs font-mono text-white/60 break-all">{formData.contentUrl || "—"}</p>
-             </div>
+              <div className="border-t border-white/5 pt-4 space-y-1">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source Content</p>
+                <p className="text-xs font-mono text-white/60 break-all">
+                  {formData.category === "Script" 
+                    ? `${formData.scriptPages.length} Storyboard Pages`
+                    : (formData.contentUrl || "—")
+                  }
+                </p>
+              </div>
            </div>
 
            <div className="w-full flex justify-center">
