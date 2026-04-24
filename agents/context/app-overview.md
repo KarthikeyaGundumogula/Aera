@@ -120,6 +120,7 @@ Key Rules:
 | ----------- | -------- | ------------------- | --------------------- |
 | Interaction | Likes    | instant, low effort | discovery / reach     |
 | Interaction | Comments | conversational      | engagement            |
+| Interaction | Watchlist| intentional curation| long-term tracking    |
 | Recognition | Credits  | intentional         | identity / reputation |
 
 👉 Principle:

@@ -190,6 +190,42 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., _RRR_, _O
 }
 ```
 
+### D. Watchlist Engine
+
+#### `GET /api/watchlist`
+
+**Purpose:** Fetches the user's curated cinematic ledger.
+**Query Params:** `?filter=all|want_to_watch|watched`
+**Expected JSON Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wl-uuid-1",
+      "workId": "w-uuid-xyz",
+      "status": "want_to_watch",
+      "addedAt": "2024-04-24T10:00:00Z",
+      "work": {
+        "title": "OG Intro Blast",
+        "category": "Edit",
+        "image": "..."
+      }
+    }
+  ]
+}
+```
+
+#### `POST /api/watchlist`
+
+**Purpose:** Adds a work or original to the user's watchlist.
+**Body:** `{ "targetId": "w-uuid-xyz", "targetType": "work" | "original" }`
+
+#### `DELETE /api/watchlist/:id`
+
+**Purpose:** Removes an item from the ledger.
+
 ---
 
 ## 4. Systems, Performance & Reliability

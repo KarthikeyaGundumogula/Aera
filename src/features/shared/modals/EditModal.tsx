@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { RotateCw, ArrowUpRight, X } from "lucide-react";
+import { RotateCw, ArrowUpRight, X, Bookmark } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { Logo } from "../../../components/Logo";
 import { ModalWrapper } from "./ModalWrapper";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ARTISTS_MOCK } from "../../../mock";
 import { ArtistProfile } from "../profile";
 import { buildEmbedUrl } from "../../../utils/embed";
+import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 
 interface EditModalProps {
   item: TheatreItem | null;
@@ -26,26 +27,24 @@ declare global {
 }
 
 export function EditModal({ item, onClose }: EditModalProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(
     null,
   );
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const twitterContainerRef = useRef<HTMLDivElement>(null);
+  const { containerRef: twitterContainerRef, isLoaded: isTwitterLoaded } = useTwitterWidgets(
+    item?.platform === "twitter" ? item.srcId : undefined,
+    isFlipped
+  );
   
-  // Ref for Twitter widget polling interval
-  const twitterPollRef = useRef<NodeJS.Timeout | number | null>(null);
-  
-  // Incremented on every renderTweet call; async callbacks compare against
-  // current value before running — discards stale calls from previous renders.
-  const renderGenRef = useRef(0);
+  const [isYoutubeLoaded, setIsYoutubeLoaded] = useState(false);
   const navigate = useNavigate();
 
   // Reset states when item changes
   useEffect(() => {
     if (item) {
-      setIsLoaded(false);
+      setIsYoutubeLoaded(false);
       setIsFlipped(false);
     }
   }, [item?.id]);
@@ -60,91 +59,12 @@ export function EditModal({ item, onClose }: EditModalProps) {
     }
   }, [isFlipped, item?.platform]);
 
-  // ─── Twitter: blockquote + scoped widgets.load(el) ───────────────────
-  // Matches the reference embed format in mock-embed-codes.md.
-  // data-media-max-width="560" + video-only tweets = immersive video display.
-  // renderGenRef guards against React re-render races: each call gets a
-  // generation number; the async doLoad checks it before touching the DOM.
-  const renderTweet = useCallback(() => {
-    const container = twitterContainerRef.current;
-    if (!container || !item?.srcId) return;
 
-    const generation = ++renderGenRef.current;
-
-    // Write the blockquote HTML — url format twitter.com/{user}/status/{id}
-    // is the only pattern widgets.js recognises; username is ignored at lookup.
-    container.innerHTML = [
-      `<blockquote`,
-      `  class="twitter-tweet"`,
-      `  data-media-max-width="560"`,
-      `  data-conversation="none"`,
-      `  data-theme="dark"`,
-      `  data-dnt="true"`,
-      `>`,
-      `  <a href="https://twitter.com/twitter/status/${item.srcId}"></a>`,
-      `</blockquote>`,
-    ].join(" ");
-
-    const doLoad = () => {
-      // If a newer renderTweet call has started, this one is stale — bail
-      if (renderGenRef.current !== generation) return;
-      if (!window.twttr?.widgets || !twitterContainerRef.current) return;
-      window.twttr.widgets.load(twitterContainerRef.current);
-      setTimeout(() => {
-        if (renderGenRef.current === generation) setIsLoaded(true);
-      }, 1000);
-    };
-
-    if (window.twttr?.widgets) {
-      doLoad();
-    } else {
-      const existing = document.querySelector<HTMLScriptElement>(
-        'script[src*="platform.twitter.com/widgets.js"]',
-      );
-      if (!existing) {
-        const script = document.createElement("script");
-        script.src = "https://platform.twitter.com/widgets.js";
-        script.async = true;
-        script.charset = "utf-8";
-        script.onload = doLoad;
-        document.body.appendChild(script);
-      } else {
-        if (twitterPollRef.current) clearInterval(twitterPollRef.current as any);
-        twitterPollRef.current = setInterval(() => {
-          if (window.twttr?.widgets) {
-            if (twitterPollRef.current) clearInterval(twitterPollRef.current as any);
-            twitterPollRef.current = null;
-            doLoad();
-          }
-        }, 100);
-        
-        setTimeout(() => {
-          if (twitterPollRef.current) {
-            clearInterval(twitterPollRef.current as any);
-            twitterPollRef.current = null;
-          }
-          if (renderGenRef.current === generation) setIsLoaded(true);
-        }, 5000);
-      }
-    }
-  }, [item?.srcId]);
-
-  useEffect(() => {
-    if (!item || item.platform !== "twitter") return;
-    const fallback = setTimeout(() => setIsLoaded(true), 5000);
-    renderTweet();
-    return () => {
-        clearTimeout(fallback);
-        if (twitterPollRef.current) {
-            clearInterval(twitterPollRef.current as any);
-            twitterPollRef.current = null;
-        }
-    };
-  }, [item?.id, item?.platform, renderTweet, isFlipped]);
 
   if (!item) return null;
 
   const isYoutube = item.platform === "youtube";
+  const isLoaded = isYoutube ? isYoutubeLoaded : isTwitterLoaded;
   const maxWidthClass = isYoutube ? "max-w-[1000px]" : "max-w-[560px]";
 
   // Build the YouTube embed URL from srcId (includes enablejsapi)
@@ -197,7 +117,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                     title={item.title}
-                    onLoad={() => setIsLoaded(true)}
+                    onLoad={() => setIsYoutubeLoaded(true)}
                   />
                 </div>
               ) : (
@@ -249,8 +169,10 @@ export function EditModal({ item, onClose }: EditModalProps) {
           {/* ── BACK SIDE (The Archive Details) ─────────────────────────── */}
           <div
             onClick={() => setIsFlipped(false)}
-            className="absolute inset-0 w-full h-full rotate-y-180 backface-hidden bg-[#0a0a0a] rounded-xl overflow-hidden shadow-2xl border border-white/10 p-5 sm:p-8 flex flex-col justify-center cursor-pointer group/back overflow-y-auto no-scrollbar scroll-smooth"
+            className="absolute inset-0 w-full h-full rotate-y-180 backface-hidden bg-[#0a0a0a] rounded-xl overflow-hidden shadow-2xl border border-white/10 p-5 sm:p-8 flex flex-col justify-start cursor-pointer group/back"
           >
+
+
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
               <img
                 src={item.image}
@@ -260,7 +182,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
               <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
             </div>
 
-            <div className="relative z-10 space-y-6 sm:space-y-8">
+            <div className="relative z-10 space-y-4 sm:space-y-5">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/30">
@@ -286,7 +208,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-6 sm:gap-y-8 pb-4">
+              <div className="grid grid-cols-2 gap-x-6 sm:gap-x-10 gap-y-4 sm:gap-y-5 pb-2">
                 {/* Artist */}
                 <div
                   className="space-y-1 sm:space-y-1.5 cursor-pointer group/artist"
@@ -365,14 +287,26 @@ export function EditModal({ item, onClose }: EditModalProps) {
                   </p>
                 </div>
               </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!showToast) {
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }
+                  }}
+                  className="w-full group flex items-center justify-center gap-3 py-3.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
+                >
+                  <Bookmark size={14} className="group-hover:fill-current" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em]">Add to Watchlist</span>
+                </button>
+              </div>
+
             </div>
 
-            <div className="absolute bottom-6 left-8 flex items-center gap-3 opacity-20">
-              <div className="h-px w-8 bg-white" />
-              <span className="text-[8px] font-black uppercase tracking-[0.5em]">
-                FrameHouse Collection
-              </span>
-            </div>
+
           </div>
         </motion.div>
       </div>
@@ -382,6 +316,21 @@ export function EditModal({ item, onClose }: EditModalProps) {
         artist={selectedArtist}
         onClose={() => setSelectedArtist(null)}
       />
+
+      {/* Visual Hit Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
+          >
+            <Bookmark size={14} className="fill-current" />
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Watchlist</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </ModalWrapper>
   );
 }

@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useRef } from "react";
-import { LayoutPanelLeft, X, ArrowUpRight, ChevronLeft, ChevronRight, RotateCw, BookOpen } from "lucide-react";
+import { LayoutPanelLeft, X, ArrowUpRight, ChevronLeft, ChevronRight, RotateCw, BookOpen, Bookmark } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +29,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
   const navigate = useNavigate();
@@ -163,7 +164,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
 
                       {/* Back — page details, same aspect ratio as front */}
                       <div
-                        className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-[#111] p-6 flex flex-col justify-between cursor-pointer"
+                        className="absolute inset-0 w-full h-full rounded-[18px] overflow-hidden border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-[#111] p-6 flex flex-col justify-start cursor-pointer"
                         style={{
                           transform: "rotateY(180deg)",
                           backfaceVisibility: "hidden",
@@ -196,7 +197,23 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                           </p>
                         </div>
 
-                        <div className="relative z-10 flex items-center gap-2 mt-4">
+                        <div className="relative z-10 w-full mt-auto mb-4">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!showToast) {
+                                setShowToast(true);
+                                setTimeout(() => setShowToast(false), 3000);
+                              }
+                            }}
+                            className="w-full group flex items-center justify-center gap-3 py-3 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
+                          >
+                            <Bookmark size={12} className="group-hover:fill-current" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em]">Add to Watchlist</span>
+                          </button>
+                        </div>
+
+                        <div className="relative z-10 flex items-center gap-2">
                           <div className="h-px flex-1 bg-white/8" />
                           <span className="text-[7px] font-black uppercase tracking-[0.5em] text-white/15">Aera Script</span>
                           <div className="h-px flex-1 bg-white/8" />
@@ -259,7 +276,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                 });
               }}
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 group-hover/artist:bg-white group-hover/artist:text-black transition-all">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 group-hover/artist:bg-white group-hover/artist:text-black transition-all">
                 <LayoutPanelLeft className="h-4 w-4" />
               </div>
               <div>
@@ -299,6 +316,21 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
         artist={selectedArtist}
         onClose={() => setSelectedArtist(null)}
       />
+
+      {/* Visual Hit Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
+          >
+            <Bookmark size={14} className="fill-current" />
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Watchlist</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </ModalWrapper>
   );
 }

@@ -41,16 +41,30 @@ export default function UploadPage() {
   const handleNext = useCallback(() => {
     const currentIndex = UPLOAD_STEPS.indexOf(step);
     if (currentIndex < UPLOAD_STEPS.length - 1) {
-      setStep(UPLOAD_STEPS[currentIndex + 1]);
+      let nextStep = UPLOAD_STEPS[currentIndex + 1];
+      
+      // Skip FORMAT for scripts
+      if (nextStep === "FORMAT" && formData.category === "Script") {
+        nextStep = "REVIEW";
+      }
+      
+      setStep(nextStep);
     }
-  }, [step]);
+  }, [step, formData.category]);
 
   const handleBack = useCallback(() => {
     const currentIndex = UPLOAD_STEPS.indexOf(step);
     if (currentIndex > 0) {
-      setStep(UPLOAD_STEPS[currentIndex - 1]);
+      let prevStep = UPLOAD_STEPS[currentIndex - 1];
+      
+      // Skip FORMAT for scripts
+      if (prevStep === "FORMAT" && formData.category === "Script") {
+        prevStep = "SOURCE";
+      }
+      
+      setStep(prevStep);
     }
-  }, [step]);
+  }, [step, formData.category]);
 
   const handleRelease = useCallback(() => {
     setIsSubmitting(true);
@@ -88,7 +102,7 @@ export default function UploadPage() {
             className="flex items-center gap-3 mb-4"
           >
             <div className="h-px w-12 bg-white/20" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">The Release Rite</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">The Studio Session</span>
           </motion.div>
           
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -100,16 +114,21 @@ export default function UploadPage() {
             
             {/* PROGRESS INDICATOR */}
             <div className="flex gap-2">
-              {UPLOAD_STEPS.map((s, i) => (
-                <div 
-                  key={s} 
-                  className={`h-1 w-8 rounded-full transition-all duration-500 ${
-                    i <= UPLOAD_STEPS.indexOf(step) 
-                      ? "bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
-                      : "bg-white/10"
-                  }`} 
-                />
-              ))}
+              {UPLOAD_STEPS.map((s, i) => {
+                // Hide FORMAT dot for scripts
+                if (s === "FORMAT" && formData.category === "Script") return null;
+                
+                return (
+                  <div 
+                    key={s} 
+                    className={`h-1 w-8 rounded-full transition-all duration-500 ${
+                      i <= UPLOAD_STEPS.indexOf(step) 
+                        ? "bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
+                        : "bg-white/10"
+                    }`} 
+                  />
+                );
+              })}
             </div>
           </div>
         </header>

@@ -138,6 +138,11 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   - **Visual Hints**: Navigation-ready fields (Artist, Original) are punctuated with **inclined arrows** (`ArrowUpRight`) to visually signal their interactive nature.
 - **Profile Modal Standalone Capability**: 
   - `ArtistProfile` and `StarProfile` have been refactored to support standalone modal usage (via an `onClose` prop). This allows them to be summoned from within other modals or metadata fields without rendering a redundant film-strip card trigger.
+- **The Watchlist Ledger**:
+  - A dedicated interaction layer for curating "Works" and "Originals".
+  - **Add to Watchlist Button**: Unified placement on the flip-side of all Work Modals and the header of Original Pages.
+  - **Visual Hit (Toast)**: Every "Add" action triggers a persistent, high-fidelity visual confirmation at the bottom center.
+  - **The Ledger View**: Accessible via `/watchlist`, featuring a vertical stack of curated items and a functional "Back" button for seamless theatre re-entry.
 
 ## Visual Identity Standards (Modal)
 - **Backdrop**: Uses an ultra-dark cinematic canvas (`bg-black/90`) with a subtle grain/noise texture overlay and high-strength backdrop blur.
@@ -225,10 +230,17 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   - **Unified Dark Mode**: All script surfaces (both front and back of cards) use the `#0d0c0a` cinematic theme, eliminating the white-to-black contrast jarring.
   - **Side-Bar Deprecation**: The legacy vertical script sidebar is removed to allow for a more focused, centered single-column layout.
 
-## Immersive Modal Navigation & Accessibility
+- **Immersive Modal Navigation & Accessibility**: 
 - **The "X" Mandate**: All immersive work modals (Poster, Edit, Script) now include an explicit circular **Close Button** (`X` icon) to ensure intuitive exit strategies on all devices.
   - **Poster Modal**: Close button is unified into the bottom control row.
   - **Edit/Script Modal**: Close button is positioned in the top-right corner of the content container.
+- **Media Lifecycle on Flip (Edit Modal)**:
+  - **Twitter**: Container MUST unmount on flip to stop playback (no native pause API). Hook uses `isFlipped` as a trigger to re-inject the widget on remount.
+  - **YouTube**: Programmatically paused via `postMessage` command when flipping to the back, but remains mounted to ensure instant flip-back resume.
+- **Layout Optimization & "Zero Scroll" Policy**:
+  - **Spacers**: Front-side "Edit" header uses a `h-[72px]` spacer to separate the frost pill from the video. Back-side content starts immediately at the top (no spacer).
+  - **No Internal Scrolling**: `overflow-y-auto` is disabled on the cards themselves. The layout is tightened to ensure details fit within the natural media-driven card height.
+  - **Backdrop Alignment**: Mobile uses `items-start` to ensure the top of the modal is always visible, while Desktop uses `items-center`.
 - **Small-Screen Resilience (The SE Rule)**:
   - Modals no longer force `max-height` caps that result in tiny, unreadable content on small devices.
   - **Backdrop-Level Scroll**: The `ModalWrapper` backdrop (`fixed inset-0`) is now the primary scroll container (`overflow-y-auto`).

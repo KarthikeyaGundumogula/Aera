@@ -165,21 +165,19 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
       onTouchEnd={onPointerUp}
     >
       {/* Infinite cluster field */}
-      <AnimatePresence mode="popLayout">
-        {visibleCells.map(({ x, y }) => {
-          const index = Math.abs((x * 31 + y * 17) % clusterPool.length);
-          return (
-            <DesktopCluster
-              key={`${x}-${y}`}
-              gridX={x}
-              gridY={y}
-              cluster={clusterPool[index]}
-              camX={springX}
-              camY={springY}
-            />
-          );
-        })}
-      </AnimatePresence>
+      {visibleCells.map(({ x, y }) => {
+        const index = Math.abs((x * 31 + y * 17) % clusterPool.length);
+        return (
+          <DesktopCluster
+            key={`${x}-${y}`}
+            gridX={x}
+            gridY={y}
+            cluster={clusterPool[index]}
+            camX={springX}
+            camY={springY}
+          />
+        );
+      })}
 
       {/* Coordinate HUD */}
       <div className="absolute bottom-8 left-8 z-50">

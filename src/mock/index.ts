@@ -51,7 +51,7 @@ export const GRID_ITEMS: TheatreItem[] = ALL_WORKS;
  * Assembled by joining works + artists onto each original via originalId.
  */
 export const ORIGINALS: Original[] = (originalsData as Array<Omit<Original, "topArtists" | "works" | "heroHighlights">>).map(org => {
-  const orgWorks = ALL_WORKS.filter(w => w.originalIds?.includes(org.id) || w.originalIds);
+  const orgWorks = ALL_WORKS.filter(w => w.originalIds?.includes(org.id));
   // Strictly filter artists who actually worked on this original
   const orgArtists = ALL_ARTISTS.filter(a => 
     a.workedOn?.some(wo => wo.id === org.id)

@@ -3,12 +3,13 @@ import { motion } from "motion/react";
 interface IdentitySectionProps {
   name: string;
   tagline: string;
-  onChange: (field: "name" | "tagline", value: string) => void;
+  password: string;
+  onChange: (field: "name" | "tagline" | "password", value: string) => void;
 }
 
 const TAGLINE_MAX = 120;
 
-export function IdentitySection({ name, tagline, onChange }: IdentitySectionProps) {
+export function IdentitySection({ name, tagline, password, onChange }: IdentitySectionProps) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 32 }}
@@ -78,6 +79,27 @@ export function IdentitySection({ name, tagline, onChange }: IdentitySectionProp
               {tagline.length}/{TAGLINE_MAX}
             </span>
           </div>
+        </div>
+
+        {/* Password */}
+        <div className="relative group">
+          <label className="block text-[9px] font-bold uppercase tracking-[0.35em] text-white/30 mb-2 ml-1">
+            Access Key (Password)
+          </label>
+          <input
+            id="profile-password"
+            type="password"
+            value={password}
+            onChange={(e) => onChange("password", e.target.value)}
+            placeholder="Secure your archive"
+            className="
+              w-full bg-white/[0.04] border border-white/10 rounded-2xl
+              px-6 py-5 text-base font-medium
+              placeholder:text-white/10 text-white/80
+              focus:outline-none focus:border-white/30 focus:bg-white/[0.06]
+              transition-all duration-300
+            "
+          />
         </div>
       </div>
     </motion.section>

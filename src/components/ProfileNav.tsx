@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { User, Plus, Film, ChevronDown, UserCircle, MessageSquare } from "lucide-react";
+import { User, Plus, Film, ChevronDown, UserCircle, MessageSquare, Bookmark } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 /**
@@ -28,10 +28,10 @@ export function ProfileNav({ className = "" }: { className?: string }) {
 
   const menuItems = [
     {
-      label: "Profile",
+      label: "Stage",
       icon: <UserCircle className="w-4 h-4" />,
-      path: "/profile",
-      description: "Shape your presence"
+      path: "/auth",
+      description: "Access your identity"
     },
     {
       label: "Create",
@@ -40,7 +40,7 @@ export function ProfileNav({ className = "" }: { className?: string }) {
       description: "Initiate new original"
     },
     {
-      label: "Release",
+      label: "Studio",
       icon: <Film className="w-4 h-4" />,
       path: "/submit",
       description: "Deliver your work"
@@ -50,6 +50,12 @@ export function ProfileNav({ className = "" }: { className?: string }) {
       icon: <MessageSquare className="w-4 h-4" />,
       path: "/contact",
       description: "Slap your thoughts"
+    },
+    {
+      label: "Watchlist",
+      icon: <Bookmark className="w-4 h-4" />,
+      path: "/watchlist",
+      description: "Your cinematic ledger"
     }
   ];
 

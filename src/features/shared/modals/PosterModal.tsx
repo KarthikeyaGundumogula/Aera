@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, { useState } from "react";
-import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X } from "lucide-react";
+import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X, Bookmark } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,7 @@ interface PosterModalProps {
 export function PosterModal({ item, onClose }: PosterModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isClutterFree, setIsClutterFree] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [naturalAspect, setNaturalAspect] = useState(item?.aspectRatio || 2 / 3);
   const navigate = useNavigate();
@@ -78,11 +79,12 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
               </AnimatePresence>
             </div>
 
-            {/* Back Side: Details (Flipped) */}
             <div 
               onClick={() => setIsFlipped(false)}
-              className="absolute inset-0 backface-hidden rotate-y-180 rounded-lg sm:rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-[#0D0D0D] p-5 sm:p-8 flex flex-col justify-center cursor-pointer group/back"
+              className="absolute inset-0 backface-hidden rotate-y-180 rounded-lg sm:rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-[#0D0D0D] p-5 sm:p-8 flex flex-col justify-start cursor-pointer group/back"
             >
+               {/* Top padding for visual balance */}
+               <div className="h-4 sm:h-8 shrink-0" />
                <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
                   <img src={item.image} className="w-full h-full object-cover blur-2xl scale-150" alt="" />
                </div>
@@ -158,6 +160,22 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                         <p className="text-xs sm:text-sm font-bold text-[#EAEAEA]">Poster / Fragment</p>
                      </div>
                   </div>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!showToast) {
+                          setShowToast(true);
+                          setTimeout(() => setShowToast(false), 3000);
+                        }
+                      }}
+                      className="w-full group flex items-center justify-center gap-3 py-3.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
+                    >
+                      <Bookmark size={14} className="group-hover:fill-current" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em]">Add to Watchlist</span>
+                    </button>
+                  </div>
                </div>
             </div>
           </motion.div>
@@ -211,6 +229,21 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
         artist={selectedArtist} 
         onClose={() => setSelectedArtist(null)} 
       />
+
+      {/* Visual Hit Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
+          >
+            <Bookmark size={14} className="fill-current" />
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Watchlist</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </ModalWrapper>
   );
 }

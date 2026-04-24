@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Film, Image as ImageIcon, BookOpen, ChevronRight } from "lucide-react";
+import { THEATRE_FORMATS } from "../../../../constants/formats";
 
 interface IdentityStepProps {
   category: "Edit" | "Poster" | "Script";
@@ -34,7 +35,10 @@ export function IdentityStep({
       <div className="space-y-8">
         <div className="flex gap-4">
           <button
-            onClick={() => setFormData({ category: "Edit" })}
+            onClick={() => setFormData({ 
+              category: "Edit",
+              aspectRatio: THEATRE_FORMATS.IMAX.ratio
+            })}
             className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
               category === "Edit"
                 ? "bg-white text-black border-white"
@@ -54,7 +58,10 @@ export function IdentityStep({
             </div>
           </button>
           <button
-            onClick={() => setFormData({ category: "Poster" })}
+            onClick={() => setFormData({ 
+              category: "Poster",
+              aspectRatio: THEATRE_FORMATS.STANDARD_POSTER.ratio
+            })}
             className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
               category === "Poster"
                 ? "bg-white text-black border-white"
@@ -74,7 +81,10 @@ export function IdentityStep({
             </div>
           </button>
           <button
-            onClick={() => setFormData({ category: "Script" })}
+            onClick={() => setFormData({ 
+              category: "Script",
+              aspectRatio: THEATRE_FORMATS.SQUARE_POSTER.ratio
+            })}
             className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
               category === "Script"
                 ? "bg-white text-black border-white"

@@ -101,7 +101,7 @@ export const ArtistProfile = memo(
           >
             <div className="flex h-full items-center gap-2 px-1 py-1">
               <div
-                className={`shrink-0 overflow-hidden rounded-full ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
+                className={`shrink-0 overflow-hidden rounded-xl ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
               >
                 <img
                   src={artist.image}
@@ -273,7 +273,7 @@ export const ArtistProfile = memo(
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full"
+                            className="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-xl"
                           >
                             <Instagram size={18} />
                           </a>
@@ -284,7 +284,7 @@ export const ArtistProfile = memo(
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full"
+                            className="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-xl"
                           >
                             <Twitter size={18} />
                           </a>
@@ -295,7 +295,7 @@ export const ArtistProfile = memo(
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full"
+                            className="text-white/40 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-xl"
                           >
                             <Youtube size={20} />
                           </a>

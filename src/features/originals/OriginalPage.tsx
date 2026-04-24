@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Film, ArrowRight, ArrowLeft } from "lucide-react";
+import { Users, Film, ArrowRight, ArrowLeft, Bookmark } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
@@ -20,6 +20,7 @@ export function OriginalPage() {
 
   const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const isMobile = useMediaQuery();
 
@@ -192,7 +193,21 @@ export function OriginalPage() {
                 </button>
               </div>
 
-              <div className="flex-1 flex justify-end">
+              <div className="flex-1 flex justify-end items-center gap-4">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!showToast) {
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }
+                  }}
+                  className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
+                  aria-label="Add to Watchlist"
+                >
+                  <Bookmark className="w-5 h-5 transition-transform group-hover:scale-110" />
+                </button>
+                <div className="h-4 w-px bg-white/10" />
                 <button 
                   onClick={() => navigate(`/originals/${original.id}/releases`)}
                   className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
@@ -312,7 +327,20 @@ export function OriginalPage() {
       {/* Footer Space */}
       <div className="h-24" />
 
-
+      {/* Visual Hit Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
+          >
+            <Bookmark size={14} className="fill-current" />
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Watchlist</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -65,7 +65,7 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
         <div className="shrink-0">
           <div
             className={`
-              w-24 h-24 rounded-full overflow-hidden relative flex items-center justify-center
+              w-24 h-24 rounded-2xl overflow-hidden relative flex items-center justify-center
               border-2 transition-all duration-500
               ${previewUrl
                 ? "border-white/30 shadow-[0_0_24px_rgba(255,255,255,0.08)]"

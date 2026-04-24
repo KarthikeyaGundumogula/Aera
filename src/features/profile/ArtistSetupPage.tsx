@@ -10,6 +10,7 @@ import { AvatarSection } from "./components/AvatarSection";
 interface ProfileFormData {
   name: string;
   tagline: string;
+  password: string;
   socials: SocialsData;
   portraitFile: File | null;
   portraitPreview: string | null;
@@ -28,13 +29,14 @@ export default function ArtistSetupPage() {
   const [formData, setFormData] = useState<ProfileFormData>({
     name: "",
     tagline: "",
+    password: "",
     socials: { instagram: "", twitter: "", youtube: "" },
     portraitFile: null,
     portraitPreview: null,
   });
 
   const handleIdentityChange = useCallback(
-    (field: "name" | "tagline", value: string) => {
+    (field: "name" | "tagline" | "password", value: string) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
     },
     []
@@ -151,6 +153,7 @@ export default function ArtistSetupPage() {
           <IdentitySection
             name={formData.name}
             tagline={formData.tagline}
+            password={formData.password}
             onChange={handleIdentityChange}
           />
 
@@ -211,7 +214,7 @@ export default function ArtistSetupPage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate("/submit")}
-            id="begin-release-rite-btn"
+            id="begin-studio-btn"
             className="
               group flex items-center gap-2.5
               px-6 py-3 rounded-full border border-white/10
@@ -222,7 +225,7 @@ export default function ArtistSetupPage() {
             "
           >
             <Film className="w-3.5 h-3.5 transition-transform group-hover:rotate-[-6deg]" />
-            Begin Release Rite
+            Enter Studio
             <span className="text-white/25 group-hover:text-white/50 transition-colors">→</span>
           </motion.button>
         </motion.div>
