@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { RotateCw, ArrowUpRight, X, Bookmark } from "lucide-react";
+import { RotateCw, ArrowUpRight, X, Layers, Bookmark } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { Logo } from "../../../components/Logo";
 import { ModalWrapper } from "./ModalWrapper";
@@ -9,6 +9,7 @@ import { ARTISTS_MOCK } from "../../../mock";
 import { ArtistProfile } from "../profile";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
+import { CurateOverlay } from "./CurateOverlay";
 
 interface EditModalProps {
   item: TheatreItem | null;
@@ -28,7 +29,8 @@ declare global {
 
 export function EditModal({ item, onClose }: EditModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [showCurate, setShowCurate] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(
     null,
   );
@@ -106,9 +108,9 @@ export function EditModal({ item, onClose }: EditModalProps) {
 
             <div className="h-[72px] shrink-0" />
 
-            <div className="w-full flex flex-col items-center pb-6 px-4">
+            <div className="w-full flex flex-col items-center pb-6 sm:px-4 px-0">
               {isYoutube ? (
-                <div className="w-full aspect-video rounded-lg overflow-hidden border border-white/5 shadow-2xl">
+                <div className="w-full aspect-video sm:rounded-lg rounded-none overflow-hidden border border-white/5 shadow-2xl">
                   <iframe
                     ref={iframeRef}
                     id={`yt-player-${item.id}`}
@@ -252,31 +254,6 @@ export function EditModal({ item, onClose }: EditModalProps) {
                   </p>
                 </div>
 
-                {/* Original */}
-                <div
-                  className="space-y-1.5 cursor-pointer group/orig"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (item.originalIds?.[0]) {
-                      onClose();
-                      navigate(`/originals/${item.originalIds[0]}`);
-                    }
-                  }}
-                >
-                  <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 group-hover/orig:text-white/40 transition-colors">
-                    Original
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-bold text-white/90 uppercase tracking-widest group-hover/orig:text-yellow-400 transition-colors truncate">
-                      Archive
-                    </p>
-                    <ArrowUpRight
-                      size={10}
-                      className="text-white/10 group-hover/orig:text-yellow-400/50 transition-colors"
-                    />
-                  </div>
-                </div>
-
                 {/* Format */}
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">
@@ -288,21 +265,21 @@ export function EditModal({ item, onClose }: EditModalProps) {
                 </div>
               </div>
 
-              <div className="pt-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!showToast) {
-                      setShowToast(true);
-                      setTimeout(() => setShowToast(false), 3000);
-                    }
-                  }}
-                  className="w-full group flex items-center justify-center gap-3 py-3.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
+              <div 
+                className="pt-2 relative z-50 w-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCurate(true);
+                }}
+              >
+                <div
+                  className="w-full cursor-pointer pointer-events-auto group flex items-center justify-center gap-3 py-3.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
                 >
-                  <Bookmark size={14} className="group-hover:fill-current" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em]">Add to Watchlist</span>
-                </button>
+                  <Layers size={14} className="group-hover:fill-current pointer-events-none" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] pointer-events-none">Originals</span>
+                </div>
               </div>
+
 
             </div>
 
@@ -317,9 +294,19 @@ export function EditModal({ item, onClose }: EditModalProps) {
         onClose={() => setSelectedArtist(null)}
       />
 
+      <CurateOverlay
+        isOpen={showCurate}
+        onClose={() => setShowCurate(false)}
+        originalIds={item.originalIds || []}
+        onShowToast={(msg) => {
+          setToastMessage(msg);
+          setTimeout(() => setToastMessage(null), 3000);
+        }}
+      />
+
       {/* Visual Hit Toast */}
       <AnimatePresence>
-        {showToast && (
+        {toastMessage && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -327,10 +314,11 @@ export function EditModal({ item, onClose }: EditModalProps) {
             className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
           >
             <Bookmark size={14} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Watchlist</span>
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
+
     </ModalWrapper>
   );
 }

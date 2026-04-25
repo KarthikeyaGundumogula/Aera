@@ -1,11 +1,12 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, { useState } from "react";
-import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X, Bookmark } from "lucide-react";
+import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X, Layers, Bookmark } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
 import { ArtistProfile } from "../profile";
 import { ARTISTS_MOCK } from "../../../mock";
+import { CurateOverlay } from "./CurateOverlay";
 
 interface PosterModalProps {
   item: TheatreItem | null;
@@ -15,7 +16,8 @@ interface PosterModalProps {
 export function PosterModal({ item, onClose }: PosterModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isClutterFree, setIsClutterFree] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [showCurate, setShowCurate] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [naturalAspect, setNaturalAspect] = useState(item?.aspectRatio || 2 / 3);
   const navigate = useNavigate();
@@ -135,22 +137,6 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                            <ArrowUpRight size={10} className="text-white/10 group-hover/artist:text-yellow-400/50 transition-colors" />
                          </div>
                       </div>
-                      <div 
-                        className="cursor-pointer group/orig"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.originalIds?.[0]) {
-                            onClose();
-                            navigate(`/originals/${item.originalIds[0]}`);
-                          }
-                        }}
-                      >
-                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2 group-hover/orig:text-white/50 transition-colors">Original</p>
-                         <div className="flex items-center gap-1.5">
-                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/orig:text-yellow-400 transition-colors uppercase tracking-widest">Independent</p>
-                           <ArrowUpRight size={10} className="text-white/10 group-hover/orig:text-yellow-400/50 transition-colors" />
-                         </div>
-                      </div>
                       <div>
                          <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Credits</p>
                          <p className="text-xs sm:text-sm font-bold text-yellow-500 font-mono">{item.credits || 0}</p>
@@ -161,21 +147,21 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                      </div>
                   </div>
 
-                  <div className="pt-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!showToast) {
-                          setShowToast(true);
-                          setTimeout(() => setShowToast(false), 3000);
-                        }
-                      }}
-                      className="w-full group flex items-center justify-center gap-3 py-3.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
+                  <div 
+                    className="mt-6 relative z-50 w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCurate(true);
+                    }}
+                  >
+                    <div
+                      className="w-full cursor-pointer pointer-events-auto group flex items-center justify-center gap-3 py-3.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
                     >
-                      <Bookmark size={14} className="group-hover:fill-current" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em]">Add to Watchlist</span>
-                    </button>
+                      <Layers size={14} className="group-hover:fill-current pointer-events-none" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] pointer-events-none"> Originals</span>
+                    </div>
                   </div>
+
                </div>
             </div>
           </motion.div>
@@ -230,9 +216,19 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
         onClose={() => setSelectedArtist(null)} 
       />
 
+      <CurateOverlay
+        isOpen={showCurate}
+        onClose={() => setShowCurate(false)}
+        originalIds={item?.originalIds || []}
+        onShowToast={(msg) => {
+          setToastMessage(msg);
+          setTimeout(() => setToastMessage(null), 3000);
+        }}
+      />
+
       {/* Visual Hit Toast */}
       <AnimatePresence>
-        {showToast && (
+        {toastMessage && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -240,10 +236,11 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
             className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
           >
             <Bookmark size={14} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Watchlist</span>
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
+
     </ModalWrapper>
   );
 }

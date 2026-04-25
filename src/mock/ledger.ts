@@ -1,4 +1,4 @@
-export type TaggedWork = {
+export type LedgerTaggedWork = {
   id: string;
   type: 'poster' | 'hype_cut';
   thumbnailUrl: string;
@@ -7,7 +7,7 @@ export type TaggedWork = {
   srcId?: string;
 };
 
-export type WatchlistItem = {
+export type LedgerItem = {
   id: string;
   originalId: string;
   originalName: string;
@@ -15,11 +15,11 @@ export type WatchlistItem = {
   status: 'want_to_watch' | 'watched';
   hypeText: string;
   afterThoughts?: string;
-  taggedWorks: TaggedWork[];
+  taggedWorks: LedgerTaggedWork[];
   addedAt: string;
 };
 
-export const mockWatchlist: WatchlistItem[] = [
+export const mockLedger: LedgerItem[] = [
   {
     id: "wl_01",
     originalId: "og-original",

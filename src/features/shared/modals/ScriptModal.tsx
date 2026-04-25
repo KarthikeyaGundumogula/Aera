@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useRef } from "react";
-import { LayoutPanelLeft, X, ArrowUpRight, ChevronLeft, ChevronRight, RotateCw, BookOpen, Bookmark } from "lucide-react";
+import { LayoutPanelLeft, X, ArrowUpRight, ChevronLeft, ChevronRight, RotateCw, BookOpen, Layers, Bookmark } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
 import { ArtistProfile } from "../profile";
 import { ARTISTS_MOCK } from "../../../mock";
+import { CurateOverlay } from "./CurateOverlay";
 
 interface ScriptModalProps {
   item: TheatreItem | null;
@@ -29,7 +30,8 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [showCurate, setShowCurate] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
   const navigate = useNavigate();
@@ -197,21 +199,6 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                           </p>
                         </div>
 
-                        <div className="relative z-10 w-full mt-auto mb-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!showToast) {
-                                setShowToast(true);
-                                setTimeout(() => setShowToast(false), 3000);
-                              }
-                            }}
-                            className="w-full group flex items-center justify-center gap-3 py-3 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
-                          >
-                            <Bookmark size={12} className="group-hover:fill-current" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.3em]">Add to Watchlist</span>
-                          </button>
-                        </div>
 
                         <div className="relative z-10 flex items-center gap-2">
                           <div className="h-px flex-1 bg-white/8" />
@@ -289,22 +276,19 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
               </div>
             </div>
 
-            <div
-              className="max-w-[45%] text-right cursor-pointer group/orig relative"
+            <div 
+              className="relative z-50"
               onClick={(e) => {
                 e.stopPropagation();
-                if (item.originalIds?.[0]) {
-                  onClose();
-                  navigate(`/originals/${item.originalIds[0]}`);
-                }
+                setShowCurate(true);
               }}
             >
-              <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-white/20 mb-1 group-hover/orig:text-white/35 transition-colors">Original</p>
-              <div className="flex items-center justify-end gap-1">
-                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/30 group-hover/orig:text-white transition-colors">
-                  Archive
-                </p>
-                <ArrowUpRight size={10} className="text-white/15 group-hover/orig:text-white/50 transition-colors" />
+              <div
+                className="cursor-pointer pointer-events-auto group flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
+              >
+                <Layers size={14} className="group-hover:fill-current pointer-events-none" />
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] pointer-events-none sm:inline hidden">View Associated Originals</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] pointer-events-none sm:hidden">Originals</span>
               </div>
             </div>
           </div>
@@ -317,9 +301,19 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
         onClose={() => setSelectedArtist(null)}
       />
 
+      <CurateOverlay
+        isOpen={showCurate}
+        onClose={() => setShowCurate(false)}
+        originalIds={item.originalIds || []}
+        onShowToast={(msg) => {
+          setToastMessage(msg);
+          setTimeout(() => setToastMessage(null), 3000);
+        }}
+      />
+
       {/* Visual Hit Toast */}
       <AnimatePresence>
-        {showToast && (
+        {toastMessage && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -327,10 +321,11 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
             className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
           >
             <Bookmark size={14} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Watchlist</span>
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
+
     </ModalWrapper>
   );
 }

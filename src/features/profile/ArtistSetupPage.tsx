@@ -1,11 +1,14 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Film } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Film } from "lucide-react";
 
 import { IdentitySection } from "./components/IdentitySection";
 import { SocialsSection, type SocialsData } from "./components/SocialsSection";
 import { AvatarSection } from "./components/AvatarSection";
+import { ArtistProfile } from "../shared/profile";
+import { ARTISTS_MOCK } from "../../mock";
+import { OriginalArtist } from "../../types";
 
 interface ProfileFormData {
   name: string;
@@ -25,6 +28,7 @@ interface ProfileFormData {
 export default function ArtistSetupPage() {
   const navigate = useNavigate();
   const [isSaved, setIsSaved] = useState(false);
+  const [successArtist, setSuccessArtist] = useState<OriginalArtist | null>(null);
 
   const [formData, setFormData] = useState<ProfileFormData>({
     name: "",
@@ -75,8 +79,20 @@ export default function ArtistSetupPage() {
   const handleClaim = useCallback(() => {
     if (!isReadyToSave) return;
     setIsSaved(true);
-    // TODO: POST to backend when available (multipart/form-data for portraitFile)
-  }, [isReadyToSave]);
+    
+    // Simulate creating the artist profile
+    const mockArtist = ARTISTS_MOCK[0]; // Use a mock artist
+    setSuccessArtist({
+      ...mockArtist,
+      name: formData.name || mockArtist.name,
+      bio: formData.tagline || mockArtist.bio,
+      image: formData.portraitPreview || mockArtist.image
+    });
+  }, [isReadyToSave, formData]);
+
+  const handleModalClose = () => {
+    setSuccessArtist(null);
+  };
 
   return (
     <div className="relative min-h-screen bg-[#050505] text-white overflow-y-auto font-sans selection:bg-white selection:text-black">
@@ -85,22 +101,33 @@ export default function ArtistSetupPage() {
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-white/[0.025] blur-[140px] rounded-full animate-pulse" />
         <div className="absolute bottom-[-15%] right-[-10%] w-[40%] h-[40%] bg-white/[0.015] blur-[140px] rounded-full" />
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">
 
-        {/* ─── Exit Action ─────────────────────────────────────────── */}
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          onClick={() => navigate("/")}
-          className="group flex items-center gap-3 w-fit mb-14 text-white/40 hover:text-white/70 transition-all active:scale-95"
-        >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Exit</span>
-        </motion.button>
+        {/* ─── Top Actions ─────────────────────────────────────────── */}
+        <div className="flex items-center justify-between w-full mb-14">
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            onClick={() => navigate("/")}
+            className="group flex items-center gap-3 w-fit text-white/40 hover:text-white/70 transition-all active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Exit</span>
+          </motion.button>
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            onClick={() => navigate("/profile/login")}
+            className="px-6 py-2 border border-white/10 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+          >
+            Sign In
+          </motion.button>
+        </div>
 
         {/* ─── Page Header ─────────────────────────────────────────── */}
         <header className="mb-16">
@@ -209,28 +236,45 @@ export default function ArtistSetupPage() {
             )}
           </AnimatePresence>
 
-          {/* ─── Secondary CTA: Release Rite ─────────────────────── */}
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/submit")}
-            id="begin-studio-btn"
-            className="
-              group flex items-center gap-2.5
-              px-6 py-3 rounded-full border border-white/10
-              bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20
-              text-white/45 hover:text-white/70
-              text-[10px] font-bold uppercase tracking-[0.25em]
-              transition-all duration-300
-            "
-          >
-            <Film className="w-3.5 h-3.5 transition-transform group-hover:rotate-[-6deg]" />
-            Enter Studio
-            <span className="text-white/25 group-hover:text-white/50 transition-colors">→</span>
-          </motion.button>
+          {isSaved && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col gap-4 w-full max-w-xs pt-8 border-t border-white/5"
+            >
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSuccessArtist({
+                  ...ARTISTS_MOCK[0],
+                  name: formData.name,
+                  bio: formData.tagline,
+                  image: formData.portraitPreview || ARTISTS_MOCK[0].image
+                })}
+                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white/10 transition-all"
+              >
+                View Artist Card
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate("/")}
+                className="w-full py-5 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white/90 transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+              >
+                Enter Theatre <ChevronRight className="w-4 h-4" />
+              </motion.button>
+            </motion.div>
+          )}
         </motion.div>
 
       </div>
+
+      {/* 3D Artist ID Modal on Success */}
+      <ArtistProfile 
+        artist={successArtist}
+        onClose={handleModalClose}
+      />
     </div>
   );
 }

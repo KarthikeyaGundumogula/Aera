@@ -59,7 +59,7 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
         </span>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
+      <div className="flex flex-col items-center gap-10">
 
         {/* Avatar Preview Circle */}
         <div className="shrink-0">
@@ -100,7 +100,7 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
         </div>
 
         {/* Drop Zone */}
-        <div className="flex-1 w-full">
+        <div className="w-full max-w-sm mx-auto">
           <div
             role="button"
             tabIndex={0}
@@ -190,7 +190,7 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 onClick={onClear}
-                className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.25em] text-white/25 hover:text-white/50 transition-colors"
+                className="mt-4 mx-auto flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.25em] text-white/25 hover:text-white/50 transition-colors"
               >
                 <X className="w-3 h-3" />
                 Remove

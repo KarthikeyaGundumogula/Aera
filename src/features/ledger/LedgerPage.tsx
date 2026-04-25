@@ -1,14 +1,20 @@
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { mockWatchlist } from "../../mock/watchlist";
-import { WatchlistItemCard } from "./components/WatchlistItemCard";
+import { mockLedger, LedgerItem } from "../../mock/ledger";
+import { LedgerItemCard } from "./components/LedgerItemCard";
 import { ArrowLeft } from "lucide-react";
 
-export function WatchlistPage() {
+export function LedgerPage() {
+  const [ledger, setLedger] = useState<LedgerItem[]>(mockLedger);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const filter = searchParams.get("filter") || "all";
 
-  const filteredWatchlist = mockWatchlist.filter((item) => {
+  const handleUpdateItem = (updatedItem: LedgerItem) => {
+    setLedger(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+  };
+
+  const filteredLedger = ledger.filter((item) => {
     if (filter === "all") return true;
     return item.status === filter;
   });
@@ -25,7 +31,7 @@ export function WatchlistPage() {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
-            Watchlist
+            Ledger
           </h1>
           <p className="text-white/60 text-lg max-w-xl">
             Your cinematic ledger. Track originals, document your expectations, and log your thoughts.
@@ -62,8 +68,8 @@ export function WatchlistPage() {
 
         {/* Grid (Vertical Stack) */}
         <div className="flex flex-col space-y-4 max-w-4xl mx-auto">
-          {filteredWatchlist.map((item) => (
-            <WatchlistItemCard key={item.id} item={item} />
+          {filteredLedger.map((item) => (
+            <LedgerItemCard key={item.id} item={item} onUpdate={handleUpdateItem} />
           ))}
         </div>
       </div>

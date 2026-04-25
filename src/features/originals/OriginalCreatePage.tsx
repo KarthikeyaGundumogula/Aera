@@ -40,7 +40,6 @@ export default function OriginalCreatePage() {
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-white/[0.02] blur-[140px] rounded-full animate-pulse" />
         <div className="absolute bottom-[-10%] left-[-5%] w-[45%] h-[45%] bg-white/[0.015] blur-[140px] rounded-full" />
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 pt-12 flex flex-col min-h-screen">

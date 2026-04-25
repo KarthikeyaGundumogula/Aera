@@ -30,7 +30,7 @@ export function ProfileNav({ className = "" }: { className?: string }) {
     {
       label: "Stage",
       icon: <UserCircle className="w-4 h-4" />,
-      path: "/auth",
+      path: "/profile/new",
       description: "Access your identity"
     },
     {
@@ -42,8 +42,14 @@ export function ProfileNav({ className = "" }: { className?: string }) {
     {
       label: "Studio",
       icon: <Film className="w-4 h-4" />,
-      path: "/submit",
+      path: "/works/new",
       description: "Deliver your work"
+    },
+    {
+      label: "Ledger",
+      icon: <Bookmark className="w-4 h-4" />,
+      path: "/ledger",
+      description: "Your cinematic ledger"
     },
     {
       label: "Contact Founder",
@@ -51,12 +57,6 @@ export function ProfileNav({ className = "" }: { className?: string }) {
       path: "/contact",
       description: "Slap your thoughts"
     },
-    {
-      label: "Watchlist",
-      icon: <Bookmark className="w-4 h-4" />,
-      path: "/watchlist",
-      description: "Your cinematic ledger"
-    }
   ];
 
   const handleNav = (path: string) => {

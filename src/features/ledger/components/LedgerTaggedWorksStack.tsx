@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import type { TaggedWork } from "../../../mock/watchlist";
+import type { LedgerTaggedWork } from "../../../mock/ledger";
 import { WorkModal } from "../../shared/modals/WorkModal";
 
-export function TaggedWorksStack({ works }: { works: TaggedWork[] }) {
-  const [selectedWork, setSelectedWork] = useState<TaggedWork | null>(null);
+export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] }) {
+  const [selectedWork, setSelectedWork] = useState<LedgerTaggedWork | null>(null);
 
   if (!works || works.length === 0) return null;
 

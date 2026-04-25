@@ -562,6 +562,13 @@
     "aspectRatio": 0.56,
     "credits": 1200,
     "artist": "StarDust_FC",
+    "originalIds": [
+      "og-original",
+      "rrr-original",
+      "kgf-original",
+      "baahubali-original",
+      "vikram-original"
+    ],
     "image": "/posters/og.jpeg",
     "platform": "twitter",
     "srcId": "2045037128900587880"

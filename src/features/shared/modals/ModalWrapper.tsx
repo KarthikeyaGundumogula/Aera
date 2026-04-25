@@ -52,7 +52,7 @@ export function ModalWrapper({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className={`fixed inset-0 z-[150] flex flex-col items-center justify-start sm:justify-center bg-black/95 backdrop-blur-3xl ${isImmersive ? 'p-4 sm:p-8' : 'p-4 sm:p-8'} ${className}`}
+          className={`fixed inset-0 z-[150] flex flex-col items-center justify-start sm:justify-center bg-black/95 backdrop-blur-3xl ${isImmersive ? 'p-0 sm:p-8' : 'p-4 sm:p-8'} ${className}`}
           onClick={(e) => {
             e.stopPropagation();
             onClose();
