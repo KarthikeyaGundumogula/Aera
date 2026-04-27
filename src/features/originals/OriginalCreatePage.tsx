@@ -16,7 +16,7 @@ export default function OriginalCreatePage() {
     description: "",
     releaseDate: "",
     genres: [] as string[],
-    stars: [] as { actorName: string; characterName: string; imageUrl: string }[],
+    stars: [] as { actorName: string; characterName: string; imageUrl: string; portraitFile?: File | null }[],
     makers: [] as { actorName: string; characterName: string; imageUrl: string }[],
     coverImage: "",
   });

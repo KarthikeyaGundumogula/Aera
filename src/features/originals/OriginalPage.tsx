@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Film, ArrowRight, ArrowLeft, Bookmark } from "lucide-react";
+import { Users, Film, ArrowRight, ArrowLeft, Bookmark, Plus } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { TheatreItem } from "../../types";
@@ -23,6 +23,9 @@ export function OriginalPage() {
   const [showToast, setShowToast] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const isMobile = useMediaQuery();
+  
+  // In a real app, this would come from a JWT-based auth context
+  const isAdmin = true; 
 
   const original = id ? ORIGINALS_DATA[id] : null;
 
@@ -208,6 +211,18 @@ export function OriginalPage() {
                   <Bookmark className="w-5 h-5 transition-transform group-hover:scale-110" />
                 </button>
                 <div className="h-4 w-px bg-white/10" />
+                {isAdmin && (
+                  <>
+                    <button 
+                      onClick={() => navigate(`/originals/${original.id}/releases/new`)}
+                      className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
+                      title="Add Release"
+                    >
+                      <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                    </button>
+                    <div className="h-4 w-px bg-white/10" />
+                  </>
+                )}
                 <button 
                   onClick={() => navigate(`/originals/${original.id}/releases`)}
                   className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"

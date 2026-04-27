@@ -34,12 +34,6 @@ export function ProfileNav({ className = "" }: { className?: string }) {
       description: "Access your identity"
     },
     {
-      label: "Create",
-      icon: <Plus className="w-4 h-4" />,
-      path: "/originals/create",
-      description: "Initiate new original"
-    },
-    {
       label: "Studio",
       icon: <Film className="w-4 h-4" />,
       path: "/works/new",
@@ -71,7 +65,7 @@ export function ProfileNav({ className = "" }: { className?: string }) {
         whileTap={{ scale: 0.98 }}
         onClick={() => setIsOpen(!isOpen)}
         className="relative group flex items-center gap-2 transition-all"
-        aria-label="Artist Menu"
+        aria-label="Command Center"
       >
         <div className={`
           relative p-2 rounded-xl border transition-all duration-300 flex items-center gap-2
@@ -103,7 +97,7 @@ export function ProfileNav({ className = "" }: { className?: string }) {
             className="absolute right-0 mt-3 w-64 origin-top-right rounded-2xl border border-white/10 bg-black/80 backdrop-blur-2xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden"
           >
             <div className="px-3 py-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Artist Studio</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Command Center</span>
             </div>
             
             <div className="space-y-1">

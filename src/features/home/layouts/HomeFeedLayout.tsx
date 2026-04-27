@@ -12,7 +12,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem } from "../../../types";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
-import { PresenceIcon} from "../../../components/icons/AppIcons";
+import { StageIcon } from "../../../components/icons/AppIcons";
 import { ProfileNav } from "../../../components/ProfileNav";
 
 import { Logo } from "../../../components/Logo";
@@ -263,14 +263,14 @@ export function HomeFeedLayout() {
                       </h2>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <PresenceIcon className="w-3 h-3 text-yellow-400" />
-                            <span className="text-[10px] font-bold text-white/80">
-                              {ORIGINALS[heroIndex].stats.presence} Presence
+                          <div className="flex items-center gap-2 mb-1">
+                            <StageIcon className="w-3 h-3 text-yellow-400" />
+                            <span className="text-lg font-bold drop-shadow-2xl">
+                              {ORIGINALS[heroIndex].stats.presence}
                             </span>
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">
-                            Official Wall of Fame
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
+                            Stage
                           </span>
                         </div>
                         <ChevronRight className="w-5 h-5 text-white/20" />

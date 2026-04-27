@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { PresenceIcon } from "../../../components/icons/AppIcons";
+import { StageIcon } from "../../../components/icons/AppIcons";
 import { ORIGINALS } from "../../../mock";
 
 export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
@@ -65,21 +65,27 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
                 {org.title}
               </h4>
 
-              <div
-                className={`flex items-center gap-2 ${isActive ? "mt-3" : "hidden"}`}
-              >
-                <PresenceIcon className="w-4 h-4 text-yellow-400" />
-                <p className="text-sm font-bold text-white/80">
-                  {org.stats.presence} Presence
+              {isActive && org.description && (
+                <p className="mt-4 text-xs md:text-sm font-medium text-white/60 line-clamp-3 max-w-sm leading-relaxed tracking-wide animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  {org.description}
                 </p>
+              )}
+
+              <div
+                className={`flex items-center gap-2 ${isActive ? "mt-6" : "hidden"}`}
+              >
+                <StageIcon className="w-4 h-4 text-yellow-400" />
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
+                  {org.stats.presence} Stage
+                </span>
               </div>
             </div>
 
             {/* Quick Access Floating Presence Bug */}
             {!isActive && (
               <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-sm flex items-center gap-1 border border-white/10">
-                <PresenceIcon className="w-2.5 h-2.5 text-yellow-500" />
-                <span className="text-[9px] font-bold text-white/90">
+                <StageIcon className="w-2.5 h-2.5 text-yellow-500" />
+                <span className="text-[8px] font-black text-white/80 tabular-nums tracking-widest">
                   {org.stats.presence}
                 </span>
               </div>

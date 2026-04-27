@@ -7,7 +7,7 @@ import {
 import React, { memo, useState, useEffect, useRef } from "react";
 import { Instagram, Twitter, Youtube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { PresenceIcon, ReleasesIcon } from "../../../components/icons/AppIcons";
+import { StageIcon, WorksIcon } from "../../../components/icons/AppIcons";
 import { OriginalArtist } from "../../../types";
 import { CreditTag } from "../tags";
 
@@ -126,10 +126,10 @@ export const ArtistProfile = memo(
                     <p
                       className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
                     >
-                      <PresenceIcon
+                      <StageIcon
                         className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
                       />
-                      Presence
+                      Stage
                     </p>
                     <p
                       className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
@@ -141,7 +141,7 @@ export const ArtistProfile = memo(
                     <p
                       className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
                     >
-                      <ReleasesIcon
+                      <WorksIcon
                         className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
                       />
                       Works
@@ -196,7 +196,7 @@ export const ArtistProfile = memo(
                       <div className="p-6 pb-2 flex justify-between items-start z-10">
                         <div className="flex flex-col">
                           <span className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">
-                            Aera Artist Pool
+                            Aera Artist Stages
                           </span>
                           <span className="text-[9px] font-mono text-white/20 mt-0.5">
                             {fhUid}
@@ -242,10 +242,10 @@ export const ArtistProfile = memo(
                       <div className="mt-6 mx-6 p-4 rounded-xl bg-white/5 border border-white/5 flex justify-around items-center z-10">
                         <div className="flex flex-col items-center">
                           <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">
-                            Presence
+                            Stage
                           </span>
                           <div className="flex items-center gap-2">
-                            <PresenceIcon className="w-3 h-3 text-yellow-500/80" />
+                            <StageIcon className="w-3 h-3 text-yellow-500/80" />
                             <span className="text-sm font-black text-white">
                               {artist.presence}
                             </span>
@@ -257,7 +257,7 @@ export const ArtistProfile = memo(
                             Works
                           </span>
                           <div className="flex items-center gap-2">
-                            <ReleasesIcon className="w-3 h-3 text-blue-500/80" />
+                            <WorksIcon className="w-3 h-3 text-blue-500/80" />
                             <span className="text-sm font-black text-white">
                               {artist.works}
                             </span>
@@ -317,7 +317,7 @@ export const ArtistProfile = memo(
                       <div className="p-6 pb-2 flex justify-between items-start z-10">
                         <div className="flex flex-col">
                           <span className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">
-                            Credit Archive
+                            Credit Gallery
                           </span>
                           <span className="text-[9px] font-mono text-white/20 mt-0.5">
                             {artist.name}
@@ -348,7 +348,7 @@ export const ArtistProfile = memo(
                             {(!artist.workedOn ||
                               artist.workedOn.length === 0) && (
                               <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 italic text-center">
-                                No public archive records
+                                No public records found
                               </p>
                             )}
                           </div>

@@ -1,10 +1,12 @@
+import { useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, User, Briefcase, Camera } from "lucide-react";
+import { Plus, X, User, Briefcase, Camera, Upload, ImageIcon } from "lucide-react";
 
 interface Person {
   actorName: string;
   characterName: string;
-  imageUrl: string;
+  imageUrl: string; // Used for preview URL
+  portraitFile?: File | null;
 }
 
 interface CreationCastSectionProps {
@@ -22,19 +24,19 @@ export function CreationCastSection({
 }: CreationCastSectionProps) {
 
   const addPerson = (type: "stars" | "makers") => {
-    const newPerson: Person = { actorName: "", characterName: "", imageUrl: "" };
+    const newPerson: Person = { actorName: "", characterName: "", imageUrl: "", portraitFile: null };
     if (type === "stars") onStarsChange([...stars, newPerson]);
     else onMakersChange([...makers, newPerson]);
   };
 
-  const updatePerson = (type: "stars" | "makers", index: number, field: keyof Person, value: string) => {
+  const updatePerson = (type: "stars" | "makers", index: number, updates: Partial<Person>) => {
     if (type === "stars") {
       const updated = [...stars];
-      updated[index] = { ...updated[index], [field]: value };
+      updated[index] = { ...updated[index], ...updates };
       onStarsChange(updated);
     } else {
       const updated = [...makers];
-      updated[index] = { ...updated[index], [field]: value };
+      updated[index] = { ...updated[index], ...updates };
       onMakersChange(updated);
     }
   };
@@ -76,8 +78,9 @@ export function CreationCastSection({
                 {stars.map((person, idx) => (
                     <PersonRow 
                         key={`star-${idx}`} 
+                        type="stars"
                         person={person} 
-                        onChange={(f, v) => updatePerson("stars", idx, f, v)}
+                        onChange={(updates) => updatePerson("stars", idx, updates)}
                         onRemove={() => removePerson("stars", idx)}
                         placeholderName="Actor Name"
                         placeholderRole="Character"
@@ -107,8 +110,9 @@ export function CreationCastSection({
                 {makers.map((person, idx) => (
                     <PersonRow 
                         key={`maker-${idx}`} 
+                        type="makers"
                         person={person} 
-                        onChange={(f, v) => updatePerson("makers", idx, f, v)}
+                        onChange={(updates) => updatePerson("makers", idx, updates)}
                         onRemove={() => removePerson("makers", idx)}
                         placeholderName="Name"
                         placeholderRole="Role (e.g. Director)"
@@ -124,18 +128,30 @@ export function CreationCastSection({
 }
 
 function PersonRow({ 
+    type,
     person, 
     onChange, 
     onRemove,
     placeholderName,
     placeholderRole
 }: { 
+    type: "stars" | "makers",
     person: Person, 
-    onChange: (f: keyof Person, v: string) => void, 
+    onChange: (updates: Partial<Person>) => void, 
     onRemove: () => void,
     placeholderName: string,
     placeholderRole: string
 }) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const previewUrl = URL.createObjectURL(file);
+            onChange({ portraitFile: file, imageUrl: previewUrl });
+        }
+    };
+
     return (
         <motion.div 
             initial={{ opacity: 0, x: -10 }}
@@ -148,28 +164,53 @@ function PersonRow({
                     type="text" 
                     placeholder={placeholderName}
                     value={person.actorName}
-                    onChange={(e) => onChange("actorName", e.target.value)}
+                    onChange={(e) => onChange({ actorName: e.target.value })}
                     className="bg-white/5 border border-white/5 rounded-lg px-4 py-2 text-xs font-bold focus:border-white/20 outline-none transition-all placeholder:text-white/10 uppercase tracking-widest"
                 />
                 <input 
                     type="text" 
                     placeholder={placeholderRole}
                     value={person.characterName}
-                    onChange={(e) => onChange("characterName", e.target.value)}
+                    onChange={(e) => onChange({ characterName: e.target.value })}
                     className="bg-white/5 border border-white/5 rounded-lg px-4 py-2 text-xs font-medium focus:border-white/20 outline-none transition-all placeholder:text-white/10 font-mono"
                 />
             </div>
+            
             <div className="flex items-center gap-3">
-                <input 
-                    type="text" 
-                    placeholder="Portrait URL"
-                    value={person.imageUrl}
-                    onChange={(e) => onChange("imageUrl", e.target.value)}
-                    className="flex-[2] bg-white/5 border border-white/5 rounded-lg px-4 py-2 text-[10px] font-mono focus:border-white/20 outline-none transition-all placeholder:text-white/10 truncate"
-                />
+                {type === "stars" && (
+                    <div className="flex items-center gap-2 px-2 border-l border-white/5 ml-2">
+                        <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="relative w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-all overflow-hidden group/thumb"
+                        >
+                            {person.imageUrl ? (
+                                <img src={person.imageUrl} className="w-full h-full object-cover" alt="Preview" />
+                            ) : (
+                                <ImageIcon className="w-4 h-4 text-white/20" />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
+                                <Upload className="w-3 h-3 text-white" />
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Portrait</span>
+                            <span className="text-[7px] text-white/15 max-w-[60px] truncate">
+                                {person.portraitFile ? person.portraitFile.name : "None"}
+                            </span>
+                        </div>
+                        <input 
+                            ref={fileInputRef}
+                            type="file" 
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
+                    </div>
+                )}
+
                 <button 
                     onClick={onRemove}
-                    className="p-2 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                    className="p-2 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all ml-auto"
                 >
                     <X className="w-4 h-4" />
                 </button>

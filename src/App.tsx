@@ -16,9 +16,13 @@ import { OriginalsTheatrePage } from "./features/originals/OriginalsTheatrePage"
 import UploadPage from "./features/upload/UploadPage";
 import ArtistSetupPage from "./features/profile/ArtistSetupPage";
 import LoginPage from "./features/profile/LoginPage";
+import ProfileEditPage from "./features/profile/ProfileEditPage";
 import OriginalCreatePage from "./features/originals/OriginalCreatePage";
+import OriginalReleaseUploadPage from "./features/upload/OriginalReleaseUploadPage";
 import ContactPage from "./features/contact/ContactPage";
 import { LedgerPage } from "./features/ledger/LedgerPage";
+import { AdminPage } from "./features/admin/AdminPage";
+
 
 /**
  * App Component
@@ -44,16 +48,25 @@ export default function App() {
         <Route path="/sets" element={<ComingSoonPage label="Sets" />} />
         <Route path="/profile/new" element={<ArtistSetupPage />} />
         <Route path="/profile/login" element={<LoginPage />} />
+        <Route path="/profile/edit" element={<ProfileEditPage />} />
         <Route path="/works/new" element={<UploadPage />} />
-        <Route path="/originals/create" element={<OriginalCreatePage />} />
-        <Route path="/contact" element={<ContactPage />} />
         <Route path="/ledger" element={<LedgerPage />} />
         
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/originals/new" element={<OriginalCreatePage />} />
+        <Route path="/admin/profile/new" element={<ArtistSetupPage />} />
+        
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/originals/:id" element={<OriginalPage />} />
         <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />
         <Route
           path="/originals/:id/releases"
           element={<ComingSoonPage label="Official Releases" />}
+        />
+        <Route
+          path="/originals/:id/releases/new"
+          element={<OriginalReleaseUploadPage />}
         />
         <Route
           path="/artists/:id"

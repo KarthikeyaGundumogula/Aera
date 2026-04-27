@@ -18,11 +18,11 @@ type IconProps = {
 
 type Category = TheatreItem["category"];
 
-export function PresenceIcon({ className = "" }: IconProps) {
+export function StageIcon({ className = "" }: IconProps) {
   return <Sun className={className} />;
 }
 
-export function ReleasesIcon({ className = "" }: IconProps) {
+export function WorksIcon({ className = "" }: IconProps) {
   return <Clapperboard className={className} />;
 }
 
@@ -54,7 +54,7 @@ export function CallsIcon({ className = "" }: IconProps) {
   return <PhoneCall className={className} />;
 }
 
-export function ProfileIcon({ className = "" }: IconProps) {
+export function ArtistIcon({ className = "" }: IconProps) {
   return <User className={className} />;
 }
 

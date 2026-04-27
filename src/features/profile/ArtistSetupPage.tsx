@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, ChevronRight, Film } from "lucide-react";
 
 import { IdentitySection } from "./components/IdentitySection";
@@ -20,7 +20,7 @@ interface ProfileFormData {
 }
 
 /**
- * ArtistSetupPage — "The Identity Rite"
+ * ArtistSetupPage — "The Stage Rite"
  * Artists set their public profile: portrait, name, tagline, and socials.
  *
  * Frontend-only; state is local (no persistence yet).
@@ -29,6 +29,21 @@ export default function ArtistSetupPage() {
   const navigate = useNavigate();
   const [isSaved, setIsSaved] = useState(false);
   const [successArtist, setSuccessArtist] = useState<OriginalArtist | null>(null);
+
+  const location = useLocation();
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const type = queryParams.get("type") || "artist";
+
+  const labels = useMemo(() => {
+    switch (type.toLowerCase()) {
+      case "star":
+        return { rite: "The Star Rite", action: "Shape Star Stage", prompt: "A star's Stage on Aera. One name. One Stage." };
+      case "maker":
+        return { rite: "The Maker Rite", action: "Forge Maker Stage", prompt: "A visionary's Stage on Aera. One vision. One mark." };
+      default:
+        return { rite: "The Stage Refinement", action: "Refine Your Stage", prompt: "Your Stage on FrameHouse. One name. One line. Your Stage." };
+    }
+  }, [type]);
 
   const [formData, setFormData] = useState<ProfileFormData>({
     name: "",
@@ -139,7 +154,7 @@ export default function ArtistSetupPage() {
           >
             <div className="h-px w-12 bg-white/20" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">
-              The Identity Rite
+              {labels.rite}
             </span>
           </motion.div>
 
@@ -149,8 +164,8 @@ export default function ArtistSetupPage() {
             transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-5xl md:text-7xl font-black uppercase tracking-[-0.02em] leading-[0.88]"
           >
-            Shape Your <br />
-            <span className="text-white/25">Presence</span>
+            {labels.action.split(' ').slice(0, 2).join(' ')} <br />
+            <span className="text-white/25">{labels.action.split(' ').slice(2).join(' ')}</span>
           </motion.h1>
 
           <motion.p
@@ -159,7 +174,7 @@ export default function ArtistSetupPage() {
             transition={{ duration: 0.6, delay: 0.25 }}
             className="mt-5 text-sm text-white/35 max-w-xs leading-relaxed"
           >
-            Your identity on FrameHouse. One name. One line. Your stage.
+            {labels.prompt}
           </motion.p>
         </header>
 

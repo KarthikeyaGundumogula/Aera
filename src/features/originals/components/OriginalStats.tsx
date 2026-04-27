@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Users, Film } from "lucide-react";
-import { PresenceIcon } from "../../../components/icons/AppIcons";
+import { StageIcon } from "../../../components/icons/AppIcons";
 
 interface OriginalStatsProps {
   stats: {
@@ -24,13 +24,13 @@ export function OriginalStats({ stats, isTheaterMode }: OriginalStatsProps) {
           <div className="flex items-center gap-8 md:gap-12 py-4 border-t border-white/10">
             <div className="flex flex-col pointer-events-auto">
               <div className="flex items-center gap-2 mb-1">
-                <PresenceIcon className="w-3 h-3 text-yellow-400" />
+                <StageIcon className="w-3 h-3 text-yellow-400" />
                 <span className="text-lg font-bold drop-shadow-2xl">
                   {stats.presence}
                 </span>
               </div>
               <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
-                Presence
+                Stage
               </span>
             </div>
             <div className="flex flex-col pointer-events-auto">
@@ -52,7 +52,7 @@ export function OriginalStats({ stats, isTheaterMode }: OriginalStatsProps) {
                 </span>
               </div>
               <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
-                Releases
+                Works
               </span>
             </div>
           </div>
