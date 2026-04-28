@@ -1,0 +1,121 @@
+[
+  {
+    "id": "profile-pawan-kalyan",
+    "name": "Pawan Kalyan",
+    "profilePicture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Power Star",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-ram-charan",
+    "name": "Ram Charan",
+    "profilePicture": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Mega Power Star",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-jr-ntr",
+    "name": "Jr. NTR",
+    "profilePicture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Young Tiger",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-yash",
+    "name": "Yash",
+    "profilePicture": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Rocking Star",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-prabhas",
+    "name": "Prabhas",
+    "profilePicture": "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Rebel Star",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-kamal-haasan",
+    "name": "Kamal Haasan",
+    "profilePicture": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Ulaganayagan",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-vijay-sethupathi",
+    "name": "Vijay Sethupathi",
+    "profilePicture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Makkal Selvan",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-fahadh-faasil",
+    "name": "Fahadh Faasil",
+    "profilePicture": "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?q=80&w=800&auto=format&fit=crop",
+    "tagline": "The Chameleon",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-deepika-padukone",
+    "name": "Deepika Padukone",
+    "profilePicture": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Queen of Hearts",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-alia-bhatt",
+    "name": "Alia Bhatt",
+    "profilePicture": "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Gen-Z Icon",
+    "profileType": "STAR"
+  },
+  {
+    "id": "profile-ss-rajamouli",
+    "name": "S. S. Rajamouli",
+    "profilePicture": "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?q=80&w=800&auto=format&fit=crop",
+    "tagline": "India's Storyteller",
+    "profileType": "MAKER"
+  },
+  {
+    "id": "profile-lokesh-kanagaraj",
+    "name": "Lokesh Kanagaraj",
+    "profilePicture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    "tagline": "LCU Architect",
+    "profileType": "MAKER"
+  },
+  {
+    "id": "profile-prashanth-neel",
+    "name": "Prashanth Neel",
+    "profilePicture": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Master of Mass",
+    "profileType": "MAKER"
+  },
+  {
+    "id": "profile-anirudh",
+    "name": "Anirudh Ravichander",
+    "profilePicture": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Rockstar Composer",
+    "profileType": "MAKER"
+  },
+  {
+    "id": "profile-mm-keeravani",
+    "name": "M. M. Keeravani",
+    "profilePicture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Oscar Laureate",
+    "profileType": "MAKER"
+  },
+  {
+    "id": "profile-ravi-basrur",
+    "name": "Ravi Basrur",
+    "profilePicture": "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?q=80&w=800&auto=format&fit=crop",
+    "tagline": "BGM King",
+    "profileType": "MAKER"
+  },
+  {
+    "id": "profile-shobu-yarlagadda",
+    "name": "Shobu Yarlagadda",
+    "profilePicture": "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop",
+    "tagline": "Visionary Producer",
+    "profileType": "MAKER"
+  }
+]

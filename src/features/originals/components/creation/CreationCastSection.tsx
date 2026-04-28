@@ -1,19 +1,13 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, User, Briefcase, Camera, Upload, ImageIcon } from "lucide-react";
-
-interface Person {
-  actorName: string;
-  characterName: string;
-  imageUrl: string; // Used for preview URL
-  portraitFile?: File | null;
-}
+import { Plus, X, User, Briefcase, Camera } from "lucide-react";
+import { PersonSearchInput, CastMember } from "./PersonSearchInput";
 
 interface CreationCastSectionProps {
-  stars: Person[];
-  makers: Person[];
-  onStarsChange: (val: Person[]) => void;
-  onMakersChange: (val: Person[]) => void;
+  stars: CastMember[];
+  makers: CastMember[];
+  onStarsChange: (val: CastMember[]) => void;
+  onMakersChange: (val: CastMember[]) => void;
 }
 
 export function CreationCastSection({ 
@@ -22,23 +16,12 @@ export function CreationCastSection({
   onStarsChange, 
   onMakersChange 
 }: CreationCastSectionProps) {
+  const [addingType, setAddingType] = useState<"stars" | "makers" | null>(null);
 
-  const addPerson = (type: "stars" | "makers") => {
-    const newPerson: Person = { actorName: "", characterName: "", imageUrl: "", portraitFile: null };
-    if (type === "stars") onStarsChange([...stars, newPerson]);
-    else onMakersChange([...makers, newPerson]);
-  };
-
-  const updatePerson = (type: "stars" | "makers", index: number, updates: Partial<Person>) => {
-    if (type === "stars") {
-      const updated = [...stars];
-      updated[index] = { ...updated[index], ...updates };
-      onStarsChange(updated);
-    } else {
-      const updated = [...makers];
-      updated[index] = { ...updated[index], ...updates };
-      onMakersChange(updated);
-    }
+  const handleSelect = (type: "stars" | "makers", member: CastMember) => {
+    if (type === "stars") onStarsChange([...stars, member]);
+    else onMakersChange([...makers, member]);
+    setAddingType(null);
   };
 
   const removePerson = (type: "stars" | "makers", index: number) => {
@@ -65,29 +48,43 @@ export function CreationCastSection({
             <h3 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-white/70">
                 <User className="w-3.5 h-3.5 text-white/40" /> Stars
             </h3>
-            <button 
-                onClick={() => addPerson("stars")}
+            {addingType !== "stars" && (
+              <button 
+                onClick={() => setAddingType("stars")}
                 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-all"
-            >
+              >
                 <Plus className="w-3 h-3" /> Add Lead
-            </button>
+              </button>
+            )}
           </div>
 
-          <div className="flex flex-col gap-4">
+          {/* Selected Stars List */}
+          <div className="flex flex-col gap-3">
             <AnimatePresence>
-                {stars.map((person, idx) => (
-                    <PersonRow 
-                        key={`star-${idx}`} 
-                        type="stars"
-                        person={person} 
-                        onChange={(updates) => updatePerson("stars", idx, updates)}
-                        onRemove={() => removePerson("stars", idx)}
-                        placeholderName="Actor Name"
-                        placeholderRole="Character"
-                    />
-                ))}
+              {stars.map((person, idx) => (
+                <SelectedPersonRow
+                  key={`star-${person.profileId}-${idx}`}
+                  person={person}
+                  onRemove={() => removePerson("stars", idx)}
+                />
+              ))}
             </AnimatePresence>
-            {!stars.length && <EmptyState label="No stars added" icon={<User className="w-5 h-5" />} />}
+
+            {/* Search Input */}
+            <AnimatePresence>
+              {addingType === "stars" && (
+                <PersonSearchInput
+                  type="STAR"
+                  onSelect={(member) => handleSelect("stars", member)}
+                  onCancel={() => setAddingType(null)}
+                  placeholderRole="Character"
+                />
+              )}
+            </AnimatePresence>
+
+            {!stars.length && addingType !== "stars" && (
+              <EmptyState label="No stars added" icon={<User className="w-5 h-5" />} />
+            )}
           </div>
         </div>
 
@@ -97,29 +94,42 @@ export function CreationCastSection({
             <h3 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-white/70">
                 <Briefcase className="w-3.5 h-3.5 text-white/40" /> Makers
             </h3>
-            <button 
-                onClick={() => addPerson("makers")}
+            {addingType !== "makers" && (
+              <button 
+                onClick={() => setAddingType("makers")}
                 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-all"
-            >
+              >
                 <Plus className="w-3 h-3" /> Add Crew
-            </button>
+              </button>
+            )}
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <AnimatePresence>
-                {makers.map((person, idx) => (
-                    <PersonRow 
-                        key={`maker-${idx}`} 
-                        type="makers"
-                        person={person} 
-                        onChange={(updates) => updatePerson("makers", idx, updates)}
-                        onRemove={() => removePerson("makers", idx)}
-                        placeholderName="Name"
-                        placeholderRole="Role (e.g. Director)"
-                    />
-                ))}
+              {makers.map((person, idx) => (
+                <SelectedPersonRow
+                  key={`maker-${person.profileId}-${idx}`}
+                  person={person}
+                  onRemove={() => removePerson("makers", idx)}
+                />
+              ))}
             </AnimatePresence>
-            {!makers.length && <EmptyState label="No makers added" icon={<Camera className="w-5 h-5" />} />}
+
+            {/* Search Input */}
+            <AnimatePresence>
+              {addingType === "makers" && (
+                <PersonSearchInput
+                  type="MAKER"
+                  onSelect={(member) => handleSelect("makers", member)}
+                  onCancel={() => setAddingType(null)}
+                  placeholderRole="Role (e.g. Director)"
+                />
+              )}
+            </AnimatePresence>
+
+            {!makers.length && addingType !== "makers" && (
+              <EmptyState label="No makers added" icon={<Camera className="w-5 h-5" />} />
+            )}
           </div>
         </div>
       </div>
@@ -127,103 +137,64 @@ export function CreationCastSection({
   );
 }
 
-function PersonRow({ 
-    type,
-    person, 
-    onChange, 
-    onRemove,
-    placeholderName,
-    placeholderRole
+function SelectedPersonRow({ 
+  person, 
+  onRemove 
 }: { 
-    type: "stars" | "makers",
-    person: Person, 
-    onChange: (updates: Partial<Person>) => void, 
-    onRemove: () => void,
-    placeholderName: string,
-    placeholderRole: string
+  person: CastMember;
+  onRemove: () => void;
 }) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="group flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all"
+    >
+      {/* Profile chip */}
+      <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex-shrink-0">
+        {person.profilePicture ? (
+          <img
+            src={person.profilePicture}
+            alt={person.actorName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <User className="w-4 h-4 text-white/20" />
+          </div>
+        )}
+      </div>
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const previewUrl = URL.createObjectURL(file);
-            onChange({ portraitFile: file, imageUrl: previewUrl });
-        }
-    };
-
-    return (
-        <motion.div 
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="group flex flex-col md:flex-row gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all"
-        >
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input 
-                    type="text" 
-                    placeholder={placeholderName}
-                    value={person.actorName}
-                    onChange={(e) => onChange({ actorName: e.target.value })}
-                    className="bg-white/5 border border-white/5 rounded-lg px-4 py-2 text-xs font-bold focus:border-white/20 outline-none transition-all placeholder:text-white/10 uppercase tracking-widest"
-                />
-                <input 
-                    type="text" 
-                    placeholder={placeholderRole}
-                    value={person.characterName}
-                    onChange={(e) => onChange({ characterName: e.target.value })}
-                    className="bg-white/5 border border-white/5 rounded-lg px-4 py-2 text-xs font-medium focus:border-white/20 outline-none transition-all placeholder:text-white/10 font-mono"
-                />
-            </div>
-            
-            <div className="flex items-center gap-3">
-                {type === "stars" && (
-                    <div className="flex items-center gap-2 px-2 border-l border-white/5 ml-2">
-                        <div 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="relative w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-all overflow-hidden group/thumb"
-                        >
-                            {person.imageUrl ? (
-                                <img src={person.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-                            ) : (
-                                <ImageIcon className="w-4 h-4 text-white/20" />
-                            )}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
-                                <Upload className="w-3 h-3 text-white" />
-                            </div>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Portrait</span>
-                            <span className="text-[7px] text-white/15 max-w-[60px] truncate">
-                                {person.portraitFile ? person.portraitFile.name : "None"}
-                            </span>
-                        </div>
-                        <input 
-                            ref={fileInputRef}
-                            type="file" 
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleFileChange}
-                        />
-                    </div>
-                )}
-
-                <button 
-                    onClick={onRemove}
-                    className="p-2 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all ml-auto"
-                >
-                    <X className="w-4 h-4" />
-                </button>
-            </div>
-        </motion.div>
-    );
+      <div className="flex-1 flex items-center gap-4 min-w-0">
+        <span className="text-[10px] font-black uppercase tracking-tight text-white/80 truncate">
+          {person.actorName}
+        </span>
+        {person.characterName && (
+          <>
+            <div className="h-3 w-px bg-white/10 flex-shrink-0" />
+            <span className="text-[9px] font-mono text-white/30 truncate">
+              {person.characterName}
+            </span>
+          </>
+        )}
+      </div>
+      
+      <button 
+        onClick={onRemove}
+        className="p-2 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </motion.div>
+  );
 }
 
 function EmptyState({ label, icon }: { label: string, icon: React.ReactNode }) {
-    return (
-        <div className="flex flex-col items-center justify-center gap-3 py-10 opacity-10 grayscale border border-dashed border-white/10 rounded-2xl">
-            {icon}
-            <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
-        </div>
-    );
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-10 opacity-10 grayscale border border-dashed border-white/10 rounded-2xl">
+      {icon}
+      <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
+    </div>
+  );
 }

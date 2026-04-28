@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Bookmark, Tag } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
@@ -16,6 +17,7 @@ export function CurateOverlay({
   originalIds,
   onShowToast,
 }: CurateOverlayProps) {
+  const navigate = useNavigate();
   const [ledgerOriginals, setLedgerOriginals] = useState<string[]>([]);
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
@@ -86,10 +88,14 @@ export function CurateOverlay({
                     <img
                       src={item.coverImage}
                       alt={item.title}
-                      className="w-14 h-9 sm:w-20 sm:h-12 object-cover rounded-md sm:rounded-lg opacity-90"
+                      onClick={() => navigate(`/originals/${item.id}`)}
+                      className="w-14 h-9 sm:w-20 sm:h-12 object-cover rounded-md sm:rounded-lg opacity-90 cursor-pointer hover:opacity-100 transition-opacity"
                     />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/90 truncate">
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => navigate(`/originals/${item.id}`)}
+                    >
+                      <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/90 truncate hover:text-white transition-colors">
                         {item.title}
                       </h4>
                     </div>

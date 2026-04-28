@@ -6,6 +6,7 @@ import { ArrowLeft, Sparkles, CheckCircle2 } from "lucide-react";
 import { CreationIdentitySection } from "./components/creation/CreationIdentitySection";
 import { CreationMetaSection } from "./components/creation/CreationMetaSection";
 import { CreationCastSection } from "./components/creation/CreationCastSection";
+import { CastMember } from "./components/creation/PersonSearchInput";
 
 export default function OriginalCreatePage() {
   const navigate = useNavigate();
@@ -16,8 +17,8 @@ export default function OriginalCreatePage() {
     description: "",
     releaseDate: "",
     genres: [] as string[],
-    stars: [] as { actorName: string; characterName: string; imageUrl: string; portraitFile?: File | null }[],
-    makers: [] as { actorName: string; characterName: string; imageUrl: string }[],
+    stars: [] as CastMember[],
+    makers: [] as CastMember[],
     coverImage: "",
   });
 

@@ -55,10 +55,11 @@ export function CreationMetaSection({
                 <Calendar className="w-3 h-3" /> Release Date
             </label>
             <input
-                type="date"
+                type="text"
+                placeholder="DD-MM-YYYY"
                 value={releaseDate}
                 onChange={(e) => onDateChange(e.target.value)}
-                className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-5 text-xs font-bold focus:ring-2 focus:ring-white/10 focus:border-white/20 outline-none transition-all [color-scheme:dark] uppercase tracking-widest"
+                className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-5 text-xs font-bold focus:ring-2 focus:ring-white/10 focus:border-white/20 outline-none transition-all uppercase tracking-widest placeholder:text-white/10"
             />
         </div>
 

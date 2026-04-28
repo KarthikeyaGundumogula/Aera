@@ -107,3 +107,21 @@ export const ARTISTS_MOCK = ALL_ARTISTS.map(({ originalId: _, ...rest }) => rest
  * SETS — Curated collections.
  */
 export const SETS = setsData as TheatreItem[];
+
+// ─── Profiles Directory (unified search pool) ───────────────────────────────
+
+import profilesDirectoryData from "./profiles-directory.json";
+
+export interface ProfileEntry {
+  id: string;
+  name: string;
+  profilePicture?: string;
+  tagline?: string;
+  profileType: "STAR" | "MAKER" | "ARTIST";
+}
+
+/**
+ * PROFILES_DIRECTORY — All known platform identities (Stars, Makers, Artists).
+ * Used by: PersonSearchInput for cast/crew selection.
+ */
+export const PROFILES_DIRECTORY: ProfileEntry[] = profilesDirectoryData as ProfileEntry[];

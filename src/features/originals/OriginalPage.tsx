@@ -12,6 +12,8 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleasesCarousel } from "./components/ReleasesCarousel";
 import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
 import { OriginalStats } from "./components/OriginalStats";
+import { OriginalCommandCenter } from "./components/OriginalCommandCenter";
+import { OriginalManagementModal } from "./components/OriginalManagementModal";
 
 
 export function OriginalPage() {
@@ -21,6 +23,7 @@ export function OriginalPage() {
   const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showManagement, setShowManagement] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const isMobile = useMediaQuery();
   
@@ -213,13 +216,11 @@ export function OriginalPage() {
                 <div className="h-4 w-px bg-white/10" />
                 {isAdmin && (
                   <>
-                    <button 
-                      onClick={() => navigate(`/originals/${original.id}/releases/new`)}
-                      className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
-                      title="Add Release"
-                    >
-                      <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
-                    </button>
+                    <OriginalCommandCenter 
+                      originalId={original.id}
+                      onEditInfo={() => setShowManagement(true)}
+                      onNewRelease={() => navigate(`/originals/${original.id}/releases/new`)}
+                    />
                     <div className="h-4 w-px bg-white/10" />
                   </>
                 )}
@@ -352,8 +353,24 @@ export function OriginalPage() {
             className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
           >
             <Bookmark size={14} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">Added to Ledger</span>
+            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
+              Added to Ledger
+            </span>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Management Modal */}
+      <AnimatePresence>
+        {showManagement && (
+          <OriginalManagementModal
+            original={original}
+            onClose={() => setShowManagement(false)}
+            onSave={(updated) => {
+              console.log("Original Updated:", updated);
+              // In a real app, you'd trigger a re-fetch or update global state
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
