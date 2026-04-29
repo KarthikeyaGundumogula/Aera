@@ -37,18 +37,13 @@ export function LedgerPage() {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
-                Ledger
-              </h1>
-              <p className="text-white/60 text-lg max-w-xl">
-                Your cinematic ledger. Track originals, document your expectations, and log your thoughts.
-              </p>
-            </div>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
+              Ledger
+            </h1>
             <button
               onClick={() => setIsAdding(!isAdding)}
-              className={`group flex items-center gap-2 px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] transition-all mt-2 ${
+              className={`group flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex-shrink-0 ${
                 isAdding 
                   ? "bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.15)]" 
                   : "bg-white/5 text-white/60 border-white/10 hover:border-white/30 hover:text-white"
@@ -58,6 +53,9 @@ export function LedgerPage() {
               <span className="hidden sm:inline">New Entry</span>
             </button>
           </div>
+          <p className="text-white/40 text-sm sm:text-base max-w-xl mt-4">
+            Your cinematic ledger. Track originals, document your expectations, and log your thoughts.
+          </p>
         </header>
 
         {/* Add Entry Panel */}

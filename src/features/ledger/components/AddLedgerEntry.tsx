@@ -25,12 +25,17 @@ export function AddLedgerEntry({ existingIds, onAdd, onClose }: AddLedgerEntryPr
     if (!selectedOriginal) inputRef.current?.focus();
   }, [selectedOriginal]);
 
+  const isSearching = query.trim().length > 0;
+
   const results = useMemo(() => {
     const pool = ORIGINALS.filter(o => !existingIds.includes(o.id));
-    if (!query.trim()) return pool.slice(0, 4);
+    if (!isSearching) {
+      // Trending: top 2 by presence
+      return [...pool].sort((a, b) => (b.stats?.presence ?? 0) - (a.stats?.presence ?? 0)).slice(0, 2);
+    }
     const q = query.toLowerCase();
-    return pool.filter(o => o.title.toLowerCase().includes(q)).slice(0, 4);
-  }, [query, existingIds]);
+    return pool.filter(o => o.title.toLowerCase().includes(q)).slice(0, 5);
+  }, [query, existingIds, isSearching]);
 
   const handleSelect = (original: typeof ORIGINALS[0]) => {
     setSelectedOriginal(original);
@@ -97,6 +102,11 @@ export function AddLedgerEntry({ existingIds, onAdd, onClose }: AddLedgerEntryPr
 
         {/* Inline Results */}
         <div className="max-h-[240px] overflow-y-auto no-scrollbar">
+          {!isSearching && results.length > 0 && (
+            <div className="px-5 pt-3 pb-1">
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/15">Trending this week</span>
+            </div>
+          )}
           {results.length > 0 ? (
             results.map((original) => (
               <button
