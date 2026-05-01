@@ -10,6 +10,7 @@ import { ArtistProfile } from "../profile";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { CurateOverlay } from "./CurateOverlay";
+import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
 
 interface EditModalProps {
   item: TheatreItem | null;
@@ -190,16 +191,12 @@ export function EditModal({ item, onClose }: EditModalProps) {
                   <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/30">
                     Work Archive
                   </span>
-                  <h2
-                    className="font-black uppercase tracking-tighter text-white leading-[0.85]"
-                    style={{
-                      fontSize: !item.title?.includes(" ")
-                        ? `clamp(1.5rem, ${Math.min(8, 60 / ((item.title?.length ?? 8) * 0.8))}vw, 2.5rem)`
-                        : `clamp(1.5rem, ${Math.max(3, 10 - (item.title?.length ?? 8) * 0.2)}vw, 3.2rem)`,
-                    }}
-                  >
-                    {item.title}
-                  </h2>
+                  <AdaptiveTitle
+                    title={item.title || "Untitled Edit"}
+                    multiWordClass="text-2xl sm:text-[2rem]"
+                    singleWordClamp="clamp(1.5rem, 8vw, 2.5rem)"
+                    className="leading-[0.85]"
+                  />
                 </div>
                 <div className="flex-1" />
                 <div

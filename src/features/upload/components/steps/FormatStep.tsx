@@ -94,13 +94,13 @@ export function FormatStep({ formData, currentOriginal, setFormData, onNext, onB
 
         <div className="flex items-center justify-between pt-8">
           <button onClick={onBack} className="text-white/40 hover:text-white flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-colors">
-            <ChevronLeft className="w-4 h-4" /> Back
+            <ChevronLeft className="w-4 h-4" /> BACK
           </button>
           <button 
             onClick={onNext} 
             className="px-8 py-3 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 transition-all flex items-center gap-2"
           >
-            Review Release <ChevronRight className="w-4 h-4" />
+            NEXT <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

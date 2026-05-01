@@ -10,15 +10,7 @@ export function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Reset window scroll
     window.scrollTo(0, 0);
-    
-    // Some layouts might use a full-height container with overflow-y-auto
-    // We target the standard scrollable elements as well.
-    const scrollContainers = document.querySelectorAll('.overflow-y-auto');
-    scrollContainers.forEach((container) => {
-      container.scrollTo(0, 0);
-    });
   }, [pathname]);
 
   return null;

@@ -122,7 +122,7 @@ export function IdentityStep({
             onClick={onNext}
             className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2"
           >
-            Connect Source <ChevronRight className="w-4 h-4" />
+            NEXT <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

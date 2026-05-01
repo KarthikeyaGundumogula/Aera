@@ -17,34 +17,30 @@ export default function ContactPage() {
     {
       id: "phone",
       label: "Direct Line",
-      value: "+91 9392591958",
+      value: "+91 9392571958",
       icon: <Phone className="w-5 h-5" />,
       href: "tel:+919392571958",
-      description: "Available for urgent sequence discussion",
     },
     {
       id: "email",
       label: "Electronic Mail",
-      value: "ashokgolla@gmail.com",
+      value: "Karthikeya Gundumogula",
       icon: <Mail className="w-5 h-5" />,
-      href: "mailto:ashokgolla@gmail.com",
-      description: "For long-form vision and collaboration",
+      href: "mailto:karthikeyag2682@gmail.com",
     },
     {
       id: "instagram",
       label: "Instagram",
-      value: "@aera.collective",
+      value: "@karthikeya.gundumogula",
       icon: <Instagram className="w-5 h-5" />,
-      href: "https://instagram.com",
-      description: "Visual updates and process behind the scenes",
+      href: "https://www.instagram.com/karthikeya.gundumogula/",
     },
     {
       id: "twitter",
       label: "X / Twitter",
-      value: "@aeraworld",
+      value: "@Kapten",
       icon: <Twitter className="w-5 h-5" />,
-      href: "https://twitter.com",
-      description: "Real-time updates and community signals",
+      href: "https://x.com/jalsa_kap",
     },
   ];
 
@@ -133,7 +129,7 @@ export default function ContactPage() {
                   {contact.icon}
                 </div>
                 <div className="text-[8px] font-bold uppercase tracking-[0.3em] text-white/10 group-hover:text-white/20 transition-all">
-                  Established Frequency
+                  Something is Fishy
                 </div>
               </div>
 
@@ -145,7 +141,7 @@ export default function ContactPage() {
                   {contact.value}
                 </div>
                 <p className="text-[10px] font-medium text-white/20 group-hover:text-white/40 uppercase tracking-widest leading-relaxed">
-                  {contact.description}
+                  contact me
                 </p>
               </div>
             </motion.a>
@@ -166,7 +162,7 @@ export default function ContactPage() {
             </span>
           </div>
           <div className="text-[9px] font-medium uppercase tracking-[0.2em]">
-            Founded with rage from neg prs
+            Founded with rage
           </div>
         </motion.div>
       </main>

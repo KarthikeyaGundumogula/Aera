@@ -228,14 +228,14 @@ export function SourceStep({
 
         <div className="flex items-center justify-between pt-4">
           <button onClick={onBack} className="text-white/40 hover:text-white flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-colors">
-            <ChevronLeft className="w-4 h-4" /> Back
+            <ChevronLeft className="w-4 h-4" /> BACK
           </button>
           <button 
             disabled={!canProceed}
             onClick={onNext} 
             className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
           >
-             {isScript ? "Review Release" : isPoster ? "Analyze Geometry" : "Associate Film"} <ChevronRight className="w-4 h-4" />
+             NEXT <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Users, Film, ArrowRight, ArrowLeft, Bookmark, Plus } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
 import { Logo } from "../../components/Logo";
@@ -12,7 +12,8 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleasesCarousel } from "./components/ReleasesCarousel";
 import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
 import { OriginalStats } from "./components/OriginalStats";
-import { OriginalCommandCenter } from "./components/OriginalCommandCenter";
+import { OriginalCommandCenter, OriginalClaims } from "./components/OriginalCommandCenter";
+import { AdaptiveTitle } from "../../components/AdaptiveTitle";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
 
 
@@ -27,8 +28,11 @@ export function OriginalPage() {
   const [resetKey, setResetKey] = useState(0);
   const isMobile = useMediaQuery();
   
-  // In a real app, this would come from a JWT-based auth context
-  const isAdmin = true; 
+  // JWT Claims Mock - In a real app, this would come from a decoded token
+  const userClaims: OriginalClaims = {
+    canUpdateMeta: true,
+    canCreateRelease: true,
+  };
 
   const original = id ? ORIGINALS_DATA[id] : null;
 
@@ -54,18 +58,21 @@ export function OriginalPage() {
     return () => clearTimeout(timer);
   }, [original, resetKey]);
 
+  // Defer expensive secondary data so the page paints immediately on navigation
+  const deferredOriginal = useDeferredValue(original);
+
   const catalogueItems: TheatreItem[] = useMemo(() => {
-    if (!original) return [];
-    return original.heroHighlights || [];
-  }, [original]);
+    if (!deferredOriginal) return [];
+    return deferredOriginal.heroHighlights || [];
+  }, [deferredOriginal]);
 
   const artistStripItems = useMemo(() => {
-    if (!original) return [];
+    if (!deferredOriginal) return [];
     return Array.from(
-      { length: Math.max(15, original.topArtists.length) },
-      (_, index) => original.topArtists[index % original.topArtists.length]
+      { length: Math.max(15, deferredOriginal.topArtists.length) },
+      (_, index) => deferredOriginal.topArtists[index % deferredOriginal.topArtists.length]
     );
-  }, [original]);
+  }, [deferredOriginal]);
 
 
 
@@ -172,9 +179,10 @@ export function OriginalPage() {
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
-              className="fixed top-0 left-0 right-0 z-[100] px-6 py-4 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5 transition-all duration-300"
+              className="fixed top-0 left-0 right-0 z-[100] px-6 py-4 flex items-center justify-between bg-black/40 backdrop-blur-xl border-b border-white/5 transition-all duration-300"
             >
-              <div className="flex-1 flex items-center gap-4">
+              {/* Left Section */}
+              <div className="flex-1 flex items-center gap-4 z-10">
                 <button 
                   onClick={() => navigate("/")}
                   className="group p-2 -ml-2 rounded-full hover:bg-white/5 transition-all active:scale-90"
@@ -185,45 +193,42 @@ export function OriginalPage() {
                 <Logo onClick={() => navigate("/")} showText={false} />
               </div>
 
-              <div className="flex-[2] text-center px-4">
+              {/* Center Section - Absolutely centered for mobile balance */}
+              <div className="absolute inset-x-0 flex justify-center pointer-events-none">
                 <button 
                   onClick={() => {
                     setResetKey(prev => prev + 1);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="group transition-all active:scale-95"
+                  className="group transition-all active:scale-95 pointer-events-auto"
                 >
-                  <h1 className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.5em] text-white/90 truncate max-w-[200px] md:max-w-none mx-auto group-hover:text-white transition-colors">
-                    {original.title}
-                  </h1>
+                  <AdaptiveTitle
+                    title={original.title}
+                    as="h1"
+                    multiWordClass="text-[10px] md:text-[12px] leading-tight"
+                    singleWordClamp="clamp(8px, 3vw, 13px)"
+                    className="text-white/90 group-hover:text-white transition-colors tracking-[0.5em] text-center"
+                  />
                 </button>
               </div>
 
-              <div className="flex-1 flex justify-end items-center gap-4">
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
+              {/* Right Section */}
+              <div className="flex-1 flex justify-end items-center gap-2 sm:gap-4 z-10">
+                <OriginalCommandCenter 
+                  originalId={original.id}
+                  claims={userClaims}
+                  onEditInfo={() => setShowManagement(true)}
+                  onNewRelease={() => navigate(`/originals/${original.id}/releases/new`)}
+                  onAddToWatchlist={() => {
                     if (!showToast) {
                       setShowToast(true);
                       setTimeout(() => setShowToast(false), 3000);
                     }
                   }}
-                  className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
-                  aria-label="Add to Ledger"
-                >
-                  <Bookmark className="w-5 h-5 transition-transform group-hover:scale-110" />
-                </button>
-                <div className="h-4 w-px bg-white/10" />
-                {isAdmin && (
-                  <>
-                    <OriginalCommandCenter 
-                      originalId={original.id}
-                      onEditInfo={() => setShowManagement(true)}
-                      onNewRelease={() => navigate(`/originals/${original.id}/releases/new`)}
-                    />
-                    <div className="h-4 w-px bg-white/10" />
-                  </>
-                )}
+                />
+
+                <div className="hidden sm:block h-4 w-px bg-white/10" />
+
                 <button 
                   onClick={() => navigate(`/originals/${original.id}/releases`)}
                   className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"

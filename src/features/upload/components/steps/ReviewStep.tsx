@@ -121,10 +121,10 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
                   onClick={onRelease}
                   className="w-full py-6 bg-white text-black rounded-2xl text-sm font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
               >
-                  <span className="group-hover:translate-x-1 transition-transform">Finalize Release</span> <Sparkles className="w-5 h-5" />
+                  <span className="group-hover:translate-x-1 transition-transform">RELEASE</span> <Sparkles className="w-5 h-5" />
               </button>
               <button onClick={onBack} className="text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-widest py-2">
-                  Adjust Parameters
+                  BACK
               </button>
            </div>
       </div>

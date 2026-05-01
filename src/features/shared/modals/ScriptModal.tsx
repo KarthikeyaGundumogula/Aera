@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ArtistProfile } from "../profile";
 import { ARTISTS_MOCK } from "../../../mock";
 import { CurateOverlay } from "./CurateOverlay";
+import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
 
 interface ScriptModalProps {
   item: TheatreItem | null;
@@ -83,9 +84,13 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
               <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.34em] text-white/25">
                 Script Archive
               </p>
-              <h3 className="truncate text-sm font-bold uppercase tracking-tight text-white/80 sm:text-base">
-                {item.title}
-              </h3>
+              <AdaptiveTitle
+                title={item.title || "Untitled Script"}
+                as="h3"
+                multiWordClass="text-sm sm:text-base tracking-tight"
+                singleWordClamp="clamp(0.85rem, 4vw, 1.15rem)"
+                className="text-white/80"
+              />
             </div>
 
             <button

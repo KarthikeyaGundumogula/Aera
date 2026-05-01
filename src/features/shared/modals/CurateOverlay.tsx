@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Bookmark, Tag } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
+import { OWN_RELEASE_ORIGINAL } from "../../../constants/originals";
 
 interface CurateOverlayProps {
   isOpen: boolean;
@@ -22,9 +23,10 @@ export function CurateOverlay({
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
   // Only show the originals that this fragment is related to
-  const relatedOriginals = ORIGINALS.filter((item) =>
-    originalIds.includes(item.id),
-  );
+  const relatedOriginals = [
+    ...(originalIds.includes("own-release") ? [OWN_RELEASE_ORIGINAL] : []),
+    ...ORIGINALS.filter((item) => originalIds.includes(item.id))
+  ];
 
   const handleAddToLedger = (id: string) => {
     if (ledgerOriginals.includes(id)) {
@@ -42,13 +44,21 @@ export function CurateOverlay({
     }
 
     setTaggedOriginals((prev) => [...prev, id]);
-
     if (!ledgerOriginals.includes(id)) {
       setLedgerOriginals((prev) => [...prev, id]);
       onShowToast("Original Added & Fragment Tagged");
     } else {
       onShowToast("Fragment Tagged to Original");
     }
+  };
+
+  const handleNavigation = (id: string) => {
+    if (id === "own-release") {
+      navigate("/profile");
+    } else {
+      navigate(`/originals/${id}`);
+    }
+    onClose();
   };
 
   return (
@@ -88,12 +98,12 @@ export function CurateOverlay({
                     <img
                       src={item.coverImage}
                       alt={item.title}
-                      onClick={() => navigate(`/originals/${item.id}`)}
+                      onClick={() => handleNavigation(item.id)}
                       className="w-14 h-9 sm:w-20 sm:h-12 object-cover rounded-md sm:rounded-lg opacity-90 cursor-pointer hover:opacity-100 transition-opacity"
                     />
                     <div
                       className="flex-1 min-w-0 cursor-pointer"
-                      onClick={() => navigate(`/originals/${item.id}`)}
+                      onClick={() => handleNavigation(item.id)}
                     >
                       <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/90 truncate hover:text-white transition-colors">
                         {item.title}

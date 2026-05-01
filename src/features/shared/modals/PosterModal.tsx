@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ArtistProfile } from "../profile";
 import { ARTISTS_MOCK } from "../../../mock";
 import { CurateOverlay } from "./CurateOverlay";
+import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
 
 interface PosterModalProps {
   item: TheatreItem | null;
@@ -97,16 +98,12 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                         Poster Info
                      </span>
                      <div className="flex justify-between items-start">
-                        <h2 
-                          className="font-black text-white uppercase tracking-tighter leading-[0.85] mb-2"
-                          style={{
-                            fontSize: !item.title?.includes(" ") 
-                              ? `clamp(1.2rem, ${Math.min(6, 50 / ((item.title?.length || 10) * 0.8))}vw, 2rem)`
-                              : `clamp(1.2rem, ${Math.max(2.5, 8 - (item.title?.length || 10) * 0.2)}vw, 2.5rem)`,
-                          }}
-                        >
-                           {item.title || "Untitled Fragment"}
-                        </h2>
+                        <AdaptiveTitle
+                          title={item.title || "Untitled Fragment"}
+                          multiWordClass="text-xl sm:text-2xl"
+                          singleWordClamp="clamp(1.2rem, 6vw, 2rem)"
+                          className="leading-[0.85] mb-2"
+                        />
                         <div 
                           onClick={() => setIsFlipped(false)}
                           className="cursor-pointer pointer-events-auto p-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md hover:bg-white/10 hover:rotate-180 transition-all duration-500 active:scale-90 shrink-0"
@@ -174,9 +171,13 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center gap-1"
           >
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] sm:tracking-[0.5em] text-white/90 drop-shadow-lg text-center px-4">
-              {item.title}
-            </h3>
+            <AdaptiveTitle
+              title={item.title || "Untitled"}
+              as="h3"
+              multiWordClass="text-[10px] sm:text-xs tracking-[0.4em] sm:tracking-[0.5em]"
+              singleWordClamp="clamp(9px, 2.5vw, 12px)"
+              className="text-white/90 drop-shadow-lg text-center px-4"
+            />
             <div className="h-[1px] w-4 sm:w-6 bg-white/20 rounded-full" />
           </motion.div>
         )}

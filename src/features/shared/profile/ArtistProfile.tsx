@@ -8,6 +8,7 @@ import React, { memo, useState, useEffect, useRef } from "react";
 import { Instagram, Twitter, Youtube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { StageIcon, WorksIcon } from "../../../components/icons/AppIcons";
+import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
 import { OriginalArtist } from "../../../types";
 import { CreditTag } from "../tags";
 
@@ -113,11 +114,13 @@ export const ArtistProfile = memo(
               <div
                 className={`min-w-0 ${isFeatured ? "space-y-0.5 md:space-y-1" : "space-y-1"}`}
               >
-                <h4
-                  className={`truncate font-bold uppercase tracking-tight text-white ${isFeatured ? "text-xs md:text-base" : "text-sm md:text-[15px]"}`}
-                >
-                  {artist.name}
-                </h4>
+                <AdaptiveTitle
+                  title={artist.name}
+                  as="h4"
+                  multiWordClass={isFeatured ? "text-xs md:text-base" : "text-sm md:text-[15px]"}
+                  singleWordClamp={isFeatured ? "clamp(0.75rem, 4vw, 1.1rem)" : "clamp(0.8rem, 3.5vw, 1rem)"}
+                  className="tracking-tight"
+                />
 
                 <div
                   className={`flex items-center ${isFeatured ? "gap-3 md:gap-5" : "gap-3 md:gap-4"}`}

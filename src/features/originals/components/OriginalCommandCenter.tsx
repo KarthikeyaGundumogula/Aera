@@ -1,24 +1,33 @@
 import { useState, useRef, useEffect } from "react";
-import { Settings, Plus, Users, Calendar, Info, ChevronDown } from "lucide-react";
+import { Settings, Plus, Users, Calendar, Info, ChevronDown, Shield, Bookmark, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+
+export interface OriginalClaims {
+  canUpdateMeta: boolean;
+  canCreateRelease: boolean;
+}
 
 interface OriginalCommandCenterProps {
   originalId: string;
+  claims: OriginalClaims;
   onEditInfo?: () => void;
   onManageArtists?: () => void;
   onNewRelease?: () => void;
+  onAddToWatchlist?: () => void;
   className?: string;
 }
 
 /**
  * OriginalCommandCenter — A specialized dropdown for Original managers
- * to curate and maintain the Stage's official presence.
+ * and users to interact with the Stage.
  */
 export function OriginalCommandCenter({
   originalId,
+  claims,
   onEditInfo,
   onManageArtists,
   onNewRelease,
+  onAddToWatchlist,
   className = "",
 }: OriginalCommandCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,18 +46,27 @@ export function OriginalCommandCenter({
 
   const menuItems = [
     {
+      label: "Save to Watchlist",
+      icon: <Bookmark className="w-4 h-4" />,
+      action: onAddToWatchlist,
+      description: "Log to Ledger",
+      visible: true,
+    },
+    {
       label: "Update Original",
       icon: <Settings className="w-4 h-4" />,
       action: onEditInfo,
       description: "Curation & Metadata",
+      visible: claims.canUpdateMeta,
     },
     {
       label: "New Release",
       icon: <Plus className="w-4 h-4" />,
       action: onNewRelease,
       description: "Drop an Update",
+      visible: claims.canCreateRelease,
     },
-  ];
+  ].filter(item => item.visible);
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -66,7 +84,7 @@ export function OriginalCommandCenter({
             : "bg-white/5 text-white/60 border-white/5 hover:border-white/20 hover:text-white"
           }
         `}>
-          <Settings className="w-4 h-4 transition-transform group-hover:rotate-90" />
+          <Zap className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "fill-current" : "group-hover:fill-current"}`} />
           <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
         </div>
       </motion.button>
@@ -80,8 +98,9 @@ export function OriginalCommandCenter({
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             className="absolute right-0 mt-3 w-64 origin-top-right rounded-2xl border border-white/10 bg-black/80 backdrop-blur-2xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[110] overflow-hidden"
           >
-            <div className="px-3 py-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Orignal Studio</span>
+            <div className="px-3 py-2 mb-1 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Original Studio</span>
+              <Shield className="w-3 h-3 text-white/20" />
             </div>
             
             <div className="space-y-1">

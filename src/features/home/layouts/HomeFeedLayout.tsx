@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { memo, useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { memo, useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
 import {
   PlayCircle,
   Search,
@@ -25,6 +25,7 @@ import { OriginalLink, EditWork, PosterWork, ScriptWork } from "../../shared/wor
 import { getWorkKind } from "../../shared/work/types";
 import { RollingTicker } from "../components/RollingTicker";
 import { ContactCTA } from "../components/ContactCTA";
+import { HomePageSkeleton } from "../components/HomePageSkeleton";
 
 // HomeFeedLayoutProps empty for now
 
@@ -56,8 +57,17 @@ export function HomeFeedLayout() {
   const [items, setItems] = useState<TheatreItem[]>(() => {
     return [...GRID_ITEMS];
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const desktopClusters = useMemo(() => buildClusters(items, "flow"), [items]);
+  useEffect(() => {
+    // Small artificial delay to allow heavy computations to settle behind the skeleton
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Defer heavy layout data so the hero/header paints immediately on mount
+  const deferredItems = useDeferredValue(items);
+  const desktopClusters = useMemo(() => buildClusters(deferredItems, "flow"), [deferredItems]);
 
   const getNavItemClassName = (active: boolean) =>
     `flex min-w-0 flex-col items-center justify-center rounded-2xl px-2 py-3 text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${
@@ -78,6 +88,8 @@ export function HomeFeedLayout() {
     // Timer logic: heroIndex is the single source of truth.
   // We use a time-based approach to ensure precision and prevent skipping.
   useEffect(() => {
+    if (isLoading) return;
+
     setProgress(0);
     const startTime = Date.now();
 
@@ -94,7 +106,7 @@ export function HomeFeedLayout() {
     }, PROGRESS_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [heroIndex]);
+  }, [heroIndex, isLoading]);
 
   const handleIndicatorClick = (idx: number) => {
     if (idx === heroIndex) return;
@@ -134,9 +146,11 @@ export function HomeFeedLayout() {
     };
   }, [loadMoreDown]);
 
+  const deferredOriginals = useDeferredValue(ORIGINALS);
+
   const baseGlobalArtists = useMemo(() => Array.from(
-    new Map(ORIGINALS.flatMap((org) => org.topArtists).map((a) => [a.id, a])).values()
-  ).sort((a, b) => b.presence - a.presence), []);
+    new Map(deferredOriginals.flatMap((org) => org.topArtists).map((a) => [a.id, a])).values()
+  ).sort((a, b) => b.presence - a.presence), [deferredOriginals]);
 
   const globalArtistStripItems = useMemo(() => baseGlobalArtists.length > 0 
     ? Array.from(
@@ -144,6 +158,10 @@ export function HomeFeedLayout() {
         (_, index) => baseGlobalArtists[index % baseGlobalArtists.length]
       )
     : [], [baseGlobalArtists]);
+
+  if (isLoading) {
+    return <HomePageSkeleton />;
+  }
 
   return (
     <div className="bg-[#050505] min-h-screen text-white pb-24">
