@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { memo, useState, useEffect } from "react";
+import { ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { OriginalStar, OriginalMaker } from "../../../types";
 import { CreditTag } from "../tags";
@@ -151,19 +152,19 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                         <div className="absolute left-0 top-0 bottom-0 w-24 flex flex-col items-center justify-center z-40 pointer-events-none mix-blend-overlay sm:mix-blend-normal">
                           <div className="absolute flex flex-col items-start -rotate-90 whitespace-nowrap origin-center scale-[105%] sm:scale-100">
                             <div
-                              className="uppercase text-[42px] sm:text-[52px] tracking-wide leading-[0.85] drop-shadow-xl font-bold"
+                              className="uppercase text-[42px] sm:text-[52px] tracking-wide leading-[0.85] drop-shadow-2xl font-bold"
                               style={{
                                 color: "rgba(255,255,255,0.95)",
-                                fontFamily: "'Londrina Outline', sans-serif",
+                                fontFamily: "'Inter', sans-serif",
                               }}
                             >
                               {firstName}
                             </div>
                             <div
-                              className="uppercase text-[42px] sm:text-[52px] tracking-wide leading-[0.85] drop-shadow-xl font-bold"
+                              className="uppercase text-[42px] sm:text-[52px] tracking-wide leading-[0.85] drop-shadow-2xl font-bold"
                               style={{
                                 color: "rgba(255, 255, 255, 0.57)",
-                                fontFamily: "'Londrina Outline', sans-serif",
+                                fontFamily: "'Inter', sans-serif",
                               }}
                             >
                               {lastName}
@@ -205,13 +206,37 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                           </div>
                         </div>
 
+                        {/* Top Action Overlay (Top Right) */}
+                        <div className="absolute top-4 right-4 z-40">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsOpen(false);
+                              const profileId = `profile-${person.actorName
+                                .toLowerCase()
+                                .replace(/ /g, "-")
+                                .replace(/\./g, "")}`;
+                              navigate(`/profile/${profileId}`);
+                            }}
+                            className="p-2.5 rounded-full bg-black/40 border border-white/10 text-white/60 hover:text-white hover:bg-black/60 transition-all group backdrop-blur-md"
+                            title="Visit Profile"
+                          >
+                            <ArrowUpRight
+                              size={16}
+                              className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                            />
+                          </button>
+                        </div>
+
                         {/* Bottom Footer Overlay */}
                         <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 z-30 px-4 sm:px-6 flex items-center justify-between">
-                          <button className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-md">
-                            Follow +
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <button className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-md">
+                              Follow +
+                            </button>
+                          </div>
 
-                          <span className="text-[#999] font-bold text-[9px] tracking-widest uppercase text-right leading-tight max-w-[50%]">
+                          <span className="text-[#999] font-bold text-[9px] tracking-widest uppercase text-right leading-tight max-w-[40%]">
                             {person.characterName}
                           </span>
                         </div>

@@ -1,11 +1,9 @@
 import { motion } from "motion/react";
 
 const TAGLINES = [
-  "The Founders have arrived. Let the Rite begin.",
   "The Theatre belongs to those who build it.",
   "A Divine Revelation is about to Begin",
   "This is just the first layer of the Dream.",
-  "Founded by Art. Maintained by the Collective.",
 ];
 
 export function RollingTicker() {

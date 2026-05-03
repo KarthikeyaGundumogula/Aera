@@ -167,7 +167,7 @@ export function HomeFeedLayout() {
     <div className="bg-[#050505] min-h-screen text-white pb-24">
       {/* Mobile Header */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5">
-        <Logo onClick={() => navigate("/")} />
+        <Logo onClick={() => navigate("/")} showText={true} />
         <div className="flex items-center gap-4">
           <button className="text-white/60">
             <Search className="w-5 h-5" />
@@ -179,7 +179,7 @@ export function HomeFeedLayout() {
       {/* Desktop Header */}
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 py-6 bg-black/40 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-12">
-          <Logo onClick={() => navigate("/")} />
+          <Logo onClick={() => navigate("/")} showText={true} />
           <nav className="flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em]">
             <button
               onClick={() => navigate("/")}

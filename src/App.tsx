@@ -22,6 +22,7 @@ import OriginalReleaseUploadPage from "./features/upload/OriginalReleaseUploadPa
 import ContactPage from "./features/contact/ContactPage";
 import { LedgerPage } from "./features/ledger/LedgerPage";
 import { AdminPage } from "./features/admin/AdminPage";
+import ProfilePage from "./features/profile/ProfilePage";
 
 
 /**
@@ -72,6 +73,7 @@ export default function App() {
           path="/artists/:id"
           element={<ComingSoonPage label="Artist Profile" />}
         />
+        <Route path="/profile/:profileId" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -61,14 +61,30 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
 
       <div className="flex flex-col items-center gap-10">
 
-        {/* Avatar Preview Circle */}
-        <div className="shrink-0">
+        {/* Avatar Preview Section (Identity Frame) */}
+        <div className="shrink-0 z-10 flex items-center justify-center gap-4 sm:gap-8 overflow-hidden">
+          <AnimatePresence>
+            {previewUrl && (
+              <motion.div 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 0.2, x: 0 }}
+                className="flex flex-col items-center gap-4 select-none shrink-0"
+              >
+                <div className="w-[1px] h-10 sm:h-12 bg-white" />
+                <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.6em] uppercase text-white whitespace-nowrap">
+                  @NEW_CREATOR
+                </span>
+                <div className="w-[1px] h-10 sm:h-12 bg-white" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div
             className={`
-              w-24 h-24 rounded-2xl overflow-hidden relative flex items-center justify-center
-              border-2 transition-all duration-500
+              w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden relative flex items-center justify-center shrink-0
+              border transition-all duration-500
               ${previewUrl
-                ? "border-white/30 shadow-[0_0_24px_rgba(255,255,255,0.08)]"
+                ? "border-white/30 shadow-[0_0_40px_rgba(255,255,255,0.1)] scale-110"
                 : "border-dashed border-white/15 bg-white/[0.04]"
               }
             `}
@@ -77,10 +93,10 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
               {previewUrl ? (
                 <motion.img
                   key="avatar-img"
-                  initial={{ opacity: 0, scale: 1.1 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   src={previewUrl}
                   alt="Artist portrait preview"
                   className="w-full h-full object-cover"
@@ -92,11 +108,27 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <User className="w-7 h-7 text-white/15" />
+                  <User className="w-7 h-7 sm:w-8 sm:h-8 text-white/15" />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
+          <AnimatePresence>
+            {previewUrl && (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 0.2, x: 0 }}
+                className="flex flex-col items-center gap-4 select-none shrink-0"
+              >
+                <div className="w-[1px] h-6 sm:h-8 bg-white" />
+                <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.4em] uppercase text-white whitespace-nowrap">
+                  STAGE REC-001
+                </span>
+                <div className="w-[1px] h-6 sm:h-8 bg-white" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Drop Zone */}

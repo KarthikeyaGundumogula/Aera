@@ -32,7 +32,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 bg-black/40 backdrop-blur-xl border-b border-white/5"
       >
         <div className="flex items-center gap-12">
-          <Logo onClick={() => navigate("/")} />
+          <Logo onClick={() => navigate("/")} showText={false} />
           <nav className="hidden lg:flex items-center gap-8">
             <button
               onClick={() => navigate("/")}

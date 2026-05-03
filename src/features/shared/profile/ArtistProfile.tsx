@@ -5,7 +5,7 @@ import {
   useMotionValue,
 } from "motion/react";
 import React, { memo, useState, useEffect, useRef } from "react";
-import { Instagram, Twitter, Youtube } from "lucide-react";
+import { Instagram, Twitter, Youtube, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { StageIcon, WorksIcon } from "../../../components/icons/AppIcons";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
@@ -197,7 +197,7 @@ export const ArtistProfile = memo(
                     <div className="relative w-full rounded-[32px] overflow-hidden bg-black/40 border border-white/5 shadow-2xl flex flex-col backdrop-blur-3xl">
                       {/* Card Header */}
                       <div className="p-6 pb-2 flex justify-between items-start z-10">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col items-start">
                           <span className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">
                             Aera Artist Stages
                           </span>
@@ -205,17 +205,43 @@ export const ArtistProfile = memo(
                             {fhUid}
                           </span>
                         </div>
+
+                        {/* Visit Profile Button (Top Right) */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsOpen(false);
+                            navigate(`/profile/${artist.id}`);
+                          }}
+                          className="p-2.5 rounded-full bg-black/40 border border-white/10 text-white/60 hover:text-white hover:bg-black/60 transition-all group backdrop-blur-md"
+                          title="Visit Profile"
+                        >
+                          <ArrowUpRight
+                            size={16}
+                            className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                          />
+                        </button>
                       </div>
 
-                      {/* Portrait Section (TILT APPLIED HERE) */}
-                      <div className="px-6 py-4 z-10">
-                        <div className="perspective-1000">
+                      {/* Portrait Section (Identity Frame) */}
+                      <div className="px-6 py-4 z-10 flex items-center justify-center gap-2 sm:gap-6 overflow-hidden">
+                        {/* Left side Vertical ID */}
+                        <div className="flex flex-col items-center gap-4 opacity-20 select-none shrink-0">
+                          <div className="w-[1px] h-10 sm:h-12 bg-white" />
+                          <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.4em] uppercase text-white whitespace-nowrap">
+                            {artist.id.toUpperCase().replace('-', '')}
+                          </span>
+                          <div className="w-[1px] h-10 sm:h-12 bg-white" />
+                        </div>
+
+                        {/* Portrait */}
+                        <div className="perspective-1000 w-48 sm:w-64 shrink-0">
                           <motion.div
                             ref={portraitRef}
                             onMouseMove={handleMouseMove}
                             onMouseLeave={handleMouseLeave}
                             style={{ rotateX: springY, rotateY: springX }}
-                            className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10 group bg-black/20"
+                            className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10 group bg-black/20 shadow-2xl"
                           >
                             <img
                               src={artist.image}
@@ -225,11 +251,20 @@ export const ArtistProfile = memo(
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                           </motion.div>
                         </div>
+
+                        {/* Right side Metadata indicator */}
+                        <div className="flex flex-col items-center gap-4 opacity-20 select-none shrink-0">
+                          <div className="w-[1px] h-6 sm:h-8 bg-white" />
+                          <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.3em] uppercase text-white whitespace-nowrap">
+                            REC-ID {artist.presence}
+                          </span>
+                          <div className="w-[1px] h-6 sm:h-8 bg-white" />
+                        </div>
                       </div>
 
                       {/* Bio Section */}
                       <div className="px-8 py-2 text-center z-10">
-                        <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-2 leading-none">
+                        <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-2 leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
                           {artist.name}
                         </h2>
                         <div className="h-px w-12 bg-white/10 mx-auto my-4" />

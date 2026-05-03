@@ -2,7 +2,7 @@
   {
     "actorName": "Pawan Kalyan",
     "characterName": "OG",
-    "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
+    "imageUrl": "/stars/pawan-kalyan.jpeg",
     "originalId": "og-original",
     "workedOn": [
       { "id": "og-original", "title": "OG" },
@@ -14,7 +14,7 @@
   {
     "actorName": "Ram Charan",
     "characterName": "Ram",
-    "imageUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=800&auto=format&fit=crop",
+    "imageUrl": "/stars/ram-charan.jpg",
     "originalId": "rrr-original",
     "workedOn": [
       { "id": "rrr-original", "title": "RRR" },
@@ -26,7 +26,7 @@
   {
     "actorName": "Jr. NTR",
     "characterName": "Bheem",
-    "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    "imageUrl": "/stars/jr_ntr.jpg",
     "originalId": "rrr-original",
     "workedOn": [
       { "id": "rrr-original", "title": "RRR" },
@@ -38,7 +38,7 @@
   {
     "actorName": "Yash",
     "characterName": "Rocky Bhai",
-    "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    "imageUrl": "/stars/yash.jpg",
     "originalId": "kgf-original",
     "workedOn": [
       { "id": "kgf-original", "title": "KGF: Chapter 2" },
@@ -50,7 +50,7 @@
   {
     "actorName": "Prabhas",
     "characterName": "Baahubali",
-    "imageUrl": "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=800&auto=format&fit=crop",
+    "imageUrl": "/stars/prabhas.jpeg",
     "originalId": "baahubali-original",
     "workedOn": [
       { "id": "baahubali-original", "title": "Baahubali" },

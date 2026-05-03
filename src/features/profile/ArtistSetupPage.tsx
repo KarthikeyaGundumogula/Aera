@@ -41,7 +41,7 @@ export default function ArtistSetupPage() {
       case "maker":
         return { rite: "The Maker Rite", action: "Forge Maker Stage", prompt: "A visionary's Stage on Aera. One vision. One mark." };
       default:
-        return { rite: "The Stage Refinement", action: "Refine Your Stage", prompt: "Your Stage on FrameHouse. One name. One line. Your Stage." };
+        return { rite: "The Stage Refinement", action: "Create Your Stage", prompt: "Your Stage on FrameHouse. One name. One line. Your Stage." };
     }
   }, [type]);
 
