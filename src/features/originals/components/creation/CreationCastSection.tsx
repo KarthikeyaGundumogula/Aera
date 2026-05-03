@@ -154,7 +154,7 @@ function SelectedPersonRow({
       {/* Profile chip */}
       <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex-shrink-0">
         {person.profilePicture ? (
-          <img
+          <img loading="lazy"
             src={person.profilePicture}
             alt={person.actorName}
             className="w-full h-full object-cover"

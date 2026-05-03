@@ -59,7 +59,7 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
         >
           {/* Film Strip Background */}
           <div className="absolute inset-0 z-0 h-full w-full">
-            <img
+            <img loading="lazy"
               src={person.imageUrl}
               alt={person.actorName}
               className="h-full w-full object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-[1.03]"
@@ -186,7 +186,7 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
 
                           {/* Main Image */}
                           <div className="absolute inset-0 z-0">
-                            <img
+                            <img loading="lazy"
                               src={person.imageUrl}
                               alt={person.actorName}
                               className="w-full h-full object-cover scale-[1.02]"

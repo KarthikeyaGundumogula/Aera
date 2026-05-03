@@ -39,7 +39,7 @@ export function ScriptWork({
     >
       {coverImage ? (
         /* ── Image thumbnail path ── */
-        <img
+        <img loading="lazy"
           src={coverImage}
           alt={item.title}
           loading={priority === "eager" ? "eager" : "lazy"}

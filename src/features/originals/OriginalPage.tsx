@@ -117,7 +117,7 @@ export function OriginalPage() {
               transition={{ duration: 1.2, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              <img
+              <img loading="lazy"
                 src={original.coverImage}
                 className="w-full h-full object-cover"
                 

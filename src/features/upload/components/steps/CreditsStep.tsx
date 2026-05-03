@@ -95,7 +95,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
                     animate={{ scale: 1, opacity: 1 }}
                     className="relative group w-16 aspect-square rounded-lg overflow-hidden border border-white/20"
                   >
-                    <img src={org.coverImage} className="w-full h-full object-cover" />
+                    <img loading="lazy" src={org.coverImage} className="w-full h-full object-cover" />
                     <button 
                       onClick={() => toggleSelection(org.id)}
                       className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
@@ -126,7 +126,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
                     isSelected ? "border-white shadow-[0_0_30px_rgba(255,255,255,0.1)]" : "border-white/5 hover:border-white/20 bg-white/[0.02]"
                   }`}
                 >
-                  <img src={org.coverImage} className={`w-full h-full object-cover transition-opacity ${isSelected ? "opacity-40" : "opacity-60 group-hover:opacity-100"}`} />
+                  <img loading="lazy" src={org.coverImage} className={`w-full h-full object-cover transition-opacity ${isSelected ? "opacity-40" : "opacity-60 group-hover:opacity-100"}`} />
                   {isOwnRelease && (
                     <div className="absolute top-2 right-2 bg-white text-black text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-tighter z-10">
                       Independent

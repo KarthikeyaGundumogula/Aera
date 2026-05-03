@@ -45,7 +45,7 @@ export function LedgerItemCard({ item, onUpdate }: { item: LedgerItem, onUpdate:
         {/* Left: Poster - Fixed Dimensions with no stretching/cropping */}
         <div className="w-24 sm:w-32 flex-shrink-0 relative bg-black/40 border-r border-white/5">
           <div className="aspect-[2/3] relative w-full overflow-hidden">
-            <img 
+            <img loading="lazy" 
               src={item.originalPosterUrl} 
               alt={item.originalName} 
               className="w-full h-full object-contain transition-transform duration-1000 opacity-90 group-hover:scale-105 group-hover:opacity-100"

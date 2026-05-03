@@ -19,7 +19,7 @@ export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] })
             whileHover={{ scale: 1.05, y: -2 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <img 
+            <img loading="lazy" 
               src={work.thumbnailUrl} 
               alt={`Inspired by ${work.authorName}`} 
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" 

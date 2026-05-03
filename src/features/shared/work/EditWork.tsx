@@ -29,7 +29,7 @@ export function EditWork({
         className={`group relative h-full w-full overflow-hidden bg-black/40 ${className}`}
         onClick={() => setIsModalOpen(true)}
       >
-      <img
+      <img loading="lazy"
         onLoad={(e) => {
           const img = e.currentTarget;
           // YouTube returns a 120x90 placeholder if maxresdefault is missing

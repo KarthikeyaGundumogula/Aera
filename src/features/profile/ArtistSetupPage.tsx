@@ -3,27 +3,30 @@ import { motion, AnimatePresence } from "motion/react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, ChevronRight, Film } from "lucide-react";
 
-import { IdentitySection } from "./components/IdentitySection";
+import { PortraitIdentitySection } from "./components/PortraitIdentitySection";
+import { AccessKeySection } from "./components/AccessKeySection";
 import { SocialsSection, type SocialsData } from "./components/SocialsSection";
-import { AvatarSection } from "./components/AvatarSection";
+import { LiveStagePreview } from "./components/LiveStagePreview";
 import { ArtistProfile } from "../shared/profile";
 import { ARTISTS_MOCK } from "../../mock";
 import { OriginalArtist } from "../../types";
 
 interface ProfileFormData {
-  name: string;
+  username: string;
+  displayName: string;
   tagline: string;
   password: string;
   socials: SocialsData;
   portraitFile: File | null;
   portraitPreview: string | null;
+  imagePosition: string;
+  themeTextColor: string;
+  themeBgColor: string;
 }
 
 /**
  * ArtistSetupPage — "The Stage Rite"
  * Artists set their public profile: portrait, name, tagline, and socials.
- *
- * Frontend-only; state is local (no persistence yet).
  */
 export default function ArtistSetupPage() {
   const navigate = useNavigate();
@@ -46,20 +49,28 @@ export default function ArtistSetupPage() {
   }, [type]);
 
   const [formData, setFormData] = useState<ProfileFormData>({
-    name: "",
+    username: "",
+    displayName: "",
     tagline: "",
     password: "",
     socials: { instagram: "", twitter: "", youtube: "" },
     portraitFile: null,
     portraitPreview: null,
+    imagePosition: "50% 0%",
+    themeTextColor: "#ef4444",
+    themeBgColor: "#050505",
   });
 
   const handleIdentityChange = useCallback(
-    (field: "name" | "tagline" | "password", value: string) => {
+    (field: "username" | "displayName" | "tagline", value: string) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
     },
     []
   );
+
+  const handleAccessKeySet = useCallback((key: string) => {
+    setFormData((prev) => ({ ...prev, password: key }));
+  }, []);
 
   const handleSocialChange = useCallback(
     (platform: keyof SocialsData, value: string) => {
@@ -76,41 +87,52 @@ export default function ArtistSetupPage() {
       ...prev,
       portraitFile: file,
       portraitPreview: preview,
+      imagePosition: "50% 0%",
     }));
   }, []);
 
   const handlePortraitClear = useCallback(() => {
     setFormData((prev) => {
-      // Revoke the object URL to avoid memory leaks
-      if (prev.portraitPreview) {
-        URL.revokeObjectURL(prev.portraitPreview);
-      }
-      return { ...prev, portraitFile: null, portraitPreview: null };
+      if (prev.portraitPreview) URL.revokeObjectURL(prev.portraitPreview);
+      return { ...prev, portraitFile: null, portraitPreview: null, imagePosition: "50% 0%" };
     });
   }, []);
 
-  const isReadyToSave = formData.name.trim().length > 0;
+  const handleImagePositionChange = useCallback((position: string) => {
+    setFormData((prev) => ({ ...prev, imagePosition: position }));
+  }, []);
+
+  const handleTextColorChange = useCallback((color: string) => {
+    setFormData((prev) => ({ ...prev, themeTextColor: color }));
+  }, []);
+
+  const handleBgColorChange = useCallback((color: string) => {
+    setFormData((prev) => ({ ...prev, themeBgColor: color }));
+  }, []);
+
+  const isReadyToSave = 
+    formData.username.trim().length > 0 && 
+    formData.displayName.trim().length > 0 && 
+    formData.password.length > 0;
 
   const handleClaim = useCallback(() => {
     if (!isReadyToSave) return;
     setIsSaved(true);
     
-    // Simulate creating the artist profile
-    const mockArtist = ARTISTS_MOCK[0]; // Use a mock artist
+    const mockArtist = ARTISTS_MOCK[0];
     setSuccessArtist({
       ...mockArtist,
-      name: formData.name || mockArtist.name,
+      id: `profile-${formData.username}`,
+      name: formData.displayName || mockArtist.name,
       bio: formData.tagline || mockArtist.bio,
       image: formData.portraitPreview || mockArtist.image
     });
   }, [isReadyToSave, formData]);
 
-  const handleModalClose = () => {
-    setSuccessArtist(null);
-  };
+  const handleModalClose = () => setSuccessArtist(null);
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-y-auto font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-[#050505] text-white overflow-y-auto font-sans selection:bg-white selection:text-black pb-40">
 
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -118,7 +140,7 @@ export default function ArtistSetupPage() {
         <div className="absolute bottom-[-15%] right-[-10%] w-[40%] h-[40%] bg-white/[0.015] blur-[140px] rounded-full" />
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">
+      <div className="relative z-10 max-w-2xl mx-auto px-6 pt-12 flex flex-col min-h-screen">
 
         {/* ─── Top Actions ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between w-full mb-14">
@@ -145,7 +167,7 @@ export default function ArtistSetupPage() {
         </div>
 
         {/* ─── Page Header ─────────────────────────────────────────── */}
-        <header className="mb-16">
+        <header className="mb-20">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -178,30 +200,57 @@ export default function ArtistSetupPage() {
           </motion.p>
         </header>
 
-        {/* ─── Form Sections ───────────────────────────────────────── */}
-        <div className="flex flex-col gap-14">
+        {/* ─── LIVE STAGE PREVIEW (Desktop Only Top Position) ───────── */}
+        <div className="hidden md:block mb-20">
+          <LiveStagePreview 
+            username={formData.username}
+            displayName={formData.displayName}
+            tagline={formData.tagline}
+            portrait={formData.portraitPreview}
+            imagePosition={formData.imagePosition}
+            themeTextColor={formData.themeTextColor}
+            themeBgColor={formData.themeBgColor}
+            onTextColorChange={handleTextColorChange}
+            onBgColorChange={handleBgColorChange}
+          />
+        </div>
 
-          {/* I — Portrait (first) */}
-          <AvatarSection
+        {/* ─── Form Sections ───────────────────────────────────────── */}
+        <div className="flex flex-col gap-24">
+
+          {/* I — Public Profile */}
+          <PortraitIdentitySection
+            username={formData.username}
+            displayName={formData.displayName}
+            tagline={formData.tagline}
             file={formData.portraitFile}
             previewUrl={formData.portraitPreview}
-            onChange={handlePortraitChange}
-            onClear={handlePortraitClear}
+            imagePosition={formData.imagePosition}
+            onIdentityChange={handleIdentityChange}
+            onPortraitChange={handlePortraitChange}
+            onPortraitClear={handlePortraitClear}
+            onImagePositionChange={handleImagePositionChange}
+            renderPreview={
+              <LiveStagePreview 
+                username={formData.username}
+                displayName={formData.displayName}
+                tagline={formData.tagline}
+                portrait={formData.portraitPreview}
+                imagePosition={formData.imagePosition}
+                themeTextColor={formData.themeTextColor}
+                themeBgColor={formData.themeBgColor}
+                onTextColorChange={handleTextColorChange}
+                onBgColorChange={handleBgColorChange}
+              />
+            }
           />
 
-          <div className="h-px w-full bg-white/[0.06]" />
-
-          {/* II — Identity */}
-          <IdentitySection
-            name={formData.name}
-            tagline={formData.tagline}
-            password={formData.password}
-            onChange={handleIdentityChange}
+          {/* II — Access Key */}
+          <AccessKeySection 
+            onKeySet={handleAccessKeySet}
           />
 
-          <div className="h-px w-full bg-white/[0.06]" />
-
-          {/* III — Socials */}
+          {/* IV — Socials */}
           <SocialsSection
             socials={formData.socials}
             onChange={handleSocialChange}
@@ -262,7 +311,7 @@ export default function ArtistSetupPage() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSuccessArtist({
                   ...ARTISTS_MOCK[0],
-                  name: formData.name,
+                  name: formData.username,
                   bio: formData.tagline,
                   image: formData.portraitPreview || ARTISTS_MOCK[0].image
                 })}

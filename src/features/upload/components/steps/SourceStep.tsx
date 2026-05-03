@@ -145,7 +145,7 @@ export function SourceStep({
               </button>
             ) : (
               <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-black aspect-[16/6]">
-                <img src={contentUrl} className="w-full h-full object-cover opacity-60" alt="Poster preview" />
+                <img loading="lazy" src={contentUrl} className="w-full h-full object-cover opacity-60" alt="Poster preview" />
                 <div className="absolute inset-0 flex items-center justify-center gap-4">
                    <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-3">
                       <ImageIcon className="w-4 h-4 text-white/40" />
@@ -184,7 +184,7 @@ export function SourceStep({
                     className="flex gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 group"
                   >
                     <div className="relative w-24 aspect-[2/3] rounded-lg overflow-hidden border border-white/10 shrink-0">
-                      <img src={page.url} className="w-full h-full object-cover" alt={`Page ${idx + 1}`} />
+                      <img loading="lazy" src={page.url} className="w-full h-full object-cover" alt={`Page ${idx + 1}`} />
                       <div className="absolute top-1 left-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[8px] font-black">
                         {String(idx + 1).padStart(2, '0')}
                       </div>

@@ -132,7 +132,7 @@ export function PersonSearchInput({
           <div className="flex items-center gap-3 flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
             <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex-shrink-0">
               {selectedProfile.profilePicture ? (
-                <img
+                <img loading="lazy"
                   src={selectedProfile.profilePicture}
                   alt={selectedProfile.name}
                   className="w-full h-full object-cover"
@@ -212,7 +212,7 @@ export function PersonSearchInput({
                       >
                         <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex-shrink-0">
                           {profile.profilePicture ? (
-                            <img
+                            <img loading="lazy"
                               src={profile.profilePicture}
                               alt={profile.name}
                               className="w-full h-full object-cover grayscale opacity-60"

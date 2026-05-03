@@ -53,7 +53,7 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
           >
             {/* Front Side: Immersive Poster */}
             <div className="absolute inset-0 backface-hidden rounded-lg sm:rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-[#0a0a0a]">
-              <img 
+              <img loading="lazy" 
                 src={item.image} 
                 alt={item.title} 
                 className="w-full h-full object-contain" 
@@ -89,7 +89,7 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                {/* Top padding for visual balance */}
                <div className="h-4 sm:h-8 shrink-0" />
                <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-                  <img src={item.image} className="w-full h-full object-cover blur-2xl scale-150" alt="" />
+                  <img loading="lazy" src={item.image} className="w-full h-full object-cover blur-2xl scale-150" alt="" />
                </div>
 
                <div className="relative z-10 space-y-4 sm:space-y-8">

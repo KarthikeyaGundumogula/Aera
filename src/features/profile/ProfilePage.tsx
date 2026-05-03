@@ -15,9 +15,10 @@ import { StaticDesktopCluster } from "../theatre/components/desktop/StaticDeskto
 import { EditWork, PosterWork, ScriptWork } from "../shared/work";
 import { getWorkKind } from "../shared/work/types";
 import { SectionHeader } from "../../components/SectionHeader";
-import { History, Crown, Users } from "lucide-react";
+import { History, Crown, Users, Heart } from "lucide-react";
 import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
+import { ProfileHero } from "../shared/profile/ProfileHero";
 
 const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
   const kind = getWorkKind(item);
@@ -124,6 +125,8 @@ const ProfileSkeleton: React.FC = () => {
 
 export const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -301,110 +304,20 @@ export const ProfilePage: React.FC = () => {
       />
 
       {/* ─── HERO SECTION ─── */}
-      <div className="relative z-30 w-full pt-16 md:pt-32 pb-8 flex flex-col items-center overflow-hidden">
-        {/* 5-Row Fractional Grid (Strictly for Name and Portrait) */}
-        <div className="relative w-full h-[35vh] md:h-[50vh] grid grid-cols-1 grid-rows-5 justify-items-center items-stretch mt-4 md:mt-0">
-          {/* Rows 1, 2, 3: Background Username */}
-          <div className="col-start-1 row-start-1 row-end-4 w-full h-full max-w-[95vw] z-0 pointer-events-none">
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 1000 180"
-              preserveAspectRatio="none"
-              style={{ opacity: 1 }}
-            >
-              <defs>
-                <linearGradient id="nameGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor={theme.nameGradient[0]} />
-                  <stop offset="100%" stopColor={theme.nameGradient[1]} />
-                </linearGradient>
-              </defs>
-              <text
-                x="500"
-                y="150"
-                fontFamily='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
-                fontSize="168"
-                fontWeight="900"
-                fill="url(#nameGradient)"
-                textAnchor="middle"
-                textLength="1000"
-                lengthAdjust="spacingAndGlyphs"
-                className="uppercase"
-              >
-                {profile.name}
-              </text>
-            </svg>
-          </div>
-
-          {/* Rows 3, 4, 5: Profile Picture (Overlaps exactly at Row 3) */}
-          <div className="col-start-1 row-start-3 row-end-6 relative z-10 w-[45vw] md:w-[33.75vw] max-w-xl h-full flex items-center justify-center">
-            <div className="w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10">
-              <img
-                src={profile.image}
-                alt={profile.name}
-                className="w-full h-full object-cover object-top"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Dedicated Tagline & Metrics Block (Flows naturally below the grid) */}
-        <div className="relative z-20 w-full flex flex-col items-center px-8 mt-6 space-y-6">
-          {/* Top Half: Cinematic Handle & Tagline */}
-          <div className="w-full text-center flex flex-col items-center gap-6">
-            {/* Minimalist Archive ID Display */}
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-[1px] bg-white/20" />
-              <span className="text-[10px] font-mono tracking-[0.6em] uppercase text-white/60 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
-                {profile.id.toUpperCase().replace('PROFILE-', '')}
-              </span>
-              <div className="w-8 h-[1px] bg-white/20" />
-            </div>
-
-            <p
-              className="text-base md:text-xl font-serif tracking-tight opacity-90 leading-none bg-transparent"
-              style={{ color: theme.text }}
-            >
-              {profile.tagline || "The Art of Cinema"}
-            </p>
-          </div>
-
-          {/* Bottom Half: Centered Metrics */}
-          <div className="w-full flex justify-center gap-12 md:gap-24">
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <Users
-                className="w-4 h-4 md:w-6 md:h-6 opacity-50"
-                style={{ color: theme.text }}
-              />
-              <span
-                className="text-sm md:text-xl font-black tracking-tight"
-                style={{ color: theme.text }}
-              >
-                {profile.followers}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <Crown
-                className="w-4 h-4 md:w-6 md:h-6 opacity-50"
-                style={{ color: theme.text }}
-              />
-              <span
-                className="text-sm md:text-xl font-black tracking-tight"
-                style={{ color: theme.text }}
-              >
-                {profile.presence}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Global Bottom Gradient (Blends the entire Hero into the Feed Section smoothly) */}
-        <div
-          className="absolute bottom-0 left-0 w-full h-[30vh] md:h-[40vh] pointer-events-none z-10"
-          style={{
-            background: `linear-gradient(to bottom, transparent, #050505)`,
-          }}
-        />
-      </div>
+      <ProfileHero
+        name={profile.name}
+        handle={profile.id.toUpperCase().replace('PROFILE-', '')}
+        tagline={profile.tagline}
+        image={profile.image}
+        followers={profile.followers}
+        presence={profile.presence}
+        theme={theme}
+        isFollowing={isFollowing}
+        onFollow={() => setIsFollowing(!isFollowing)}
+        isFavorited={isFavorited}
+        onFavorite={() => setIsFavorited(!isFavorited)}
+        className="pt-16 md:pt-32 pb-8"
+      />
 
       {/* ─── FEED SECTION ─── */}
       <div className="relative z-20 w-full bg-[#050505] min-h-screen pt-5 pb-5 text-white">
@@ -421,7 +334,7 @@ export const ProfilePage: React.FC = () => {
                   key={original.id}
                   className="relative aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group"
                 >
-                  <img
+                  <img loading="lazy"
                     src={original.coverImage}
                     alt={original.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

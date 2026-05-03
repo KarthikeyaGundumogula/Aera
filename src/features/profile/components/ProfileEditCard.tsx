@@ -140,7 +140,7 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
         <div className="relative group">
           <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/15 transition-all duration-300 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.06)]">
             {portraitPreview ? (
-              <img
+              <img loading="lazy"
                 src={portraitPreview}
                 alt="Portrait"
                 className="w-full h-full object-cover"

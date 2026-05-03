@@ -177,7 +177,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
 
 
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-              <img
+              <img loading="lazy"
                 src={item.image}
                 className="w-full h-full object-cover blur-3xl scale-125"
                 alt=""

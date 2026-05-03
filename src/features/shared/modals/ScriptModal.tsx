@@ -155,7 +155,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                           <span className="text-[7px] font-bold uppercase tracking-[0.25em] text-white/35">Details</span>
                         </div>
 
-                        <img
+                        <img loading="lazy"
                           key={pageIndex}
                           src={pages[pageIndex]}
                           alt={`Page ${pageIndex + 1}`}
@@ -180,7 +180,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                       >
                         {/* Blurred bg */}
                         <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden rounded-[18px]">
-                          <img
+                          <img loading="lazy"
                             src={pages[pageIndex]}
                             className="w-full h-full object-cover blur-2xl scale-125"
                             alt=""

@@ -148,7 +148,7 @@ export function ReleasesCarousel({
               animate={{ opacity: isTheaterMode ? 0.4 : 0.6 }}
               className="absolute inset-0 w-full h-full z-0"
             >
-              <img
+              <img loading="lazy"
                 src={activeItem.image}
                 className="w-full h-full object-cover blur-3xl scale-110"
                 alt=""

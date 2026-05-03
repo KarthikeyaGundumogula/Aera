@@ -114,7 +114,7 @@ export function AddLedgerEntry({ existingIds, onAdd, onClose }: AddLedgerEntryPr
                 onClick={() => handleSelect(original)}
                 className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.04] transition-all text-left border-b border-white/[0.03] last:border-b-0"
               >
-                <img
+                <img loading="lazy"
                   src={original.coverImage}
                   alt={original.title}
                   className="w-10 h-14 rounded-lg object-cover opacity-60 flex-shrink-0"
@@ -152,7 +152,7 @@ export function AddLedgerEntry({ existingIds, onAdd, onClose }: AddLedgerEntryPr
     >
       {/* Selected Original Header */}
       <div className="flex items-center gap-4 p-4 sm:p-5 border-b border-white/5">
-        <img
+        <img loading="lazy"
           src={selectedOriginal.coverImage}
           alt={selectedOriginal.title}
           className="w-10 h-14 sm:w-12 sm:h-16 rounded-xl object-cover flex-shrink-0"

@@ -250,7 +250,7 @@ export function HomeFeedLayout() {
                   transition={{ duration: 1.0, ease: "easeInOut" }}
                   className="w-full h-full"
                 >
-                  <img
+                  <img loading="lazy"
                     src={ORIGINALS[heroIndex].coverImage}
                     className="w-full h-full object-cover"
                     loading="eager"

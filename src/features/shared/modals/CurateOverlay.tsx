@@ -95,7 +95,7 @@ export function CurateOverlay({
                     key={item.id}
                     className="flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-black border border-white/10 hover:border-white/20 transition-all shadow-xl"
                   >
-                    <img
+                    <img loading="lazy"
                       src={item.coverImage}
                       alt={item.title}
                       onClick={() => handleNavigation(item.id)}

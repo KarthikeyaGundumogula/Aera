@@ -104,7 +104,7 @@ export const ArtistProfile = memo(
               <div
                 className={`shrink-0 overflow-hidden rounded-xl ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
               >
-                <img
+                <img loading="lazy"
                   src={artist.image}
                   alt={artist.name}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -243,7 +243,7 @@ export const ArtistProfile = memo(
                             style={{ rotateX: springY, rotateY: springX }}
                             className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10 group bg-black/20 shadow-2xl"
                           >
-                            <img
+                            <img loading="lazy"
                               src={artist.image}
                               alt={artist.name}
                               className="w-full h-full object-cover"
