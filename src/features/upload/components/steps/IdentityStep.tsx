@@ -33,73 +33,79 @@ export function IdentityStep({
       </div>
 
       <div className="space-y-8">
-        <div className="flex gap-4">
+        <div className="grid grid-cols-3 gap-2 md:gap-4">
           <button
-            onClick={() => setFormData({ 
-              category: "Edit",
-              aspectRatio: THEATRE_FORMATS.IMAX.ratio
-            })}
-            className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
+            onClick={() =>
+              setFormData({
+                category: "Edit",
+                aspectRatio: THEATRE_FORMATS.IMAX.ratio,
+              })
+            }
+            className={`flex flex-col p-3 md:p-6 rounded-xl md:rounded-2xl border transition-all duration-300 ${
               category === "Edit"
                 ? "bg-white text-black border-white"
                 : "bg-white/5 text-white border-white/10 hover:border-white/20"
             }`}
           >
-            <Film className="w-6 h-6 mb-3" />
+            <Film className="w-5 h-5 md:w-6 md:h-6 mb-2 md:mb-3" />
             <div className="text-left">
-              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">
-                Cinematic Edit
+              <div className="text-[9px] md:text-xs font-black uppercase tracking-widest leading-none mb-1">
+                Edit
               </div>
               <div
-                className={`text-[9px] font-bold uppercase tracking-widest ${category === "Edit" ? "text-black/40" : "text-white/30"}`}
+                className={`text-[7px] md:text-[9px] font-bold uppercase tracking-widest ${category === "Edit" ? "text-black/40" : "text-white/30"}`}
               >
-                Motion Art
+                Motion
               </div>
             </div>
           </button>
           <button
-            onClick={() => setFormData({ 
-              category: "Poster",
-              aspectRatio: THEATRE_FORMATS.STANDARD_POSTER.ratio
-            })}
-            className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
+            onClick={() =>
+              setFormData({
+                category: "Poster",
+                aspectRatio: THEATRE_FORMATS.STANDARD_POSTER.ratio,
+              })
+            }
+            className={`flex flex-col p-3 md:p-6 rounded-xl md:rounded-2xl border transition-all duration-300 ${
               category === "Poster"
                 ? "bg-white text-black border-white"
                 : "bg-white/5 text-white border-white/10 hover:border-white/20"
             }`}
           >
-            <ImageIcon className="w-6 h-6 mb-3" />
+            <ImageIcon className="w-5 h-5 md:w-6 md:h-6 mb-2 md:mb-3" />
             <div className="text-left">
-              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">
-                Cinematic Poster
+              <div className="text-[9px] md:text-xs font-black uppercase tracking-widest leading-none mb-1">
+                Poster
               </div>
               <div
-                className={`text-[9px] font-bold uppercase tracking-widest ${category === "Poster" ? "text-black/40" : "text-white/30"}`}
+                className={`text-[7px] md:text-[9px] font-bold uppercase tracking-widest ${category === "Poster" ? "text-black/40" : "text-white/30"}`}
               >
-                Static Visual
+                Static
               </div>
             </div>
           </button>
           <button
-            onClick={() => setFormData({ 
-              category: "Script",
-              aspectRatio: THEATRE_FORMATS.SQUARE_POSTER.ratio
-            })}
-            className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
+            onClick={() =>
+              setFormData({
+                category: "Script",
+                aspectRatio: THEATRE_FORMATS.SQUARE_POSTER.ratio,
+              })
+            }
+            className={`flex flex-col p-3 md:p-6 rounded-xl md:rounded-2xl border transition-all duration-300 ${
               category === "Script"
                 ? "bg-white text-black border-white"
                 : "bg-white/5 text-white border-white/10 hover:border-white/20"
             }`}
           >
-            <BookOpen className="w-6 h-6 mb-3" />
+            <BookOpen className="w-5 h-5 md:w-6 md:h-6 mb-2 md:mb-3" />
             <div className="text-left">
-              <div className="text-xs font-black uppercase tracking-widest leading-none mb-1">
-                Cinematic Script
+              <div className="text-[9px] md:text-xs font-black uppercase tracking-widest leading-none mb-1">
+                Script
               </div>
               <div
-                className={`text-[9px] font-bold uppercase tracking-widest ${category === "Script" ? "text-black/40" : "text-white/30"}`}
+                className={`text-[7px] md:text-[9px] font-bold uppercase tracking-widest ${category === "Script" ? "text-black/40" : "text-white/30"}`}
               >
-                Narrative Arc
+                Narrative
               </div>
             </div>
           </button>
