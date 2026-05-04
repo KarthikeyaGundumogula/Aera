@@ -82,7 +82,7 @@ export function AccessKeySection({ onKeySet }: AccessKeySectionProps) {
               placeholder="••••••••"
               className={`
                 w-full bg-white/[0.03] border rounded-2xl pl-14 pr-12 py-5 text-sm font-mono tracking-widest placeholder:text-white/5 focus:bg-white/[0.05] transition-all outline-none
-                ${isMatching ? "border-green-500/30" : isMismatch ? "border-red-500/30" : "border-white/10 focus:border-white/30"}
+                ${isMatching ? "border-white/60" : isMismatch ? "border-white/20" : "border-white/10 focus:border-white/30"}
               `}
             />
             <button
@@ -101,7 +101,7 @@ export function AccessKeySection({ onKeySet }: AccessKeySectionProps) {
                   exit={{ opacity: 0, scale: 0.5 }}
                   className="absolute -right-10 top-1/2 -translate-y-1/2 hidden md:flex"
                 >
-                  <Check className="w-5 h-5 text-green-500/60" />
+                  <Check className="w-5 h-5 text-white/60" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -112,7 +112,7 @@ export function AccessKeySection({ onKeySet }: AccessKeySectionProps) {
               <motion.p
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-[8px] font-bold uppercase tracking-widest text-red-500/50 pl-1 mt-1"
+                className="text-[8px] font-bold uppercase tracking-widest text-white/40 pl-1 mt-1"
               >
                 Keys do not match
               </motion.p>

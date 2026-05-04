@@ -28,7 +28,7 @@ export function PosterWork({
       className={`group relative h-full w-full overflow-hidden ${className}`}
       onClick={() => setIsModalOpen(true)}
     >
-      <img loading="lazy"
+      <img 
         onLoad={(e) => {
           const img = e.currentTarget;
           if (img.naturalWidth === 120 && img.src.includes("maxresdefault")) {

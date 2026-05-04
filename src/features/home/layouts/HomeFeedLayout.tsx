@@ -1,5 +1,13 @@
 import { motion, AnimatePresence } from "motion/react";
-import { memo, useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
+import {
+  memo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  useDeferredValue,
+} from "react";
 import {
   PlayCircle,
   Search,
@@ -21,7 +29,12 @@ import { SectionHeader } from "../../../components/SectionHeader";
 import { ArtistProfile } from "../../shared/profile";
 import { buildClusters } from "../../theatre/engine/clusterBuilder";
 import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDesktopCluster";
-import { OriginalLink, EditWork, PosterWork, ScriptWork } from "../../shared/work";
+import {
+  OriginalLink,
+  EditWork,
+  PosterWork,
+  ScriptWork,
+} from "../../shared/work";
 import { getWorkKind } from "../../shared/work/types";
 import { RollingTicker } from "../components/RollingTicker";
 import { ContactCTA } from "../components/ContactCTA";
@@ -29,13 +42,11 @@ import { HomePageSkeleton } from "../components/HomePageSkeleton";
 
 // HomeFeedLayoutProps empty for now
 
-
-
 const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
   const kind = getWorkKind(item);
   return (
     <div className="w-full px-6">
-      <div 
+      <div
         className="relative rounded-xl overflow-hidden border border-white/5 bg-white/5"
         style={{ aspectRatio: item.aspectRatio || 1 }}
       >
@@ -67,7 +78,10 @@ export function HomeFeedLayout() {
 
   // Defer heavy layout data so the hero/header paints immediately on mount
   const deferredItems = useDeferredValue(items);
-  const desktopClusters = useMemo(() => buildClusters(deferredItems, "flow"), [deferredItems]);
+  const desktopClusters = useMemo(
+    () => buildClusters(deferredItems, "flow"),
+    [deferredItems],
+  );
 
   const getNavItemClassName = (active: boolean) =>
     `flex min-w-0 flex-col items-center justify-center rounded-2xl px-2 py-3 text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${
@@ -85,7 +99,7 @@ export function HomeFeedLayout() {
   const SLIDE_DURATION = 5000;
   const PROGRESS_INTERVAL = 50;
 
-    // Timer logic: heroIndex is the single source of truth.
+  // Timer logic: heroIndex is the single source of truth.
   // We use a time-based approach to ensure precision and prevent skipping.
   useEffect(() => {
     if (isLoading) return;
@@ -148,16 +162,28 @@ export function HomeFeedLayout() {
 
   const deferredOriginals = useDeferredValue(ORIGINALS);
 
-  const baseGlobalArtists = useMemo(() => Array.from(
-    new Map(deferredOriginals.flatMap((org) => org.topArtists).map((a) => [a.id, a])).values()
-  ).sort((a, b) => b.presence - a.presence), [deferredOriginals]);
+  const baseGlobalArtists = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          deferredOriginals
+            .flatMap((org) => org.topArtists)
+            .map((a) => [a.id, a]),
+        ).values(),
+      ).sort((a, b) => b.presence - a.presence),
+    [deferredOriginals],
+  );
 
-  const globalArtistStripItems = useMemo(() => baseGlobalArtists.length > 0 
-    ? Array.from(
-        { length: 10 },
-        (_, index) => baseGlobalArtists[index % baseGlobalArtists.length]
-      )
-    : [], [baseGlobalArtists]);
+  const globalArtistStripItems = useMemo(
+    () =>
+      baseGlobalArtists.length > 0
+        ? Array.from(
+            { length: 10 },
+            (_, index) => baseGlobalArtists[index % baseGlobalArtists.length],
+          )
+        : [],
+    [baseGlobalArtists],
+  );
 
   if (isLoading) {
     return <HomePageSkeleton />;
@@ -205,7 +231,6 @@ export function HomeFeedLayout() {
             >
               Sets
             </button>
-
           </nav>
         </div>
         <div className="flex items-center gap-6">
@@ -231,16 +256,19 @@ export function HomeFeedLayout() {
                   transition={{ duration: 1.5, ease: "easeInOut" }}
                   src={ORIGINALS[heroIndex].coverImage}
                   className="absolute inset-0 w-full h-full object-cover blur-[72px] scale-125"
-                  
                 />
               </AnimatePresence>
             </div>
 
             <AnimatePresence mode="popLayout">
-              <OriginalLink 
+              <OriginalLink
                 key={heroIndex}
                 // Mock a TheatreItem format for the OriginalLink component
-                item={{ id: ORIGINALS[heroIndex].id, originalIds: [ORIGINALS[heroIndex].id], category: "Original" }} 
+                item={{
+                  id: ORIGINALS[heroIndex].id,
+                  originalIds: [ORIGINALS[heroIndex].id],
+                  category: "Original",
+                }}
                 className="absolute inset-0 z-10"
               >
                 <motion.div
@@ -250,10 +278,10 @@ export function HomeFeedLayout() {
                   transition={{ duration: 1.0, ease: "easeInOut" }}
                   className="w-full h-full"
                 >
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={ORIGINALS[heroIndex].coverImage}
                     className="w-full h-full object-cover"
-                    loading="eager"
                     decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
@@ -335,12 +363,21 @@ export function HomeFeedLayout() {
 
         {/* TOP ARTISTS */}
         <section className="mt-4 mb-12">
-          <SectionHeader icon={Users} title="Top Artists" containerClassName="px-6 md:px-12 mb-6" />
+          <SectionHeader
+            icon={Users}
+            title="Top Artists"
+            containerClassName="px-6 md:px-12 mb-6"
+          />
 
           <div className="overflow-x-auto no-scrollbar pb-2 px-6 md:px-12">
             <div className="grid grid-flow-col grid-rows-2 gap-2 auto-cols-[200px] md:auto-cols-[320px] w-max">
               {globalArtistStripItems.map((artist, idx) => (
-                <ArtistProfile key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="featured" />
+                <ArtistProfile
+                  key={`${artist.id}-${idx}`}
+                  artist={artist}
+                  index={idx}
+                  variant="featured"
+                />
               ))}
             </div>
           </div>
@@ -348,13 +385,21 @@ export function HomeFeedLayout() {
 
         {/* TOP ORIGINALS */}
         <section className="mb-12">
-          <SectionHeader icon={Crown} title="Originals" containerClassName="px-6 md:px-12 mb-6" />
+          <SectionHeader
+            icon={Crown}
+            title="Originals"
+            containerClassName="px-6 md:px-12 mb-6"
+          />
           <TopOriginalsAccordion navigate={navigate} />
         </section>
 
         {/* FOR YOU FEED */}
         <section className="px-0 sm:px-12 mb-12">
-          <SectionHeader icon={History} title="For You" containerClassName="px-6 sm:px-0 mb-8" />
+          <SectionHeader
+            icon={History}
+            title="For You"
+            containerClassName="px-6 sm:px-0 mb-8"
+          />
 
           {/* Desktop Theatre Clusters */}
           <div className="hidden sm:flex flex-col gap-[2px]">
@@ -392,8 +437,6 @@ export function HomeFeedLayout() {
           </div>
         </section>
       </main>
-
-
     </div>
   );
 }

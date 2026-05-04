@@ -44,7 +44,6 @@ const THEMES: Record<
   string,
   {
     bg: string;
-    text: string;
     name: string;
     nameGradient: [string, string];
     grainOpacity: number;
@@ -52,21 +51,19 @@ const THEMES: Record<
 > = {
   "profile-pawan-kalyan": {
     bg: "#050505",
-    text: "#E5E7EB",
     name: "#6B7280",
     nameGradient: ["#b91c1c", "#ef4444"],
     grainOpacity: 0.03,
   },
   "profile-ram-charan": {
     bg: "#1a120b",
-    text: "#E5E7EB",
+
     name: "#a27b5c",
     nameGradient: ["#4a3728", "#8b5e3c"],
     grainOpacity: 0.05,
   },
   "fh-001": {
     bg: "#0B0E14",
-    text: "#E5E7EB",
     name: "#6B7280",
     nameGradient: ["#334155", "#64748b"],
     grainOpacity: 0.04,
@@ -75,7 +72,6 @@ const THEMES: Record<
 
 const DEFAULT_THEME = {
   bg: "#050505",
-  text: "#E5E7EB",
   name: "#6B7280",
   nameGradient: ["#b91c1c", "#ef4444"] as [string, string],
   grainOpacity: 0.03,

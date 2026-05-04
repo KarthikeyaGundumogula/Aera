@@ -10,7 +10,6 @@ interface ProfileHeroProps {
   followers?: number | string;
   presence?: number | string;
   theme?: {
-    text: string;
     nameGradient: [string, string];
   };
   imagePosition?: string;
@@ -31,8 +30,7 @@ export function ProfileHero({
   followers = 0,
   presence = 0,
   theme = {
-    text: "#ef4444",
-    nameGradient: ["#b91c1c", "#ef4444"],
+    nameGradient: ["#fac107", "#fac107"],
   },
   imagePosition = "50% 0%",
   isFollowing = false,
@@ -76,9 +74,9 @@ export function ProfileHero({
               textAnchor="middle"
               textLength="1000"
               lengthAdjust="spacingAndGlyphs"
-              className="uppercase"
+              className="uppercase select-none"
             >
-              {name || "NAME"}
+              {name || "ARTIST"}
             </text>
           </svg>
         </div>
@@ -109,7 +107,7 @@ export function ProfileHero({
           <div className="flex items-center gap-4">
             <div className="w-8 h-[1px] bg-white/20" />
             <span className="text-[10px] font-mono tracking-[0.6em] uppercase text-white/60 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
-              {handle || "HANDLE"}
+              {handle || "USERNAME"}
             </span>
             <div className="w-8 h-[1px] bg-white/20" />
           </div>

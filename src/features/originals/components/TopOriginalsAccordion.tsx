@@ -44,7 +44,6 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
               src={org.coverImage}
               alt={org.title}
               className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
               decoding="async"
             />
             <div
