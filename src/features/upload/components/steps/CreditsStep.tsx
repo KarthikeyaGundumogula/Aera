@@ -23,15 +23,15 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
 
   const filteredResults = useMemo(() => {
     if (!searchQuery.trim()) {
-      // Display OWN RELEASE + Top 2 Originals by default
-      return [OWN_RELEASE_ORIGINAL, ...originals.slice(0, 2)];
+      // Display ONLY OWN RELEASE by default
+      return [OWN_RELEASE_ORIGINAL];
     }
     const query = searchQuery.toLowerCase();
     return allAvailable.filter(o => 
       o.title.toLowerCase().includes(query) || 
       o.id.toLowerCase().includes(query)
     );
-  }, [allAvailable, originals, searchQuery]);
+  }, [allAvailable, searchQuery]);
 
   const toggleSelection = (id: string) => {
     const newIds = selectedIds.includes(id)
@@ -111,7 +111,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
 
         {/* ─── Search Results ────────────────────────────────────────── */}
         <div className="min-h-[200px]">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-8 h-[300px] overflow-y-auto no-scrollbar scroll-smooth">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-8">
             {filteredResults.map((org) => {
               const isSelected = selectedIds.includes(org.id);
               const isOwnRelease = org.id === "own-release";
@@ -128,7 +128,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
                 >
                   <img loading="lazy" src={org.coverImage} className={`w-full h-full object-cover transition-opacity ${isSelected ? "opacity-40" : "opacity-60 group-hover:opacity-100"}`} />
                   {isOwnRelease && (
-                    <div className="absolute top-2 right-2 bg-white text-black text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-tighter z-10">
+                    <div className="absolute top-3 left-3 bg-white text-black text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter z-10 shadow-xl">
                       Independent
                     </div>
                   )}

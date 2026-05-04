@@ -1,12 +1,6 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Original, TheatreItem } from "../../../types";
-
-import { buildClusters } from "../../theatre/engine/clusterBuilder";
-import { buildMobileClusters } from "../../theatre/engine/mobileClusterBuilder";
-import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDesktopCluster";
-import { MobileClusterView } from "../../theatre/components/mobile/MobileClusterView";
-import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { Original } from "../../../types";
+import { UnifiedTheatre } from "../../theatre/components/UnifiedTheatre";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { ArrowRight } from "lucide-react";
 
@@ -18,23 +12,9 @@ export function OriginalTheatreSection({
   original,
 }: OriginalTheatreSectionProps) {
   const navigate = useNavigate();
-  const isMobile = useMediaQuery();
 
   // works is populated by the mock barrel (JOIN via originalId)
   const originalContent = original.works;
-
-  const clusters = useMemo(() => {
-    if (!originalContent.length) return { desktop: [], mobile: [] };
-
-    // Grouping content into clusters
-    const dClusters = buildClusters(originalContent, "flow").slice(0, 2);
-    const mClusters = buildMobileClusters(originalContent).slice(0, 2);
-
-    return {
-      desktop: dClusters,
-      mobile: mClusters,
-    };
-  }, [originalContent]);
 
   if (!originalContent.length) return null;
 
@@ -59,20 +39,12 @@ export function OriginalTheatreSection({
       </div>
 
       {/* Clusters inset to the same page gutter as the surrounding Originals sections */}
-      <div className="flex flex-col px-8" style={{ gap: "2px" }}>
-        {isMobile
-          ? clusters.mobile.map((cluster) => (
-              <MobileClusterView
-                key={cluster.id}
-                cluster={cluster}
-              />
-            ))
-          : clusters.desktop.map((cluster, idx) => (
-              <StaticDesktopCluster
-                key={idx}
-                cluster={cluster}
-              />
-            ))}
+      <div className="px-8">
+        <UnifiedTheatre 
+          works={originalContent}
+          variant="preview"
+          maxClusters={2}
+        />
       </div>
     </section>
   );

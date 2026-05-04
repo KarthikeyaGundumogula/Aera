@@ -218,13 +218,9 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                                 .replace(/\./g, "")}`;
                               navigate(`/profile/${profileId}`);
                             }}
-                            className="p-2.5 rounded-full bg-black/40 border border-white/10 text-white/60 hover:text-white hover:bg-black/60 transition-all group backdrop-blur-md"
-                            title="Visit Profile"
+                            className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
                           >
-                            <ArrowUpRight
-                              size={16}
-                              className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                            />
+                            Visit
                           </button>
                         </div>
 

@@ -1,15 +1,15 @@
-import React, { useMemo, memo, useState, useEffect, useDeferredValue } from "react";
+import React, {
+  useMemo,
+  memo,
+  useState,
+  useEffect,
+  useDeferredValue,
+} from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  ARTISTS_MOCK,
-  STARS_MOCK,
-  MAKERS_MOCK,
-  GRID_ITEMS,
-} from "../../mock";
+import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK, GRID_ITEMS } from "../../mock";
 import { buildClusters } from "../theatre/engine/clusterBuilder";
 import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
-import { StaticDesktopCluster } from "../theatre/components/desktop/StaticDesktopCluster";
-import { MobileClusterView } from "../theatre/components/mobile/MobileClusterView";
+import { UnifiedTheatre } from "../theatre/components/UnifiedTheatre";
 import { SectionHeader } from "../../components/SectionHeader";
 import { Film, ArrowRight } from "lucide-react";
 import { Logo } from "../../components/Logo";
@@ -61,7 +61,10 @@ const ProfileSkeleton: React.FC = () => {
         <div className="w-[80vw] h-64 bg-white/5 rounded-3xl animate-pulse mb-12" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full px-12">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-[3/4] bg-white/5 rounded-2xl animate-pulse" />
+            <div
+              key={i}
+              className="aspect-[3/4] bg-white/5 rounded-2xl animate-pulse"
+            />
           ))}
         </div>
       </main>
@@ -149,25 +152,14 @@ export const ProfilePage: React.FC = () => {
     return null;
   }, [deferredProfileId]);
 
-  const theme = deferredProfileId ? THEMES[deferredProfileId] || DEFAULT_THEME : DEFAULT_THEME;
+  const theme = deferredProfileId
+    ? THEMES[deferredProfileId] || DEFAULT_THEME
+    : DEFAULT_THEME;
 
   const userWorks = useMemo(() => {
     if (!profile) return [];
     return GRID_ITEMS.filter((w) => w.artistId === profileId || !w.artistId);
   }, [profile, profileId]);
-
-  const clusters = useMemo(() => {
-    if (!userWorks.length) return { desktop: [], mobile: [] };
-
-    // Grouping content into clusters - exactly 2 clusters as seen in OriginalTheatreSection
-    const dClusters = buildClusters(userWorks, "flow").slice(0, 2);
-    const mClusters = buildMobileClusters(userWorks).slice(0, 2);
-
-    return {
-      desktop: dClusters,
-      mobile: mClusters,
-    };
-  }, [userWorks]);
 
   if (isInitialLoading) return <ProfileSkeleton />;
 
@@ -221,7 +213,7 @@ export const ProfilePage: React.FC = () => {
       {/* ─── PROFILE HERO ─── */}
       <ProfileHero
         name={profile.name}
-        handle={profile.id.toUpperCase().replace('PROFILE-', '')}
+        handle={profile.id.toUpperCase().replace("PROFILE-", "")}
         tagline={profile.tagline}
         image={profile.image}
         followers={profile.followers}
@@ -239,9 +231,9 @@ export const ProfilePage: React.FC = () => {
         <section className="px-8 md:px-12">
           {/* Header with Enter Theatre button - Matching OriginalTheatreSection */}
           <div className="mb-12 flex items-center justify-between">
-            <SectionHeader
-              icon={Film}
-              title={`${profile.name} Theatre`}
+            <SectionHeader 
+              iconNode={<div className="w-4 h-px bg-white" />} 
+              title="Theatre" 
             />
 
             <button
@@ -249,30 +241,17 @@ export const ProfilePage: React.FC = () => {
               className="group inline-flex items-center gap-2 text-white/40 transition-all hover:text-white active:scale-95"
             >
               <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                Enter Theatre
+                Enter
               </span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
 
-          {/* Desktop Theatre Clusters */}
-          <div className="hidden sm:flex flex-col" style={{ gap: "2px" }}>
-            {clusters.desktop.map((cluster, idx) => (
-              <StaticDesktopCluster
-                key={`profile-desktop-cluster-${idx}`}
-                cluster={cluster}
-              />
-            ))}
-          </div>
-
-          {/* Mobile Theatre Clusters */}
-          <div className="flex sm:hidden flex-col w-full max-w-sm mx-auto" style={{ gap: "2px" }}>
-            {clusters.mobile.map((cluster) => (
-              <div key={cluster.id} className="w-full">
-                <MobileClusterView cluster={cluster} />
-              </div>
-            ))}
-          </div>
+          <UnifiedTheatre 
+            works={userWorks}
+            variant="preview"
+            maxClusters={2}
+          />
         </section>
       </div>
     </div>
