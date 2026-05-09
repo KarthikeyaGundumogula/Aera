@@ -83,6 +83,15 @@ export default function App() {
           element={<ComingSoonPage label="Artist Profile" />}
         />
         <Route path="/profile/:profileId" element={<ProfilePage />} />
+        <Route
+          path="/festivals/:id"
+          element={
+            <ComingSoonPage
+              label="Festival Stage"
+              description="The grand arena for this cinematic event is being prepared. Soon you'll be able to witness and participate in the official competition."
+            />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
