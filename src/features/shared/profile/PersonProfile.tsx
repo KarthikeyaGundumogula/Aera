@@ -62,7 +62,7 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
             <img loading="lazy"
               src={person.imageUrl}
               alt={person.actorName}
-              className="h-full w-full object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-[1.03]"
+              className="h-full w-full object-cover object-top transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-[1.03]"
             />
           </div>
 
@@ -189,7 +189,7 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                             <img loading="lazy"
                               src={person.imageUrl}
                               alt={person.actorName}
-                              className="w-full h-full object-cover scale-[1.02]"
+                              className="w-full h-full object-cover object-top scale-[1.02]"
                             />
                             <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#020202] via-[#020202]/30 to-transparent pointer-events-none" />
                             <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#020202] via-[#020202]/60 to-transparent pointer-events-none" />

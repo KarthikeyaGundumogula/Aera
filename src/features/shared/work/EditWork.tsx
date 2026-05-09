@@ -51,7 +51,7 @@ export function EditWork({
         alt={item.title}
         loading={priority}
         decoding="async"
-        className={`h-full w-full object-cover transition-all duration-700 ${
+        className={`h-full w-full object-cover object-top transition-all duration-700 ${
           isLoaded ? "opacity-100" : "opacity-0"
         } ${
           variant === "feed"

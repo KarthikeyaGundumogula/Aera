@@ -107,7 +107,7 @@ export const ArtistProfile = memo(
                 <img loading="lazy"
                   src={artist.image}
                   alt={artist.name}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
 
@@ -242,7 +242,7 @@ export const ArtistProfile = memo(
                             <img loading="lazy"
                               src={artist.image}
                               alt={artist.name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover object-top"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                           </motion.div>

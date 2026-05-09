@@ -1,23 +1,46 @@
 [
   {
-    "id": "set-1",
+    "id": "set-neo-noir",
     "title": "Neo-Noir",
-    "captain": "V_Kovacs",
-    "type": "Set",
-    "image": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=800"
+    "description": "A collective dedicated to the dark, high-contrast visual language of modern noir. Deep shadows, neon highlights, and moral ambiguity.",
+    "captainId": "profile-karthik-g",
+    "coverImage": "/posters/og.jpeg",
+    "accentColor": "#00FFC2",
+    "themeLine": "Where the shadows find their light.",
+    "members": [
+      { "profileId": "profile-karthik-g", "role": "Captain", "joinedAt": "2024-01-01T10:00:00Z" },
+      { "profileId": "profile-arjun-reddy", "role": "Organizer", "joinedAt": "2024-02-15T12:00:00Z" }
+    ],
+    "activeFestivalId": "fest-noir-ritual",
+    "festivalStatus": "ONGOING",
+    "tickerText": "THE NOIR RITUAL IS LIVE — SUBMIT YOUR EDITS NOW"
   },
   {
-    "id": "set-2",
-    "title": "French Wave",
-    "captain": "Godard_Fan",
-    "type": "Set",
-    "image": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&q=80&w=800"
+    "id": "set-epic-builders",
+    "title": "Epic Builders",
+    "description": "Creators of grand-scale cinematic moments. If it feels like a legend, it belongs here.",
+    "captainId": "profile-arjun-reddy",
+    "coverImage": "/posters/rrr.jpeg",
+    "accentColor": "#FFD700",
+    "themeLine": "Building legends, frame by frame.",
+    "members": [
+      { "profileId": "profile-arjun-reddy", "role": "Captain", "joinedAt": "2024-01-10T09:00:00Z" },
+      { "profileId": "profile-karthik-g", "role": "Member", "joinedAt": "2024-03-01T14:30:00Z" }
+    ],
+    "activeFestivalId": "fest-mythos-2024",
+    "festivalStatus": "ONGOING",
+    "tickerText": "THE MYTHOS FESTIVAL IS LIVE — COME CREATE"
   },
   {
-    "id": "set-3",
-    "title": "Sci-Fi Scripts",
-    "captain": "Asimov_X",
-    "type": "Set",
-    "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=800"
+    "id": "set-raw-grit",
+    "title": "Raw Grit",
+    "description": "Unfiltered, intense, and uncompromising visuals. Inspired by the mines of KGF and the streets of Vikram.",
+    "captainId": "profile-jr-ntr",
+    "coverImage": "/posters/kgf.jpeg",
+    "accentColor": "#FF4500",
+    "themeLine": "Stay raw. Stay real.",
+    "members": [
+      { "profileId": "profile-jr-ntr", "role": "Captain", "joinedAt": "2024-01-20T11:00:00Z" }
+    ]
   }
 ]

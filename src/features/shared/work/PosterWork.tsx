@@ -49,7 +49,7 @@ export function PosterWork({
         alt={item.title}
         loading={priority}
         decoding="async"
-        className={`h-full w-full object-cover transition-all duration-1000 ${
+        className={`h-full w-full object-cover object-top transition-all duration-1000 ${
           isLoaded ? "opacity-100" : "opacity-0"
         } ${variant === "theatre-desktop" ? "group-hover:scale-110" : ""}`}
       />

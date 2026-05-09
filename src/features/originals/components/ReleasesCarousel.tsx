@@ -150,7 +150,7 @@ export function ReleasesCarousel({
             >
               <img loading="lazy"
                 src={activeItem.image}
-                className="w-full h-full object-cover blur-3xl scale-110"
+                className="w-full h-full object-cover object-top blur-3xl scale-110"
                 alt=""
               />
             </motion.div>
@@ -161,7 +161,7 @@ export function ReleasesCarousel({
                <motion.img
                   src={activeItem.image}
                   className={`w-full h-full transition-all duration-700 ${
-                    isTheaterMode ? "object-contain rounded-xl shadow-2xl" : "object-cover"
+                    isTheaterMode ? "object-contain rounded-xl shadow-2xl" : "object-cover object-top"
                   }`}
                   style={{ 
                     opacity: (isTheaterMode && isYouTube && isIframeLoaded) ? 0 : (isTheaterMode ? 1 : 0.8) 

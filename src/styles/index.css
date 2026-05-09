@@ -90,6 +90,11 @@
   will-change: transform;
 }
 
+.animate-marquee-slow {
+  animation: marquee 40s linear infinite;
+  will-change: transform;
+}
+
 @keyframes shimmer {
   from { transform: translateX(-100%); }
   to { transform: translateX(100%); }

@@ -3,3 +3,4 @@
  */
 export * from "./theatre";
 export * from "./originals";
+export * from "./sets";

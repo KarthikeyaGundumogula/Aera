@@ -15,7 +15,8 @@ import artistsData from "./artists.json";
 import starsData from "./stars.json";
 import makersData from "./makers.json";
 import setsData from "./sets.json";
-import { Original, OriginalArtist, OriginalStar, OriginalMaker, TheatreItem } from "../types";
+import festivalsData from "./festivals.json";
+import { Original, OriginalArtist, OriginalStar, OriginalMaker, TheatreItem, Set, Festival } from "../types";
 import { buildThumbnail } from "../utils/embed";
 
 // ─── Raw table casts ────────────────────────────────────────────────────────
@@ -104,9 +105,14 @@ export const MAKERS_MOCK = makersData as OriginalMaker[];
 export const ARTISTS_MOCK = ALL_ARTISTS.map(({ originalId: _, ...rest }) => rest as OriginalArtist);
 
 /**
- * SETS — Curated collections.
+ * SETS — Curated communities.
  */
-export const SETS = setsData as TheatreItem[];
+export const SETS: Set[] = setsData as Set[];
+
+/**
+ * FESTIVALS — Cinematic events.
+ */
+export const FESTIVALS: Festival[] = festivalsData as Festival[];
 
 // ─── Profiles Directory (unified search pool) ───────────────────────────────
 

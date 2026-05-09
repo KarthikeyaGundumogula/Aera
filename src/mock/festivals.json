@@ -1,0 +1,33 @@
+[
+  {
+    "id": "fest-noir-ritual",
+    "setId": "set-neo-noir",
+    "organizerId": "profile-arjun-reddy",
+    "title": "The Noir Ritual",
+    "description": "Capture the essence of the OG universe in a single edit or poster. High contrast, low light, maximum impact.",
+    "coverImage": "/posters/og.jpeg",
+    "status": "LIVE",
+    "startDate": "2024-05-01T00:00:00Z",
+    "endDate": "2024-05-15T23:59:59Z",
+    "rules": [
+      "Must use OG source material.",
+      "Maximum duration: 60 seconds.",
+      "Aspect Ratio: 16:9 or 2.39:1."
+    ]
+  },
+  {
+    "id": "fest-mythos-2024",
+    "setId": "set-epic-builders",
+    "organizerId": "profile-arjun-reddy",
+    "title": "The Mythos Festival",
+    "description": "Re-imagine the grand battle sequences of RRR and Baahubali. Show us your version of a legend.",
+    "coverImage": "/posters/rrr.jpeg",
+    "status": "LIVE",
+    "startDate": "2024-04-10T00:00:00Z",
+    "endDate": "2024-04-30T23:59:59Z",
+    "rules": [
+      "Multi-origin works allowed.",
+      "Must include at least one Star profile work."
+    ]
+  }
+]

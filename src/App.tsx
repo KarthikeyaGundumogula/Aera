@@ -23,7 +23,7 @@ import ContactPage from "./features/contact/ContactPage";
 import { LedgerPage } from "./features/ledger/LedgerPage";
 import { AdminPage } from "./features/admin/AdminPage";
 import ProfilePage from "./features/profile/ProfilePage";
-
+import { SetsPage } from "./features/sets";
 
 /**
  * App Component
@@ -46,7 +46,16 @@ export default function App() {
             />
           }
         />
-        <Route path="/sets" element={<ComingSoonPage label="Sets" />} />
+        <Route path="/sets" element={<SetsPage />} />
+        <Route
+          path="/sets/:id"
+          element={
+            <ComingSoonPage
+              label="The Set Experience"
+              description="This micro-community is currently being prepared for entry. We're building the infrastructure for physical set experiences."
+            />
+          }
+        />
         <Route path="/profile/new" element={<ArtistSetupPage />} />
         <Route path="/profile/login" element={<LoginPage />} />
         <Route path="/profile/edit" element={<ProfileEditPage />} />
