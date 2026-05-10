@@ -1,20 +1,25 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowRight, ArrowLeft, Bookmark } from "lucide-react";
+import { ArrowRight, Bookmark, Settings, Plus } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
-import { Logo } from "../../components/Logo";
 import { ArtistProfile, PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
+import { CinematicPageHeader } from "../../components/CinematicPageHeader";
 
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ReleasesCarousel } from "./components/ReleasesCarousel";
-import { OriginalTheatreSection } from "./components/OriginalTheatreSection";
+import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
+import { ArtistSpotlightGrid } from "../../components/ArtistSpotlightGrid";
 import { OriginalStats } from "./components/OriginalStats";
-import { OriginalCommandCenter, OriginalClaims } from "./components/OriginalCommandCenter";
-import { AdaptiveTitle } from "../../components/AdaptiveTitle";
+import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
+
+interface OriginalClaims {
+  canUpdateMeta: boolean;
+  canCreateRelease: boolean;
+}
 
 
 export function OriginalPage() {
@@ -36,6 +41,34 @@ export function OriginalPage() {
 
   const original = id ? ORIGINALS_DATA[id] : null;
 
+  const commandItems: CommandItem[] = useMemo(() => [
+    {
+      label: "Save to Watchlist",
+      icon: <Bookmark className="w-4 h-4" />,
+      action: () => {
+        if (!showToast) {
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }
+      },
+      description: "Log to Ledger",
+    },
+    {
+      label: "Update Original",
+      icon: <Settings className="w-4 h-4" />,
+      action: () => setShowManagement(true),
+      description: "Curation & Metadata",
+      visible: userClaims.canUpdateMeta,
+    },
+    {
+      label: "New Release",
+      icon: <Plus className="w-4 h-4" />,
+      action: () => navigate(`/originals/${original?.id}/releases/new`),
+      description: "Drop an Update",
+      visible: userClaims.canCreateRelease,
+    },
+  ], [original, userClaims, showToast]);
+
   // Reset states when navigating between originals
   useEffect(() => {
     setIsCatalogueActive(false);
@@ -53,7 +86,7 @@ export function OriginalPage() {
     
     const timer = setTimeout(() => {
       setIsCatalogueActive(true);
-    }, 3000);
+    }, 12000);
 
     return () => clearTimeout(timer);
   }, [original, resetKey]);
@@ -169,73 +202,32 @@ export function OriginalPage() {
         </AnimatePresence>
 
         {/* Sticky Header */}
-        <AnimatePresence>
-          {!isTheaterMode && (
-            <motion.header 
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              className="fixed top-0 left-0 right-0 z-[100] px-6 py-4 flex items-center justify-between bg-black/40 backdrop-blur-xl border-b border-white/5 transition-all duration-300"
-            >
-              {/* Left Section */}
-              <div className="flex-1 flex items-center gap-4 z-10">
-                <button 
-                  onClick={() => navigate("/")}
-                  className="group p-2 -ml-2 rounded-full hover:bg-white/5 transition-all active:scale-90"
-                  aria-label="Back to Home"
-                >
-                  <ArrowLeft className="w-5 h-5 text-white/60 group-hover:text-white transition-colors group-hover:-translate-x-0.5" />
-                </button>
-                <Logo onClick={() => navigate("/")} showText={false} />
-              </div>
-
-              {/* Center Section - Absolutely centered for mobile balance */}
-              <div className="absolute inset-x-0 flex justify-center pointer-events-none">
-                <button 
-                  onClick={() => {
-                    setResetKey(prev => prev + 1);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="group transition-all active:scale-95 pointer-events-auto"
-                >
-                  <AdaptiveTitle
-                    title={original.title}
-                    as="h1"
-                    multiWordClass="text-[10px] md:text-[12px] leading-tight"
-                    singleWordClamp="clamp(8px, 3vw, 13px)"
-                    className="text-white/90 group-hover:text-white transition-colors tracking-[0.5em] text-center"
-                  />
-                </button>
-              </div>
-
-              {/* Right Section */}
-              <div className="flex-1 flex justify-end items-center gap-2 sm:gap-4 z-10">
-                <OriginalCommandCenter 
-                  originalId={original.id}
-                  claims={userClaims}
-                  onEditInfo={() => setShowManagement(true)}
-                  onNewRelease={() => navigate(`/originals/${original.id}/releases/new`)}
-                  onAddToWatchlist={() => {
-                    if (!showToast) {
-                      setShowToast(true);
-                      setTimeout(() => setShowToast(false), 3000);
-                    }
-                  }}
-                />
-
-                <div className="hidden sm:block h-4 w-px bg-white/10" />
-
-                <button 
-                  onClick={() => navigate(`/originals/${original.id}/releases`)}
-                  className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
-                >
-                  <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
-                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </button>
-              </div>
-            </motion.header>
-          )}
-        </AnimatePresence>
+        <CinematicPageHeader
+          title={original.title}
+          onBack={() => navigate('/')}
+          onTitleClick={() => {
+            setResetKey(prev => prev + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Also target the internal scroll container if present
+            document.querySelector('.overflow-y-auto')?.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          rightActions={
+            <>
+              <CommandCenter
+                contextTitle="Original Studio"
+                items={commandItems}
+              />
+              <div className="hidden sm:block h-4 w-px bg-white/10" />
+              <button
+                onClick={() => navigate(`/originals/${original.id}/releases`)}
+                className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
+              >
+                <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </button>
+            </>
+          }
+        />
 
         {!isCatalogueActive && (
           <OriginalStats stats={original.stats} isTheaterMode={isTheaterMode} />
@@ -245,7 +237,6 @@ export function OriginalPage() {
       {/* Star Spotlight */}
       <section className="px-8 pt-10 pb-4">
         <SectionHeader 
-           iconNode={<div className="w-4 h-px bg-white" />} 
            title="Stars" 
            containerClassName="mb-6" 
         />
@@ -267,7 +258,6 @@ export function OriginalPage() {
       {/* Makers Spotlight */}
       <section className="px-8 pt-6 pb-4">
         <SectionHeader 
-           iconNode={<div className="w-4 h-px bg-white" />} 
            title="Makers" 
            containerClassName="mb-6" 
         />
@@ -286,24 +276,20 @@ export function OriginalPage() {
       </section>
 
       {/* Top Artists */}
-      <section className="px-8 pt-4 pb-4">
-        <SectionHeader 
-           iconNode={<div className="w-4 h-px bg-white" />} 
-           title="Artist Spotlight" 
-           containerClassName="mb-6" 
-        />
-
-        <div className="overflow-x-auto no-scrollbar pb-2">
-          <div className="grid grid-flow-col grid-rows-3 gap-2 auto-cols-[250px] md:auto-cols-[300px] w-max">
-            {artistStripItems.map((artist, idx) => (
-              <ArtistProfile key={`${artist.id}-${idx}`} artist={artist} index={idx} variant="default" />
-            ))}
-          </div>
-        </div>
-      </section>
+      <ArtistSpotlightGrid
+        title="Artist Spotlight"
+        artists={artistStripItems}
+        rows={3}
+        variant="default"
+        containerClassName="pt-4 pb-4"
+      />
 
       {/* Originals Theatre Section */}
-      <OriginalTheatreSection original={original} />
+      <TheatrePreviewSection 
+        title="Theatre"
+        works={original.works} 
+        enterUrl={`/originals/${original.id}/theatre`} 
+      />
 
 
       {/* Detailed Information */}

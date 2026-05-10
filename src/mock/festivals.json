@@ -19,7 +19,7 @@
     "id": "fest-mythos-2024",
     "setId": "set-epic-builders",
     "organizerId": "profile-arjun-reddy",
-    "title": "Indian cinema at global stage",
+    "title": "Indian Cinema at the Global Stage",
     "description": "Re-imagine the grand battle sequences of RRR and Baahubali. Show us your version of a legend.",
     "coverImage": "/posters/rrr.jpeg",
     "status": "LIVE",
@@ -28,6 +28,55 @@
     "rules": [
       "Multi-origin works allowed.",
       "Must include at least one Star profile work."
+    ]
+  },
+  {
+    "id": "fest-noir-genesis",
+    "setId": "set-neo-noir",
+    "organizerId": "profile-karthik-g",
+    "title": "The Shadow Manifesto",
+    "description": "Our first ritual. A call for all editors who dwell in darkness. The founding edition that defined the Set's visual soul.",
+    "coverImage": "/posters/og.jpeg",
+    "status": "CONCLUDED",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-01-31T23:59:59Z",
+    "presenceLeader": "profile-karthik-g",
+    "rules": [
+      "Any noir or dark-genre source material.",
+      "Black and white or high-contrast color grading mandatory."
+    ]
+  },
+  {
+    "id": "fest-noir-silent-era",
+    "setId": "set-neo-noir",
+    "organizerId": "profile-arjun-reddy",
+    "title": "Silent Frames",
+    "description": "No dialogue. No music. Only visual storytelling. The second chapter of the Neo-Noir rituals.",
+    "coverImage": "/posters/og.jpeg",
+    "status": "CONCLUDED",
+    "startDate": "2024-03-01T00:00:00Z",
+    "endDate": "2024-03-20T23:59:59Z",
+    "presenceLeader": "profile-arjun-reddy",
+    "rules": [
+      "No audio tracks.",
+      "Max 30 seconds.",
+      "Any noir-genre source."
+    ]
+  },
+  {
+    "id": "fest-epic-origins",
+    "setId": "set-epic-builders",
+    "organizerId": "profile-arjun-reddy",
+    "title": "The Origin Reel",
+    "description": "First edition. Celebrate the scenes that defined Indian cinematic scale. Where it all began for Epic Builders.",
+    "coverImage": "/posters/rrr.jpeg",
+    "status": "CONCLUDED",
+    "startDate": "2024-02-05T00:00:00Z",
+    "endDate": "2024-02-25T23:59:59Z",
+    "presenceLeader": "profile-arjun-reddy",
+    "rules": [
+      "Only Indian cinema source material.",
+      "Must feature a crowd or battle sequence."
     ]
   }
 ]

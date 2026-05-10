@@ -36,6 +36,9 @@ import {
 } from "../../shared/work";
 import { getWorkKind } from "../../shared/work/types";
 import { RollingTicker } from "../components/RollingTicker";
+import { CategoryBadge } from '../../theatre/components/CategoryBadge';
+import { ArtistSpotlightGrid } from '../../../components/ArtistSpotlightGrid';
+import { CinematicPageHeader } from '../../../components/CinematicPageHeader';
 import { ContactCTA } from "../components/ContactCTA";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
 
@@ -361,26 +364,13 @@ export function HomeFeedLayout() {
         <RollingTicker />
 
         {/* TOP ARTISTS */}
-        <section className="mt-4 mb-12">
-          <SectionHeader
-            icon={Users}
-            title="Top Artists"
-            containerClassName="px-6 md:px-12 mb-6"
-          />
-
-          <div className="overflow-x-auto no-scrollbar pb-2 px-6 md:px-12">
-            <div className="grid grid-flow-col grid-rows-2 gap-2 auto-cols-[200px] md:auto-cols-[320px] w-max">
-              {globalArtistStripItems.map((artist, idx) => (
-                <ArtistProfile
-                  key={`${artist.id}-${idx}`}
-                  artist={artist}
-                  index={idx}
-                  variant="featured"
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        <ArtistSpotlightGrid
+          title="Top Artists"
+          artists={globalArtistStripItems}
+          rows={2}
+          variant="featured"
+          containerClassName="mt-4 mb-12"
+        />
 
         {/* TOP ORIGINALS */}
         <section className="mb-12">

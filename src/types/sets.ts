@@ -32,4 +32,5 @@ export interface Festival {
   endDate: string;
   rules?: string[];
   prizes?: string[];
+  presenceLeader?: string; // Profile ID of the top performer / winner
 }

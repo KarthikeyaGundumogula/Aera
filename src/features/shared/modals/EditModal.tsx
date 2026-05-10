@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { RotateCw, ArrowUpRight, X, Layers, Bookmark } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { Logo } from "../../../components/Logo";
+import { FHLoader } from "../../../components/FHLoader";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
 import { ARTISTS_MOCK } from "../../../mock";
@@ -89,21 +90,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
           <div className="relative w-full h-auto bg-black rounded-xl overflow-hidden shadow-2xl flex flex-col backface-hidden">
             {!isLoaded && (
               <div className="absolute inset-x-0 bottom-0 top-[72px] z-50 flex flex-col items-center justify-center bg-[#050505]/60 backdrop-blur-3xl">
-                <div className="relative">
-                  <Logo showText={false} className="scale-[1.5]" />
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="absolute -inset-4 border-t-2 border-white/20 rounded-full"
-                  />
-                </div>
-                <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.4em] text-white/40 animate-pulse">
-                  Curating Archive
-                </p>
+                <FHLoader label="Curating Archive" />
               </div>
             )}
 

@@ -23,7 +23,8 @@ import ContactPage from "./features/contact/ContactPage";
 import { LedgerPage } from "./features/ledger/LedgerPage";
 import { AdminPage } from "./features/admin/AdminPage";
 import ProfilePage from "./features/profile/ProfilePage";
-import { SetsPage } from "./features/sets";
+import { SetsPage, SetDetailPage, SetsTheatrePage } from "./features/sets";
+import { FestivalDetailPage, FestivalTheatrePage } from "./features/festivals";
 
 /**
  * App Component
@@ -47,15 +48,9 @@ export default function App() {
           }
         />
         <Route path="/sets" element={<SetsPage />} />
-        <Route
-          path="/sets/:id"
-          element={
-            <ComingSoonPage
-              label="The Set Experience"
-              description="This micro-community is currently being prepared for entry. We're building the infrastructure for physical set experiences."
-            />
-          }
-        />
+        <Route path="/sets/:id" element={<SetDetailPage />} />
+        <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
+
         <Route path="/profile/new" element={<ArtistSetupPage />} />
         <Route path="/profile/login" element={<LoginPage />} />
         <Route path="/profile/edit" element={<ProfileEditPage />} />
@@ -85,12 +80,11 @@ export default function App() {
         <Route path="/profile/:profileId" element={<ProfilePage />} />
         <Route
           path="/festivals/:id"
-          element={
-            <ComingSoonPage
-              label="Festival Stage"
-              description="The grand arena for this cinematic event is being prepared. Soon you'll be able to witness and participate in the official competition."
-            />
-          }
+          element={<FestivalDetailPage />}
+        />
+        <Route
+          path="/festivals/:id/theatre"
+          element={<FestivalTheatrePage />}
         />
       </Routes>
     </BrowserRouter>

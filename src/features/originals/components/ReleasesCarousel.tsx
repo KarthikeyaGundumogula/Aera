@@ -48,7 +48,7 @@ export function ReleasesCarousel({
     
     timerRef.current = setInterval(() => {
       nextSlide();
-    }, 5000);
+    }, 12000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
