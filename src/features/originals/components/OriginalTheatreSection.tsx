@@ -39,7 +39,7 @@ export function OriginalTheatreSection({
       </div>
 
       {/* Clusters inset to the same page gutter as the surrounding Originals sections */}
-      <div className="px-8">
+      <div className="">
         <UnifiedTheatre 
           works={originalContent}
           variant="preview"

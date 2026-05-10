@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { motion } from "motion/react";
+
 
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";

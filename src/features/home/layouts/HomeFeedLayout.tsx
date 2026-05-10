@@ -9,7 +9,6 @@ import {
   useDeferredValue,
 } from "react";
 import {
-  PlayCircle,
   Search,
   Loader2,
   History,
@@ -203,8 +202,8 @@ export function HomeFeedLayout() {
       </header>
 
       {/* Desktop Header */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 py-6 bg-black/40 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center gap-12">
+      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5">
+        <div className="flex items-center gap-8">
           <Logo onClick={() => navigate("/")} showText={true} />
           <nav className="flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em]">
             <button
@@ -241,7 +240,7 @@ export function HomeFeedLayout() {
         </div>
       </header>
 
-      <main className="pt-20 md:pt-24 px-0 w-full max-w-full overflow-x-hidden">
+      <main className="pt-16 md:pt-20 px-0 w-full max-w-full overflow-x-hidden">
         {/* HERO - UPCOMING RELEASES */}
         <section className="px-4 md:px-0 mb-0">
           <div className="relative h-[65vh] md:h-[80vh] rounded-2xl md:rounded-none overflow-hidden bg-black">
@@ -394,7 +393,7 @@ export function HomeFeedLayout() {
         </section>
 
         {/* FOR YOU FEED */}
-        <section className="px-0 sm:px-12 mb-12">
+        <section className="px-0 mb-12">
           <SectionHeader
             icon={History}
             title="For You"

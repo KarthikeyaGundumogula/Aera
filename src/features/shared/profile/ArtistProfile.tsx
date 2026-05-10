@@ -5,7 +5,7 @@ import {
   useMotionValue,
 } from "motion/react";
 import React, { memo, useState, useEffect, useRef } from "react";
-import { Instagram, Twitter, Youtube, ArrowUpRight } from "lucide-react";
+import { Instagram, Twitter, Youtube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { StageIcon, WorksIcon } from "../../../components/icons/AppIcons";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";

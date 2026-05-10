@@ -52,8 +52,8 @@ export function MobileCanvas() {
 
   // ── Render ────────────────────────────────────────────────────────
   return (
-    <div className="w-full h-full bg-black overflow-y-auto pb-32 px-1">
-      <div className="flex flex-col gap-1 w-full max-w-sm mx-auto">
+    <div className="w-full h-full bg-black overflow-y-auto pb-32">
+      <div className="flex flex-col gap-1 w-full">
         {clusters.map((cluster) => (
           <div
             key={cluster.id}

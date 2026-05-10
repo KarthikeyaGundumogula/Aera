@@ -10,13 +10,13 @@ export const FestivalCarousel = memo(function FestivalCarousel() {
   
   if (activeFestivals.length === 0) return null;
 
-  // Double the items for a seamless loop
   const marqueeItems = [...activeFestivals, ...activeFestivals, ...activeFestivals];
 
   return (
-    <section className="w-full pt-5 pb-4 bg-[#050505] overflow-hidden" aria-label="Festival Marquee">
-      {/* Section Heading */}
+    <section className="w-full pt-4 pb-4 bg-[#050505] overflow-hidden" aria-label="Festival Marquee">
+      {/* Section Heading with Decor Line */}
       <div className="px-4 md:px-8 mb-6 flex items-center gap-3">
+        <div className="w-4 h-px bg-white/25" />
         <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
         <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/80">
           Happening Now
@@ -27,7 +27,7 @@ export const FestivalCarousel = memo(function FestivalCarousel() {
         <motion.div 
           className="flex gap-4 px-4"
           animate={{
-            x: [0, -1200], // Adjust based on item count/width
+            x: [0, -1200],
           }}
           transition={{
             x: {

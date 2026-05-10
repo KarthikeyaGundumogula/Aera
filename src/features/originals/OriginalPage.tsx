@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Film, ArrowRight, ArrowLeft, Bookmark, Plus } from "lucide-react";
+import { ArrowRight, ArrowLeft, Bookmark } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { TheatreItem } from "../../types";
@@ -91,10 +91,6 @@ export function OriginalPage() {
       </div>
     );
   }
-
-  const heroHeight = isTheaterMode 
-    ? (isMobile ? "h-[56.25vw]" : "h-[85vh]") 
-    : (isMobile ? "h-[65vh]" : "h-[75vh]");
 
   return (
     <div className={`min-h-screen bg-[#050505] overflow-y-auto no-scrollbar transition-all duration-300 ${!isTheaterMode ? "pt-[68px] md:pt-[72px]" : ""}`}>

@@ -82,9 +82,9 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
             animate={{ y: isHeaderVisible ? 0 : -100 }}
             exit={{ y: -100 }}
             transition={{ type: "spring", damping: 20, stiffness: 120 }}
-            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 bg-black/40 backdrop-blur-xl border-b border-white/5"
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5"
           >
-            <div className="flex items-center gap-12">
+            <div className="flex items-center gap-8">
               <Logo onClick={() => navigate("/")} showText={false} />
               <nav className="hidden lg:flex items-center gap-8">
                 <button

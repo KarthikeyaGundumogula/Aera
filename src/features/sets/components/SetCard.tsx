@@ -1,4 +1,4 @@
-import React, { memo, Fragment, useState } from 'react';
+import React, { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Users, Globe, Film } from 'lucide-react';
@@ -13,89 +13,58 @@ import type { Set } from '../../../types';
  */
 const SetCardTicker = memo(function SetCardTicker({
   tickerText,
-  setId,
 }: {
   tickerText: string;
-  setId: string;
 }) {
-  // Ordered Chaos: Deterministic random delay based on ID (no useMemo needed)
-  const getSeed = (str: string) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return Math.abs(hash);
-  };
-  
-  const randomDelay = -(getSeed(setId) % 40);
-
-  // Helper to render a row of simple horizontal perforations
-  const Perforations = () => (
-    <div className="flex justify-around w-full px-4">
-      {Array.from({ length: 20 }).map((_, i) => (
-        <div 
-          key={i} 
-          className="w-[12px] h-[1.5px] bg-white/20 rounded-full" 
-        />
-      ))}
-    </div>
+  const FilmEdge = () => (
+    <div 
+      className="w-full h-[5px] opacity-40"
+      style={{
+        backgroundImage: `repeating-linear-gradient(to right, 
+          transparent, 
+          transparent 12px, 
+          rgba(255,255,255,0.15) 12px, 
+          rgba(255,255,255,0.15) 12.5px, 
+          transparent 12.5px, 
+          transparent 21.5px, 
+          rgba(255,255,255,0.15) 21.5px, 
+          rgba(255,255,255,0.15) 22px
+        ), repeating-linear-gradient(to right,
+          transparent,
+          transparent 12px,
+          rgba(255,255,255,0.05) 12px,
+          rgba(255,255,255,0.05) 22px
+        )`,
+        backgroundSize: '22px 100%'
+      }}
+    />
   );
-
-  const TickerItems = () => (
-    <div className="flex items-center gap-10">
-      {Array.from({ length: 12 }).map((_, i) => (
-        <Fragment key={i}>
-          <div className="flex items-center gap-2.5">
-            <Sparkles className="w-2.5 h-2.5 text-white/40 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/90 whitespace-nowrap">
-              {tickerText}
-            </span>
-            <Sparkles className="w-2.5 h-2.5 text-white/40 animate-pulse" />
-          </div>
-          {i < 11 && <div className="w-2 h-[1.5px] bg-white/10 rounded-full" />}
-        </Fragment>
-      ))}
-    </div>
-  );
-
-  const Separator = () => <div className="w-2 h-[1.5px] bg-white/10 rounded-full mx-10" />;
 
   return (
     <div
-      className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 overflow-hidden h-10 flex items-center"
-      style={{
-        maskImage:
-          'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-        WebkitMaskImage:
-          'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-      }}
+      className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 overflow-hidden h-9 flex flex-col bg-black/40 backdrop-blur-md border-y border-white/5"
     >
-      {/* 1. Transparent Strip Base — clean background */}
-      <div className="absolute inset-y-1 inset-x-0 bg-black/25" />
+      {/* 1. Top Edge Procedural */}
+      <div className="pt-1 w-full">
+        <FilmEdge />
+      </div>
       
-      {/* 2. The Animated Content */}
-      <div 
-        className="animate-marquee-slow flex items-center h-full"
-        style={{ animationDelay: `${randomDelay}s` }}
-      >
-        <div className="flex flex-col justify-between py-1.5 h-full">
-          <Perforations />
-          <div className="flex items-center">
-            <TickerItems />
-            <Separator />
-          </div>
-          <Perforations />
+      {/* 2. Main Content Area */}
+      <div className="flex-1 flex items-center justify-center relative">
+        <div className="flex items-center gap-4 px-6">
+          <div className="w-1 h-1 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.6)]" />
+          
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/90 antialiased pt-0.5">
+            {tickerText}
+          </span>
+
+          <div className="w-1 h-1 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.6)]" />
         </div>
-        
-        {/* Duplicate for seamless marquee */}
-        <div className="flex flex-col justify-between py-1.5 h-full" aria-hidden="true">
-          <Perforations />
-          <div className="flex items-center">
-            <TickerItems />
-            <Separator />
-          </div>
-          <Perforations />
-        </div>
+      </div>
+
+      {/* 3. Bottom Edge Procedural */}
+      <div className="pb-1 w-full">
+        <FilmEdge />
       </div>
     </div>
   );
@@ -161,7 +130,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
 
         {/* 4. Centered ticker — only when festival is live */}
         {hasFestival && (
-          <SetCardTicker tickerText={festival.title} setId={set.id} />
+          <SetCardTicker tickerText={festival.title} />
         )}
 
         {/* 5. Bottom content */}

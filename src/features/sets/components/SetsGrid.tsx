@@ -17,7 +17,7 @@ export const SetsGrid = memo(function SetsGrid() {
   if (SETS.length === 0) return null;
 
   return (
-    <section className="px-5 sm:px-8 pb-24" aria-label="Sets Registry">
+    <section className="px-4 sm:px-6 pt-4 pb-24" aria-label="Sets Registry">
       {/* Section label */}
       <div className="flex items-center gap-3 mb-5">
         <div className="w-4 h-px bg-white/25" />
