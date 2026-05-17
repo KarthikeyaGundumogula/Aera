@@ -72,6 +72,8 @@ const ProfileSkeleton: React.FC = () => {
   );
 };
 
+const loadedProfiles = new Set<string>();
+
 export const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -79,7 +81,11 @@ export const ProfilePage: React.FC = () => {
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  
+  // Skip skeleton if we already loaded this profile in the current session
+  const [isInitialLoading, setIsInitialLoading] = useState(
+    () => !(profileId && loadedProfiles.has(profileId))
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,8 +96,18 @@ export const ProfilePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!profileId) return;
+    
+    if (loadedProfiles.has(profileId)) {
+      setIsInitialLoading(false);
+      return;
+    }
+    
     setIsInitialLoading(true);
-    const timer = setTimeout(() => setIsInitialLoading(false), 800);
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+      loadedProfiles.add(profileId);
+    }, 800);
     return () => clearTimeout(timer);
   }, [profileId]);
 
@@ -103,11 +119,12 @@ export const ProfilePage: React.FC = () => {
       return {
         id: artist.id,
         name: artist.name,
-        tagline: artist.bio || "Aera Artist",
+        tagline: artist.bio || "Artist",
         image: artist.image,
         followers: `${(Math.random() * 2 + 0.5).toFixed(1)}M`,
-        presence: `${artist.presence}%`,
+        presence: artist.presence.toLocaleString(),
         type: "ARTIST" as const,
+        socials: artist.socials,
       };
     }
 
@@ -125,8 +142,9 @@ export const ProfilePage: React.FC = () => {
         tagline: star.characterName,
         image: star.imageUrl,
         followers: "8.2M",
-        presence: "Top 0.1%",
+        presence: "2,480",
         type: "STAR" as const,
+        socials: { instagram: star.actorName.toLowerCase().replace(/ /g, ""), twitter: star.actorName.toLowerCase().replace(/ /g, "") },
       };
     }
 
@@ -144,8 +162,9 @@ export const ProfilePage: React.FC = () => {
         tagline: maker.characterName,
         image: maker.imageUrl,
         followers: "1.4M",
-        presence: "Top 1%",
+        presence: "1,840",
         type: "MAKER" as const,
+        socials: { instagram: maker.actorName.toLowerCase().replace(/ /g, ""), twitter: maker.actorName.toLowerCase().replace(/ /g, "") },
       };
     }
 
@@ -223,11 +242,12 @@ export const ProfilePage: React.FC = () => {
         onFollow={() => setIsFollowing(!isFollowing)}
         isFavorited={isFavorited}
         onFavorite={() => setIsFavorited(!isFavorited)}
+        socials={profile.socials}
         className="pt-16 md:pt-32 pb-8"
       />
 
       {/* ─── THEATRE SECTION ─── */}
-      <div className="relative z-20 w-full bg-[#050505] min-h-screen pt-12 pb-20 text-white">
+      <div className="relative z-20 w-full bg-[#050505] min-h-screen pt-2 pb-20 text-white">
         <section className="px-8 md:px-12">
           {/* Header with Enter Theatre button - Matching OriginalTheatreSection */}
           <div className="mb-12 flex items-center justify-between">

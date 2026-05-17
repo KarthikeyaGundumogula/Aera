@@ -12,7 +12,7 @@ import {
   Search,
   Loader2,
   History,
-  Crown,
+  Sun,
   ChevronRight,
   Users,
 } from "lucide-react";
@@ -65,22 +65,27 @@ const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
   );
 });
 
+// Simulate a global store/cache
+let cachedItems: TheatreItem[] | null = null;
+
 export function HomeFeedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [items, setItems] = useState<TheatreItem[]>(() => {
-    return [...GRID_ITEMS];
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [items, setItems] = useState<TheatreItem[] | null>(cachedItems);
 
   useEffect(() => {
-    // Small artificial delay to allow heavy computations to settle behind the skeleton
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!items) {
+      // Simulate network request for data
+      const timer = setTimeout(() => {
+        cachedItems = [...GRID_ITEMS];
+        setItems(cachedItems);
+      }, 800); // Only runs when data is not cached
+      return () => clearTimeout(timer);
+    }
+  }, [items]);
 
   // Defer heavy layout data so the hero/header paints immediately on mount
-  const deferredItems = useDeferredValue(items);
+  const deferredItems = useDeferredValue(items || []);
   const desktopClusters = useMemo(
     () => buildClusters(deferredItems, "flow"),
     [deferredItems],
@@ -105,8 +110,6 @@ export function HomeFeedLayout() {
   // Timer logic: heroIndex is the single source of truth.
   // We use a time-based approach to ensure precision and prevent skipping.
   useEffect(() => {
-    if (isLoading) return;
-
     setProgress(0);
     const startTime = Date.now();
 
@@ -123,7 +126,7 @@ export function HomeFeedLayout() {
     }, PROGRESS_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [heroIndex, isLoading]);
+  }, [heroIndex]);
 
   const handleIndicatorClick = (idx: number) => {
     if (idx === heroIndex) return;
@@ -140,7 +143,7 @@ export function HomeFeedLayout() {
         ...item,
         id: `down-${Math.random()}`,
       }));
-      setItems((prev) => [...prev, ...nextItems]);
+      setItems((prev) => prev ? [...prev, ...nextItems] : nextItems);
       setIsLoadingDown(false);
     }, 800);
   }, [isLoadingDown]);
@@ -188,7 +191,7 @@ export function HomeFeedLayout() {
     [baseGlobalArtists],
   );
 
-  if (isLoading) {
+  if (!items) {
     return <HomePageSkeleton />;
   }
 
@@ -313,7 +316,7 @@ export function HomeFeedLayout() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2 mb-1">
-                            <StageIcon className="w-3 h-3 text-yellow-400" />
+                            <StageIcon className="w-3 h-3 text-white/80" />
                             <span className="text-lg font-bold drop-shadow-2xl">
                               {ORIGINALS[heroIndex].stats.presence}
                             </span>
@@ -379,7 +382,7 @@ export function HomeFeedLayout() {
         {/* TOP ORIGINALS */}
         <section className="mb-12">
           <SectionHeader
-            icon={Crown}
+            icon={Sun}
             title="Originals"
             containerClassName="px-6 md:px-12 mb-6"
           />

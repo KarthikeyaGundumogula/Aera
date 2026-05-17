@@ -130,14 +130,14 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
             {isLoading ? (
               <>
                 <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
-                <p className="text-[8px] font-bold uppercase tracking-[0.2em]">Curating Archive</p>
+                <p className="text-[8px] font-bold uppercase tracking-[0.2em]">loading</p>
               </>
             ) : hasMore ? (
               <div className="h-20" /> 
             ) : (
               <div className="flex flex-col items-center gap-4">
                 <div className="h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                <p className="text-[8px] font-bold uppercase tracking-[0.2em]">End of Transmission</p>
+                <p className="text-[8px] font-bold uppercase tracking-[0.2em]">End</p>
               </div>
             )}
           </div>

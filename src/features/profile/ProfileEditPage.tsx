@@ -82,7 +82,7 @@ export default function ProfileEditPage() {
             </span>
           </div>
           <span className="text-[8px] font-medium uppercase tracking-[0.2em]">
-            Aera Network v1.0
+            Stage Collective v1.0
           </span>
         </div>
       </div>

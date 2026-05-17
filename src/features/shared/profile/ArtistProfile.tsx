@@ -185,7 +185,7 @@ export const ArtistProfile = memo(
                   <div className="p-6 pb-2 flex justify-between items-start z-10">
                     <div className="flex flex-col items-start">
                       <span className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">
-                        Aera Artist Stages
+                        Artist Stage
                       </span>
                       <span className="text-[9px] font-mono text-white/20 mt-0.5">
                         {fhUid}
@@ -211,7 +211,7 @@ export const ArtistProfile = memo(
                     <div className="flex flex-col items-center gap-4 opacity-20 select-none shrink-0">
                       <div className="w-[1px] h-10 sm:h-12 bg-white" />
                       <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.4em] uppercase text-white whitespace-nowrap">
-                        {artist.id.toUpperCase().replace('-', '')}
+                        {artist.id.toUpperCase().replace('PROFILE-', '')}
                       </span>
                       <div className="w-[1px] h-10 sm:h-12 bg-white" />
                     </div>
@@ -234,13 +234,13 @@ export const ArtistProfile = memo(
                       </motion.div>
                     </div>
 
-                    {/* Right side Metadata indicator */}
+                    {/* Right side Vertical ID */}
                     <div className="flex flex-col items-center gap-4 opacity-20 select-none shrink-0">
-                      <div className="w-[1px] h-6 sm:h-8 bg-white" />
-                      <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.3em] uppercase text-white whitespace-nowrap">
-                        REC-ID {artist.presence}
+                      <div className="w-[1px] h-10 sm:h-12 bg-white" />
+                      <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.4em] uppercase text-white whitespace-nowrap">
+                        {artist.id.toUpperCase().replace('PROFILE-', '')}
                       </span>
-                      <div className="w-[1px] h-6 sm:h-8 bg-white" />
+                      <div className="w-[1px] h-10 sm:h-12 bg-white" />
                     </div>
                   </div>
 
@@ -265,7 +265,7 @@ export const ArtistProfile = memo(
                         Stage
                       </span>
                       <div className="flex items-center gap-2">
-                        <StageIcon className="w-3 h-3 text-yellow-500/80" />
+                        <StageIcon className="w-3 h-3 text-white/80" />
                         <span className="text-sm font-black text-white">
                           {artist.presence}
                         </span>
@@ -277,7 +277,7 @@ export const ArtistProfile = memo(
                         Works
                       </span>
                       <div className="flex items-center gap-2">
-                        <WorksIcon className="w-3 h-3 text-blue-500/80" />
+                        <WorksIcon className="w-3 h-3 text-white/80" />
                         <span className="text-sm font-black text-white">
                           {artist.works}
                         </span>
@@ -321,7 +321,7 @@ export const ArtistProfile = memo(
                       </a>
                     )}
                   </div>
-                  <div className="h-1 bg-gradient-to-r from-blue-600/20 via-blue-400/10 to-blue-600/20 w-full" />
+                  <div className="h-1 bg-gradient-to-r from-white/20 via-white/10 to-white/20 w-full" />
                 </div>
               </div>
 

@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { motion } from "motion/react";
-import { Users, Crown, Heart } from "lucide-react";
+import { Users, Sun, Heart, Instagram, Twitter, Youtube } from "lucide-react";
 
 interface ProfileHeroProps {
   name: string;
@@ -20,6 +20,11 @@ interface ProfileHeroProps {
   className?: string;
   scale?: number;
   showGradient?: boolean;
+  socials?: {
+    instagram?: string;
+    twitter?: string;
+    youtube?: string;
+  };
 }
 
 export function ProfileHero({
@@ -40,6 +45,7 @@ export function ProfileHero({
   className = "",
   scale = 1,
   showGradient = true,
+  socials,
 }: ProfileHeroProps) {
   const gradientId = `profileHeroGradient-${useId()}`;
 
@@ -97,6 +103,45 @@ export function ProfileHero({
               </div>
             )}
           </div>
+
+          {/* Avant-Garde Floating Vertical Social Instrument (Attached to the right flank of the portrait frame) */}
+          {socials && (Object.keys(socials).length > 0) && (
+            <div className="absolute -right-12 md:-right-16 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4 py-4 z-20 group">
+              {socials.instagram && (
+                <a
+                  href={`https://instagram.com/${socials.instagram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/40 hover:text-white hover:scale-125 transition-all p-2"
+                  title="Instagram"
+                >
+                  <Instagram size={18} />
+                </a>
+              )}
+              {socials.twitter && (
+                <a
+                  href={`https://twitter.com/${socials.twitter.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/40 hover:text-white hover:scale-125 transition-all p-2"
+                  title="X / Twitter"
+                >
+                  <Twitter size={18} />
+                </a>
+              )}
+              {socials.youtube && (
+                <a
+                  href={`https://youtube.com/@${socials.youtube.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/40 hover:text-white hover:scale-125 transition-all p-2"
+                  title="YouTube"
+                >
+                  <Youtube size={20} />
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -133,7 +178,7 @@ export function ProfileHero({
               </span>
             </div>
             <div className="flex items-center gap-1.5 md:gap-2">
-              <Crown
+              <Sun
                 className="w-4 h-4 md:w-6 md:h-6 opacity-50 text-white"
               />
               <span

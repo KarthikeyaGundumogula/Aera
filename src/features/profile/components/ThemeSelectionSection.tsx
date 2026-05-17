@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Check } from "lucide-react";
 
 export const THEME_PALETTES = [
-  { id: "aera-red", name: "Aera Red", gradient: ["#b91c1c", "#ef4444"] as [string, string] },
+  { id: "crimson-red", name: "Crimson Red", gradient: ["#b91c1c", "#ef4444"] as [string, string] },
   { id: "ghost-white", name: "Ghost White", gradient: ["#374151", "#f3f4f6"] as [string, string] },
   { id: "deep-ocean", name: "Deep Ocean", gradient: ["#1e3a8a", "#3b82f6"] as [string, string] },
   { id: "neon-jade", name: "Neon Jade", gradient: ["#064e3b", "#10b981"] as [string, string] },

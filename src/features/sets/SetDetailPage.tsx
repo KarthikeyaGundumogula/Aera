@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, Film, Sparkles, Settings, Plus, Heart, Bookmark } from 'lucide-react';
+import { Users, Film, Sparkles, Settings, Plus, Heart, Bookmark, Upload, LogOut } from 'lucide-react';
 import { SETS, FESTIVALS, GRID_ITEMS, PROFILES_DIRECTORY } from '../../mock';
 import { ActiveFestivalSpotlight } from './components/ActiveFestivalSpotlight';
 import { FestivalArchive } from './components/FestivalArchive';
@@ -9,6 +9,7 @@ import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSecti
 import { CinematicPageHeader } from '../../components/CinematicPageHeader';
 import { CommandCenter, CommandItem } from '../../components/CommandCenter';
 import { SectionHeader } from '../../components/SectionHeader';
+import { UpdateSetModal } from './components/UpdateSetModal';
 
 /**
  * SetDetailPage — /sets/:id
@@ -42,41 +43,51 @@ export function SetDetailPage() {
   // In production this will be a real backend filter
   const setWorks = useMemo(() => GRID_ITEMS.slice(0, 18), []);
 
-  const memberCount = set?.members.length ?? 0;
+  const [isJoined, setIsJoined] = useState(false);
+  const memberCount = (set?.members.length ?? 0) + (isJoined ? 1 : 0);
   const festivalCount = allFestivals.length;
   const worksCount = ((id?.length ?? 0) * 31 + memberCount * 7) % 150 + 12;
 
   const [showToast, setShowToast] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  
+  // Local state for immediate updates
+  const [localSet, setLocalSet] = useState(set);
+  
+  // Update localSet when route changes and set loads
+  useMemo(() => {
+    if (set && set.id !== localSet?.id) setLocalSet(set);
+  }, [set, localSet]);
 
   const setCommandItems: CommandItem[] = useMemo(() => [
     {
-      label: "Follow Set",
-      icon: <Heart className="w-4 h-4" />,
-      action: () => {
-        if (!showToast) {
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 3000);
-        }
-      },
-      description: "Join Collective",
-    },
-    {
       label: "Update Set",
       icon: <Settings className="w-4 h-4" />,
-      action: () => console.log("Update Set"),
+      action: () => setIsUpdateModalOpen(true),
       description: "Curation & Rules",
-      visible: true, // In real app, check permissions
+      visible: true, // In real app, check if user is curator
     },
     {
-      label: "New Ritual",
-      icon: <Plus className="w-4 h-4" />,
-      action: () => console.log("New Ritual"),
-      description: "Start Festival",
+      label: "Upload Work",
+      icon: <Upload className="w-4 h-4" />,
+      action: () => navigate(`/works/new?setId=${id}`),
+      description: "Contribute to Set",
       visible: true,
     },
-  ], [showToast]);
+    {
+      label: "Leave Set",
+      icon: <LogOut className="w-4 h-4 text-red-500" />,
+      action: () => {
+        if (window.confirm("Are you sure you want to leave this set?")) {
+          setIsJoined(false);
+        }
+      },
+      description: "Exit Collective",
+      visible: isJoined,
+    },
+  ], [isJoined, id, navigate]);
 
-  if (!set) {
+  if (!localSet) {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-4 text-white">
         <p className="text-[11px] uppercase tracking-[0.4em] text-white/30">Set Not Found</p>
@@ -95,7 +106,7 @@ export function SetDetailPage() {
 
       {/* ─── Sticky Header ───────────────────────────────────────────────────── */}
       <CinematicPageHeader
-        title={set.title}
+        title={localSet.title}
         onBack={() => navigate('/sets')}
         backLabel="Sets"
         onTitleClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -129,7 +140,7 @@ export function SetDetailPage() {
         {/* Background atmosphere: desaturated coverImage at low opacity */}
         <div
           className="absolute inset-0 bg-cover bg-top opacity-[0.07] grayscale pointer-events-none select-none"
-          style={{ backgroundImage: `url(${set.coverImage})` }}
+          style={{ backgroundImage: `url(${localSet.coverImage})` }}
           aria-hidden="true"
         />
         {/* Vertical gradient blending into page */}
@@ -147,7 +158,7 @@ export function SetDetailPage() {
             overflow: 'hidden',
           }}
         >
-          {set.title}
+          {localSet.title}
         </p>
 
         <div className="relative z-10 px-4 md:px-8 pt-12 md:pt-16 pb-2 md:pb-4">
@@ -161,8 +172,8 @@ export function SetDetailPage() {
               className="flex-shrink-0 w-[140px] md:w-[180px] aspect-video md:aspect-[2/3] overflow-hidden rounded-lg border border-white/[0.08] shadow-2xl"
             >
               <img
-                src={set.coverImage}
-                alt={set.title}
+                src={localSet.coverImage}
+                alt={localSet.title}
                 className="w-full h-full object-cover object-top"
               />
             </motion.div>
@@ -176,7 +187,7 @@ export function SetDetailPage() {
             >
               {/* Monospace handle */}
               <p className="font-mono text-[9px] font-bold uppercase tracking-[0.4em] text-white/25">
-                [ SET // {set.id.toUpperCase()} ]
+                [ SET // {localSet.id.toUpperCase()} ]
               </p>
 
               {/* Title */}
@@ -188,13 +199,13 @@ export function SetDetailPage() {
                   letterSpacing: '-0.02em',
                 }}
               >
-                {set.title}
+                {localSet.title}
               </h1>
 
               {/* Theme Line */}
-              {set.themeLine && (
+              {localSet.themeLine && (
                 <p className="text-[12px] md:text-sm text-white/40 font-medium italic tracking-wide">
-                  "{set.themeLine}"
+                  "{localSet.themeLine}"
                 </p>
               )}
 
@@ -216,6 +227,20 @@ export function SetDetailPage() {
                   </span>
                 </button>
               )}
+
+              {/* Dynamic Join Button */}
+              <div className="flex items-center gap-4 pt-2">
+                <button
+                  onClick={() => setIsJoined(!isJoined)}
+                  className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
+                    isJoined
+                      ? "bg-white/10 text-white/60 border border-white/10"
+                      : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:bg-white/90"
+                  }`}
+                >
+                  {isJoined ? "Joined" : "Join"}
+                </button>
+              </div>
 
               {/* Stats Row */}
               <div className="flex items-center gap-5 pt-1">
@@ -242,7 +267,7 @@ export function SetDetailPage() {
 
       {/* ─── Layer II: Active Festival Spotlight ────────────────────────────── */}
       {activeFestival ? (
-        <ActiveFestivalSpotlight festival={activeFestival} set={set} />
+        <ActiveFestivalSpotlight festival={activeFestival} set={localSet} />
       ) : (
         <section className="px-4 md:px-8 py-10" aria-label="No Active Festival">
           <SectionHeader
@@ -262,10 +287,20 @@ export function SetDetailPage() {
 
       {/* ─── Layer IV: Set Theatre (Y-axis scroll) ───────────────────────────── */}
       <TheatrePreviewSection
-        title={`${set.title} Theatre`}
+        title={`${localSet.title} Theatre`}
         works={setWorks}
-        enterUrl={`/sets/${set.id}/theatre`}
+        enterUrl={`/sets/${localSet.id}/theatre`}
       />
+
+      {/* Modals */}
+      {isUpdateModalOpen && localSet && (
+        <UpdateSetModal
+          isOpen={isUpdateModalOpen}
+          set={localSet}
+          onClose={() => setIsUpdateModalOpen(false)}
+          onSave={(updates) => setLocalSet(prev => prev ? { ...prev, ...updates } : prev)}
+        />
+      )}
     </div>
   );
 }

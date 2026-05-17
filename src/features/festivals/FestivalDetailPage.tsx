@@ -1,12 +1,15 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, UserPlus, Share2 } from 'lucide-react';
+import { Clock, UserPlus, Share2, Settings, Upload, Plus } from 'lucide-react';
 import { FESTIVALS, SETS, ARTISTS_MOCK, GRID_ITEMS } from '../../mock';
 import { CinematicPageHeader } from '../../components/CinematicPageHeader';
 import { CommandCenter, CommandItem } from '../../components/CommandCenter';
 import { FestivalSpotlightPlayer } from './components/FestivalSpotlightPlayer';
 import { ArtistSpotlightGrid } from '../../components/ArtistSpotlightGrid';
 import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSection';
+import { UpdateFestivalModal } from './components/UpdateFestivalModal';
+import { AddPanelistModal } from './components/AddPanelistModal';
+import { OriginalArtist } from '../../types';
 
 export function FestivalDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,37 +17,84 @@ export function FestivalDetailPage() {
 
   const festival = useMemo(() => FESTIVALS.find(f => f.id === id), [id]);
   const set = useMemo(() => festival ? SETS.find(s => s.id === festival.setId) : null, [festival]);
-  
+
+  const [localFestival, setLocalFestival] = useState(festival);
+  useMemo(() => {
+    if (festival && festival.id !== localFestival?.id) setLocalFestival(festival);
+  }, [festival, localFestival]);
+
   const festivalWorks = useMemo(() => GRID_ITEMS.filter(w => (w.platform === 'youtube' || w.platform === 'twitter') && w.srcId).slice(0, 5), []);
-  const participants = useMemo(() => ARTISTS_MOCK.slice(0, 10), []);
+  const [isJoined, setIsJoined] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isAddPanelistModalOpen, setIsAddPanelistModalOpen] = useState(false);
+  const [addedPanelists, setAddedPanelists] = useState<OriginalArtist[]>([]);
+
+  const baseParticipants = useMemo(() => ARTISTS_MOCK.slice(0, 10), []);
+  const participants = useMemo(() => {
+    const base = isJoined ? [ARTISTS_MOCK[0], ...baseParticipants.slice(0, 9)] : baseParticipants;
+    return [...addedPanelists, ...base];
+  }, [addedPanelists, isJoined, baseParticipants]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  if (!festival || !set) return null;
+  if (!localFestival || !set) return null;
 
-  const isLive = festival.status === 'LIVE';
+  const isLive = localFestival.status === 'LIVE';
+
+  const handleAddPanelist = (handle: string) => {
+    const cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
+    const found = ARTISTS_MOCK.find(a => a.name.toLowerCase() === cleanHandle.toLowerCase()) || {
+      ...ARTISTS_MOCK[0],
+      id: `p-${Date.now()}`,
+      name: cleanHandle,
+    };
+    setAddedPanelists(prev => [found, ...prev]);
+  };
 
   const festivalCommands: CommandItem[] = [
     { 
-      label: 'Follow', 
-      icon: <UserPlus className="w-4 h-4" />, 
-      action: () => console.log('Follow'),
-      description: 'Receive festival updates'
+      label: 'Update Festival', 
+      icon: <Settings className="w-4 h-4" />, 
+      action: () => setIsUpdateModalOpen(true),
+      description: 'Curation & Rules (Organizer)',
+      visible: true,
+    },
+    { 
+      label: 'Panelist Upload', 
+      icon: <Upload className="w-4 h-4 text-yellow-400" />, 
+      action: () => navigate(`/works/new?festivalId=${id}&role=panelist`),
+      description: 'Submit Official Entry',
+      visible: true,
+    },
+    { 
+      label: 'Member Upload', 
+      icon: <Upload className="w-4 h-4" />, 
+      action: () => navigate(`/works/new?festivalId=${id}&role=member`),
+      description: 'Submit Community Work',
+      visible: true,
+    },
+    { 
+      label: 'Add Panelist', 
+      icon: <Plus className="w-4 h-4" />, 
+      action: () => setIsAddPanelistModalOpen(true),
+      description: 'Invite Creator (Organizer)',
+      visible: true,
     },
     { 
       label: 'Share', 
       icon: <Share2 className="w-4 h-4" />, 
       action: () => console.log('Share'),
-      description: 'Copy festival link'
+      description: 'Copy festival link',
+      visible: true,
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
       <CinematicPageHeader
-        title={festival.title}
+        title={localFestival.title}
         onBack={() => navigate(-1)}
         onTitleClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         rightActions={<CommandCenter contextTitle="Festival Actions" items={festivalCommands} />}
@@ -55,7 +105,7 @@ export function FestivalDetailPage() {
         {/* Immersive Cover Image */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <img 
-            src={festival.coverImage} 
+            src={localFestival.coverImage} 
             alt=""
             className="w-full h-full object-cover object-top opacity-60 mix-blend-screen"
           />
@@ -86,18 +136,29 @@ export function FestivalDetailPage() {
               className="font-black text-white uppercase tracking-tight leading-[0.9] mb-6 drop-shadow-2xl"
               style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)' }}
             >
-              {festival.title}
+              {localFestival.title}
             </h1>
 
             <p className="text-xs md:text-sm text-white/50 leading-relaxed max-w-2xl mb-8">
-              {festival.description}
+              {localFestival.description}
             </p>
 
             <div className="flex items-center gap-6">
+               <button
+                 onClick={() => setIsJoined(!isJoined)}
+                 className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
+                   isJoined
+                     ? "bg-white/10 text-white/60 border border-white/10"
+                     : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:bg-white/90"
+                 }`}
+               >
+                 {isJoined ? "Joined Festival" : "Join Festival"}
+               </button>
+
                <div className="flex items-center gap-2">
                  <Clock className="w-4 h-4 text-white/40" />
                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
-                   {new Date(festival.endDate).toLocaleDateString()}
+                   {new Date(localFestival.endDate).toLocaleDateString()}
                  </span>
                </div>
             </div>
@@ -119,10 +180,28 @@ export function FestivalDetailPage() {
 
       {/* ─── Layer IV: Festival Theatre Preview ───────────────────────────── */}
       <TheatrePreviewSection
-        title={`${festival.title} Archive`}
+        title={`${localFestival.title} Archive`}
         works={festivalWorks}
-        enterUrl={`/festivals/${festival.id}/theatre`}
+        enterUrl={`/festivals/${localFestival.id}/theatre`}
       />
+
+      {/* Modals */}
+      {isUpdateModalOpen && localFestival && (
+        <UpdateFestivalModal
+          isOpen={isUpdateModalOpen}
+          festival={localFestival}
+          onClose={() => setIsUpdateModalOpen(false)}
+          onSave={(updates) => setLocalFestival((prev: any) => prev ? { ...prev, ...updates } : prev)}
+        />
+      )}
+
+      {isAddPanelistModalOpen && (
+        <AddPanelistModal
+          isOpen={isAddPanelistModalOpen}
+          onClose={() => setIsAddPanelistModalOpen(false)}
+          onAdd={handleAddPanelist}
+        />
+      )}
     </div>
   );
 }

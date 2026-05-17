@@ -24,7 +24,7 @@ export function OriginalStats({ stats, isTheaterMode }: OriginalStatsProps) {
           <div className="flex items-center gap-8 md:gap-12 py-4 border-t border-white/10">
             <div className="flex flex-col pointer-events-auto">
               <div className="flex items-center gap-2 mb-1">
-                <StageIcon className="w-3 h-3 text-yellow-400" />
+                <StageIcon className="w-3 h-3 text-white/80" />
                 <span className="text-lg font-bold drop-shadow-2xl">
                   {stats.presence}
                 </span>
@@ -35,7 +35,7 @@ export function OriginalStats({ stats, isTheaterMode }: OriginalStatsProps) {
             </div>
             <div className="flex flex-col pointer-events-auto">
               <div className="flex items-center gap-2 mb-1">
-                <Users className="w-3 h-3 text-blue-400" />
+                <Users className="w-3 h-3 text-white/80" />
                 <span className="text-lg font-bold drop-shadow-2xl">
                   {stats.members}
                 </span>
@@ -46,7 +46,7 @@ export function OriginalStats({ stats, isTheaterMode }: OriginalStatsProps) {
             </div>
             <div className="flex flex-col pointer-events-auto">
               <div className="flex items-center gap-2 mb-1">
-                <Film className="w-3 h-3 text-purple-400" />
+                <Film className="w-3 h-3 text-white/80" />
                 <span className="text-lg font-bold drop-shadow-2xl">
                   {stats.releases}
                 </span>

@@ -216,7 +216,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
 
                         <div className="relative z-10 flex items-center gap-2">
                           <div className="h-px flex-1 bg-white/8" />
-                          <span className="text-[7px] font-black uppercase tracking-[0.5em] text-white/15">Aera Script</span>
+                          <span className="text-[7px] font-black uppercase tracking-[0.5em] text-white/15">Script</span>
                           <div className="h-px flex-1 bg-white/8" />
                         </div>
                       </div>
@@ -285,7 +285,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                   Artist Credits
                 </p>
                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/60 group-hover/artist:text-white transition-colors">
-                  {item.artist || "Aera Collective"}
+                  {item.artist || "Collective"}
                 </p>
               </div>
             </div>

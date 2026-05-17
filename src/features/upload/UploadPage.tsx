@@ -86,7 +86,7 @@ export default function UploadPage() {
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          onClick={() => navigate("/theatre")}
+          onClick={() => navigate(-1)}
           className="group flex items-center gap-3 w-fit mb-12 hover:text-white/70 transition-all active:scale-95"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />

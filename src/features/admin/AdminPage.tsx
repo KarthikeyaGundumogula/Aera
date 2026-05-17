@@ -57,7 +57,7 @@ export function AdminPage() {
           </motion.button>
 
           <div className="flex items-center gap-2">
-            <StageIcon className="w-4 h-4 text-yellow-400" />
+            <StageIcon className="w-4 h-4 text-white/80" />
             <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
               Admin Stage
             </span>
@@ -81,7 +81,7 @@ export function AdminPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-white/40 text-sm max-w-sm tracking-wide leading-relaxed"
           >
-            High-level access to the Aera ecosystem. Curate, shape, and forge
+            High-level access to the Collective ecosystem. Curate, shape, and forge
             the future of cinematic artifacts.
           </motion.p>
         </header>

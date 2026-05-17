@@ -131,7 +131,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
               className="absolute top-3.5 left-3.5 flex flex-col cursor-pointer pointer-events-auto group gap-0.5 px-3 py-2 bg-black/60 border border-white/10 rounded-lg backdrop-blur-md max-w-[280px] z-[60] transition-transform hover:scale-105 active:scale-95"
             >
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45 truncate group-hover:text-white/70">
-                {item.artist || "Aera Artist"}
+                {item.artist || "Artist"}
               </span>
               <div className="flex items-center gap-2">
                 <h3 className="text-[13px] font-medium text-white tracking-tight truncate">
@@ -231,12 +231,12 @@ export function EditModal({ item, onClose }: EditModalProps) {
                     Artist
                   </p>
                   <div className="flex items-center gap-1.5">
-                    <p className="text-xs sm:text-sm font-bold text-white/90 truncate group-hover/artist:text-yellow-400 transition-colors underline decoration-white/0 group-hover/artist:decoration-yellow-400/30 underline-offset-4">
-                      {item.artist || "Aera Collective"}
+                    <p className="text-xs sm:text-sm font-bold text-white/90 truncate group-hover/artist:text-white transition-colors underline decoration-white/0 group-hover/artist:decoration-white/30 underline-offset-4">
+                      {item.artist || "Collective"}
                     </p>
                     <ArrowUpRight
                       size={10}
-                      className="text-white/10 group-hover/artist:text-yellow-400/50 transition-colors"
+                      className="text-white/10 group-hover/artist:text-white/50 transition-colors"
                     />
                   </div>
                 </div>

@@ -73,7 +73,7 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
               <div
                 className={`flex items-center gap-2 ${isActive ? "mt-6" : "hidden"}`}
               >
-                <StageIcon className="w-4 h-4 text-yellow-400" />
+                <StageIcon className="w-4 h-4 text-white/80" />
                 <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
                   {org.stats.presence} Stage
                 </span>
@@ -83,7 +83,7 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
             {/* Quick Access Floating Presence Bug */}
             {!isActive && (
               <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-sm flex items-center gap-1 border border-white/10">
-                <StageIcon className="w-2.5 h-2.5 text-yellow-500" />
+                <StageIcon className="w-2.5 h-2.5 text-white/80" />
                 <span className="text-[8px] font-black text-white/80 tabular-nums tracking-widest">
                   {org.stats.presence}
                 </span>

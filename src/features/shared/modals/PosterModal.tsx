@@ -133,13 +133,13 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
                       >
                          <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2 group-hover/artist:text-white/50 transition-colors">Artist</p>
                          <div className="flex items-center gap-1.5">
-                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/artist:text-yellow-400 transition-colors underline decoration-white/0 group-hover/artist:decoration-yellow-400/30 underline-offset-4">{item.artist || "Aera Collective"}</p>
-                           <ArrowUpRight size={10} className="text-white/10 group-hover/artist:text-yellow-400/50 transition-colors" />
+                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/artist:text-white transition-colors underline decoration-white/0 group-hover/artist:decoration-white/30 underline-offset-4">{item.artist || "Collective"}</p>
+                           <ArrowUpRight size={10} className="text-white/10 group-hover/artist:text-white/50 transition-colors" />
                          </div>
                       </div>
                       <div>
                          <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Credits</p>
-                         <p className="text-xs sm:text-sm font-bold text-yellow-500 font-mono">{item.credits || 0}</p>
+                         <p className="text-xs sm:text-sm font-bold text-white/90 font-mono">{item.credits || 0}</p>
                       </div>
                      <div>
                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Format</p>

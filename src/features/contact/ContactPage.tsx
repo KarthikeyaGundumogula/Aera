@@ -97,7 +97,7 @@ export default function ContactPage() {
             transition={{ delay: 0.2 }}
             className="text-sm md:text-base text-white/40 max-w-xl leading-relaxed"
           >
-            We are building Aera alongside our beta community. No middle-men, no
+            We are building the Collective alongside our beta community. No middle-men, no
             tickets. Just a direct frequency to the people shaping this theatre.
           </motion.p>
         </section>
@@ -137,7 +137,7 @@ export default function ContactPage() {
                 <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-2">
                   {contact.label}
                 </h3>
-                <div className="text-lg md:text-xl font-black uppercase tracking-tight mb-2 group-hover:text-brand-accent transition-colors">
+                <div className="text-lg md:text-xl font-black uppercase tracking-tight mb-2 group-hover:text-white transition-colors">
                   {contact.value}
                 </div>
                 <p className="text-[10px] font-medium text-white/20 group-hover:text-white/40 uppercase tracking-widest leading-relaxed">
