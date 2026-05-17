@@ -9,12 +9,12 @@ import { SectionHeader } from "../../components/SectionHeader";
 import { CinematicPageHeader } from "../../components/CinematicPageHeader";
 
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { ReleasesCarousel } from "./components/ReleasesCarousel";
 import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
 import { ArtistSpotlightGrid } from "../../components/ArtistSpotlightGrid";
 import { OriginalStats } from "./components/OriginalStats";
 import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
+import { RecentReleasesSection } from "../shared/components/RecentReleasesSection";
 
 interface OriginalClaims {
   canUpdateMeta: boolean;
@@ -26,7 +26,6 @@ export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [isCatalogueActive, setIsCatalogueActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
@@ -71,33 +70,12 @@ export function OriginalPage() {
 
   // Reset states when navigating between originals
   useEffect(() => {
-    setIsCatalogueActive(false);
     setIsTheaterMode(false);
     setResetKey(0);
   }, [id]);
 
-  // Reveal interactive catalogue after 3 seconds
-  useEffect(() => {
-    setIsCatalogueActive(false); // Reset to poster view first
-    
-    if (!original?.heroHighlights?.length) {
-      return;
-    }
-    
-    const timer = setTimeout(() => {
-      setIsCatalogueActive(true);
-    }, 12000);
-
-    return () => clearTimeout(timer);
-  }, [original, resetKey]);
-
   // Defer expensive secondary data so the page paints immediately on navigation
   const deferredOriginal = useDeferredValue(original);
-
-  const catalogueItems: TheatreItem[] = useMemo(() => {
-    if (!deferredOriginal) return [];
-    return deferredOriginal.heroHighlights || [];
-  }, [deferredOriginal]);
 
   const artistStripItems = useMemo(() => {
     if (!deferredOriginal) return [];
@@ -130,76 +108,50 @@ export function OriginalPage() {
       {/* Hero Header Transformation */}
       <motion.div 
         animate={{ 
-          height: (isMobile && isCatalogueActive) || isTheaterMode 
-            ? (isMobile ? "56.25vw" : "85vh") 
+          height: isTheaterMode 
+            ? "85vh" 
             : (isMobile ? "65vh" : "75vh") 
         }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className="relative w-full overflow-hidden"
       >
-        <AnimatePresence mode="wait">
-          {!isCatalogueActive ? (
+        <div className="absolute inset-0">
+          <img loading="lazy"
+            src={original.coverImage}
+            className="w-full h-full object-cover object-top"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
+          
+          {/* Initial Info Overlay */}
+          <div className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full max-w-[95vw]">
             <motion.div
-              key="static-poster"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
             >
-              <img loading="lazy"
-                src={original.coverImage}
-                className="w-full h-full object-cover object-top"
-                
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
-              
-              {/* Initial Info Overlay (disappears on catalogue reveal) */}
-              <div className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full max-w-[95vw]">
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
-                        Original Spotlight
-                    </span>
-                    <div className="h-px w-8 bg-white/20" />
-                  </div>
-                  <h1
-                    className="font-black tracking-tighter mb-2 uppercase leading-[0.82] whitespace-pre-wrap drop-shadow-2xl"
-                    style={{
-                      fontSize: !original.title.includes(" ") 
-                        ? `clamp(2.5rem, ${Math.min(14, 90 / (original.title.length * 0.8))}vw, 7rem)`
-                        : `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
-                      wordBreak: "normal",
-                      overflowWrap: "normal"
-                    }}
-                  >
-                    {original.title}
-                  </h1>
-                  <p className="text-sm md:text-base text-white/80 font-medium leading-relaxed drop-shadow-md mt-4 max-w-2xl">
-                    {original.description}
-                  </p>
-                </motion.div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
+                    Original Spotlight
+                </span>
+                <div className="h-px w-8 bg-white/20" />
               </div>
+              <h1
+                className="font-black tracking-tighter mb-2 uppercase leading-[0.82] whitespace-pre-wrap drop-shadow-2xl"
+                style={{
+                  fontSize: !original.title.includes(" ") 
+                    ? `clamp(2.5rem, ${Math.min(14, 90 / (original.title.length * 0.8))}vw, 7rem)`
+                    : `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
+                  wordBreak: "normal",
+                  overflowWrap: "normal"
+                }}
+              >
+                {original.title}
+              </h1>
+              <p className="text-sm md:text-base text-white/80 font-medium leading-relaxed drop-shadow-md mt-4 max-w-2xl">
+                {original.description}
+              </p>
             </motion.div>
-          ) : (
-            <motion.div
-              key="interactive-catalogue"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.0 }}
-              className="absolute inset-0 h-full w-full"
-            >
-              <ReleasesCarousel 
-                items={catalogueItems} 
-                initialIndex={catalogueItems.length > 1 ? 1 : 0} 
-                isTheaterMode={isTheaterMode}
-                onToggleTheater={() => setIsTheaterMode(!isTheaterMode)}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+        </div>
 
         {/* Sticky Header */}
         <CinematicPageHeader
@@ -229,10 +181,11 @@ export function OriginalPage() {
           }
         />
 
-        {!isCatalogueActive && (
-          <OriginalStats stats={original.stats} isTheaterMode={isTheaterMode} />
-        )}
+        <OriginalStats stats={original.stats} isTheaterMode={isTheaterMode} />
       </motion.div>
+
+      {/* RECENT RELEASES */}
+      <RecentReleasesSection />
 
       {/* Star Spotlight */}
       <section className="px-8 pt-10 pb-4">

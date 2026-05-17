@@ -8,25 +8,32 @@ interface ModalWrapperProps {
   children: ReactNode;
   className?: string; // Additional classes for the backdrop
   isImmersive?: boolean; // If true, removes padding on mobile for edge-to-edge
+  zIndex?: string; // Optional custom z-index for nested modals
 }
+
+let activeModalCount = 0;
+let storedScrollY = 0;
 
 export function ModalWrapper({ 
   isOpen, 
   onClose, 
   children, 
   className = "",
-  isImmersive = false
+  isImmersive = false,
+  zIndex = "z-[150]"
 }: ModalWrapperProps) {
   // Global scroll lock (iOS-safe) and Escape listener
   useEffect(() => {
     if (!isOpen) return;
 
-    // Save current scroll position before locking
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    document.body.style.overflowY = "scroll"; // keeps scrollbar gutter to prevent layout shift
+    if (activeModalCount === 0) {
+      storedScrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${storedScrollY}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflowY = "scroll"; // keeps scrollbar gutter to prevent layout shift
+    }
+    activeModalCount++;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -34,12 +41,14 @@ export function ModalWrapper({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
-      // Restore scroll position on unlock
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      document.body.style.overflowY = "";
-      window.scrollTo(0, scrollY);
+      activeModalCount--;
+      if (activeModalCount === 0) {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflowY = "";
+        window.scrollTo(0, storedScrollY);
+      }
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
@@ -52,7 +61,7 @@ export function ModalWrapper({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className={`fixed inset-0 z-[150] flex flex-col items-center justify-start sm:justify-center bg-black/95 backdrop-blur-3xl ${isImmersive ? 'p-0 sm:p-8' : 'p-4 sm:p-8'} ${className}`}
+          className={`fixed inset-0 ${zIndex} flex flex-col items-center justify-start sm:justify-center bg-black/95 backdrop-blur-3xl ${isImmersive ? 'p-0 sm:p-8' : 'p-4 sm:p-8'} ${className}`}
           onClick={(e) => {
             e.stopPropagation();
             onClose();

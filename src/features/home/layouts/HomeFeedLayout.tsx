@@ -41,6 +41,7 @@ import { ArtistSpotlightGrid } from '../../../components/ArtistSpotlightGrid';
 import { CinematicPageHeader } from '../../../components/CinematicPageHeader';
 import { ContactCTA } from "../components/ContactCTA";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
+import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 
 // HomeFeedLayoutProps empty for now
 
@@ -362,6 +363,9 @@ export function HomeFeedLayout() {
         </section>
 
         <RollingTicker />
+
+        {/* RECENT RELEASES */}
+        <RecentReleasesSection />
 
         {/* TOP ARTISTS */}
         <ArtistSpotlightGrid

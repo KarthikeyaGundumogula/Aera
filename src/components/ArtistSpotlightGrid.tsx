@@ -1,11 +1,11 @@
 import { memo } from 'react';
-import { Profile } from '../types';
 import { ArtistProfile } from '../features/shared/profile/ArtistProfile';
 import { SectionHeader } from './SectionHeader';
+import { OriginalArtist } from '../types';
 
 interface ArtistSpotlightGridProps {
   title?: string;
-  artists: Profile[];
+  artists: OriginalArtist[];
   rows?: 2 | 3;
   variant?: 'default' | 'featured';
   containerClassName?: string;

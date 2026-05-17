@@ -8,7 +8,7 @@ export function SetsTheatrePage() {
   const navigate = useNavigate();
 
   const set = id ? SETS.find((s) => s.id === id) : null;
-  const setWorks = set ? GRID_ITEMS.filter((item) => item.setId === set.id) : [];
+  const setWorks = set ? GRID_ITEMS.filter((item) => item.srcId === set.id) : [];
 
   const [visibleWorks, setVisibleWorks] = useState(setWorks);
   const [isLoading, setIsLoading] = useState(false);

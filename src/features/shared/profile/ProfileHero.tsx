@@ -168,8 +168,8 @@ export function ProfileHero({
               className={`
                 p-3.5 rounded-full border transition-all duration-500
                 ${isFavorited 
-                  ? "bg-red-500/20 border-red-500/40 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]" 
-                  : "bg-white/5 border-white/10 text-white/30 hover:text-white hover:bg-white/10"
+                  ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)]" 
+                  : "bg-white/[0.03] border-white/10 text-white/30 hover:text-white hover:bg-white/10 backdrop-blur-md"
                 }
               `}
             >

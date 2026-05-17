@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
-import { WorkModal } from "../modals/WorkModal";
+import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
 function getScriptBody(title?: string, text?: string) {
   if (title && title.split(":").length > 1) {
@@ -23,7 +23,7 @@ export function ScriptWork({
     () => getScriptBody(item.title, item.text),
     [item.text, item.title],
   );
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { openWork } = useWorkNavigation();
   const compact = variant === "theatre-mobile";
   const spacious = variant === "feed";
 
@@ -32,14 +32,14 @@ export function ScriptWork({
   return (
     <>
       <div
-        className={`group relative h-full w-full overflow-hidden ${
-          coverImage ? "bg-[#111]" : "bg-[#f4f1ea] text-[#2a2a2a]"
+        className={`group relative h-full w-full overflow-hidden bg-white/[0.03] backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)] ${
+          coverImage ? "bg-[#111]" : "bg-white/[0.03] backdrop-blur-md text-white border border-white/10"
         } ${
           variant === "feed"
             ? "min-h-[300px] transition-transform duration-700 group-hover:scale-[1.02]"
             : ""
         } ${className}`}
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => openWork(item)}
         data-loading-priority={priority}
       >
         {coverImage ? (
@@ -54,7 +54,7 @@ export function ScriptWork({
         ) : (
           /* ── Text screenplay fallback ── */
           <div
-            className={`flex h-full flex-col justify-center overflow-hidden border border-black/5 font-mono shadow-inner select-text ${
+            className={`flex h-full flex-col justify-center overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-md text-white font-mono shadow-2xl select-text ${
               compact
                 ? "p-4 text-[9px] leading-tight"
                 : spacious
@@ -110,7 +110,7 @@ export function ScriptWork({
               </div>
             )}
             <div
-              className={`mt-auto flex justify-between border-t border-black/5 uppercase tracking-widest ${
+              className={`mt-auto flex justify-between border-t border-white/10 uppercase tracking-widest ${
                 compact
                   ? "pt-3 text-[6px] opacity-20"
                   : spacious
@@ -135,9 +135,6 @@ export function ScriptWork({
         <WorkOverlay item={item} variant={variant} />
       </div>
 
-      {isModalOpen && (
-        <WorkModal item={item} onClose={() => setIsModalOpen(false)} />
-      )}
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useRef } from "react";
-import { LayoutPanelLeft, X, ArrowUpRight, ChevronLeft, ChevronRight, RotateCw, BookOpen, Layers, Bookmark } from "lucide-react";
+import { LayoutPanelLeft, X, ArrowUpRight, ChevronLeft, ChevronRight, RotateCw, BookOpen, Layers, Bookmark, Heart, Share2 } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,8 @@ import { ArtistProfile } from "../profile";
 import { ARTISTS_MOCK } from "../../../mock";
 import { CurateOverlay } from "./CurateOverlay";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
+import { WorkActionBar } from "./WorkActionBar";
+import { CinematicToast } from "./CinematicToast";
 
 interface ScriptModalProps {
   item: TheatreItem | null;
@@ -32,6 +34,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
   const [pageIndex, setPageIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showCurate, setShowCurate] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -93,13 +96,25 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
               />
             </div>
 
-            <button
-              onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-all hover:bg-white hover:text-black active:scale-95"
-              aria-label="Close script modal"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            {/* Header Action Bar */}
+            <div className="flex items-center gap-2 shrink-0">
+              <WorkActionBar
+                isLiked={isLiked}
+                setIsLiked={setIsLiked}
+                setToastMessage={setToastMessage}
+                workId={item.id}
+                variant="script"
+              />
+
+              <button
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-all hover:bg-white hover:text-black active:scale-95"
+                aria-label="Close script modal"
+                title="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Comic-book pager */}
@@ -149,12 +164,6 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
                         style={{ ...cardStyle, backfaceVisibility: "hidden" }}
                         onClick={() => setIsFlipped(true)}
                       >
-                        {/* Top-left flip hint */}
-                        <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2 py-1 rounded-md bg-black/50 backdrop-blur-sm border border-white/10">
-                          <RotateCw size={8} className="text-white/40" />
-                          <span className="text-[7px] font-bold uppercase tracking-[0.25em] text-white/35">Details</span>
-                        </div>
-
                         <img loading="lazy"
                           key={pageIndex}
                           src={pages[pageIndex]}
@@ -317,19 +326,7 @@ export function ScriptModal({ item, onClose }: ScriptModalProps) {
       />
 
       {/* Visual Hit Toast */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
-          >
-            <Bookmark size={14} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CinematicToast message={toastMessage} />
 
     </ModalWrapper>
   );

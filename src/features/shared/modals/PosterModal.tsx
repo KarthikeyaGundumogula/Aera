@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, { useState } from "react";
-import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X, Layers, Bookmark } from "lucide-react";
+import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X, Layers, Bookmark, Heart, Share2 } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ModalWrapper } from "./ModalWrapper";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,8 @@ import { ArtistProfile } from "../profile";
 import { ARTISTS_MOCK } from "../../../mock";
 import { CurateOverlay } from "./CurateOverlay";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
+import { WorkActionBar } from "./WorkActionBar";
+import { CinematicToast } from "./CinematicToast";
 
 interface PosterModalProps {
   item: TheatreItem | null;
@@ -17,6 +19,7 @@ interface PosterModalProps {
 export function PosterModal({ item, onClose }: PosterModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isClutterFree, setIsClutterFree] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [showCurate, setShowCurate] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
@@ -183,7 +186,16 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
         )}
 
         {/* Control Buttons */}
-        <div className="flex items-center justify-center gap-6 mt-2">
+        <div className="flex items-center justify-center gap-4 sm:gap-6 mt-2 z-50">
+          <WorkActionBar
+            isLiked={isLiked}
+            setIsLiked={setIsLiked}
+            setToastMessage={setToastMessage}
+            workId={item.id}
+            variant="poster"
+            className="gap-4 sm:gap-6"
+          />
+
             <button 
               onClick={(e) => { e.stopPropagation(); setIsClutterFree(!isClutterFree); }}
               className={`w-12 h-12 flex items-center justify-center rounded-full border transition-all duration-500 hover:scale-110 active:scale-95 shadow-2xl ${isClutterFree ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/20 backdrop-blur-xl'}`}
@@ -194,7 +206,7 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
 
             <button 
               onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}
-              className={`w-12 h-12 flex items-center justify-center rounded-full border transition-all duration-500 hover:scale-110 active:scale-95 shadow-2xl ${isFlipped ? 'bg-yellow-400 text-black border-yellow-400 rotate-180' : 'bg-white/10 text-white border-white/20 backdrop-blur-xl'}`}
+              className={`w-12 h-12 flex items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 active:scale-95 shadow-2xl ${isFlipped ? 'bg-white text-black border-white rotate-180' : 'bg-white/10 text-white/50 border-white/20 backdrop-blur-xl'}`}
               title="Show Info"
             >
               <Info size={20} strokeWidth={2.5} />
@@ -228,19 +240,7 @@ export function PosterModal({ item, onClose }: PosterModalProps) {
       />
 
       {/* Visual Hit Toast */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
-          >
-            <Bookmark size={14} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CinematicToast message={toastMessage} />
 
     </ModalWrapper>
   );

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ScrollToTop } from "./components/utils/ScrollToTop";
 import { MobileNavBar } from "./features/navigation/MobileNavBar";
 
@@ -25,17 +25,26 @@ import { AdminPage } from "./features/admin/AdminPage";
 import ProfilePage from "./features/profile/ProfilePage";
 import { SetsPage, SetDetailPage, SetsTheatrePage } from "./features/sets";
 import { FestivalDetailPage, FestivalTheatrePage } from "./features/festivals";
+import WorkPage from "./features/works/WorkPage";
 
 /**
- * App Component
- * Handles the main routing and global layout wrappers.
+ * AppRoutes — Separated so it can use the useLocation hook inside BrowserRouter.
  */
-export default function App() {
+function AppRoutes() {
+  const location = useLocation();
+
+  // If we navigated to /works/:id from within the app, backgroundLocation
+  // holds the page we came from. We render that page as the background
+  // and the WorkPage floats on top as a modal overlay.
+  const backgroundLocation = location.state?.backgroundLocation;
+
   return (
-    <BrowserRouter>
+    <>
       <ScrollToTop />
       <MobileNavBar />
-      <Routes>
+
+      {/* Background routes — always render the actual page */}
+      <Routes location={backgroundLocation ?? location}>
         <Route path="/" element={<Home />} />
         <Route path="/theatre" element={<TheatrePage />} />
         <Route
@@ -56,12 +65,12 @@ export default function App() {
         <Route path="/profile/edit" element={<ProfileEditPage />} />
         <Route path="/works/new" element={<UploadPage />} />
         <Route path="/ledger" element={<LedgerPage />} />
-        
+
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/originals/new" element={<OriginalCreatePage />} />
         <Route path="/admin/profile/new" element={<ArtistSetupPage />} />
-        
+
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/originals/:id" element={<OriginalPage />} />
         <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />
@@ -78,15 +87,32 @@ export default function App() {
           element={<ComingSoonPage label="Artist Profile" />}
         />
         <Route path="/profile/:profileId" element={<ProfilePage />} />
-        <Route
-          path="/festivals/:id"
-          element={<FestivalDetailPage />}
-        />
-        <Route
-          path="/festivals/:id/theatre"
-          element={<FestivalTheatrePage />}
-        />
+        <Route path="/festivals/:id" element={<FestivalDetailPage />} />
+        <Route path="/festivals/:id/theatre" element={<FestivalTheatrePage />} />
+
+        {/* Standalone work page — when /works/:id is visited directly (shared link) */}
+        <Route path="/works/:id" element={<WorkPage />} />
       </Routes>
+
+      {/* Modal overlay — only when navigated from within the app */}
+      {backgroundLocation && (
+        <Routes>
+          <Route path="/works/:id" element={<WorkPage />} />
+        </Routes>
+      )}
+    </>
+  );
+}
+
+/**
+ * App Component
+ * Handles the main routing and global layout wrappers.
+ */
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   );
 }
+

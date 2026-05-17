@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { motion } from "motion/react";
 import type { LedgerTaggedWork } from "../../../mock/ledger";
-import { WorkModal } from "../../shared/modals/WorkModal";
+import { useWorkNavigation } from "../../shared/../../hooks/useWorkNavigation";
 
 export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] }) {
-  const [selectedWork, setSelectedWork] = useState<LedgerTaggedWork | null>(null);
+  const { openWork } = useWorkNavigation();
 
   if (!works || works.length === 0) return null;
 
@@ -14,7 +13,15 @@ export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] })
         {works.map((work) => (
           <motion.button
             key={work.id}
-            onClick={() => setSelectedWork(work)}
+            onClick={() => openWork({
+              id: work.id,
+              title: `Inspired by ${work.authorName}`,
+              category: work.type === 'poster' ? 'Poster' : 'Edit',
+              image: work.thumbnailUrl,
+              platform: work.platform || 'youtube',
+              srcId: work.srcId || "dQw4w9WgXcQ",
+              originalIds: [],
+            } as any)}
             className="relative rounded-lg overflow-hidden border border-white/20 shadow-xl w-32 h-20 sm:w-40 sm:h-24 flex-shrink-0 cursor-pointer outline-none focus:ring-2 focus:ring-brand-accent/50 bg-black group"
             whileHover={{ scale: 1.05, y: -2 }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -32,22 +39,6 @@ export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] })
           </motion.button>
         ))}
       </div>
-
-      {selectedWork && (
-        <WorkModal 
-          item={{
-            id: selectedWork.id,
-            title: `Inspired by ${selectedWork.authorName}`,
-            category: selectedWork.type === 'poster' ? 'Poster' : 'Edit',
-            image: selectedWork.thumbnailUrl,
-            author: { name: selectedWork.authorName, handle: selectedWork.authorName.toLowerCase(), avatar: "" },
-            platform: selectedWork.platform || 'youtube',
-            srcId: selectedWork.srcId || "dQw4w9WgXcQ", 
-            originalIds: [],
-          } as any}
-          onClose={() => setSelectedWork(null)}
-        />
-      )}
     </>
   );
 }

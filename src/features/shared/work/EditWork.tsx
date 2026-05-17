@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
-
+import { useMemo } from "react";
+import { useState } from "react";
 
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
-import { WorkModal } from "../modals/WorkModal";
 import { getYoutubeFallbackThumbnail } from "../../../utils/embed";
+import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
 export function EditWork({
   item,
@@ -16,7 +16,7 @@ export function EditWork({
   priority = "lazy",
 }: BaseWorkProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { openWork } = useWorkNavigation();
   
   const shouldShowHoverOverlay = useMemo(
     () => showHoverOverlay ?? variant !== "theatre-mobile",
@@ -26,8 +26,8 @@ export function EditWork({
   return (
     <>
       <div
-        className={`group relative h-full w-full overflow-hidden bg-black/40 ${className}`}
-        onClick={() => setIsModalOpen(true)}
+        className={`group relative h-full w-full overflow-hidden bg-white/[0.03] backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)] ${className}`}
+        onClick={() => openWork(item)}
       >
       <img
         onLoad={(e) => {
@@ -74,9 +74,6 @@ export function EditWork({
       <WorkOverlay item={item} variant={variant} />
     </div>
 
-    {isModalOpen && (
-      <WorkModal item={item} onClose={() => setIsModalOpen(false)} />
-    )}
     </>
   );
 }

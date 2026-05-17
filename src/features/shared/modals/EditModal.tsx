@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { RotateCw, ArrowUpRight, X, Layers, Bookmark } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { RotateCw, ArrowUpRight, X, Layers, Bookmark, Heart, Share2 } from "lucide-react";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { Logo } from "../../../components/Logo";
 import { FHLoader } from "../../../components/FHLoader";
@@ -12,6 +12,8 @@ import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { CurateOverlay } from "./CurateOverlay";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
+import { WorkActionBar } from "./WorkActionBar";
+import { CinematicToast } from "./CinematicToast";
 
 interface EditModalProps {
   item: TheatreItem | null;
@@ -32,6 +34,7 @@ declare global {
 export function EditModal({ item, onClose }: EditModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [showCurate, setShowCurate] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(
     null,
@@ -141,19 +144,29 @@ export function EditModal({ item, onClose }: EditModalProps) {
                     duration: 1.5,
                     ease: "easeInOut",
                   }}
-                  className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                  className="w-1.5 h-1.5 rounded-full bg-white/60"
                 />
               </div>
             </div>
 
-            {/* Close Button (FRONT) */}
-            <button
-              onClick={(e) => { e.stopPropagation(); onClose(); }}
-              className="absolute top-3.5 right-3.5 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/50 backdrop-blur-md transition-all hover:bg-white hover:text-black active:scale-95 z-[60]"
-              aria-label="Close modal"
-            >
-              <X size={18} />
-            </button>
+            {/* Action Bar (FRONT Top Right) */}
+            <div className="absolute top-3.5 right-3.5 flex items-center gap-2 z-[60]">
+              <WorkActionBar
+                isLiked={isLiked}
+                setIsLiked={setIsLiked}
+                setToastMessage={setToastMessage}
+                workId={item.id}
+                variant="edit"
+              />
+
+              <button
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/50 backdrop-blur-md transition-all hover:bg-white hover:text-black active:scale-95 shadow-xl"
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           {/* ── BACK SIDE (The Archive Details) ─────────────────────────── */}
@@ -289,19 +302,7 @@ export function EditModal({ item, onClose }: EditModalProps) {
       />
 
       {/* Visual Hit Toast */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
-          >
-            <Bookmark size={14} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CinematicToast message={toastMessage} />
 
     </ModalWrapper>
   );

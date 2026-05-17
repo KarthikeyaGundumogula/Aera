@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Maximize2, X, Play } from "lucide-react";
 import { TheatreItem } from "../../../types";
 import { buildEmbedUrl, getYoutubeFallbackThumbnail } from "../../../utils/embed";
-import { WorkModal } from "../../shared/modals";
+import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
 interface ReleasesCarouselProps {
   items: TheatreItem[];
@@ -20,10 +20,10 @@ export function ReleasesCarousel({
 }: ReleasesCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [direction, setDirection] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isDragging = useRef(false);
+  const { openWork } = useWorkNavigation();
 
   const nextSlide = useCallback(() => {
     setDirection(1);
@@ -240,7 +240,7 @@ export function ReleasesCarousel({
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsModalOpen(true);
+                    openWork(activeItem);
                   }}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white backdrop-blur-xl transition-all hover:bg-white hover:text-black active:scale-95 pointer-events-auto"
                   aria-label="Open Archive Record"
@@ -250,11 +250,6 @@ export function ReleasesCarousel({
               </motion.div>
             )}
           </AnimatePresence>
-
-          <WorkModal 
-            item={isModalOpen ? activeItem : null} 
-            onClose={() => setIsModalOpen(false)} 
-          />
 
 
           {/* Metadata Overlay & Pagination */}
