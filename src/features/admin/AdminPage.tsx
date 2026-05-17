@@ -115,7 +115,7 @@ export function AdminPage() {
                 </p>
 
                 <div className="mt-10 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 group-hover:text-white transition-colors">
-                  <span>Open Rite</span>
+                  <span>Open Festival</span>
                   <Plus className="w-3 h-3 transition-transform group-hover:rotate-90" />
                 </div>
               </div>

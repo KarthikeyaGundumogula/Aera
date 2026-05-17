@@ -10,6 +10,7 @@ import { CinematicPageHeader } from '../../components/CinematicPageHeader';
 import { CommandCenter, CommandItem } from '../../components/CommandCenter';
 import { SectionHeader } from '../../components/SectionHeader';
 import { UpdateSetModal } from './components/UpdateSetModal';
+import { CreateFestivalModal } from './components/CreateFestivalModal';
 
 /**
  * SetDetailPage — /sets/:id
@@ -50,6 +51,7 @@ export function SetDetailPage() {
 
   const [showToast, setShowToast] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isCreateFestivalModalOpen, setIsCreateFestivalModalOpen] = useState(false);
   
   // Local state for immediate updates
   const [localSet, setLocalSet] = useState(set);
@@ -84,6 +86,13 @@ export function SetDetailPage() {
       },
       description: "Exit Collective",
       visible: isJoined,
+    },
+    {
+      label: "Create Festival",
+      icon: <Plus className="w-4 h-4" />,
+      action: () => setIsCreateFestivalModalOpen(true),
+      description: "Start New Festival (Curator)",
+      visible: true, // In real app, check if user is curator
     },
   ], [isJoined, id, navigate]);
 
@@ -275,7 +284,7 @@ export function SetDetailPage() {
             containerClassName="mb-6"
           />
           <p className="text-[11px] text-white/20 leading-relaxed">
-            The stage is quiet. Next ritual is being prepared by the Captains.
+            The stage is quiet. Next festival is being prepared by the Captains.
           </p>
         </section>
       )}
@@ -299,6 +308,18 @@ export function SetDetailPage() {
           set={localSet}
           onClose={() => setIsUpdateModalOpen(false)}
           onSave={(updates) => setLocalSet(prev => prev ? { ...prev, ...updates } : prev)}
+        />
+      )}
+
+      {isCreateFestivalModalOpen && (
+        <CreateFestivalModal
+          setId={localSet.id}
+          isOpen={isCreateFestivalModalOpen}
+          onClose={() => setIsCreateFestivalModalOpen(false)}
+          onCreate={(data) => {
+            console.log("New festival created:", data);
+            // In a real app, this would mutate backend and refresh
+          }}
         />
       )}
     </div>

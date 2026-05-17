@@ -6,7 +6,7 @@ import { ARTISTS_MOCK } from "../../mock";
 import type { OriginalArtist } from "../../types";
 
 /**
- * ProfileEditPage — "The Refining Rite"
+ * ProfileEditPage — "Profile Editor"
  * Dedicated route for artists to update their Stage, socials, and security.
  */
 export default function ProfileEditPage() {

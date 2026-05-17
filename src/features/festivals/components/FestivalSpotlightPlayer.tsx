@@ -61,7 +61,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({ w
   const isFullyLoaded = isYoutube ? isIframeLoaded : (isTwitter ? isTwitterLoaded : true);
 
   return (
-    <section className="pt-10 pb-12" ref={mainContainerRef} aria-label="Panelist Spotlight">
+    <section className="pt-4 pb-12" ref={mainContainerRef} aria-label="Panelist Spotlight">
       <div className="px-4 md:px-8">
         <SectionHeader title="Panelist Spotlight" containerClassName="mb-8" />
         

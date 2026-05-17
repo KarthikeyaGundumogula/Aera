@@ -24,16 +24,14 @@ export function FestivalDetailPage() {
   }, [festival, localFestival]);
 
   const festivalWorks = useMemo(() => GRID_ITEMS.filter(w => (w.platform === 'youtube' || w.platform === 'twitter') && w.srcId).slice(0, 5), []);
-  const [isJoined, setIsJoined] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isAddPanelistModalOpen, setIsAddPanelistModalOpen] = useState(false);
   const [addedPanelists, setAddedPanelists] = useState<OriginalArtist[]>([]);
 
   const baseParticipants = useMemo(() => ARTISTS_MOCK.slice(0, 10), []);
   const participants = useMemo(() => {
-    const base = isJoined ? [ARTISTS_MOCK[0], ...baseParticipants.slice(0, 9)] : baseParticipants;
-    return [...addedPanelists, ...base];
-  }, [addedPanelists, isJoined, baseParticipants]);
+    return [...addedPanelists, ...baseParticipants];
+  }, [addedPanelists, baseParticipants]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -113,7 +111,7 @@ export function FestivalDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#050505] to-transparent opacity-80" />
         </div>
 
-        <div className="relative z-10 px-4 md:px-8 pb-12 pt-20">
+        <div className="relative z-10 px-4 md:px-8 pb-4 pt-20">
           <div className="max-w-4xl">
             {/* Status & Set */}
             <div className="flex items-center gap-3 mb-6">
@@ -144,18 +142,7 @@ export function FestivalDetailPage() {
             </p>
 
             <div className="flex items-center gap-6">
-               <button
-                 onClick={() => setIsJoined(!isJoined)}
-                 className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
-                   isJoined
-                     ? "bg-white/10 text-white/60 border border-white/10"
-                     : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:bg-white/90"
-                 }`}
-               >
-                 {isJoined ? "Joined Festival" : "Join Festival"}
-               </button>
-
-               <div className="flex items-center gap-2">
+               <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-full backdrop-blur-md shadow-2xl">
                  <Clock className="w-4 h-4 text-white/40" />
                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
                    {new Date(localFestival.endDate).toLocaleDateString()}

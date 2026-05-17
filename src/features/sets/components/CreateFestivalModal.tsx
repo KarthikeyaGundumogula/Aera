@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { X, Save } from "lucide-react";
-import { Festival } from "../../../types";
+import { X, Plus } from "lucide-react";
 import { ModalWrapper } from "../../shared/modals/ModalWrapper";
 
-interface UpdateFestivalModalProps {
-  festival: Festival;
+interface CreateFestivalModalProps {
+  setId: string;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (updatedData: {
+  onCreate: (festivalData: {
     title: string;
     description: string;
     rules: string[];
@@ -17,32 +16,32 @@ interface UpdateFestivalModalProps {
   }) => void;
 }
 
-export function UpdateFestivalModal({
-  festival,
+export function CreateFestivalModal({
+  setId,
   isOpen,
   onClose,
-  onSave,
-}: UpdateFestivalModalProps) {
+  onCreate,
+}: CreateFestivalModalProps) {
   const [formData, setFormData] = useState({
-    title: festival.title || "",
-    description: festival.description || "",
-    rulesText: festival.rules ? festival.rules.join("\n") : "",
-    startDate: festival.startDate ? festival.startDate.split("T")[0] : "",
-    endDate: festival.endDate ? festival.endDate.split("T")[0] : "",
+    title: "",
+    description: "",
+    rulesText: "",
+    startDate: "",
+    endDate: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
+    onCreate({
       title: formData.title,
       description: formData.description,
       rules: formData.rulesText.split("\n").filter((r) => r.trim().length > 0),
       startDate: formData.startDate
         ? new Date(formData.startDate).toISOString()
-        : festival.startDate,
+        : new Date().toISOString(),
       endDate: formData.endDate
         ? new Date(formData.endDate).toISOString()
-        : festival.endDate,
+        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
     onClose();
   };
@@ -64,7 +63,7 @@ export function UpdateFestivalModal({
         </button>
 
         <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-8 pr-8 text-white">
-          Update Festival
+          Create Festival
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -80,7 +79,7 @@ export function UpdateFestivalModal({
                 setFormData((p) => ({ ...p, title: e.target.value }))
               }
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all placeholder:text-white/10"
-              placeholder="E.g. The Autumn Festival"
+              placeholder="E.g. The Spring Festival"
             />
           </div>
 
@@ -122,6 +121,7 @@ export function UpdateFestivalModal({
               </label>
               <input
                 type="date"
+                required
                 value={formData.startDate}
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, startDate: e.target.value }))
@@ -135,6 +135,7 @@ export function UpdateFestivalModal({
               </label>
               <input
                 type="date"
+                required
                 value={formData.endDate}
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, endDate: e.target.value }))
@@ -156,8 +157,8 @@ export function UpdateFestivalModal({
               type="submit"
               className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-black bg-white hover:bg-white/90 shadow-[0_10px_30px_rgba(255,255,255,0.15)] transition-all flex items-center gap-2"
             >
-              <Save size={14} />
-              Save Changes
+              <Plus size={14} />
+              Create Festival
             </button>
           </div>
         </form>

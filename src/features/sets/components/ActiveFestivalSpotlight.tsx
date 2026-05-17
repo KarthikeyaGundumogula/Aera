@@ -174,7 +174,7 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
                     onClick={() => navigate(`/festivals/${festival.id}`)}
                     className="w-full flex items-center justify-between px-5 py-4 bg-white text-black rounded-xl font-black text-[11px] uppercase tracking-[0.25em] hover:bg-white/90 transition-colors h-full md:h-auto"
                   >
-                    <span>Enter Rite</span>
+                    <span>Enter Festival</span>
                     <ChevronRight className="w-4 h-4" />
                   </motion.button>
                 </div>

@@ -64,7 +64,7 @@ export default function OriginalCreatePage() {
           >
             <div className="h-px w-12 bg-white/20" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">
-              The Creation Rite
+              Create Original
             </span>
           </motion.div>
 

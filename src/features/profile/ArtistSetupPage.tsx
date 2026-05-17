@@ -25,7 +25,7 @@ interface ProfileFormData {
 }
 
 /**
- * ArtistSetupPage — "The Stage Rite"
+ * ArtistSetupPage — "Stage Setup"
  * Artists set their public profile: portrait, name, tagline, and socials.
  */
 export default function ArtistSetupPage() {
@@ -37,7 +37,7 @@ export default function ArtistSetupPage() {
   );
 
   const labels = {
-    rite: "The Stage Rite",
+    rite: "Stage Setup",
     action: "Shape Your Stage",
     prompt: "Your Stage For the Global theatre, Shape Your Hero, presnt yourself in your tone",
   };
