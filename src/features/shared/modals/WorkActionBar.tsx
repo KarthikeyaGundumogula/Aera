@@ -48,7 +48,7 @@ export const WorkActionBar: React.FC<WorkActionBarProps> = ({
       document.execCommand("copy");
       document.body.removeChild(el);
     }
-    setToastMessage("Link copied to clipboard");
+    setToastMessage("Ready to share");
     setTimeout(() => setToastMessage(null), 3000);
   };
 

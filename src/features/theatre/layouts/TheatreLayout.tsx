@@ -54,7 +54,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             exit={{ y: -100 }}
-            className="fixed top-0 left-0 right-0 z-50 p-6 flex items-center justify-between backdrop-blur-md bg-black/20 border-b border-white/5"
+            className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-black/40 backdrop-blur-xl border-b border-white/5"
           >
             <button 
               onClick={() => navigate(`/profile/${artistId}`)}
@@ -79,9 +79,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
           <motion.header 
             key="global-header"
             initial={{ y: 0 }}
-            animate={{ y: isHeaderVisible ? 0 : -100 }}
-            exit={{ y: -100 }}
-            transition={{ type: "spring", damping: 20, stiffness: 120 }}
+            animate={{ y: 0 }}
             className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5"
           >
             <div className="flex items-center gap-8">
@@ -123,10 +121,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
       </AnimatePresence>
 
       <motion.main 
-        initial={false}
-        animate={{ paddingTop: isHeaderVisible ? 80 : 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 150 }}
-        className="h-full w-full"
+        className="h-full w-full pt-[80px]"
       >
         {isMobile ? (
           <MobileCanvas />

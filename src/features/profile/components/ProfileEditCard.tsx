@@ -143,7 +143,7 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
               <img loading="lazy"
                 src={portraitPreview}
                 alt="Portrait"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-white/5">
@@ -191,6 +191,10 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
             onChange={handlePortraitPick}
           />
         </div>
+        
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">
+          Best: 1:1 Square aspect ratio
+        </span>
 
         {/* Name inline edit with visual hint */}
         <div className="relative group/name w-full max-w-xs flex items-center justify-center gap-2">

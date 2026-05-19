@@ -99,7 +99,7 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   src={previewUrl}
                   alt="Artist portrait preview"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                 />
               ) : (
                 <motion.div
@@ -198,7 +198,7 @@ export function AvatarSection({ file, previewUrl, onChange, onClear }: AvatarSec
                       Upload Portrait
                     </p>
                     <p className="text-[9px] text-white/20 mt-1">
-                      Drag & drop or click — JPG, PNG, WEBP
+                      Best: 1:1 aspect ratio — JPG, PNG, WEBP
                     </p>
                   </div>
                 </motion.div>

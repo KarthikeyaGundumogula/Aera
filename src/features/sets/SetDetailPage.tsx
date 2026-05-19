@@ -178,7 +178,7 @@ export function SetDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="flex-shrink-0 w-[140px] md:w-[180px] aspect-video md:aspect-[2/3] overflow-hidden rounded-lg border border-white/[0.08] shadow-2xl"
+              className="flex-shrink-0 w-[180px] md:w-[240px] aspect-video overflow-hidden rounded-lg border border-white/[0.08] shadow-2xl"
             >
               <img
                 src={localSet.coverImage}

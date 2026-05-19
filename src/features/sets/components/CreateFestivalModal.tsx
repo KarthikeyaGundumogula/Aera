@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
-import { X, Plus } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { X, Plus, UserPlus, AlertCircle, CheckCircle2 } from "lucide-react";
 import { ModalWrapper } from "../../shared/modals/ModalWrapper";
+import { ARTISTS_MOCK } from "../../../mock";
 
 interface CreateFestivalModalProps {
   setId: string;
@@ -13,6 +14,7 @@ interface CreateFestivalModalProps {
     rules: string[];
     startDate: string;
     endDate: string;
+    panelists: string[];
   }) => void;
 }
 
@@ -29,6 +31,26 @@ export function CreateFestivalModal({
     startDate: "",
     endDate: "",
   });
+  const [panelistInput, setPanelistInput] = useState("");
+  const [panelists, setPanelists] = useState<string[]>([]);
+
+  // Simulate checking if the user is a Set Member by matching against ARTISTS_MOCK
+  const isPanelistValid = panelistInput.trim().length > 0 && ARTISTS_MOCK.some(a => 
+    a.name.toLowerCase() === panelistInput.trim().toLowerCase() ||
+    a.socials?.twitter?.toLowerCase() === panelistInput.trim().toLowerCase() ||
+    a.socials?.instagram?.toLowerCase() === panelistInput.trim().toLowerCase()
+  );
+
+  const handleAddPanelist = () => {
+    if (isPanelistValid && !panelists.includes(panelistInput.trim())) {
+      setPanelists([...panelists, panelistInput.trim()]);
+      setPanelistInput("");
+    }
+  };
+
+  const removePanelist = (handle: string) => {
+    setPanelists(panelists.filter(p => p !== handle));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +64,7 @@ export function CreateFestivalModal({
       endDate: formData.endDate
         ? new Date(formData.endDate).toISOString()
         : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      panelists,
     });
     onClose();
   };
@@ -112,6 +135,74 @@ export function CreateFestivalModal({
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all resize-none placeholder:text-white/10"
               placeholder="1. Must be original score&#10;2. Under 3 minutes"
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">
+              Add Panelists
+            </label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={panelistInput}
+                  onChange={(e) => setPanelistInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddPanelist();
+                    }
+                  }}
+                  className={`w-full bg-white/5 border rounded-2xl p-4 pr-12 text-sm font-medium text-white focus:ring-1 outline-none transition-all placeholder:text-white/10 ${
+                    panelistInput.trim().length === 0 
+                      ? 'border-white/10 focus:border-white focus:ring-white/20' 
+                      : isPanelistValid 
+                        ? 'border-green-500/50 focus:border-green-500 focus:ring-green-500/20' 
+                        : 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
+                  }`}
+                  placeholder="Enter member handle (e.g. @karthik_g)"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  {panelistInput.trim().length > 0 && (
+                    isPanelistValid ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertCircle className="w-5 h-5 text-red-500" />
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddPanelist}
+                disabled={!isPanelistValid}
+                className="px-6 rounded-2xl bg-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/20 transition-all flex items-center justify-center shrink-0"
+              >
+                <UserPlus size={14} />
+              </button>
+            </div>
+            
+            {/* Status Message */}
+            <AnimatePresence mode="wait">
+              {panelistInput.trim().length > 0 && !isPanelistValid && (
+                <motion.p 
+                  initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                  className="text-xs text-red-400 font-medium ml-2"
+                >
+                  This user is not a member of the Set.
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            {/* Added Panelists Tags */}
+            {panelists.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {panelists.map((p) => (
+                  <div key={p} className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/5">
+                    <span className="text-xs font-medium text-white">{p}</span>
+                    <button type="button" onClick={() => removePanelist(p)} className="text-white/40 hover:text-white">
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

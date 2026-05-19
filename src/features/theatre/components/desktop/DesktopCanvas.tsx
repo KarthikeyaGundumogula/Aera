@@ -154,7 +154,7 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-black cursor-grab active:cursor-grabbing select-none overscroll-none touch-none"
+      className="relative w-full h-full overflow-hidden bg-transparent cursor-grab active:cursor-grabbing select-none overscroll-none touch-none"
       onMouseDown={(e) => onPointerDown(e.clientX, e.clientY)}
       onMouseMove={(e) => onPointerMove(e.clientX, e.clientY)}
       onMouseUp={onPointerUp}

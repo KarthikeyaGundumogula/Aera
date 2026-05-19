@@ -212,10 +212,10 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
                 }}
                 className="w-full flex items-center justify-between pt-4 border-t border-white/[0.04] group/btn"
               >
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-white transition-colors">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 group-hover:text-white transition-colors">
                   EXPLORE {set.title}'s .. 
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-white/10 group-hover:text-white transition-colors" />
+                <ArrowRight className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
               </button>
             </div>
           </motion.div>

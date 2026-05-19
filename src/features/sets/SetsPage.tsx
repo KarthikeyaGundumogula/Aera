@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -5,6 +6,7 @@ import { Logo } from '../../components/Logo';
 import { ProfileNav } from '../../components/ProfileNav';
 import { FestivalCarousel } from './components/FestivalCarousel';
 import { SetsGrid } from './components/SetsGrid';
+import { CreateSetModal } from './components/CreateSetModal';
 
 /**
  * SetsPage — The /sets route.
@@ -25,6 +27,7 @@ import { SetsGrid } from './components/SetsGrid';
 export function SetsPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isCreateSetOpen, setIsCreateSetOpen] = useState(false);
 
   const getNavClassName = (active: boolean) =>
     `text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${active ? "text-white" : "text-white/60 hover:text-white"}`;
@@ -88,8 +91,17 @@ export function SetsPage() {
         </motion.div>
 
         {/* Zone B — Set Registry */}
-        <SetsGrid />
+        <SetsGrid onCreateSetClick={() => setIsCreateSetOpen(true)} />
       </div>
+
+      <CreateSetModal
+        isOpen={isCreateSetOpen}
+        onClose={() => setIsCreateSetOpen(false)}
+        onCreate={(setData) => {
+          console.log("New Set Data:", setData);
+          // In a real app, send to backend and refresh SetsGrid
+        }}
+      />
     </div>
   );
 }
