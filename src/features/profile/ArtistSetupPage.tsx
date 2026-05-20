@@ -10,6 +10,8 @@ import { LiveStagePreview } from "./components/LiveStagePreview";
 import { ArtistProfile } from "../shared/profile";
 import { ARTISTS_MOCK } from "../../mock";
 import { OriginalArtist } from "../../types";
+import { useAuth } from "../../context/AuthContext";
+
 
 interface ProfileFormData {
   username: string;
@@ -30,6 +32,7 @@ interface ProfileFormData {
  */
 export default function ArtistSetupPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
   const [step, setStep] = useState(1);
   const [successArtist, setSuccessArtist] = useState<OriginalArtist | null>(
@@ -120,14 +123,18 @@ export default function ArtistSetupPage() {
     setIsSaved(true);
 
     const mockArtist = ARTISTS_MOCK[0];
-    setSuccessArtist({
+    const artistDetails = {
       ...mockArtist,
       id: `profile-${formData.username}`,
       name: formData.displayName || mockArtist.name,
       bio: formData.tagline || mockArtist.bio,
       image: formData.portraitPreview || mockArtist.image,
-    });
-  }, [isReadyToSave, formData]);
+      themeBgColor: formData.themeBgColor,
+      themeTextColor: formData.themeTextColor,
+    };
+    register(artistDetails);
+    setSuccessArtist(artistDetails);
+  }, [isReadyToSave, formData, register]);
 
   const handleModalClose = () => setSuccessArtist(null);
 

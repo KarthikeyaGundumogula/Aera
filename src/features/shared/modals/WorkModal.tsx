@@ -25,7 +25,6 @@ export function WorkModal({ item, onClose }: WorkModalProps) {
     case "Script":
       return <ScriptModal item={item} onClose={onClose} />;
     default:
-      console.warn(`Unknown work category: ${category}`);
-      return null;
+      return <EditModal item={item} onClose={onClose} />;
   }
 }

@@ -28,16 +28,10 @@ export function ProfileNav({ className = "" }: { className?: string }) {
 
   const menuItems = [
     {
-      label: "Stage",
-      icon: <UserCircle className="w-4 h-4" />,
-      path: "/profile/new",
-      description: "Access your identity"
-    },
-    {
       label: "Studio",
       icon: <Film className="w-4 h-4" />,
-      path: "/works/new",
-      description: "Deliver your work"
+      path: "/studio",
+      description: "Manage your stage"
     },
     {
       label: "Ledger",

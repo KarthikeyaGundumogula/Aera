@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Plus, Upload as UploadIcon } from 'lucide-react';
 import { ModalWrapper } from '../../shared/modals/ModalWrapper';
@@ -21,10 +21,21 @@ export function CreateSetModal({ isOpen, onClose, onCreate }: CreateSetModalProp
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (formData.imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(formData.imagePreview);
+      }
       const url = URL.createObjectURL(file);
       setFormData((p) => ({ ...p, coverImage: file.name, imagePreview: url }));
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (formData.imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(formData.imagePreview);
+      }
+    };
+  }, [formData.imagePreview]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

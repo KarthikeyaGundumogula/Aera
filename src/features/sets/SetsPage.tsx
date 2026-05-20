@@ -97,10 +97,7 @@ export function SetsPage() {
       <CreateSetModal
         isOpen={isCreateSetOpen}
         onClose={() => setIsCreateSetOpen(false)}
-        onCreate={(setData) => {
-          console.log("New Set Data:", setData);
-          // In a real app, send to backend and refresh SetsGrid
-        }}
+        onCreate={() => undefined}
       />
     </div>
   );

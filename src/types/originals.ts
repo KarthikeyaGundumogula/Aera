@@ -13,6 +13,9 @@ export interface OriginalArtist {
     youtube?: string;
   };
   workedOn?: { id: string; title: string; color?: string }[];
+  themeTextColor?: string;
+  themeBgColor?: string;
+  imagePosition?: string;
 }
 
 export interface OriginalStar {

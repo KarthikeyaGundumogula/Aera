@@ -1,40 +1,33 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, User, Sparkles, ChevronRight } from "lucide-react";
-import { ArtistProfile } from "../shared/profile";
 import { ARTISTS_MOCK } from "../../mock";
 import type { OriginalArtist } from "../../types";
+import { useAuth } from "../../context/AuthContext";
+
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { currentArtist, login } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
-  const [loggedInArtist, setLoggedInArtist] = useState<OriginalArtist | null>(
-    null,
-  );
-  const [successArtist, setSuccessArtist] = useState<OriginalArtist | null>(
-    null,
-  );
 
-  const isLoggedIn = loggedInArtist !== null;
+  const isLoggedIn = currentArtist !== null;
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/studio");
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate finding or creating an artist
-    const mockArtist = ARTISTS_MOCK[0];
-    const artist: OriginalArtist = {
-      ...mockArtist,
-      name: formData.username || mockArtist.name,
-    };
-    setLoggedInArtist(artist);
+    login(formData.username);
   };
 
-  const handleModalClose = () => {
-    setSuccessArtist(null);
-  };
 
   return (
     <div className="relative min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans selection:bg-white selection:text-black">
@@ -97,7 +90,7 @@ export default function LoginPage() {
 
         {/* ─── Content ───────────────────────────────────────────────── */}
         <AnimatePresence mode="wait">
-          {!isLoggedIn ? (
+          {!isLoggedIn && (
             <motion.div
               key="login-form"
               initial={{ opacity: 0, y: 20 }}
@@ -156,58 +149,6 @@ export default function LoginPage() {
                 </button>
               </div>
             </motion.div>
-          ) : (
-            <motion.div
-              key="logged-in-dashboard"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center text-center space-y-10 py-10"
-            >
-              <div className="space-y-3">
-                <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-8 h-8 text-white/40" />
-                </div>
-                <h2 className="text-3xl font-black uppercase tracking-widest">
-                  Stage Verified
-                </h2>
-                <p className="text-xs text-white/30 uppercase tracking-[0.4em] max-w-[240px] mx-auto leading-relaxed">
-                  Your Gallery is accessible. What is your next move?
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-4 w-full pt-6">
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate("/profile/edit")}
-                    className="w-full py-5 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white/90 transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(255,255,255,0.08)]"
-                    id="go-to-edit-btn"
-                  >
-                    Update Stage <ChevronRight className="w-4 h-4" />
-                  </motion.button>
-                <div className="grid grid-cols-2 gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSuccessArtist(loggedInArtist)}
-                    className="py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] text-white/40 hover:bg-white/[0.06] hover:text-white transition-all"
-                    id="view-card-btn"
-                  >
-                    View Card
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate("/")}
-                    className="py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] text-white/40 hover:bg-white/[0.06] hover:text-white transition-all"
-                    id="enter-theatre-btn"
-                  >
-                    Theatre
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
           )}
         </AnimatePresence>
 
@@ -224,9 +165,6 @@ export default function LoginPage() {
           </span>
         </div>
       </div>
-
-      {/* 3D Artist ID Modal on Success */}
-      <ArtistProfile artist={successArtist} onClose={handleModalClose} />
     </div>
   );
 }

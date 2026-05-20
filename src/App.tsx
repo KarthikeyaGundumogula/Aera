@@ -3,29 +3,76 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ScrollToTop } from "./components/utils/ScrollToTop";
 import { MobileNavBar } from "./features/navigation/MobileNavBar";
-
-// Page Imports
+import { AuthProvider } from "./context/AuthContext";
 import { Home } from "./features/home/HomePage";
-import { OriginalPage } from "./features/originals/OriginalPage";
-import { ComingSoonPage } from "./features/shared/ComingSoonPage";
 import { TheatrePage } from "./features/theatre/TheatrePage";
-import { OriginalsTheatrePage } from "./features/originals/OriginalsTheatrePage";
-import UploadPage from "./features/upload/UploadPage";
-import ArtistSetupPage from "./features/profile/ArtistSetupPage";
-import LoginPage from "./features/profile/LoginPage";
-import ProfileEditPage from "./features/profile/ProfileEditPage";
-import OriginalCreatePage from "./features/originals/OriginalCreatePage";
-import OriginalReleaseUploadPage from "./features/upload/OriginalReleaseUploadPage";
-import ContactPage from "./features/contact/ContactPage";
-import { LedgerPage } from "./features/ledger/LedgerPage";
-import { AdminPage } from "./features/admin/AdminPage";
-import ProfilePage from "./features/profile/ProfilePage";
-import { SetsPage, SetDetailPage, SetsTheatrePage } from "./features/sets";
-import { FestivalDetailPage, FestivalTheatrePage } from "./features/festivals";
-import WorkPage from "./features/works/WorkPage";
+
+const OriginalPage = lazy(() =>
+  import("./features/originals/OriginalPage").then((module) => ({
+    default: module.OriginalPage,
+  })),
+);
+const ComingSoonPage = lazy(() =>
+  import("./features/shared/ComingSoonPage").then((module) => ({
+    default: module.ComingSoonPage,
+  })),
+);
+const OriginalsTheatrePage = lazy(() =>
+  import("./features/originals/OriginalsTheatrePage").then((module) => ({
+    default: module.OriginalsTheatrePage,
+  })),
+);
+const UploadPage = lazy(() => import("./features/upload/UploadPage"));
+const ArtistSetupPage = lazy(() => import("./features/profile/ArtistSetupPage"));
+const LoginPage = lazy(() => import("./features/profile/LoginPage"));
+const StudioPage = lazy(() => import("./features/profile/StudioPage"));
+const ProfileEditPage = lazy(() => import("./features/profile/ProfileEditPage"));
+const OriginalCreatePage = lazy(() => import("./features/originals/OriginalCreatePage"));
+const OriginalReleaseUploadPage = lazy(() =>
+  import("./features/upload/OriginalReleaseUploadPage"),
+);
+const ContactPage = lazy(() => import("./features/contact/ContactPage"));
+const LedgerPage = lazy(() =>
+  import("./features/ledger/LedgerPage").then((module) => ({ default: module.LedgerPage })),
+);
+const AdminPage = lazy(() =>
+  import("./features/admin/AdminPage").then((module) => ({ default: module.AdminPage })),
+);
+const ProfilePage = lazy(() => import("./features/profile/ProfilePage"));
+const SetsPage = lazy(() =>
+  import("./features/sets").then((module) => ({ default: module.SetsPage })),
+);
+const SetDetailPage = lazy(() =>
+  import("./features/sets").then((module) => ({ default: module.SetDetailPage })),
+);
+const SetsTheatrePage = lazy(() =>
+  import("./features/sets").then((module) => ({ default: module.SetsTheatrePage })),
+);
+const FestivalDetailPage = lazy(() =>
+  import("./features/festivals").then((module) => ({
+    default: module.FestivalDetailPage,
+  })),
+);
+const FestivalTheatrePage = lazy(() =>
+  import("./features/festivals").then((module) => ({
+    default: module.FestivalTheatrePage,
+  })),
+);
+const WorkPage = lazy(() => import("./features/works/WorkPage"));
+
+function RouteFallback() {
+  return (
+    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
+      <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/35">
+        Loading Scene
+      </p>
+    </div>
+  );
+}
 
 /**
  * AppRoutes — Separated so it can use the useLocation hook inside BrowserRouter.
@@ -43,63 +90,62 @@ function AppRoutes() {
       <ScrollToTop />
       <MobileNavBar />
 
-      {/* Background routes — always render the actual page */}
-      <Routes location={backgroundLocation ?? location}>
-        <Route path="/" element={<Home />} />
-        <Route path="/theatre" element={<TheatrePage />} />
-        <Route
-          path="/originals"
-          element={
-            <ComingSoonPage
-              label="Originals"
-              description="We're shaping the dedicated originals experience next. For now, this page is a placeholder."
-            />
-          }
-        />
-        <Route path="/sets" element={<SetsPage />} />
-        <Route path="/sets/:id" element={<SetDetailPage />} />
-        <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
+      <Suspense fallback={<RouteFallback />}>
+        <Routes location={backgroundLocation ?? location}>
+          <Route path="/" element={<Home />} />
+          <Route path="/theatre" element={<TheatrePage />} />
+          <Route
+            path="/originals"
+            element={
+              <ComingSoonPage
+                label="Originals"
+                description="We're shaping the dedicated originals experience next. For now, this page is a placeholder."
+              />
+            }
+          />
+          <Route path="/sets" element={<SetsPage />} />
+          <Route path="/sets/:id" element={<SetDetailPage />} />
+          <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
 
-        <Route path="/profile/new" element={<ArtistSetupPage />} />
-        <Route path="/profile/login" element={<LoginPage />} />
-        <Route path="/profile/edit" element={<ProfileEditPage />} />
-        <Route path="/works/new" element={<UploadPage />} />
-        <Route path="/ledger" element={<LedgerPage />} />
+          <Route path="/profile/new" element={<ArtistSetupPage />} />
+          <Route path="/profile/login" element={<LoginPage />} />
+          <Route path="/profile/edit" element={<ProfileEditPage />} />
+          <Route path="/studio" element={<StudioPage />} />
+          <Route path="/works/new" element={<UploadPage />} />
+          <Route path="/ledger" element={<LedgerPage />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/admin/originals/new" element={<OriginalCreatePage />} />
-        <Route path="/admin/profile/new" element={<ArtistSetupPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/originals/new" element={<OriginalCreatePage />} />
+          <Route path="/admin/profile/new" element={<ArtistSetupPage />} />
 
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/originals/:id" element={<OriginalPage />} />
-        <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />
-        <Route
-          path="/originals/:id/releases"
-          element={<ComingSoonPage label="Official Releases" />}
-        />
-        <Route
-          path="/originals/:id/releases/new"
-          element={<OriginalReleaseUploadPage />}
-        />
-        <Route
-          path="/artists/:id"
-          element={<ComingSoonPage label="Artist Profile" />}
-        />
-        <Route path="/profile/:profileId" element={<ProfilePage />} />
-        <Route path="/festivals/:id" element={<FestivalDetailPage />} />
-        <Route path="/festivals/:id/theatre" element={<FestivalTheatrePage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/originals/:id" element={<OriginalPage />} />
+          <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />
+          <Route
+            path="/originals/:id/releases"
+            element={<ComingSoonPage label="Official Releases" />}
+          />
+          <Route
+            path="/originals/:id/releases/new"
+            element={<OriginalReleaseUploadPage />}
+          />
+          <Route
+            path="/artists/:id"
+            element={<ComingSoonPage label="Artist Profile" />}
+          />
+          <Route path="/profile/:profileId" element={<ProfilePage />} />
+          <Route path="/festivals/:id" element={<FestivalDetailPage />} />
+          <Route path="/festivals/:id/theatre" element={<FestivalTheatrePage />} />
 
-        {/* Standalone work page — when /works/:id is visited directly (shared link) */}
-        <Route path="/works/:id" element={<WorkPage />} />
-      </Routes>
-
-      {/* Modal overlay — only when navigated from within the app */}
-      {backgroundLocation && (
-        <Routes>
           <Route path="/works/:id" element={<WorkPage />} />
         </Routes>
-      )}
+
+        {backgroundLocation && (
+          <Routes>
+            <Route path="/works/:id" element={<WorkPage />} />
+          </Routes>
+        )}
+      </Suspense>
     </>
   );
 }
@@ -110,9 +156,10 @@ function AppRoutes() {
  */
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-

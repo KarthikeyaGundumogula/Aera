@@ -4,17 +4,10 @@ import { EditWork } from "../../shared/work/EditWork";
 import { PosterWork } from "../../shared/work/PosterWork";
 import { ScriptWork } from "../../shared/work/ScriptWork";
 import { extractSrcId, buildThumbnail } from "../../../utils/embed";
+import type { UploadFormData } from "../types";
 
 interface WorkPreviewProps {
-  formData: {
-    title: string;
-    category: "Edit" | "Poster" | "Script";
-    originalIds: string[];
-    contentUrl: string;
-    scriptPages: { url: string; text: string }[];
-    aspectRatio: number;
-    platform: "youtube" | "twitter";
-  };
+  formData: UploadFormData;
   originalCover?: string;
 }
 

@@ -25,6 +25,9 @@ interface ProfileHeroProps {
     twitter?: string;
     youtube?: string;
   };
+  hideMetrics?: boolean;
+  hideActions?: boolean;
+  onImagePositionChange?: (pos: string) => void;
 }
 
 export function ProfileHero({
@@ -46,8 +49,14 @@ export function ProfileHero({
   scale = 1,
   showGradient = true,
   socials,
-}: ProfileHeroProps) {
+  portraitOverlay,
+  hideMetrics = false,
+  hideActions = false,
+  onImagePositionChange,
+}: ProfileHeroProps & { portraitOverlay?: React.ReactNode }) {
   const gradientId = `profileHeroGradient-${useId()}`;
+  const panX = imagePosition.split(" ")[0] || "50%";
+  const panY = imagePosition.split(" ")[1] || "0%";
 
   return (
     <div 
@@ -89,7 +98,29 @@ export function ProfileHero({
 
         {/* Rows 3, 4, 5: Profile Picture */}
         <div className="col-start-1 row-start-3 row-end-6 relative z-10 w-[45%] md:w-[33.75%] max-w-xl h-full flex items-center justify-center">
-          <div className="w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/5">
+          {/* Vertical Slider (Pan Y) - Left Flank of Profile Photo Frame */}
+          {onImagePositionChange && (
+            <div className="absolute -left-12 md:-left-16 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 py-4 z-20 opacity-40 hover:opacity-100 transition-opacity">
+              <span className="text-[7px] font-black uppercase tracking-widest text-white/30 [writing-mode:vertical-rl] drop-shadow-md select-none">
+                PAN Y
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={panY.replace("%", "")}
+                onChange={(e) => {
+                  onImagePositionChange(`${panX} ${e.target.value}%`);
+                }}
+                className="w-4 h-20 md:h-28 appearance-none bg-white/10 rounded-full outline-none cursor-ns-resize [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md touch-none"
+                style={{ WebkitAppearance: "slider-vertical" as any }}
+              />
+            </div>
+          )}
+
+
+
+          <div className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/5">
             {image ? (
               <img loading="lazy"
                 src={image}
@@ -100,6 +131,13 @@ export function ProfileHero({
             ) : (
               <div className="w-full h-full flex items-center justify-center opacity-10">
                 <Users size={48} />
+              </div>
+            )}
+            
+            {/* Absolute Centered Portrait Overlay */}
+            {portraitOverlay && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
+                {portraitOverlay}
               </div>
             )}
           </div>
@@ -165,63 +203,68 @@ export function ProfileHero({
         </div>
 
         {/* Bottom Half: Centered Metrics & Actions */}
-        <div className="w-full flex flex-col items-center gap-10">
-          <div className="flex justify-center gap-12 md:gap-24">
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <Users
-                className="w-4 h-4 md:w-6 md:h-6 opacity-50 text-white"
-              />
-              <span
-                className="text-sm md:text-xl font-black tracking-tight text-white"
-              >
-                {followers}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <Sun
-                className="w-4 h-4 md:w-6 md:h-6 opacity-50 text-white"
-              />
-              <span
-                className="text-sm md:text-xl font-black tracking-tight text-white"
-              >
-                {presence}
-              </span>
-            </div>
-          </div>
+        {(!hideMetrics || !hideActions) && (
+          <div className="w-full flex flex-col items-center gap-10">
+            {!hideMetrics && (
+              <div className="flex justify-center gap-12 md:gap-24">
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <Users
+                    className="w-4 h-4 md:w-6 md:h-6 opacity-50 text-white"
+                  />
+                  <span
+                    className="text-sm md:text-xl font-black tracking-tight text-white"
+                  >
+                    {followers}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <Sun
+                    className="w-4 h-4 md:w-6 md:h-6 opacity-50 text-white"
+                  />
+                  <span
+                    className="text-sm md:text-xl font-black tracking-tight text-white"
+                  >
+                    {presence}
+                  </span>
+                </div>
+              </div>
+            )}
 
-          {/* Action Group */}
-          <div className="flex items-center gap-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onFollow}
-              className={`
-                px-10 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500
-                ${isFollowing 
-                  ? "bg-white/10 text-white/60 border border-white/10" 
-                  : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)]"
-                }
-              `}
-            >
-              {isFollowing ? "Following" : "Follow"}
-            </motion.button>
+            {!hideActions && (
+              <div className="flex items-center gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onFollow}
+                  className={`
+                    px-10 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500
+                    ${isFollowing 
+                      ? "bg-white/10 text-white/60 border border-white/10" 
+                      : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)]"
+                    }
+                  `}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onFavorite}
-              className={`
-                p-3.5 rounded-full border transition-all duration-500
-                ${isFavorited 
-                  ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)]" 
-                  : "bg-white/[0.03] border-white/10 text-white/30 hover:text-white hover:bg-white/10 backdrop-blur-md"
-                }
-              `}
-            >
-              <Heart className={`w-4 h-4 ${isFavorited ? "fill-current" : ""}`} />
-            </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onFavorite}
+                  className={`
+                    p-3.5 rounded-full border transition-all duration-500
+                    ${isFavorited 
+                      ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)]" 
+                      : "bg-white/[0.03] border-white/10 text-white/30 hover:text-white hover:bg-white/10 backdrop-blur-md"
+                    }
+                  `}
+                >
+                  <Heart className={`w-4 h-4 ${isFavorited ? "fill-current" : ""}`} />
+                </motion.button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Global Bottom Gradient (Blends the entire Hero into the Feed Section smoothly) */}

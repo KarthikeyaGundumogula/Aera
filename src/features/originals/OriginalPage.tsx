@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, Bookmark, Settings, Plus } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useDeferredValue } from "react";
-import { TheatreItem } from "../../types";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
 import { ArtistProfile, PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
@@ -26,19 +25,23 @@ export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
   const isMobile = useMediaQuery();
-  
-  // JWT Claims Mock - In a real app, this would come from a decoded token
+  const baseOriginal = id ? ORIGINALS_DATA[id] : null;
+  const [localOriginal, setLocalOriginal] = useState(baseOriginal);
+
   const userClaims: OriginalClaims = {
     canUpdateMeta: true,
     canCreateRelease: true,
   };
 
-  const original = id ? ORIGINALS_DATA[id] : null;
+  useEffect(() => {
+    setLocalOriginal(baseOriginal);
+    setShowManagement(false);
+  }, [baseOriginal]);
+
+  const original = localOriginal;
 
   const commandItems: CommandItem[] = useMemo(() => [
     {
@@ -66,13 +69,7 @@ export function OriginalPage() {
       description: "Drop an Update",
       visible: userClaims.canCreateRelease,
     },
-  ], [original, userClaims, showToast]);
-
-  // Reset states when navigating between originals
-  useEffect(() => {
-    setIsTheaterMode(false);
-    setResetKey(0);
-  }, [id]);
+  ], [navigate, original?.id, showToast, userClaims.canCreateRelease, userClaims.canUpdateMeta]);
 
   // Defer expensive secondary data so the page paints immediately on navigation
   const deferredOriginal = useDeferredValue(original);
@@ -104,13 +101,11 @@ export function OriginalPage() {
   }
 
   return (
-    <div className={`min-h-screen bg-[#050505] overflow-y-auto no-scrollbar transition-all duration-300 ${!isTheaterMode ? "pt-[68px] md:pt-[72px]" : ""}`}>
+    <div className="min-h-screen bg-[#050505] overflow-y-auto no-scrollbar transition-all duration-300 pt-[68px] md:pt-[72px]">
       {/* Hero Header Transformation */}
       <motion.div 
         animate={{ 
-          height: isTheaterMode 
-            ? "85vh" 
-            : (isMobile ? "65vh" : "75vh") 
+          height: isMobile ? "65vh" : "75vh"
         }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className="relative w-full overflow-hidden"
@@ -158,10 +153,7 @@ export function OriginalPage() {
           title={original.title}
           onBack={() => navigate('/')}
           onTitleClick={() => {
-            setResetKey(prev => prev + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            // Also target the internal scroll container if present
-            document.querySelector('.overflow-y-auto')?.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           rightActions={
             <>
@@ -181,7 +173,7 @@ export function OriginalPage() {
           }
         />
 
-        <OriginalStats stats={original.stats} isTheaterMode={isTheaterMode} />
+        <OriginalStats stats={original.stats} />
       </motion.div>
 
       {/* RECENT RELEASES */}
@@ -196,11 +188,11 @@ export function OriginalPage() {
 
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
-            {STARS_MOCK.map((star) => (
+            {STARS_MOCK.map((star, index) => (
               <PersonProfile 
                 key={star.actorName} 
                 person={star} 
-                delay={STARS_MOCK.indexOf(star) * 0.15}
+                delay={index * 0.15}
                 type="Star"
               />
             ))}
@@ -217,11 +209,11 @@ export function OriginalPage() {
 
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
-            {MAKERS_MOCK.map((maker) => (
+            {MAKERS_MOCK.map((maker, index) => (
               <MakerProfile 
                 key={maker.actorName} 
                 person={maker} 
-                delay={MAKERS_MOCK.indexOf(maker) * 0.15}
+                delay={index * 0.15}
               />
             ))}
           </div>
@@ -306,10 +298,9 @@ export function OriginalPage() {
           <OriginalManagementModal
             original={original}
             onClose={() => setShowManagement(false)}
-            onSave={(updated) => {
-              console.log("Original Updated:", updated);
-              // In a real app, you'd trigger a re-fetch or update global state
-            }}
+            onSave={(updated) =>
+              setLocalOriginal((prev) => (prev ? { ...prev, ...updated } : prev))
+            }
           />
         )}
       </AnimatePresence>

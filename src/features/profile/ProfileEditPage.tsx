@@ -15,12 +15,6 @@ export default function ProfileEditPage() {
   // In a real app, this would come from an Auth context or API
   const artist: OriginalArtist = ARTISTS_MOCK[0];
 
-  const handleSave = (updated: OriginalArtist & { newPassword?: string }) => {
-    console.log("Saving profile:", updated);
-    // Simulate API call
-    // navigate("/profile/dashboard") or similar
-  };
-
   return (
     <div className="relative min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans selection:bg-white selection:text-black">
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
@@ -71,7 +65,7 @@ export default function ProfileEditPage() {
         </div>
 
         {/* ─── Stage Edit Card ─────────────────────────────────────── */}
-        <ProfileEditCard artist={artist} onSave={handleSave} />
+        <ProfileEditCard artist={artist} onSave={() => undefined} />
 
         {/* Footer info */}
         <div className="mt-auto pt-12 border-t border-white/5 flex items-center justify-between opacity-20">

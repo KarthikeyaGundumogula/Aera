@@ -3,11 +3,13 @@ import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Monitor, Tv, Smartphone, Square, Film } from "lucide-react";
 import { WorkPreview } from "../WorkPreview";
 import { THEATRE_FORMATS } from "../../../../constants/formats";
+import type { Original } from "../../../../types";
+import type { UpdateUploadFormData, UploadFormData } from "../../types";
 
 interface FormatStepProps {
-  formData: any;
-  currentOriginal: any;
-  setFormData: (data: any) => void;
+  formData: UploadFormData;
+  currentOriginal?: Original;
+  setFormData: UpdateUploadFormData;
   onNext: () => void;
   onBack: () => void;
 }

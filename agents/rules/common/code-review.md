@@ -35,6 +35,8 @@ Before marking code complete:
 - [ ] No console.log or debug statements
 - [ ] Tests exist for new functionality
 - [ ] Test coverage meets 80% minimum
+- [ ] Frontend changes follow `agents/rules/web/performance.md`
+- [ ] `npm run build` was checked for bundle regressions when frontend code changed
 
 ## Security Review Triggers
 

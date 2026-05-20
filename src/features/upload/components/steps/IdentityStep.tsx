@@ -1,11 +1,12 @@
 import { motion } from "motion/react";
 import { Film, Image as ImageIcon, BookOpen, ChevronRight } from "lucide-react";
 import { THEATRE_FORMATS } from "../../../../constants/formats";
+import type { UpdateUploadFormData, UploadCategory } from "../../types";
 
 interface IdentityStepProps {
-  category: "Edit" | "Poster" | "Script";
+  category: UploadCategory;
   title: string;
-  setFormData: (data: any) => void;
+  setFormData: UpdateUploadFormData;
   onNext: () => void;
 }
 

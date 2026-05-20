@@ -1,11 +1,13 @@
 import { motion } from "motion/react";
 import { Sparkles, Clapperboard } from "lucide-react";
 import { WorkPreview } from "../WorkPreview";
+import type { Original } from "../../../../types";
+import type { UploadFormData } from "../../types";
 
 interface ReviewStepProps {
   isSubmitting: boolean;
-  formData: any;
-  currentOriginal: any;
+  formData: UploadFormData;
+  currentOriginal?: Original;
   onRelease: () => void;
   onBack: () => void;
 }

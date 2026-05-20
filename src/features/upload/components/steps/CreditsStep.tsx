@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight, CheckCircle2, Search, X } from "lucide-react";
 import { Original } from "../../../../types";
 import { OWN_RELEASE_ORIGINAL } from "../../../../constants/originals";
+import type { UpdateUploadFormData } from "../../types";
 
 interface CreditsStepProps {
   originals: Original[];
   selectedIds: string[];
-  setFormData: (data: any) => void;
+  setFormData: UpdateUploadFormData;
   onNext: () => void;
   onBack: () => void;
 }
@@ -95,7 +96,12 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
                     animate={{ scale: 1, opacity: 1 }}
                     className="relative group w-16 aspect-square rounded-lg overflow-hidden border border-white/20"
                   >
-                    <img loading="lazy" src={org.coverImage} className="w-full h-full object-cover" />
+                    <img
+                      loading="lazy"
+                      src={org.coverImage}
+                      alt={org.title}
+                      className="w-full h-full object-cover object-top"
+                    />
                     <button 
                       onClick={() => toggleSelection(org.id)}
                       className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
@@ -126,7 +132,12 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
                     isSelected ? "border-white shadow-[0_0_30px_rgba(255,255,255,0.1)]" : "border-white/5 hover:border-white/20 bg-white/[0.02]"
                   }`}
                 >
-                  <img loading="lazy" src={org.coverImage} className={`w-full h-full object-cover transition-opacity ${isSelected ? "opacity-40" : "opacity-60 group-hover:opacity-100"}`} />
+                  <img
+                    loading="lazy"
+                    src={org.coverImage}
+                    alt={org.title}
+                    className={`w-full h-full object-cover object-top transition-opacity ${isSelected ? "opacity-40" : "opacity-60 group-hover:opacity-100"}`}
+                  />
                   {isOwnRelease && (
                     <div className="absolute top-3 left-3 bg-white text-black text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter z-10 shadow-xl">
                       Independent

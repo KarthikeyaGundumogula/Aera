@@ -1,14 +1,20 @@
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight, Upload, Image as ImageIcon, X, Plus } from "lucide-react";
 import { useRef } from "react";
+import type {
+  UpdateUploadFormData,
+  UploadCategory,
+  UploadPlatform,
+  UploadScriptPage,
+} from "../../types";
 
 interface SourceStepProps {
-  category: "Edit" | "Poster" | "Script";
-  platform: "youtube" | "twitter";
+  category: UploadCategory;
+  platform: UploadPlatform;
   contentUrl: string;
-  scriptPages: { url: string; text: string }[];
+  scriptPages: UploadScriptPage[];
   originalIds: string[];
-  setFormData: (data: any) => void;
+  setFormData: UpdateUploadFormData;
   onNext: () => void;
   onBack: () => void;
 }
@@ -184,7 +190,12 @@ export function SourceStep({
                     className="flex gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 group"
                   >
                     <div className="relative w-24 aspect-[2/3] rounded-lg overflow-hidden border border-white/10 shrink-0">
-                      <img loading="lazy" src={page.url} className="w-full h-full object-cover" alt={`Page ${idx + 1}`} />
+                      <img
+                        loading="lazy"
+                        src={page.url}
+                        className="w-full h-full object-cover object-top"
+                        alt={`Page ${idx + 1}`}
+                      />
                       <div className="absolute top-1 left-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[8px] font-black">
                         {String(idx + 1).padStart(2, '0')}
                       </div>

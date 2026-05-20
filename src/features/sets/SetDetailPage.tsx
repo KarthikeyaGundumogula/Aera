@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, Film, Sparkles, Settings, Plus, Heart, Bookmark, Upload, LogOut } from 'lucide-react';
@@ -55,11 +55,10 @@ export function SetDetailPage() {
   
   // Local state for immediate updates
   const [localSet, setLocalSet] = useState(set);
-  
-  // Update localSet when route changes and set loads
-  useMemo(() => {
-    if (set && set.id !== localSet?.id) setLocalSet(set);
-  }, [set, localSet]);
+
+  useEffect(() => {
+    setLocalSet(set);
+  }, [set]);
 
   const setCommandItems: CommandItem[] = useMemo(() => [
     {
@@ -316,10 +315,7 @@ export function SetDetailPage() {
           setId={localSet.id}
           isOpen={isCreateFestivalModalOpen}
           onClose={() => setIsCreateFestivalModalOpen(false)}
-          onCreate={(data) => {
-            console.log("New festival created:", data);
-            // In a real app, this would mutate backend and refresh
-          }}
+          onCreate={() => undefined}
         />
       )}
     </div>

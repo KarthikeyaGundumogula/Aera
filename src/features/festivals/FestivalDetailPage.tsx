@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, UserPlus, Share2, Settings, Upload, Plus } from 'lucide-react';
 import { FESTIVALS, SETS, ARTISTS_MOCK, GRID_ITEMS } from '../../mock';
@@ -19,9 +19,9 @@ export function FestivalDetailPage() {
   const set = useMemo(() => festival ? SETS.find(s => s.id === festival.setId) : null, [festival]);
 
   const [localFestival, setLocalFestival] = useState(festival);
-  useMemo(() => {
-    if (festival && festival.id !== localFestival?.id) setLocalFestival(festival);
-  }, [festival, localFestival]);
+  useEffect(() => {
+    setLocalFestival(festival);
+  }, [festival]);
 
   const festivalWorks = useMemo(() => GRID_ITEMS.filter(w => (w.platform === 'youtube' || w.platform === 'twitter') && w.srcId).slice(0, 5), []);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -35,6 +35,12 @@ export function FestivalDetailPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  const handleShare = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const shareUrl = window.location.href;
+    void navigator.clipboard?.writeText(shareUrl);
   }, []);
 
   if (!localFestival || !set) return null;
@@ -83,7 +89,7 @@ export function FestivalDetailPage() {
     { 
       label: 'Share', 
       icon: <Share2 className="w-4 h-4" />, 
-      action: () => console.log('Share'),
+      action: handleShare,
       description: 'Copy festival link',
       visible: true,
     },
@@ -178,7 +184,7 @@ export function FestivalDetailPage() {
           isOpen={isUpdateModalOpen}
           festival={localFestival}
           onClose={() => setIsUpdateModalOpen(false)}
-          onSave={(updates) => setLocalFestival((prev: any) => prev ? { ...prev, ...updates } : prev)}
+          onSave={(updates) => setLocalFestival((prev) => (prev ? { ...prev, ...updates } : prev))}
         />
       )}
 

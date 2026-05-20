@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   User,
@@ -67,11 +67,14 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file?.type.startsWith("image/")) return;
+      if (portraitPreview && portraitPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(portraitPreview);
+      }
       setPortraitFile(file);
       setPortraitPreview(URL.createObjectURL(file));
       e.target.value = "";
     },
-    [],
+    [portraitPreview],
   );
 
   const handlePortraitClear = useCallback(() => {
@@ -115,7 +118,7 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
       ...artist,
       newPassword,
     };
-    onSave(updated as any);
+    onSave(updated);
     setIsPasswordSaved(true);
     setTimeout(() => {
       setIsPasswordSaved(false);
@@ -125,6 +128,14 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
       setConfirmPassword("");
     }, 2000);
   }, [artist, newPassword, passwordsMatch, onSave]);
+
+  useEffect(() => {
+    return () => {
+      if (portraitPreview && portraitPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(portraitPreview);
+      }
+    };
+  }, [portraitPreview]);
 
   /* ── render ───────────────────────────────────────────────────────── */
   return (
