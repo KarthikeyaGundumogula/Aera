@@ -39,6 +39,8 @@ export function UploadStudioFlow({
   onComplete,
   originals,
   initialOriginalIds = [],
+  festivalId,
+  setId,
 }: UploadFlowConfig) {
   const [step, setStep] = useState<UploadStep>("IDENTITY");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,6 +102,8 @@ export function UploadStudioFlow({
       credits: 0,
       aspectRatio: formData.aspectRatio,
       originalIds: formData.originalIds,
+      festivalId,
+      setId,
     };
     
     addWork(newWork);
@@ -107,7 +111,7 @@ export function UploadStudioFlow({
     window.setTimeout(() => {
       onComplete();
     }, 3500);
-  }, [onComplete, formData, addWork]);
+  }, [onComplete, formData, addWork, festivalId, setId]);
 
   useEffect(() => {
     const activeBlobUrls = [

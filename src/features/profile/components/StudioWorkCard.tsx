@@ -3,6 +3,7 @@ import { Pencil, Check, X, Film, FileText, Image as ImageIcon, Sparkles } from "
 import { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 import { getYoutubeFallbackThumbnail } from "../../../utils/embed";
+import { ModalWrapper } from "../../shared/modals/ModalWrapper";
 
 interface StudioWorkCardProps {
   item: TheatreItem;
@@ -130,56 +131,59 @@ export function StudioWorkCard({ item, onRename }: StudioWorkCardProps) {
           </span>
         </div>
 
-        {/* Edit Button (Top Right) */}
+        {/* Edit Button (Top Right) - Always visible for touch/mobile users, styled to stand out */}
         {!isEditing && (
           <button
             onClick={handleEditClick}
-            className="absolute top-2 right-2 z-20 p-1.5 rounded-lg bg-black/60 border border-white/10 text-white/40 hover:text-white hover:bg-black/90 hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 shadow-md"
+            className="absolute top-2 right-2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/85 border border-white/20 text-white hover:bg-white hover:text-black active:scale-95 transition-all opacity-95 md:opacity-65 md:group-hover:opacity-100 shadow-xl"
             aria-label="Edit title"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-3 h-3 text-current" />
+            <span className="text-[9px] font-black uppercase tracking-wider">EDIT</span>
           </button>
         )}
-
-        {/* Inline rename input overlay */}
-        {isEditing && (
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="absolute inset-0 bg-black/90 backdrop-blur-md z-30 flex flex-col justify-center p-3 animate-in fade-in duration-200"
-          >
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40 mb-1.5">
-              Rename Work Title
-            </span>
-            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg p-1.5 mb-2 focus-within:border-white/30 transition-all">
-              <input
-                ref={inputRef}
-                type="text"
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-1 bg-transparent text-xs font-bold text-white outline-none pl-1"
-                placeholder="New work title"
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={handleCancel}
-                className="flex items-center justify-center p-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/5 text-white/40 hover:text-white transition-all"
-                title="Cancel"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleSave}
-                className="flex items-center justify-center p-1 rounded-md bg-white text-black hover:bg-white/90 transition-all"
-                title="Save Changes"
-              >
-                <Check className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Spacious Modal Overlay for renaming */}
+      <ModalWrapper isOpen={isEditing} onClose={() => setIsEditing(false)}>
+        <div className="w-full max-w-md bg-[#0b0c10] border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col gap-6">
+          <div className="space-y-1">
+            <h3 className="text-lg font-black uppercase tracking-tight text-white/80">
+              Edit Title
+            </h3>
+          </div>
+          
+          <div className="space-y-1.5">
+            <label className="block text-[8px] font-black uppercase tracking-[0.25em] text-white/30 pl-1">
+              Title
+            </label>
+            <input
+              ref={inputRef}
+              type="text"
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-sm font-bold text-white focus:border-white/30 focus:bg-white/10 outline-none transition-all"
+              placeholder="New work title"
+            />
+          </div>
+
+          <div className="flex gap-3 justify-end mt-2">
+            <button
+              onClick={(e) => handleCancel(e)}
+              className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white/60 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={(e) => handleSave(e)}
+              className="px-6 py-3 rounded-xl bg-white text-black hover:bg-white/90 text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+            >
+              Save Title
+            </button>
+          </div>
+        </div>
+      </ModalWrapper>
 
       {/* ─── Metadata Strip ─── */}
       <div className="flex flex-col p-3 border-t border-white/5 gap-1">

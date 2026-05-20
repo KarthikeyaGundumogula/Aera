@@ -31,4 +31,6 @@ export interface UploadFlowConfig {
   onComplete: () => void;
   originals: Original[];
   initialOriginalIds?: string[];
+  festivalId?: string;
+  setId?: string;
 }

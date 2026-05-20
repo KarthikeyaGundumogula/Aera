@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { ProfileEditCard } from "./components/ProfileEditCard";
-import { ARTISTS_MOCK } from "../../mock";
+import { useAuth } from "../../context/AuthContext";
 import type { OriginalArtist } from "../../types";
 
 /**
@@ -11,9 +11,12 @@ import type { OriginalArtist } from "../../types";
  */
 export default function ProfileEditPage() {
   const navigate = useNavigate();
+  const { currentArtist, updateProfile } = useAuth();
 
-  // In a real app, this would come from an Auth context or API
-  const artist: OriginalArtist = ARTISTS_MOCK[0];
+  if (!currentArtist) {
+    navigate("/");
+    return null;
+  }
 
   return (
     <div className="relative min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans selection:bg-white selection:text-black">
@@ -65,7 +68,13 @@ export default function ProfileEditPage() {
         </div>
 
         {/* ─── Stage Edit Card ─────────────────────────────────────── */}
-        <ProfileEditCard artist={artist} onSave={() => undefined} />
+        <ProfileEditCard 
+          artist={currentArtist} 
+          onSave={(updated) => {
+            updateProfile(updated);
+            navigate("/profile"); // optional: go back to profile or stay
+          }} 
+        />
 
         {/* Footer info */}
         <div className="mt-auto pt-12 border-t border-white/5 flex items-center justify-between opacity-20">

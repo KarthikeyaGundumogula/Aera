@@ -28,6 +28,7 @@ interface ProfileHeroProps {
   hideMetrics?: boolean;
   hideActions?: boolean;
   onImagePositionChange?: (pos: string) => void;
+  leftFlankContent?: React.ReactNode;
 }
 
 export function ProfileHero({
@@ -53,10 +54,9 @@ export function ProfileHero({
   hideMetrics = false,
   hideActions = false,
   onImagePositionChange,
+  leftFlankContent,
 }: ProfileHeroProps & { portraitOverlay?: React.ReactNode }) {
   const gradientId = `profileHeroGradient-${useId()}`;
-  const panX = imagePosition.split(" ")[0] || "50%";
-  const panY = imagePosition.split(" ")[1] || "0%";
 
   return (
     <div 
@@ -98,23 +98,10 @@ export function ProfileHero({
 
         {/* Rows 3, 4, 5: Profile Picture */}
         <div className="col-start-1 row-start-3 row-end-6 relative z-10 w-[45%] md:w-[33.75%] max-w-xl h-full flex items-center justify-center">
-          {/* Vertical Slider (Pan Y) - Left Flank of Profile Photo Frame */}
-          {onImagePositionChange && (
-            <div className="absolute -left-12 md:-left-16 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 py-4 z-20 opacity-40 hover:opacity-100 transition-opacity">
-              <span className="text-[7px] font-black uppercase tracking-widest text-white/30 [writing-mode:vertical-rl] drop-shadow-md select-none">
-                PAN Y
-              </span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={panY.replace("%", "")}
-                onChange={(e) => {
-                  onImagePositionChange(`${panX} ${e.target.value}%`);
-                }}
-                className="w-4 h-20 md:h-28 appearance-none bg-white/10 rounded-full outline-none cursor-ns-resize [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md touch-none"
-                style={{ WebkitAppearance: "slider-vertical" as any }}
-              />
+          {/* Left Flank slot (e.g. for Pan Y Slider) */}
+          {leftFlankContent && (
+            <div className="absolute -left-12 md:-left-16 top-1/2 -translate-y-1/2 z-20">
+              {leftFlankContent}
             </div>
           )}
 

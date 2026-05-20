@@ -20,7 +20,7 @@ export function useWorkNavigation() {
 
   const openWork = (item: TheatreItem) => {
     navigate(`/works/${item.id}`, {
-      state: { backgroundLocation: location },
+      state: { backgroundLocation: location, item },
     });
   };
 

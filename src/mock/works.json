@@ -613,5 +613,103 @@
     "credits": 300,
     "artist": "Frame_Scholar",
     "image": "/posters/og.jpeg"
+  },
+  {
+    "id": "w-karthik-1",
+    "title": "Neon Nights Edit",
+    "category": "Edit",
+    "type": "video",
+    "aspectRatio": 1.77,
+    "credits": 4200,
+    "artist": "Karthik G",
+    "artistId": "fh-001",
+    "originalId": "og-original",
+    "platform": "youtube",
+    "srcId": "ePOglweqy7o"
+  },
+  {
+    "id": "w-karthik-2",
+    "title": "Shadow Canvas",
+    "category": "Poster",
+    "aspectRatio": 0.66,
+    "credits": 1500,
+    "artist": "Karthik G",
+    "artistId": "fh-001",
+    "originalId": "og-original",
+    "image": "/posters/og.jpeg"
+  },
+  {
+    "id": "w-karthik-3",
+    "title": "Cinematic Flow",
+    "category": "Edit",
+    "type": "video",
+    "aspectRatio": 1.0,
+    "credits": 2800,
+    "artist": "Karthik G",
+    "artistId": "fh-001",
+    "originalId": "kgf-original",
+    "platform": "youtube",
+    "srcId": "D9O20qxyvT0"
+  },
+  {
+    "id": "w-priya-1",
+    "title": "Golden Hour Grades",
+    "category": "Edit",
+    "type": "video",
+    "aspectRatio": 2.39,
+    "credits": 3100,
+    "artist": "Priya Nair",
+    "artistId": "fh-002",
+    "originalId": "vikram-original",
+    "platform": "youtube",
+    "srcId": "GG1_DsScm6U"
+  },
+  {
+    "id": "w-priya-2",
+    "title": "The Archive Cut",
+    "category": "Poster",
+    "aspectRatio": 0.75,
+    "credits": 890,
+    "artist": "Priya Nair",
+    "artistId": "fh-002",
+    "originalId": "rrr-original",
+    "image": "/posters/rrr.jpeg"
+  },
+  {
+    "id": "w-priya-3",
+    "title": "Color Story",
+    "category": "Edit",
+    "type": "video",
+    "aspectRatio": 16.9,
+    "credits": 4200,
+    "artist": "Priya Nair",
+    "artistId": "fh-002",
+    "originalId": "baahubali-original",
+    "platform": "youtube",
+    "srcId": "3NQRhE772b0"
+  },
+  {
+    "id": "w-arjun-1",
+    "title": "Interactive Sculpt",
+    "category": "Edit",
+    "type": "video",
+    "aspectRatio": 1.77,
+    "credits": 5000,
+    "artist": "Arjun Reddy",
+    "artistId": "fh-003",
+    "originalId": "kgf-original",
+    "platform": "youtube",
+    "srcId": "us9PTfKlvuY"
+  },
+  {
+    "id": "w-arjun-2",
+    "title": "Future Interface",
+    "category": "Poster",
+    "aspectRatio": 0.6,
+    "credits": 2100,
+    "artist": "Arjun Reddy",
+    "artistId": "fh-003",
+    "originalId": "vikram-original",
+    "image": "/posters/vikram.jpeg"
   }
 ]

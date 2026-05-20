@@ -1,7 +1,8 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { GRID_ITEMS } from "../../mock";
 import { WorkModal } from "../shared/modals/WorkModal";
 import { motion } from "motion/react";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * WorkPage — The shareable work route at /works/:id
@@ -21,8 +22,15 @@ import { motion } from "motion/react";
 export default function WorkPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { userWorks } = useAuth();
 
-  const item = GRID_ITEMS.find((w) => w.id === id) ?? null;
+  // Try to find the item in:
+  // 1. Navigation state (contains mockItem during upload preview)
+  // 2. User-created works (supports dynamic works after full page refresh)
+  // 3. Static mock works list
+  const stateItem = location.state?.item;
+  const item = stateItem || userWorks.find((w) => w.id === id) || GRID_ITEMS.find((w) => w.id === id) || null;
 
   const handleClose = () => {
     // If we came from within the app, go back. Otherwise, go to theatre.

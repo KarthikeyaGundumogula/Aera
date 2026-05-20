@@ -66,17 +66,14 @@ export function LiveStagePreview({
         />
       )}
 
-      {/* Grain Overlay */}
-      <div className="absolute inset-0 z-10 pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-
       {/* Viewfinder Content Container */}
       <div className="relative z-20 px-6 py-12 md:px-12 md:py-16">
         {/* HUD: VIEWFINDER Label */}
         <div className="absolute top-6 left-6 md:left-10 z-20 pointer-events-none flex items-center gap-2">
           <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/40 drop-shadow-md">
-            Live Stage Viewfinder
+            Hero Preview
           </span>
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
         </div>
 
         {/* Viewfinder corner lines */}
@@ -100,6 +97,26 @@ export function LiveStagePreview({
             youtube: `${username || "stage"}_yt`,
           }}
           className="pt-8 pb-4"
+          leftFlankContent={
+            onImagePositionChange && (
+              <div className="flex flex-col items-center gap-2 py-4 opacity-40 hover:opacity-100 transition-opacity">
+                <span className="text-[7px] font-black uppercase tracking-widest text-white/30 [writing-mode:vertical-rl] drop-shadow-md select-none">
+                  PAN Y
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={panY.replace("%", "")}
+                  onChange={(e) => {
+                    onImagePositionChange(`${panX} ${e.target.value}%`);
+                  }}
+                  className="w-4 h-20 md:h-28 appearance-none bg-white/10 rounded-full outline-none cursor-ns-resize [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md touch-none"
+                  style={{ WebkitAppearance: "slider-vertical" as any, accentColor: "rgba(255, 255, 255, 0.2)" }}
+                />
+              </div>
+            )
+          }
           portraitOverlay={
             onPortraitChange && (
               <div className="flex flex-col items-center gap-1 group/upload">
