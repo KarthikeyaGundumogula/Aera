@@ -12,7 +12,7 @@ export function MobileNavBar() {
     }`;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-black/80 px-4 py-4 backdrop-blur-2xl">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-[#050505] px-4 py-4">
       <div className="grid grid-cols-4 gap-1">
         <button
           onClick={() => navigate("/")}

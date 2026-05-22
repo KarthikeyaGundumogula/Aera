@@ -59,7 +59,7 @@ export default function StudioPage() {
   return (
     <div className="relative min-h-screen bg-[#050505] text-white font-sans selection:bg-white selection:text-black overflow-x-hidden pb-32">
       {/* Header bar */}
-      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-black/45 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-[#050505]/95 border-b border-white/5">
         <Logo onClick={() => navigate("/")} showText={false} />
         <div className="flex items-center gap-8">
           <ProfileNav />

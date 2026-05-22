@@ -11,7 +11,7 @@ export function ComingSoonPage({ label, description }: ComingSoonPageProps) {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5">
         <Logo onClick={() => navigate("/")} showText={false} />
         <button
           onClick={() => navigate("/")}

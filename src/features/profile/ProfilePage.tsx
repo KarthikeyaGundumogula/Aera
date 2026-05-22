@@ -53,7 +53,7 @@ const ProfileSkeleton: React.FC = () => {
       <div className="fixed inset-0 z-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
       </div>
-      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-black/40 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-[#050505]/95 border-b border-white/5">
         <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
         <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
       </header>

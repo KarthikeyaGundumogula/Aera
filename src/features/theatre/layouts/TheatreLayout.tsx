@@ -54,7 +54,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             exit={{ y: -100 }}
-            className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-black/40 backdrop-blur-xl border-b border-white/5"
+            className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
           >
             <button 
               onClick={() => navigate(`/profile/${artistId}`)}
@@ -80,7 +80,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
             key="global-header"
             initial={{ y: 0 }}
             animate={{ y: 0 }}
-            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5"
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
           >
             <div className="flex items-center gap-8">
               <Logo onClick={() => navigate("/")} showText={false} />

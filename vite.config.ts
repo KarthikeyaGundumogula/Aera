@@ -40,7 +40,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "."),
     },
   },
-  build: {
-    chunkSizeWarningLimit: 1600, // Increased from the default 500
-  },
 });

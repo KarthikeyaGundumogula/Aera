@@ -8,8 +8,12 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ScrollToTop } from "./components/utils/ScrollToTop";
 import { MobileNavBar } from "./features/navigation/MobileNavBar";
 import { AuthProvider } from "./context/AuthContext";
-import { Home } from "./features/home/HomePage";
-import { TheatrePage } from "./features/theatre/TheatrePage";
+const Home = lazy(() =>
+  import("./features/home/HomePage").then((m) => ({ default: m.Home })),
+);
+const TheatrePage = lazy(() =>
+  import("./features/theatre/TheatrePage").then((m) => ({ default: m.TheatrePage })),
+);
 
 const OriginalPage = lazy(() =>
   import("./features/originals/OriginalPage").then((module) => ({

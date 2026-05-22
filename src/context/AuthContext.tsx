@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { OriginalArtist, TheatreItem } from "../types";
 import { ARTISTS_MOCK, GRID_ITEMS } from "../mock";
 
@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentArtist]);
 
-  const login = (username: string, _password?: string): boolean => {
+  const login = useCallback((username: string, _password?: string): boolean => {
     const cleanUsername = username.trim();
     let artist = ARTISTS_MOCK.find(
       (a) => a.name.toLowerCase() === cleanUsername.toLowerCase()
@@ -154,91 +154,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setCurrentArtist(artist);
     return true;
-  };
+  }, []);
 
-  const register = (artist: OriginalArtist) => {
+  const register = useCallback((artist: OriginalArtist) => {
     const defaultArtist = {
       ...artist,
       themeBgColor: artist.themeBgColor || "#0f1a42",
       themeTextColor: artist.themeTextColor || "#fac107",
     };
 
-    // Store custom artist configuration in sessionStorage so we can recover it upon page refresh session checks
     sessionStorage.setItem(`aera_artist_details_${defaultArtist.id}`, JSON.stringify(defaultArtist));
 
-    // Simulate backend setting HttpOnly cookie containing JWT
     const token = generateMockJwt(defaultArtist.id, defaultArtist.name);
     setCookie("aera_auth_token", token);
 
     setCurrentArtist(defaultArtist);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     eraseCookie("aera_auth_token");
     setCurrentArtist(null);
-  };
+  }, []);
 
-  const updateProfile = (updates: Partial<OriginalArtist>) => {
-    if (!currentArtist) return;
-    const updated = { ...currentArtist, ...updates };
-    setCurrentArtist(updated);
+  const updateProfile = useCallback((updates: Partial<OriginalArtist>) => {
+    setCurrentArtist(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...updates };
+      sessionStorage.setItem(`aera_artist_details_${prev.id}`, JSON.stringify(updated));
+      const mockIdx = ARTISTS_MOCK.findIndex((a) => a.id === prev.id);
+      if (mockIdx > -1) {
+        ARTISTS_MOCK[mockIdx] = { ...ARTISTS_MOCK[mockIdx], ...updates };
+      }
+      return updated;
+    });
+  }, []);
 
-    // Save update to mock database sync
-    sessionStorage.setItem(`aera_artist_details_${currentArtist.id}`, JSON.stringify(updated));
-    const mockIdx = ARTISTS_MOCK.findIndex((a) => a.id === currentArtist.id);
-    if (mockIdx > -1) {
-      ARTISTS_MOCK[mockIdx] = { ...ARTISTS_MOCK[mockIdx], ...updates };
-    }
-  };
+  const updateWorkTitle = useCallback((workId: string | number, newTitle: string) => {
+    setUserWorks(prevWorks => {
+      const nextWorks = prevWorks.map((w) =>
+        w.id === workId ? { ...w, title: newTitle } : w
+      );
+      const globalIdx = GRID_ITEMS.findIndex((w) => w.id === workId);
+      if (globalIdx > -1) {
+        GRID_ITEMS[globalIdx].title = newTitle;
+      }
+      return nextWorks;
+    });
+  }, []);
 
-  const updateWorkTitle = (workId: string | number, newTitle: string) => {
-    if (!currentArtist) return;
-    const nextWorks = userWorks.map((w) =>
-      w.id === workId ? { ...w, title: newTitle } : w
-    );
-    setUserWorks(nextWorks);
+  const addWork = useCallback((work: TheatreItem) => {
+    setCurrentArtist(prevArtist => {
+      if (!prevArtist) return prevArtist;
+      const workWithMeta = {
+        ...work,
+        artistId: prevArtist.id,
+        artist: prevArtist.name,
+        artistAvatar: prevArtist.image || undefined,
+      };
+      setUserWorks(prevWorks => {
+        const nextWorks = [workWithMeta, ...prevWorks];
+        sessionStorage.setItem(`aera_user_works_${prevArtist.id}`, JSON.stringify(nextWorks));
+        return nextWorks;
+      });
+      GRID_ITEMS.unshift(workWithMeta);
+      return prevArtist;
+    });
+  }, []);
 
-    const savedWorksKey = `aera_user_works_${currentArtist.id}`;
-    sessionStorage.setItem(savedWorksKey, JSON.stringify(nextWorks));
-
-    const globalIdx = GRID_ITEMS.findIndex((w) => w.id === workId);
-    if (globalIdx > -1) {
-      GRID_ITEMS[globalIdx].title = newTitle;
-    }
-  };
-
-  const addWork = (work: TheatreItem) => {
-    if (!currentArtist) return;
-    
-    const workWithMeta = {
-      ...work,
-      artistId: currentArtist.id,
-      artist: currentArtist.name,
-      artistAvatar: currentArtist.image || undefined,
-    };
-    
-    const nextWorks = [workWithMeta, ...userWorks];
-    setUserWorks(nextWorks);
-
-    const savedWorksKey = `aera_user_works_${currentArtist.id}`;
-    sessionStorage.setItem(savedWorksKey, JSON.stringify(nextWorks));
-
-    GRID_ITEMS.unshift(workWithMeta);
-  };
+  const value = useMemo(() => ({
+    currentArtist,
+    userWorks,
+    login,
+    register,
+    logout,
+    updateProfile,
+    updateWorkTitle,
+    addWork,
+  }), [currentArtist, userWorks, login, register, logout, updateProfile, updateWorkTitle, addWork]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        currentArtist,
-        userWorks,
-        login,
-        register,
-        logout,
-        updateProfile,
-        updateWorkTitle,
-        addWork,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

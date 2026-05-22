@@ -38,7 +38,7 @@ export function SetsPage() {
       <motion.header 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5"
       >
         <div className="flex items-center gap-8">
           <Logo onClick={() => navigate("/")} showText={false} />
