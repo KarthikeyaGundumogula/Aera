@@ -1,247 +1,27 @@
-import { AnimatePresence, motion } from "motion/react";
-import React, { useState } from "react";
-import { Info, Eye, EyeOff, RotateCw, ArrowUpRight, X, Layers, Bookmark, Heart, Share2 } from "lucide-react";
-import { TheatreItem, OriginalArtist } from "../../../types";
-import { ModalWrapper } from "./ModalWrapper";
-import { useNavigate } from "react-router-dom";
-import { ArtistProfile } from "../profile";
-import { ARTISTS_MOCK } from "../../../mock";
-import { CurateOverlay } from "./CurateOverlay";
-import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
-import { WorkActionBar } from "./WorkActionBar";
-import { CinematicToast } from "./CinematicToast";
+import { TheatreItem } from "../../../types";
+import { StaticFrame } from "./StaticFrame";
 
 interface PosterModalProps {
   item: TheatreItem | null;
   onClose: () => void;
 }
 
+/**
+ * PosterModal — Single-image static content viewer.
+ * Thin wrapper around StaticFrame with no pages, no flip.
+ * Includes a subtle eye toggle for clutter-free / focus mode.
+ */
 export function PosterModal({ item, onClose }: PosterModalProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [isClutterFree, setIsClutterFree] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [showCurate, setShowCurate] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
-  const [naturalAspect, setNaturalAspect] = useState(item?.aspectRatio || 2 / 3);
-  const navigate = useNavigate();
-
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { naturalWidth, naturalHeight } = e.currentTarget;
-    if (naturalWidth && naturalHeight) {
-      setNaturalAspect(naturalWidth / naturalHeight);
-    }
-  };
-
   if (!item) return null;
 
-  const containerStyle = {
-    width: `min(92vw, calc(75vh * ${naturalAspect}))`,
-    aspectRatio: `${naturalAspect}`,
-    maxHeight: "75vh",
-    maxWidth: "92vw",
-  };
-
   return (
-    <ModalWrapper isOpen={!!item} onClose={onClose}>
-      <div className="relative group/modal-item flex flex-col items-center justify-center w-fit max-w-full gap-4 sm:gap-8" onClick={(e) => e.stopPropagation()}>
-        <div 
-          className="relative perspective-1000 shrink-0 min-w-[300px]"
-          style={containerStyle}
-        >
-          <motion.div
-             animate={{ rotateY: isFlipped ? 180 : 0 }}
-             transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
-             className="w-full h-full relative preserve-3d"
-          >
-            {/* Front Side: Immersive Poster */}
-            <div className="absolute inset-0 backface-hidden rounded-lg sm:rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-[#0a0a0a]">
-              <img loading="lazy" 
-                src={item.image} 
-                alt={item.title} 
-                className="w-full h-full object-contain" 
-                onLoad={handleImageLoad}
-              />
-              
-              <AnimatePresence>
-                {!isClutterFree && (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 pointer-events-none"
-                  >
-                    <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-black/80 to-transparent" />
-                    <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 flex items-end justify-between">
-                      <div className="space-y-0.5 sm:space-y-1">
-                         <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 leading-none">Artist</p>
-                         <p className="text-xs sm:text-sm font-bold text-white tracking-tight truncate max-w-[150px] sm:max-w-none">
-                           {item.artist || "Anonymous Artist"}
-                         </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div 
-              onClick={() => setIsFlipped(false)}
-              className="absolute inset-0 backface-hidden rotate-y-180 rounded-lg sm:rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-[#0D0D0D] p-5 sm:p-8 flex flex-col justify-start cursor-pointer group/back"
-            >
-               {/* Top padding for visual balance */}
-               <div className="h-4 sm:h-8 shrink-0" />
-               <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-                  <img loading="lazy" src={item.image} className="w-full h-full object-cover blur-2xl scale-150" alt="" />
-               </div>
-
-               <div className="relative z-10 space-y-4 sm:space-y-8">
-                  <div>
-                     <span className="inline-block px-1.5 py-0.5 rounded-[4px] bg-white/5 border border-white/10 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] text-white/60 mb-2 sm:mb-3">
-                        Poster Info
-                     </span>
-                     <div className="flex justify-between items-start">
-                        <AdaptiveTitle
-                          title={item.title || "Untitled Fragment"}
-                          multiWordClass="text-xl sm:text-2xl"
-                          singleWordClamp="clamp(1.2rem, 6vw, 2rem)"
-                          className="leading-[0.85] mb-2"
-                        />
-                        <div 
-                          onClick={() => setIsFlipped(false)}
-                          className="cursor-pointer pointer-events-auto p-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md hover:bg-white/10 hover:rotate-180 transition-all duration-500 active:scale-90 shrink-0"
-                        >
-                           <RotateCw size={12} className="text-white/40" />
-                        </div>
-                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 sm:gap-8">
-                      <div 
-                        className="cursor-pointer group/artist"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const artistData = ARTISTS_MOCK.find(a => a.name === item.artist);
-                          setSelectedArtist(artistData || {
-                            id: String(item.id),
-                            name: item.artist || "Anonymous",
-                            presence: 0,
-                            works: 0,
-                            image: item.artistAvatar || item.image || ""
-                          });
-                        }}
-                      >
-                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2 group-hover/artist:text-white/50 transition-colors">Artist</p>
-                         <div className="flex items-center gap-1.5">
-                           <p className="text-xs sm:text-sm font-bold text-[#EAEAEA] truncate group-hover/artist:text-white transition-colors underline decoration-white/0 group-hover/artist:decoration-white/30 underline-offset-4">{item.artist || "Collective"}</p>
-                           <ArrowUpRight size={10} className="text-white/10 group-hover/artist:text-white/50 transition-colors" />
-                         </div>
-                      </div>
-                      <div>
-                         <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Credits</p>
-                         <p className="text-xs sm:text-sm font-bold text-white/90 font-mono">{item.credits || 0}</p>
-                      </div>
-                     <div>
-                        <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 mb-1 sm:mb-2">Format</p>
-                        <p className="text-xs sm:text-sm font-bold text-[#EAEAEA]">Poster / Fragment</p>
-                     </div>
-                  </div>
-
-                  <div 
-                    className="mt-6 relative z-50 w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowCurate(true);
-                    }}
-                  >
-                    <div
-                      className="w-full cursor-pointer pointer-events-auto group flex items-center justify-center gap-3 py-3.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all duration-300 rounded-xl"
-                    >
-                      <Layers size={14} className="group-hover:fill-current pointer-events-none" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] pointer-events-none"> Originals</span>
-                    </div>
-                  </div>
-
-               </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Title & Metadata (Below Card) */}
-        {!isClutterFree && !isFlipped && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-1"
-          >
-            <AdaptiveTitle
-              title={item.title || "Untitled"}
-              as="h3"
-              multiWordClass="text-[10px] sm:text-xs tracking-[0.4em] sm:tracking-[0.5em]"
-              singleWordClamp="clamp(9px, 2.5vw, 12px)"
-              className="text-white/90 drop-shadow-lg text-center px-4"
-            />
-            <div className="h-[1px] w-4 sm:w-6 bg-white/20 rounded-full" />
-          </motion.div>
-        )}
-
-        {/* Control Buttons */}
-        <div className="flex items-center justify-center gap-4 sm:gap-6 mt-2 z-50">
-          <WorkActionBar
-            isLiked={isLiked}
-            setIsLiked={setIsLiked}
-            setToastMessage={setToastMessage}
-            workId={item.id}
-            variant="poster"
-            className="gap-4 sm:gap-6"
-          />
-
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsClutterFree(!isClutterFree); }}
-              className={`w-12 h-12 flex items-center justify-center rounded-full border transition-all duration-500 hover:scale-110 active:scale-95 shadow-2xl ${isClutterFree ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/20 backdrop-blur-xl'}`}
-              title="Toggle Clutter"
-            >
-              {isClutterFree ? <EyeOff size={20} strokeWidth={2.5} /> : <Eye size={20} strokeWidth={2.5} />}
-            </button>
-
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}
-              className={`w-12 h-12 flex items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 active:scale-95 shadow-2xl ${isFlipped ? 'bg-white text-black border-white rotate-180' : 'bg-white/10 text-white/50 border-white/20 backdrop-blur-xl'}`}
-              title="Show Info"
-            >
-              <Info size={20} strokeWidth={2.5} />
-            </button>
-
-            <button 
-              onClick={(e) => { e.stopPropagation(); onClose(); }}
-              className="w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-all hover:bg-white hover:text-black active:scale-95 shadow-2xl"
-              aria-label="Close modal"
-              title="Close"
-            >
-              <X size={20} strokeWidth={2.5} />
-            </button>
-        </div>
-      </div>
-      
-      {/* Artist Profile Integration */}
-      <ArtistProfile 
-        artist={selectedArtist} 
-        onClose={() => setSelectedArtist(null)} 
-      />
-
-      <CurateOverlay
-        isOpen={showCurate}
-        onClose={() => setShowCurate(false)}
-        originalIds={item?.originalIds || []}
-        onShowToast={(msg) => {
-          setToastMessage(msg);
-          setTimeout(() => setToastMessage(null), 3000);
-        }}
-      />
-
-      {/* Visual Hit Toast */}
-      <CinematicToast message={toastMessage} />
-
-    </ModalWrapper>
+    <StaticFrame
+      item={item}
+      onClose={onClose}
+      archiveLabel="Poster"
+      showPages={false}
+      showDetails={false}
+      showClutterFreeToggle={true}
+    />
   );
 }

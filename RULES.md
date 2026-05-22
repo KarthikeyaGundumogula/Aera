@@ -15,6 +15,7 @@
 - Duplicate existing functionality without a clear reason.
 - Ship code without checking the relevant test suite.
 - Test anything using browser sub agent unless i tell you to do so
+- Stage or commit changes (`git add`, `git commit`) without explicit user permission.
 
 ## Agent Format
 - Agents live in `agents/*.md`.

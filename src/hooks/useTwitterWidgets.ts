@@ -1,5 +1,11 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 
+declare global {
+  interface Window {
+    twttr?: any;
+  }
+}
+
 export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: any) {
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);

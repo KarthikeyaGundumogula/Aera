@@ -46,9 +46,9 @@ export function CurateOverlay({
     setTaggedOriginals((prev) => [...prev, id]);
     if (!ledgerOriginals.includes(id)) {
       setLedgerOriginals((prev) => [...prev, id]);
-      onShowToast("Original Added & Fragment Tagged");
+      onShowToast("Original Added & Work Tagged");
     } else {
-      onShowToast("Fragment Tagged to Original");
+      onShowToast("Work Tagged to Original");
     }
   };
 
@@ -122,7 +122,7 @@ export function CurateOverlay({
                       <button
                         onClick={() => handleTagToLedger(item.id)}
                         className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${isTagged ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10"}`}
-                        title="Tag Fragment to Ledger"
+                        title="Tag work to Ledger"
                       >
                         <Tag
                           className={`w-3 h-3 sm:w-4 sm:h-4 ${isTagged ? "fill-current" : ""}`}
