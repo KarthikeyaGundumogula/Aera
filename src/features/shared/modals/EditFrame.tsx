@@ -122,7 +122,7 @@ export function EditFrame({
           </div>
 
           {/* ── Media Area ──────────────────────────────────────────── */}
-          <div className={`relative flex flex-col items-center justify-center w-full h-auto ${!isLoaded ? "min-h-[300px]" : ""}`}>
+          <div className={`relative flex flex-col items-center justify-center w-full h-auto ${isYoutube ? "" : (!isLoaded ? "min-h-[250px] sm:min-h-[300px]" : "")}`}>
             {!isLoaded && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0d0c0a]/80 backdrop-blur-sm">
                 <FHLoader label="Loading Media" />

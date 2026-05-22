@@ -71,7 +71,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({ w
              {/* Loading State Overlay */}
              {(!isIntersecting || !isFullyLoaded) && (
                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#050505]/60 backdrop-blur-sm z-20">
-                 <FHLoader label="Mounting Stage" />
+                 <FHLoader label="Loading " />
                </div>
              )}
 

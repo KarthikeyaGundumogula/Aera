@@ -33,10 +33,38 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
     const doLoad = () => {
       if (renderGenRef.current !== generation) return;
       if (!window.twttr?.widgets || !containerRef.current) return;
-      window.twttr.widgets.load(containerRef.current);
-      setTimeout(() => {
-        if (renderGenRef.current === generation) setIsLoaded(true);
-      }, 1000);
+
+      let attempts = 0;
+      const checkHeightAndResolve = () => {
+        attempts++;
+        const iframe = container.querySelector("iframe");
+        if (iframe) {
+          const height = iframe.offsetHeight || parseFloat(iframe.style.height) || 0;
+          if (height > 100 || attempts > 30) {
+            if (renderGenRef.current === generation) setIsLoaded(true);
+            return;
+          }
+        } else if (attempts > 30) {
+          if (renderGenRef.current === generation) setIsLoaded(true);
+          return;
+        }
+
+        if (renderGenRef.current === generation) {
+          setTimeout(checkHeightAndResolve, 100);
+        }
+      };
+
+      const p = window.twttr.widgets.load(containerRef.current);
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          checkHeightAndResolve();
+        }).catch((err: any) => {
+          console.error("Twitter widget load error", err);
+          if (renderGenRef.current === generation) setIsLoaded(true);
+        });
+      } else {
+        setTimeout(checkHeightAndResolve, 100);
+      }
     };
 
     if (window.twttr?.widgets) {
@@ -67,7 +95,9 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
             clearInterval(pollRef.current as any);
             pollRef.current = null;
           }
-          if (renderGenRef.current === generation) setIsLoaded(true);
+          if (renderGenRef.current === generation) {
+            setIsLoaded(true);
+          }
         }, 5000);
       }
     }

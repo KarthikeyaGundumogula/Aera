@@ -42,6 +42,7 @@ import { CinematicPageHeader } from '../../../components/CinematicPageHeader';
 import { ContactCTA } from "../components/ContactCTA";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
+import { GlobalSearch } from "../../../components/search/GlobalSearch";
 
 // HomeFeedLayoutProps empty for now
 
@@ -201,9 +202,7 @@ export function HomeFeedLayout() {
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-xl border-b border-white/5">
         <Logo onClick={() => navigate("/")} showText={true} />
         <div className="flex items-center gap-4">
-          <button className="text-white/60">
-            <Search className="w-5 h-5" />
-          </button>
+          <GlobalSearch />
           <ProfileNav />
         </div>
       </header>
@@ -240,9 +239,7 @@ export function HomeFeedLayout() {
           </nav>
         </div>
         <div className="flex items-center gap-6">
-          <button className="text-white/60 hover:text-white transition-colors">
-            <Search className="w-5 h-5" />
-          </button>
+          <GlobalSearch />
           <ProfileNav />
         </div>
       </header>

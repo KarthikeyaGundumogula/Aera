@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Plus, UserPlus, AlertCircle, CheckCircle2 } from "lucide-react";
+import { X, Plus, UserPlus, AlertCircle, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { ModalWrapper } from "../../shared/modals/ModalWrapper";
 import { ARTISTS_MOCK } from "../../../mock";
 
@@ -15,6 +15,7 @@ interface CreateFestivalModalProps {
     startDate: string;
     endDate: string;
     panelists: string[];
+    coverImage: string;
   }) => void;
 }
 
@@ -30,6 +31,7 @@ export function CreateFestivalModal({
     rulesText: "",
     startDate: "",
     endDate: "",
+    coverImage: "",
   });
   const [panelistInput, setPanelistInput] = useState("");
   const [panelists, setPanelists] = useState<string[]>([]);
@@ -65,6 +67,7 @@ export function CreateFestivalModal({
         ? new Date(formData.endDate).toISOString()
         : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       panelists,
+      coverImage: formData.coverImage,
     });
     onClose();
   };
@@ -75,7 +78,7 @@ export function CreateFestivalModal({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto no-scrollbar"
+        className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -90,6 +93,43 @@ export function CreateFestivalModal({
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">
+              Festival Poster
+            </label>
+            <div className="relative group cursor-pointer w-full aspect-video md:aspect-[21/9] bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center">
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setFormData(p => ({ ...p, coverImage: reader.result as string }));
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer z-20" 
+              />
+              {formData.coverImage ? (
+                <>
+                  <img src={formData.coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 pointer-events-none">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">Change Poster</p>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-3 text-white/30 group-hover:text-white/50 transition-colors">
+                  <ImageIcon size={28} strokeWidth={1.5} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Upload Image</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">
               Festival Name

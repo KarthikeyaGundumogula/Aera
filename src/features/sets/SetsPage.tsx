@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Logo } from '../../components/Logo';
 import { ProfileNav } from '../../components/ProfileNav';
-import { FestivalCarousel } from './components/FestivalCarousel';
+import { FestivalStage } from './components/FestivalStage';
 import { SetsGrid } from './components/SetsGrid';
 import { CreateSetModal } from './components/CreateSetModal';
 
@@ -16,10 +16,10 @@ import { CreateSetModal } from './components/CreateSetModal';
  * │ Sticky Header: Logo + Back + "Sets" wordmark               │
  * ├─────────────────────────────────────────────────────────────┤
  * │ Zone A — Festival Stage                                     │
- * │   FestivalCarousel: hero 16:9 slides for LIVE/VOTING events │
+ * │   FestivalStage: app-native horizontal snap scroll         │
  * ├─────────────────────────────────────────────────────────────┤
  * │ Zone B — Set Registry                                       │
- * │   SetsGrid: featured full-width + 2-col editorial grid      │
+ * │   SetsGrid: minimal 1/2-col app feed                        │
  * └─────────────────────────────────────────────────────────────┘
  *
  * Design: Dark Luxury / Editorial. Consistent with OriginalPage conventions.
@@ -87,7 +87,7 @@ export function SetsPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className=""
         >
-          <FestivalCarousel />
+          <FestivalStage />
         </motion.div>
 
         {/* Zone B — Set Registry */}

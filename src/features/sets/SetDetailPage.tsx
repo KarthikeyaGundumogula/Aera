@@ -144,130 +144,110 @@ export function SetDetailPage() {
       </AnimatePresence>
 
       {/* ─── Layer I: Atmos Header ────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden">
-        {/* Background atmosphere: desaturated coverImage at low opacity */}
-        <div
-          className="absolute inset-0 bg-cover bg-top opacity-[0.07] grayscale pointer-events-none select-none"
-          style={{ backgroundImage: `url(${localSet.coverImage})` }}
-          aria-hidden="true"
-        />
-        {/* Vertical gradient blending into page */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/60 to-[#050505] pointer-events-none" aria-hidden="true" />
-
-        {/* Watermark: Set Title */}
-        <p
-          className="absolute inset-0 flex items-center justify-center font-black uppercase text-white select-none pointer-events-none"
-          aria-hidden="true"
-          style={{
-            fontSize: 'clamp(4rem, 18vw, 14rem)',
-            opacity: 0.025,
-            letterSpacing: '-0.03em',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-          }}
-        >
-          {localSet.title}
-        </p>
-
-        <div className="relative z-10 px-4 md:px-8 pt-12 md:pt-16 pb-2 md:pb-4">
-          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start md:items-end max-w-[1200px]">
-
-            {/* Cover Image */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="flex-shrink-0 w-[180px] md:w-[240px] aspect-video overflow-hidden rounded-lg border border-white/[0.08] shadow-2xl"
-            >
-              <img
-                src={localSet.coverImage}
-                alt={localSet.title}
-                className="w-full h-full object-cover object-top"
-              />
-            </motion.div>
-
-            {/* Identity */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col gap-4"
-            >
-              {/* Monospace handle */}
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.4em] text-white/25">
-                [ SET // {localSet.id.toUpperCase()} ]
-              </p>
-
-              {/* Title */}
-              <h1
-                className="font-black uppercase leading-none text-white"
-                style={{
-                  fontSize: 'clamp(2rem, 6vw, 4.5rem)',
-                  maxWidth: '95%',
-                  letterSpacing: '-0.02em',
-                }}
-              >
-                {localSet.title}
-              </h1>
-
-              {/* Theme Line */}
-              {localSet.themeLine && (
-                <p className="text-[12px] md:text-sm text-white/40 font-medium italic tracking-wide">
-                  "{localSet.themeLine}"
-                </p>
-              )}
-
-              {/* Captain Pill */}
-              {captain && (
-                <button
-                  onClick={() => navigate(`/profile/${captain.id}`)}
-                  className="self-start flex items-center gap-2 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/10 rounded-full transition-all duration-300 group"
-                >
-                  {captain.profilePicture && (
-                    <img
-                      src={captain.profilePicture}
-                      alt={captain.name}
-                      className="w-4 h-4 rounded-full object-cover object-top flex-shrink-0"
-                    />
-                  )}
-                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 group-hover:text-white/70 transition-colors">
-                    Curated by {captain.name}
-                  </span>
-                </button>
-              )}
-
-              {/* Dynamic Join Button */}
-              <div className="flex items-center gap-4 pt-2">
-                <button
-                  onClick={() => setIsJoined(!isJoined)}
-                  className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
-                    isJoined
-                      ? "bg-white/10 text-white/60 border border-white/10"
-                      : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:bg-white/90"
-                  }`}
-                >
-                  {isJoined ? "Joined" : "Join"}
-                </button>
-              </div>
-
-              {/* Stats Row */}
-              <div className="flex items-center gap-5 pt-1">
-                {[
-                  { icon: <Users className="w-3 h-3" />, value: memberCount, label: memberCount === 1 ? 'Member' : 'Members' },
-                  { icon: <Sparkles className="w-3 h-3" />, value: festivalCount, label: festivalCount === 1 ? 'Festival' : 'Festivals' },
-                  { icon: <Film className="w-3 h-3" />, value: worksCount, label: 'Works' },
-                ].map(({ icon, value, label }) => (
-                  <div key={label} className="flex items-center gap-1.5 text-white/25">
-                    {icon}
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em]">
-                      {value} {label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
+      <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-12 md:pt-12 md:pb-16 bg-[#030303] border-b border-white/[0.02]">
+        
+        {/* Cinematic Background Design */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Base ambient radial glow */}
+          <div 
+            className="absolute inset-0 opacity-20 transition-colors duration-700"
+            style={{ background: `radial-gradient(circle at center, ${localSet.accentColor || '#ffffff'}60 0%, transparent 70%)` }}
+          />
         </div>
+        
+        {/* Massive SVG Typography Container */}
+        <div className="w-full max-w-[1400px] flex items-center justify-center px-4 md:px-8 relative z-10 pointer-events-none mt-8">
+          <svg
+            className="w-full"
+            viewBox="0 0 1000 200"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <text
+              x="500"
+              y="150"
+              fontFamily='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+              fontSize="160"
+              fontWeight="900"
+              fill={localSet.accentColor || '#ffffff'}
+              textAnchor="middle"
+              textLength="900"
+              lengthAdjust="spacingAndGlyphs"
+              className="uppercase select-none drop-shadow-2xl"
+            >
+              {localSet.title}
+            </text>
+          </svg>
+        </div>
+
+        {/* Central Identity Dock */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 flex flex-col items-center gap-6 mt-2 max-w-2xl px-6 text-center"
+        >
+          {/* Theme Line */}
+          {localSet.themeLine && (
+            <p className="text-[12px] md:text-[15px] font-medium italic text-white/50 tracking-[0.25em] uppercase drop-shadow-md">
+              "{localSet.themeLine}"
+            </p>
+          )}
+
+
+
+          {/* Captain Pill */}
+          {captain && (
+            <button
+              onClick={() => navigate(`/profile/${captain.id}`)}
+              className="flex items-center gap-2 px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.04] hover:border-white/10 rounded-full transition-all duration-300 group"
+            >
+              {captain.profilePicture && (
+                <img
+                  src={captain.profilePicture}
+                  alt={captain.name}
+                  className="w-5 h-5 rounded-full object-cover object-top flex-shrink-0"
+                />
+              )}
+              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 group-hover:text-white/70 transition-colors">
+                Curated by {captain.name}
+              </span>
+            </button>
+          )}
+
+          {/* Dynamic Join Button */}
+          <div className="flex items-center pt-2">
+            <button
+              onClick={() => setIsJoined(!isJoined)}
+              className={`px-8 py-3.5 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
+                isJoined
+                  ? "bg-white/5 text-white/40 border border-white/5"
+                  : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:bg-white/90 hover:scale-105"
+              }`}
+            >
+              {isJoined ? "Joined" : "Join"}
+            </button>
+          </div>
+
+          {/* Stats Row */}
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 pt-4">
+            {[
+              { icon: <Users className="w-3.5 h-3.5" />, value: memberCount, label: memberCount === 1 ? 'Member' : 'Members' },
+              { icon: <Sparkles className="w-3.5 h-3.5" />, value: festivalCount, label: festivalCount === 1 ? 'Festival' : 'Festivals' },
+              { icon: <Film className="w-3.5 h-3.5" />, value: worksCount, label: 'Works' },
+            ].map(({ icon, value, label }, idx) => (
+              <div key={label} className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-white/20">
+                  {icon}
+                  <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.15em] text-white/40">
+                    <span className="text-white/80 mr-1">{value}</span>
+                    {label}
+                  </span>
+                </div>
+                {idx < 2 && <div className="h-3 w-px bg-white/10 hidden md:block ml-4" />}
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       {/* Divider */}

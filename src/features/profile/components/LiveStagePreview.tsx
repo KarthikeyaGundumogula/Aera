@@ -154,59 +154,65 @@ export function LiveStagePreview({
           </div>
         )}
 
-        {/* HUD: Text Color picker */}
-        {onTextColorChange && (
-          <div className="absolute top-6 right-8 md:right-12 z-30 flex items-center gap-4">
-            <div className="relative">
-              <button
-                onClick={() =>
-                  setActivePicker(activePicker === "text" ? null : "text")
-                }
-                className="flex items-center justify-center w-9 h-9 rounded-full bg-black/60 border border-white/20 hover:border-white/50 transition-all active:scale-95 shadow-md"
-                title="Accent Text Aura"
-              >
-                <div
-                  className="w-3.5 h-3.5 rounded-full border border-white/30"
-                  style={{ backgroundColor: themeTextColor }}
-                />
-              </button>
-              {activePicker === "text" && (
-                <div className="absolute top-11 right-0 p-1 z-40 origin-top-right animate-in fade-in zoom-in-95 duration-200">
-                  <CinematicColorPicker
-                    value={themeTextColor}
-                    onChange={onTextColorChange}
+        {/* HUD: Combined Color Pickers (BG and Stage Text) */}
+        {(onTextColorChange || onBgColorChange) && (
+          <div className="absolute top-6 right-6 md:right-10 z-30 flex items-start gap-4 bg-black/60 border border-white/10 rounded-3xl px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-md">
+            
+            {/* Background Color Picker */}
+            {onBgColorChange && (
+              <div className="relative flex flex-col items-center gap-1.5 group">
+                <button
+                  onClick={() =>
+                    setActivePicker(activePicker === "bg" ? null : "bg")
+                  }
+                  className="flex items-center justify-center w-6 h-6 rounded-full border border-white/20 group-hover:border-white/60 transition-all active:scale-95"
+                  title="Aura Backdrop Color"
+                >
+                  <div
+                    className="w-5 h-5 rounded-full border border-white/30 animate-pulse"
+                    style={{ backgroundColor: themeBgColor }}
                   />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+                </button>
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-colors">bg</span>
+                {activePicker === "bg" && (
+                  <div className="absolute top-12 right-0 p-1 z-40 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                    <CinematicColorPicker
+                      value={themeBgColor}
+                      onChange={onBgColorChange}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
-        {/* HUD: Aura Backdrop Color picker */}
-        {onBgColorChange && (
-          <div className="absolute top-6 right-20 md:right-24 z-30 flex items-center gap-4">
-            <div className="relative">
-              <button
-                onClick={() =>
-                  setActivePicker(activePicker === "bg" ? null : "bg")
-                }
-                className="flex items-center justify-center w-9 h-9 rounded-full bg-black/60 border border-white/20 hover:border-white/50 transition-all active:scale-95 shadow-md"
-                title="Aura Backdrop Color"
-              >
-                <div
-                  className="w-3.5 h-3.5 rounded-full border border-white/30"
-                  style={{ backgroundColor: themeBgColor }}
-                />
-              </button>
-              {activePicker === "bg" && (
-                <div className="absolute top-11 right-0 p-1 z-40 origin-top-right animate-in fade-in zoom-in-95 duration-200">
-                  <CinematicColorPicker
-                    value={themeBgColor}
-                    onChange={onBgColorChange}
+            <div className="w-[1px] h-8 bg-white/10 self-center" /> {/* Divider */}
+
+            {/* Text Color Picker */}
+            {onTextColorChange && (
+              <div className="relative flex flex-col items-center gap-1.5 group">
+                <button
+                  onClick={() =>
+                    setActivePicker(activePicker === "text" ? null : "text")
+                  }
+                  className="flex items-center justify-center w-6 h-6 rounded-full border border-white/20 group-hover:border-white/60 transition-all active:scale-95"
+                  title="Accent Text Aura"
+                >
+                  <div
+                    className="w-5 h-5 rounded-full border border-white/30 animate-pulse"
+                    style={{ backgroundColor: themeTextColor }}
                   />
-                </div>
-              )}
-            </div>
+                </button>
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-colors">stage</span>
+                {activePicker === "text" && (
+                  <div className="absolute top-12 right-0 p-1 z-40 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                    <CinematicColorPicker
+                      value={themeTextColor}
+                      onChange={onTextColorChange}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

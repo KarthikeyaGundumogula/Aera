@@ -60,7 +60,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
           <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]">
              {(!isIntersecting || !isIframeLoaded) && (
                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#050505]/60 backdrop-blur-sm z-20">
-                 <FHLoader label="Mounting Stage" />
+                 <FHLoader label="Loading" />
                </div>
              )}
 
@@ -123,7 +123,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
             <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.03] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
                {(!isIntersecting || !isIframeLoaded) && (
                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#050505]/60 backdrop-blur-sm z-20">
-                   <FHLoader label="Mounting Stage" />
+                   <FHLoader label="Loading Celebration" />
                  </div>
                )}
 

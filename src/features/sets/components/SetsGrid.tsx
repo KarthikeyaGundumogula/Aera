@@ -22,20 +22,20 @@ export const SetsGrid = memo(function SetsGrid({ onCreateSetClick }: SetsGridPro
   if (SETS.length === 0) return null;
 
   return (
-    <section className="px-4 sm:px-6 pt-4 pb-24" aria-label="Sets Registry">
+    <section className="px-6 pt-4 pb-32" aria-label="Sets Registry">
       {/* Section label */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-4 h-px bg-white/25" />
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
-            Sets
+          <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/40">
+            All Sets
           </span>
         </div>
 
         {onCreateSetClick && (
           <button 
             onClick={onCreateSetClick}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-all active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-white rounded-full text-[9px] font-black uppercase tracking-[0.2em] text-black hover:bg-transparent hover:text-white transition-all active:scale-95"
           >
             <Plus className="w-3 h-3" />
             <span>Create Set</span>
@@ -43,8 +43,8 @@ export const SetsGrid = memo(function SetsGrid({ onCreateSetClick }: SetsGridPro
         )}
       </div>
 
-      {/* Uniform responsive grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* App-like feed grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {SETS.map((set, i) => (
           <SetCard key={set.id} set={set} index={i} />
         ))}
