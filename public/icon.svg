@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Pitch Black Background -->
+  <rect width="512" height="512" fill="#050505" />
+  
+  <!-- Outer Frosted Box -->
+  <rect x="64" y="64" width="384" height="384" rx="100" fill="rgba(255, 255, 255, 0.06)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="12" />
+  
+  <!-- Inner Border Ring -->
+  <rect x="80" y="80" width="352" height="352" rx="80" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="8" />
+  
+  <!-- "F" Character (Solid White) -->
+  <text x="248" y="310" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="900" font-size="160" fill="#ffffff" text-anchor="end">F</text>
+  
+  <!-- "H" Character (45% Opacity White) -->
+  <text x="264" y="310" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="900" font-size="160" fill="rgba(255, 255, 255, 0.45)" text-anchor="start">H</text>
+</svg>
