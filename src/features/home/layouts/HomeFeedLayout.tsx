@@ -43,6 +43,7 @@ import { ContactCTA } from "../components/ContactCTA";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 import { GlobalSearch } from "../../../components/search/GlobalSearch";
+import { FeedContext } from "../../../context/FeedContext";
 
 // HomeFeedLayoutProps empty for now
 
@@ -90,6 +91,11 @@ export function HomeFeedLayout() {
   const desktopClusters = useMemo(
     () => buildClusters(deferredItems, "flow"),
     [deferredItems],
+  );
+
+  const desktopFlatItems = useMemo(
+    () => desktopClusters.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as TheatreItem[]),
+    [desktopClusters]
   );
 
   const getNavItemClassName = (active: boolean) =>
@@ -395,21 +401,25 @@ export function HomeFeedLayout() {
           />
 
           {/* Desktop Theatre Clusters */}
-          <div className="hidden sm:flex flex-col gap-[2px]">
-            {desktopClusters.map((cluster, idx) => (
-              <StaticDesktopCluster
-                key={`home-cluster-${idx}`}
-                cluster={cluster}
-              />
-            ))}
-          </div>
+          <FeedContext.Provider value={desktopFlatItems}>
+            <div className="hidden sm:flex flex-col gap-[2px]">
+              {desktopClusters.map((cluster, idx) => (
+                <StaticDesktopCluster
+                  key={`home-cluster-${idx}`}
+                  cluster={cluster}
+                />
+              ))}
+            </div>
+          </FeedContext.Provider>
 
           {/* Mobile Single Column Stack */}
-          <div className="flex sm:hidden flex-col gap-6">
-            {items.map((item) => (
-              <MobileFeedItem key={item.id} item={item} />
-            ))}
-          </div>
+          <FeedContext.Provider value={items}>
+            <div className="flex sm:hidden flex-col gap-6">
+              {items.map((item) => (
+                <MobileFeedItem key={item.id} item={item} />
+              ))}
+            </div>
+          </FeedContext.Provider>
 
           {/* Contact Entry for Beta */}
           <ContactCTA />

@@ -1,6 +1,8 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { TheatreItem } from "../types";
 
+import { useFeedContext } from "../context/FeedContext";
+
 /**
  * useWorkNavigation
  *
@@ -17,10 +19,11 @@ import { TheatreItem } from "../types";
 export function useWorkNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
+  const feedContext = useFeedContext();
 
   const openWork = (item: TheatreItem) => {
     navigate(`/works/${item.id}`, {
-      state: { backgroundLocation: location, item },
+      state: { backgroundLocation: location, item, feedContext },
     });
   };
 

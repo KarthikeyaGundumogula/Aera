@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 import { GRID_ITEMS } from "../../../../mock";
 import { buildMobileClusters, MobileCluster } from "../../engine/mobileClusterBuilder";
 import { MobileClusterView } from "./MobileClusterView";
+import { FeedContext } from "../../../../context/FeedContext";
 
 export function MobileCanvas() {
   const [clusters, setClusters] = useState<MobileCluster[]>([]);
@@ -50,10 +51,14 @@ export function MobileCanvas() {
     };
   }, [loadMore]);
 
+  // ── Compute flat items for FeedContext ────────────────────────────
+  const flatItems = useMemo(() => clusters.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as any[]), [clusters]);
+
   // ── Render ────────────────────────────────────────────────────────
   return (
-    <div className="w-full h-full bg-transparent overflow-y-auto pb-32">
-      <div className="flex flex-col gap-1 w-full">
+    <FeedContext.Provider value={flatItems}>
+      <div className="w-full h-full bg-transparent overflow-y-auto pb-32">
+        <div className="flex flex-col gap-1 w-full">
         {clusters.map((cluster) => (
           <div
             key={cluster.id}
@@ -72,7 +77,8 @@ export function MobileCanvas() {
         >
           <div className="w-5 h-5 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
         </div>
+        </div>
       </div>
-    </div>
+    </FeedContext.Provider>
   );
 }

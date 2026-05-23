@@ -7,6 +7,7 @@ import { buildMobileClusters, MobileCluster } from "../engine/mobileClusterBuild
 import { StaticDesktopCluster } from "./desktop/StaticDesktopCluster";
 import { MobileClusterView } from "./mobile/MobileClusterView";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { FeedContext } from "../../../context/FeedContext";
 
 interface UnifiedTheatreProps {
   works: TheatreItem[];
@@ -57,6 +58,16 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
       mobile: mClusters,
     };
   }, [works, maxClusters]);
+
+  const desktopFlatItems = useMemo(
+    () => allClusters.desktop.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
+    [allClusters.desktop]
+  );
+
+  const mobileFlatItems = useMemo(
+    () => allClusters.mobile.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
+    [allClusters.mobile]
+  );
 
   // Infinite scroll observer
   useEffect(() => {
@@ -114,13 +125,17 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
       <main className={isFull ? "pt-24 pb-20" : ""}>
         <div className="flex flex-col" style={{ gap: "2px" }}>
           {isMobile ? (
-            allClusters.mobile.map((cluster) => (
-              <MobileClusterView key={cluster.id} cluster={cluster} />
-            ))
+            <FeedContext.Provider value={mobileFlatItems}>
+              {allClusters.mobile.map((cluster) => (
+                <MobileClusterView key={cluster.id} cluster={cluster} />
+              ))}
+            </FeedContext.Provider>
           ) : (
-            allClusters.desktop.map((cluster, idx) => (
-              <StaticDesktopCluster key={cluster.id || idx} cluster={cluster} />
-            ))
+            <FeedContext.Provider value={desktopFlatItems}>
+              {allClusters.desktop.map((cluster, idx) => (
+                <StaticDesktopCluster key={cluster.id || idx} cluster={cluster} />
+              ))}
+            </FeedContext.Provider>
           )}
         </div>
 

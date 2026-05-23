@@ -31,6 +31,7 @@ interface StaticFrameProps {
   showDetails: boolean;
   /** Show eye toggle for clutter-free mode (hides header + footer, image only) */
   showClutterFreeToggle?: boolean;
+  standalone?: boolean;
 }
 
 const PAGE_CAPTIONS = [
@@ -67,6 +68,7 @@ export function StaticFrame({
   showPages,
   showDetails,
   showClutterFreeToggle = false,
+  standalone = true,
 }: StaticFrameProps) {
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
@@ -120,13 +122,13 @@ export function StaticFrame({
     );
   };
 
-  return (
-    <ModalWrapper isOpen={!!item} onClose={onClose}>
+  const content = (
+    <>
       <motion.div
         key="static-frame-card"
-        initial={{ y: 24, scale: 0.96 }}
-        animate={{ y: 0, scale: 1 }}
-        exit={{ y: 24, scale: 0.96 }}
+        initial={standalone ? { y: 24, scale: 0.96 } : undefined}
+        animate={standalone ? { y: 0, scale: 1 } : undefined}
+        exit={standalone ? { y: 24, scale: 0.96 } : undefined}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => e.stopPropagation()}
         className="relative z-10 flex w-full max-w-lg overflow-hidden rounded-[28px] border border-white/8 bg-[#0d0c0a] shadow-2xl"
@@ -506,6 +508,16 @@ export function StaticFrame({
 
       {/* Visual Hit Toast */}
       <CinematicToast message={toastMessage} />
+    </>
+  );
+
+  if (!standalone) {
+    return content;
+  }
+
+  return (
+    <ModalWrapper isOpen={!!item} onClose={onClose}>
+      {content}
     </ModalWrapper>
   );
 }

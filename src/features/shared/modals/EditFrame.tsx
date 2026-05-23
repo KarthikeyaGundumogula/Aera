@@ -17,6 +17,7 @@ interface EditFrameProps {
   item: TheatreItem;
   onClose: () => void;
   archiveLabel?: string;
+  standalone?: boolean;
 }
 
 /**
@@ -35,6 +36,7 @@ export function EditFrame({
   item,
   onClose,
   archiveLabel = "Edit Archive",
+  standalone = true,
 }: EditFrameProps) {
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [showCurate, setShowCurate] = useState(false);
@@ -70,13 +72,13 @@ export function EditFrame({
     );
   };
 
-  return (
-    <ModalWrapper isOpen={!!item} onClose={onClose} className="!p-[2px] [&>div]:!p-0">
+  const content = (
+    <>
       <motion.div
         key="edit-frame-card"
-        initial={{ y: 24, scale: 0.96 }}
-        animate={{ y: 0, scale: 1 }}
-        exit={{ y: 24, scale: 0.96 }}
+        initial={standalone ? { y: 24, scale: 0.96 } : undefined}
+        animate={standalone ? { y: 0, scale: 1 } : undefined}
+        exit={standalone ? { y: 24, scale: 0.96 } : undefined}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => e.stopPropagation()}
         className="relative z-10 flex w-full max-w-[calc(100vw-4px)] overflow-hidden rounded-[28px] border border-white/8 bg-[#0d0c0a] shadow-2xl flex-col"
@@ -213,6 +215,16 @@ export function EditFrame({
 
       {/* Visual Hit Toast */}
       <CinematicToast message={toastMessage} />
+    </>
+  );
+
+  if (!standalone) {
+    return content;
+  }
+
+  return (
+    <ModalWrapper isOpen={!!item} onClose={onClose} className="!p-[2px] [&>div]:!p-0">
+      {content}
     </ModalWrapper>
   );
 }

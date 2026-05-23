@@ -5,6 +5,7 @@ import { GRID_ITEMS } from "../../../../mock";
 import { buildClusters } from "../../engine/clusterBuilder";
 import { DesktopCluster } from "./DesktopCluster";
 import { CLUSTER_WIDTH, CLUSTER_HEIGHT, CLUSTER_GAP } from "../../constants";
+import { FeedContext } from "../../../../context/FeedContext";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
 
   // Pre-compute cluster pool once from mock data
   const clusterPool = useMemo(() => buildClusters(GRID_ITEMS), []);
+  const flatItems = useMemo(() => clusterPool.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as any[]), [clusterPool]);
 
   // ── Camera ──────────────────────────────────────────────────────────────
   const camX = useMotionValue(0);
@@ -152,18 +154,19 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-transparent cursor-grab active:cursor-grabbing select-none overscroll-none touch-none"
-      onMouseDown={(e) => onPointerDown(e.clientX, e.clientY)}
-      onMouseMove={(e) => onPointerMove(e.clientX, e.clientY)}
-      onMouseUp={onPointerUp}
-      onMouseLeave={onPointerUp}
-      onWheel={onWheel}
-      onTouchStart={(e) => onPointerDown(e.touches[0].clientX, e.touches[0].clientY)}
-      onTouchMove={(e) => onPointerMove(e.touches[0].clientX, e.touches[0].clientY)}
-      onTouchEnd={onPointerUp}
-    >
+    <FeedContext.Provider value={flatItems}>
+      <div
+        ref={containerRef}
+        className="relative w-full h-full overflow-hidden bg-transparent cursor-grab active:cursor-grabbing select-none overscroll-none touch-none"
+        onMouseDown={(e) => onPointerDown(e.clientX, e.clientY)}
+        onMouseMove={(e) => onPointerMove(e.clientX, e.clientY)}
+        onMouseUp={onPointerUp}
+        onMouseLeave={onPointerUp}
+        onWheel={onWheel}
+        onTouchStart={(e) => onPointerDown(e.touches[0].clientX, e.touches[0].clientY)}
+        onTouchMove={(e) => onPointerMove(e.touches[0].clientX, e.touches[0].clientY)}
+        onTouchEnd={onPointerUp}
+      >
       {/* Infinite cluster field */}
       {visibleCells.map(({ x, y }) => {
         const index = Math.abs((x * 31 + y * 17) % clusterPool.length);
@@ -199,6 +202,7 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
           </p>
         </button>
       </div>
-    </div>
+      </div>
+    </FeedContext.Provider>
   );
 }
