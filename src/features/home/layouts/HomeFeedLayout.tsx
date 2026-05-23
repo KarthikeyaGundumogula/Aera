@@ -44,6 +44,7 @@ import { HomePageSkeleton } from "../components/HomePageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 import { GlobalSearch } from "../../../components/search/GlobalSearch";
 import { FeedContext } from "../../../context/FeedContext";
+import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 
 // HomeFeedLayoutProps empty for now
 
@@ -205,13 +206,7 @@ export function HomeFeedLayout() {
   return (
     <div className="bg-[#050505] min-h-screen text-white pb-24">
       {/* Mobile Header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5">
-        <Logo onClick={() => navigate("/")} showText={true} />
-        <div className="flex items-center gap-4">
-          <GlobalSearch />
-          <ProfileNav />
-        </div>
-      </header>
+      <MobileTopHeader />
 
       {/* Desktop Header */}
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5">

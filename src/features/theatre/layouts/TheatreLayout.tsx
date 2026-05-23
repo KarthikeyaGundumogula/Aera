@@ -9,6 +9,8 @@ import { MobileCanvas } from "../components/mobile/MobileCanvas";
 
 import { Logo } from "../../../components/Logo";
 import { ProfileNav } from "../../../components/ProfileNav";
+import { MobileTopHeader } from "../../navigation/MobileTopHeader";
+import { GlobalSearch } from "../../../components/search/GlobalSearch";
 
 import { useHeaderVisibility } from "../hooks/useHeaderVisibility";
 
@@ -46,14 +48,16 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
   return (
     <div className="bg-[#050505] h-screen text-white selection:bg-brand-accent/30 overflow-hidden">
       {/* THEATRE HEADER ENGINE */}
+      {!artistId && <MobileTopHeader isVisible={isHeaderVisible} />}
       <AnimatePresence mode="wait">
         {artistId ? (
           /* ─── Profile-Specific Theatre Header ─── */
           <motion.header 
             key="profile-header"
             initial={{ y: -100 }}
-            animate={{ y: 0 }}
+            animate={{ y: isHeaderVisible ? 0 : -100 }}
             exit={{ y: -100 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
           >
             <button 
@@ -79,8 +83,9 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
           <motion.header 
             key="global-header"
             initial={{ y: 0 }}
-            animate={{ y: 0 }}
-            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
+            animate={{ y: isHeaderVisible ? 0 : -100 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
           >
             <div className="flex items-center gap-8">
               <Logo onClick={() => navigate("/")} showText={false} />
@@ -113,7 +118,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
             </div>
             
             <div className="flex items-center gap-6">
-              <button className="text-white/60 hover:text-white transition-colors"><Search className="w-5 h-5" /></button>
+              <GlobalSearch />
               <ProfileNav />
             </div>
           </motion.header>
@@ -121,7 +126,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
       </AnimatePresence>
 
       <motion.main 
-        className="h-full w-full pt-[80px]"
+        className="h-full w-full pt-0"
       >
         {isMobile ? (
           <MobileCanvas />

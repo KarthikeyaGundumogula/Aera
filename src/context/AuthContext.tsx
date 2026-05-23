@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Simulated Boot / Session Check
   // In production, this resolves to a request like GET /api/auth/me where the server reads the HttpOnly cookie.
   useEffect(() => {
-    const token = getCookie("aera_auth_token");
+    const token = getCookie("framehouse_auth_token");
     if (token) {
       const payload = parseMockJwt(token);
       if (payload) {
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let artist = ARTISTS_MOCK.find((a) => a.id === payload.id);
         if (!artist) {
           // If they were registered dynamically during this session, recover from sessionStorage storage
-          const savedArtist = sessionStorage.getItem(`aera_artist_details_${payload.id}`);
+          const savedArtist = sessionStorage.getItem(`framehouse_artist_details_${payload.id}`);
           if (savedArtist) {
             artist = JSON.parse(savedArtist);
           } else {
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const savedWorksKey = `aera_user_works_${currentArtist.id}`;
+    const savedWorksKey = `framehouse_user_works_${currentArtist.id}`;
     const savedWorks = sessionStorage.getItem(savedWorksKey);
     if (savedWorks) {
       setUserWorks(JSON.parse(savedWorks));
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Simulate backend setting HttpOnly cookie containing JWT
     const token = generateMockJwt(artist.id, artist.name);
-    setCookie("aera_auth_token", token);
+    setCookie("framehouse_auth_token", token);
 
     setCurrentArtist(artist);
     return true;
@@ -163,16 +163,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       themeTextColor: artist.themeTextColor || "#fac107",
     };
 
-    sessionStorage.setItem(`aera_artist_details_${defaultArtist.id}`, JSON.stringify(defaultArtist));
-
+    sessionStorage.setItem(`framehouse_artist_details_${defaultArtist.id}`, JSON.stringify(defaultArtist));
+    
     const token = generateMockJwt(defaultArtist.id, defaultArtist.name);
-    setCookie("aera_auth_token", token);
+    setCookie("framehouse_auth_token", token);
 
     setCurrentArtist(defaultArtist);
   }, []);
 
   const logout = useCallback(() => {
-    eraseCookie("aera_auth_token");
+    eraseCookie("framehouse_auth_token");
     setCurrentArtist(null);
   }, []);
 
@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCurrentArtist(prev => {
       if (!prev) return prev;
       const updated = { ...prev, ...updates };
-      sessionStorage.setItem(`aera_artist_details_${prev.id}`, JSON.stringify(updated));
+      sessionStorage.setItem(`framehouse_artist_details_${prev.id}`, JSON.stringify(updated));
       const mockIdx = ARTISTS_MOCK.findIndex((a) => a.id === prev.id);
       if (mockIdx > -1) {
         ARTISTS_MOCK[mockIdx] = { ...ARTISTS_MOCK[mockIdx], ...updates };
@@ -213,7 +213,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       setUserWorks(prevWorks => {
         const nextWorks = [workWithMeta, ...prevWorks];
-        sessionStorage.setItem(`aera_user_works_${prevArtist.id}`, JSON.stringify(nextWorks));
+        sessionStorage.setItem(`framehouse_user_works_${prevArtist.id}`, JSON.stringify(nextWorks));
         return nextWorks;
       });
       GRID_ITEMS.unshift(workWithMeta);

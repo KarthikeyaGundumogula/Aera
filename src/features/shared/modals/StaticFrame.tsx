@@ -32,6 +32,7 @@ interface StaticFrameProps {
   /** Show eye toggle for clutter-free mode (hides header + footer, image only) */
   showClutterFreeToggle?: boolean;
   standalone?: boolean;
+  isActive?: boolean;
 }
 
 const PAGE_CAPTIONS = [
@@ -69,6 +70,7 @@ export function StaticFrame({
   showDetails,
   showClutterFreeToggle = false,
   standalone = true,
+  isActive = true,
 }: StaticFrameProps) {
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
@@ -131,13 +133,16 @@ export function StaticFrame({
         exit={standalone ? { y: 24, scale: 0.96 } : undefined}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="relative z-10 flex w-full max-w-lg overflow-hidden rounded-[28px] border border-white/8 bg-[#0d0c0a] shadow-2xl"
+        className={`relative z-10 flex flex-col w-full max-h-full max-w-lg overflow-y-auto overflow-x-hidden hide-scrollbar ${
+          isClutterFree ? "" : "rounded-[28px] border border-white/8 bg-[#0d0c0a] shadow-2xl"
+        }`}
+        style={{ touchAction: "pan-y" }}
       >
         {/* Ambient glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(215,204,184,0.07),transparent_40%)] pointer-events-none" />
+        {!isClutterFree && <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(215,204,184,0.07),transparent_40%)] pointer-events-none" />}
 
         {/* Main Content Area */}
-        <div className="relative flex flex-1 flex-col bg-[#0d0c0a]">
+        <div className={`relative flex flex-1 flex-col ${isClutterFree ? "" : "bg-[#0d0c0a]"}`}>
           {/* ── Header ─────────────────────────────────────────────── */}
           <AnimatePresence>
             {!isClutterFree && (
@@ -188,12 +193,12 @@ export function StaticFrame({
 
           {/* ── Image Area ──────────────────────────────────────────── */}
           <div
-            className="flex-1 p-4 sm:p-5 flex flex-col gap-3"
+            className={`flex-1 flex flex-col gap-3 ${isClutterFree ? "p-0" : "p-4 sm:p-5"}`}
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
             {/* Page counter + flip button (only for scripts) */}
-            {showPages && (
+            {showPages && !isClutterFree && (
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white/30">
                   <BookOpen size={10} />
@@ -216,29 +221,11 @@ export function StaticFrame({
                   {showClutterFreeToggle && (
                     <button
                       onClick={() => setIsClutterFree((v) => !v)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300 active:scale-90 ${
-                        isClutterFree
-                          ? "bg-white/90 text-black shadow-lg"
-                          : "bg-white/5 text-white/30 border border-white/10 hover:text-white/60 hover:bg-white/10"
-                      }`}
-                      aria-label={isClutterFree ? "Show frame details" : "Focus on image"}
-                      title={isClutterFree ? "Show details" : "Focus mode"}
-                    >
-                      {isClutterFree ? (
-                        <EyeOff size={11} strokeWidth={2.5} />
-                      ) : (
-                        <Eye size={11} strokeWidth={2.5} />
-                      )}
-                    </button>
-                  )}
-                  {isClutterFree && (
-                    <button
-                      onClick={onClose}
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 border border-white/10 hover:text-white/60 hover:bg-white/10 transition-all duration-300 active:scale-90"
-                      aria-label="Close modal"
-                      title="Close"
+                      aria-label="Focus on image"
+                      title="Focus mode"
                     >
-                      <X size={11} strokeWidth={2.5} />
+                      <Eye size={11} strokeWidth={2.5} />
                     </button>
                   )}
                 </div>
@@ -252,8 +239,9 @@ export function StaticFrame({
                 <motion.div
                   animate={{ rotateY: isFlipped ? 180 : 0 }}
                   transition={{ type: "spring", damping: 26, stiffness: 200 }}
-                  className="relative w-full"
+                  className="relative w-full cursor-pointer"
                   style={{ transformStyle: "preserve-3d" }}
+                  onClick={() => setIsFlipped(!isFlipped)}
                 >
                   {(() => {
                     const cardStyle: React.CSSProperties = imgAspect
@@ -264,18 +252,19 @@ export function StaticFrame({
                       <>
                         {/* Front — image */}
                         <div
-                          className={`w-full rounded-[18px] overflow-hidden border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-[#0d0c0a] relative ${
-                            isClutterFree ? "" : "cursor-pointer"
+                          className={`w-full rounded-[18px] overflow-hidden relative ${
+                            isClutterFree ? "" : "border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-[#0d0c0a]"
                           }`}
                           style={{ ...cardStyle, backfaceVisibility: "hidden" }}
-                          onClick={() => !isClutterFree && setIsFlipped(true)}
                         >
                           <img
-                            loading="lazy"
                             key={pageIndex}
                             src={pages[pageIndex]}
                             alt={`Page ${pageIndex + 1}`}
                             className="w-full h-auto block"
+                            loading={isActive ? "eager" : "lazy"}
+                            fetchPriority={isActive ? "high" : "low"}
+                            decoding="async"
                             onLoad={(e) => {
                               const { naturalWidth, naturalHeight } =
                                 e.currentTarget;
@@ -288,22 +277,25 @@ export function StaticFrame({
 
                         {/* Back — page details */}
                         <div
-                          className={`absolute inset-0 w-full h-full rounded-[18px] overflow-hidden border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-[#111] p-6 flex flex-col justify-start ${
-                            isClutterFree ? "" : "cursor-pointer"
+                          className={`absolute inset-0 w-full h-full rounded-[18px] overflow-hidden p-6 flex flex-col justify-start ${
+                            isClutterFree ? "bg-[#111]" : "border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-[#111]"
                           }`}
                           style={{
                             transform: "rotateY(180deg)",
                             backfaceVisibility: "hidden",
                           }}
-                          onClick={() => !isClutterFree && setIsFlipped(false)}
                         >
                           {/* Blurred bg */}
-                          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden rounded-[18px]">
+                          <div 
+                            className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden rounded-[18px]"
+                            style={{ willChange: "transform, filter", transform: "translateZ(0)" }}
+                          >
                             <img
-                              loading="lazy"
                               src={pages[pageIndex]}
                               className="w-full h-full object-cover blur-2xl scale-125"
                               alt=""
+                              loading="lazy"
+                              decoding="async"
                             />
                             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
                           </div>
@@ -341,6 +333,21 @@ export function StaticFrame({
                     );
                   })()}
                 </motion.div>
+
+                {/* Clutter-free eye toggle overlaid on the script flip card */}
+                {showClutterFreeToggle && isClutterFree && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsClutterFree(false);
+                    }}
+                    className="absolute bottom-3 right-3 z-50 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-black shadow-lg transition-all duration-300 active:scale-90"
+                    aria-label="Show frame details"
+                    title="Show details"
+                  >
+                    <EyeOff size={13} strokeWidth={2.5} />
+                  </button>
+                )}
               </div>
             ) : (
               /* ── Static image for posters (no flip) ────────────── */
@@ -349,10 +356,12 @@ export function StaticFrame({
                   className="relative rounded-[18px] overflow-hidden border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-[#0d0c0a] inline-block max-w-full"
                 >
                   <img
-                    loading="lazy"
                     src={pages[0]}
                     alt={item.title || "Poster"}
                     className="max-w-full h-auto block"
+                    loading={isActive ? "eager" : "lazy"}
+                    fetchPriority={isActive ? "high" : "low"}
+                    decoding="async"
                     onLoad={(e) => {
                       const { naturalWidth, naturalHeight } = e.currentTarget;
                       if (naturalWidth && naturalHeight) {

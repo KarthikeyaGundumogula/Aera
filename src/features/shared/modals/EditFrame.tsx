@@ -18,6 +18,7 @@ interface EditFrameProps {
   onClose: () => void;
   archiveLabel?: string;
   standalone?: boolean;
+  isActive?: boolean;
 }
 
 /**
@@ -37,6 +38,7 @@ export function EditFrame({
   onClose,
   archiveLabel = "Edit Archive",
   standalone = true,
+  isActive = true,
 }: EditFrameProps) {
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [showCurate, setShowCurate] = useState(false);
@@ -46,7 +48,7 @@ export function EditFrame({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { containerRef: twitterContainerRef, isLoaded: isTwitterLoaded } = useTwitterWidgets(
     item.platform === "twitter" ? item.srcId : undefined,
-    false // no flipping for edits anymore
+    isActive
   );
 
   const [isYoutubeLoaded, setIsYoutubeLoaded] = useState(false);
@@ -81,7 +83,8 @@ export function EditFrame({
         exit={standalone ? { y: 24, scale: 0.96 } : undefined}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="relative z-10 flex w-full max-w-[calc(100vw-4px)] overflow-hidden rounded-[28px] border border-white/8 bg-[#0d0c0a] shadow-2xl flex-col"
+        className="relative z-10 flex w-full max-w-[calc(100vw-4px)] max-h-full overflow-y-auto overflow-x-hidden hide-scrollbar rounded-[28px] border border-white/8 bg-[#0d0c0a] shadow-2xl flex-col"
+        style={{ touchAction: "pan-y" }}
       >
         {/* Ambient glow */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(215,204,184,0.07),transparent_40%)] pointer-events-none" />
@@ -125,32 +128,43 @@ export function EditFrame({
 
           {/* ── Media Area ──────────────────────────────────────────── */}
           <div className={`relative flex flex-col items-center justify-center w-full h-auto ${isYoutube ? "" : (!isLoaded ? "min-h-[250px] sm:min-h-[300px]" : "")}`}>
-            {!isLoaded && (
+            {!isLoaded && isActive && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0d0c0a]/80 backdrop-blur-sm">
                 <FHLoader label="Loading Media" />
               </div>
             )}
 
-            {isYoutube ? (
-              <div className="w-full aspect-video bg-black relative h-auto">
-                <iframe
-                  ref={iframeRef}
-                  id={`yt-player-${item.id}`}
-                  src={youtubeEmbedUrl}
-                  className="w-full h-full border-none absolute inset-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  title={item.title}
-                  onLoad={() => setIsYoutubeLoaded(true)}
-                />
+            {!isActive && (
+              <div className="w-full aspect-video bg-[#0d0c0a] flex items-center justify-center border-none">
+                <div className="opacity-20 flex flex-col items-center gap-2">
+                   <LayoutPanelLeft size={32} />
+                </div>
               </div>
-            ) : (
-              <div className="w-full flex justify-center h-auto">
-                <div
-                  ref={twitterContainerRef}
-                  className="w-full max-w-[560px] flex justify-center h-auto"
-                />
-              </div>
+            )}
+
+            {isActive && (
+              isYoutube ? (
+                <div className="w-full aspect-video bg-black relative h-auto">
+                  <iframe
+                    ref={iframeRef}
+                    id={`yt-player-${item.id}`}
+                    src={youtubeEmbedUrl}
+                    className="w-full h-full border-none absolute inset-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    title={item.title}
+                    loading="lazy"
+                    onLoad={() => setIsYoutubeLoaded(true)}
+                  />
+                </div>
+              ) : (
+                <div className="w-full flex justify-center h-auto">
+                  <div
+                    ref={twitterContainerRef}
+                    className="w-full max-w-[560px] flex justify-center h-auto"
+                  />
+                </div>
+              )
             )}
           </div>
 

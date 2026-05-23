@@ -5,13 +5,14 @@ interface ScriptModalProps {
   item: TheatreItem | null;
   onClose: () => void;
   standalone?: boolean;
+  isActive?: boolean;
 }
 
 /**
  * ScriptModal — Multi-page static content viewer.
  * Thin wrapper around StaticFrame with pages + flip-to-details enabled.
  */
-export function ScriptModal({ item, onClose, standalone = true }: ScriptModalProps) {
+export function ScriptModal({ item, onClose, standalone = true, isActive = true }: ScriptModalProps) {
   if (!item) return null;
 
   return (
@@ -23,6 +24,7 @@ export function ScriptModal({ item, onClose, standalone = true }: ScriptModalPro
       showDetails={true}
       showClutterFreeToggle={true}
       standalone={standalone}
+      isActive={isActive}
     />
   );
 }

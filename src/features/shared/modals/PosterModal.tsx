@@ -5,6 +5,7 @@ interface PosterModalProps {
   item: TheatreItem | null;
   onClose: () => void;
   standalone?: boolean;
+  isActive?: boolean;
 }
 
 /**
@@ -12,7 +13,7 @@ interface PosterModalProps {
  * Thin wrapper around StaticFrame with no pages, no flip.
  * Includes a subtle eye toggle for clutter-free / focus mode.
  */
-export function PosterModal({ item, onClose, standalone = true }: PosterModalProps) {
+export function PosterModal({ item, onClose, standalone = true, isActive = true }: PosterModalProps) {
   if (!item) return null;
 
   return (
@@ -24,6 +25,7 @@ export function PosterModal({ item, onClose, standalone = true }: PosterModalPro
       showDetails={false}
       showClutterFreeToggle={true}
       standalone={standalone}
+      isActive={isActive}
     />
   );
 }

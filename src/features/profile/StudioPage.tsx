@@ -9,7 +9,9 @@ import { ORIGINALS } from "../../mock";
 import { UploadStudioFlow } from "../upload/components/UploadStudioFlow";
 import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
+import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import ArtistSetupPage from "./ArtistSetupPage";
+import { PasswordResetModal } from "./components/PasswordResetModal";
 
 export default function StudioPage() {
   const { currentArtist, userWorks, updateProfile, updateWorkTitle, logout } = useAuth();
@@ -25,6 +27,9 @@ export default function StudioPage() {
     twitter: "",
     youtube: "",
   });
+
+  // Password reset modal state
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Sync profile details when loaded
   useEffect(() => {
@@ -58,8 +63,11 @@ export default function StudioPage() {
 
   return (
     <div className="relative min-h-screen bg-[#050505] text-white font-sans selection:bg-white selection:text-black overflow-x-hidden pb-32">
-      {/* Header bar */}
-      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-[#050505]/95 border-b border-white/5">
+      {/* Mobile Header */}
+      <MobileTopHeader showSearch={false} />
+
+      {/* Header bar (Desktop) */}
+      <header className="hidden md:flex fixed top-0 left-0 right-0 z-[100] items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
         <Logo onClick={() => navigate("/")} showText={false} />
         <div className="flex items-center gap-8">
           <ProfileNav />
@@ -209,6 +217,27 @@ export default function StudioPage() {
           </div>
         </section>
 
+        {/* ─── Security Settings Panel ─── */}
+        <section className="bg-[#0b0c10] border border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div>
+              <h2 className="text-sm font-black uppercase tracking-[0.25em] text-white/80">
+                Security Settings
+              </h2>
+              <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest mt-0.5">
+                Manage your account credentials and access
+              </p>
+            </div>
+            
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="px-6 py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2"
+            >
+              Update Password
+            </button>
+          </div>
+        </section>
+
         {/* ─── Media Pool (Resolve-themed Grid Section) ─── */}
         <section className="flex flex-col gap-6">
           <div className="flex items-center justify-between border-b border-white/5 pb-4">
@@ -262,6 +291,11 @@ export default function StudioPage() {
           )}
         </section>
       </div>
+
+      <PasswordResetModal 
+        isOpen={isPasswordModalOpen} 
+        onClose={() => setIsPasswordModalOpen(false)} 
+      />
     </div>
   );
 }

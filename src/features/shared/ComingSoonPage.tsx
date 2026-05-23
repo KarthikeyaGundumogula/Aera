@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Logo } from "../../components/Logo";
+import { MobileTopHeader } from "../navigation/MobileTopHeader";
 
 interface ComingSoonPageProps {
   label: string;
@@ -11,7 +12,20 @@ export function ComingSoonPage({ label, description }: ComingSoonPageProps) {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5">
+      {/* Mobile Header */}
+      <MobileTopHeader
+        rightActions={
+          <button
+            onClick={() => navigate("/")}
+            className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
+          >
+            Back Home
+          </button>
+        }
+      />
+
+      {/* Desktop Header */}
+      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
         <Logo onClick={() => navigate("/")} showText={false} />
         <button
           onClick={() => navigate("/")}

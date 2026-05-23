@@ -150,7 +150,7 @@ export function OriginalPage() {
 
         {/* Sticky Header */}
         <CinematicPageHeader
-          title={original.title}
+          title={isMobile && original.title.length > 6 ? `${original.title.substring(0, 6)}..` : original.title}
           onBack={() => navigate('/')}
           onTitleClick={() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -34,36 +34,39 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
       if (renderGenRef.current !== generation) return;
       if (!window.twttr?.widgets || !containerRef.current) return;
 
-      let attempts = 0;
-      const checkHeightAndResolve = () => {
-        attempts++;
-        const iframe = container.querySelector("iframe");
-        if (iframe) {
-          const height = iframe.offsetHeight || parseFloat(iframe.style.height) || 0;
-          if (height > 100 || attempts > 30) {
-            if (renderGenRef.current === generation) setIsLoaded(true);
-            return;
-          }
-        } else if (attempts > 30) {
-          if (renderGenRef.current === generation) setIsLoaded(true);
-          return;
-        }
-
-        if (renderGenRef.current === generation) {
-          setTimeout(checkHeightAndResolve, 100);
-        }
-      };
-
       const p = window.twttr.widgets.load(containerRef.current);
       if (p && typeof p.then === "function") {
         p.then(() => {
-          checkHeightAndResolve();
+          if (renderGenRef.current !== generation) return;
+          // Use ResizeObserver instead of layout thrashing polling
+          const iframe = container.querySelector("iframe");
+          if (iframe) {
+            const observer = new ResizeObserver((entries) => {
+              for (const entry of entries) {
+                if (entry.contentRect.height > 100) {
+                  observer.disconnect();
+                  if (renderGenRef.current === generation) setIsLoaded(true);
+                }
+              }
+            });
+            observer.observe(iframe);
+            // Fallback just in case observer doesn't fire
+            setTimeout(() => {
+              observer.disconnect();
+              if (renderGenRef.current === generation) setIsLoaded(true);
+            }, 3000);
+          } else {
+            setIsLoaded(true);
+          }
         }).catch((err: any) => {
           console.error("Twitter widget load error", err);
           if (renderGenRef.current === generation) setIsLoaded(true);
         });
       } else {
-        setTimeout(checkHeightAndResolve, 100);
+        // Fallback if twttr.widgets.load doesn't return a promise
+        setTimeout(() => {
+          if (renderGenRef.current === generation) setIsLoaded(true);
+        }, 1000);
       }
     };
 
@@ -113,6 +116,10 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
       if (pollRef.current) {
         clearInterval(pollRef.current as any);
         pollRef.current = null;
+      }
+      renderGenRef.current++; // Invalidate pending loads
+      if (containerRef.current) {
+        containerRef.current.innerHTML = ""; // Cleanup DOM
       }
     };
   }, [srcId, renderTweet, refreshTrigger]);

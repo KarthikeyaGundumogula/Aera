@@ -57,7 +57,7 @@ export function MobileCanvas() {
   // ── Render ────────────────────────────────────────────────────────
   return (
     <FeedContext.Provider value={flatItems}>
-      <div className="w-full h-full bg-transparent overflow-y-auto pb-32">
+      <div className="w-full h-full bg-transparent overflow-y-auto pt-16 pb-32">
         <div className="flex flex-col gap-1 w-full">
         {clusters.map((cluster) => (
           <div
