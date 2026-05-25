@@ -94,7 +94,13 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
                   onClick={() => navigate("/")}
                   className={getNavClassName(location.pathname === "/")}
                 >
-                  Home
+                  Center
+                </button>
+                <button
+                  onClick={() => navigate("/lounge")}
+                  className={getNavClassName(location.pathname === "/lounge")}
+                >
+                  Lounge
                 </button>
                 <button
                   onClick={() => navigate("/theatre")}

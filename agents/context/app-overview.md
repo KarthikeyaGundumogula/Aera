@@ -458,6 +458,26 @@ A system where:
 
 ---
 
+## 🗣️ 18. The Lobby vs. The Screen (Thoughts & Sequences)
+
+FrameHouse explicitly separates viewing art from debating it.
+
+### The Screen (Theatre)
+* Immersive, dark, purely for **Works** (Edits, Posters, Scripts).
+* Interaction is limited to viewing and reacting. No clutter.
+
+### The Lobby (Thoughts & Sequences)
+* The conversational hub where audiences gather.
+* **Thoughts:** Fleeting, script-fragment notes tagged to Originals, Works, or Artists.
+  * Validation Metric: **"Hits"** or **"Palms"** (a tactile high-five, replacing standard upvotes). No nested comments.
+  * Context Tags: Rendered as cinematic film-strips anchored to the bottom of the frosted-glass Thought card.
+* **Sequences:** Deep, community-owned discussion threads.
+  * Mechanism: When a Thought reaches a specific "Hit" threshold, the author unlocks the ability to "Open Sequence."
+  * Location: Sequences live natively inside **Sets** (the micro-communities), pushing heavy discussions into dedicated spaces rather than cluttering the global feed.
+* **Profile Racks:** On profile pages, Works and Thoughts are separated into distinct "racks" (tabs) to preserve the visual weight of high-effort artistic outputs.
+
+---
+
 ## 🎬 Final Statement
 
 FrameHouse is not a social platform.

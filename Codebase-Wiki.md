@@ -18,6 +18,7 @@
    - *Scripts/Theories:* Textual expansions / narrative essays.
 3. **Origins:** The source material (e.g., movies like OG, RRR, KGF). Every Work is tied to an Original.
 4. **Presence:** A reputation score defined *only* by the accumulation of Credits received. It acts as an unlock mechanism for the platform's social economy.
+5. **Thoughts & Sequences (The Lobby):** A parallel communication layer distinct from Works. "Thoughts" are script-fragment notes tagged to Originals/Works. They earn "Hits" (Palms) instead of standard upvotes. When a threshold is met, the author can "Unlock" it into a "Sequence"—a deep, community-owned discussion thread housed inside Sets. This ensures the "Screen" (Theatre) remains pristine while the "Lobby" handles conversation.
 
 ## 3. Web Development Rules & Architecture
 

@@ -217,7 +217,7 @@ export function HomeFeedLayout() {
               onClick={() => navigate("/")}
               className={`transition-colors ${location.pathname === "/" ? "text-white" : "text-white/60 hover:text-white"}`}
             >
-              Home
+              Center
             </button>
             <button
               onClick={() => navigate("/theatre")}
@@ -387,52 +387,8 @@ export function HomeFeedLayout() {
           <TopOriginalsAccordion navigate={navigate} />
         </section>
 
-        {/* FOR YOU FEED */}
-        <section className="px-0 mb-12">
-          <SectionHeader
-            icon={History}
-            title="For You"
-            containerClassName="px-6 sm:px-0 mb-8"
-          />
-
-          {/* Desktop Theatre Clusters */}
-          <FeedContext.Provider value={desktopFlatItems}>
-            <div className="hidden sm:flex flex-col gap-[2px]">
-              {desktopClusters.map((cluster, idx) => (
-                <StaticDesktopCluster
-                  key={`home-cluster-${idx}`}
-                  cluster={cluster}
-                />
-              ))}
-            </div>
-          </FeedContext.Provider>
-
-          {/* Mobile Single Column Stack */}
-          <FeedContext.Provider value={items}>
-            <div className="flex sm:hidden flex-col gap-6">
-              {items.map((item) => (
-                <MobileFeedItem key={item.id} item={item} />
-              ))}
-            </div>
-          </FeedContext.Provider>
-
-          {/* Contact Entry for Beta */}
+        <section className="px-0 mb-12 mt-16">
           <ContactCTA />
-
-          {/* Bottom Sentinel */}
-          <div
-            ref={bottomObserverTarget}
-            className="h-40 flex items-center justify-center"
-          >
-            {isLoadingDown && (
-              <div className="flex flex-col items-center gap-4">
-                <Loader2 className="w-6 h-6 text-white/20 animate-spin" />
-                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white/10 animate-pulse">
-                  Setting the Stage...
-                </p>
-              </div>
-            )}
-          </div>
         </section>
       </main>
     </div>

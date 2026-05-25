@@ -110,6 +110,11 @@ function AppRoutes() {
           <Route path="/sets" element={<SetsPage />} />
           <Route path="/sets/:id" element={<SetDetailPage />} />
           <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
+          
+          <Route
+            path="/lounge"
+            element={<ComingSoonPage label="Lounge" />}
+          />
 
           <Route path="/profile/new" element={<ArtistSetupPage />} />
           <Route path="/profile/login" element={<LoginPage />} />

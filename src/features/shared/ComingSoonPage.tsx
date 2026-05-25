@@ -19,7 +19,7 @@ export function ComingSoonPage({ label, description }: ComingSoonPageProps) {
             onClick={() => navigate("/")}
             className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
           >
-            Back Home
+            Center
           </button>
         }
       />
@@ -31,7 +31,7 @@ export function ComingSoonPage({ label, description }: ComingSoonPageProps) {
           onClick={() => navigate("/")}
           className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
         >
-          Back Home
+          Center
         </button>
       </header>
 

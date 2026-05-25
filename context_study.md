@@ -59,6 +59,7 @@
 - **Credits**: Recognition system, higher weight than Likes. Requires Presence to give
 - **Presence**: Accumulated Credits received → unlocks giving Credits
 - **Presence Layers**: UI config objects created by Originals that users can apply to their profile
+- **Thoughts & Sequences (Lobby)**: Script-style text posts that earn "Hits" (Palms). When a threshold is met, the author unlocks a community-owned "Sequence" (discussion thread) living inside a Set. Profile pages segregate Works and Thoughts into distinct racks.
 
 ---
 
