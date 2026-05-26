@@ -118,7 +118,7 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
             >
               <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1">
                 {/* Countdown Block */}
-                <div className="md:col-span-5 bg-[#0a0a0a] border border-white/[0.06] rounded-xl p-5 flex flex-col justify-between">
+                <div className="md:col-span-5 bg-[#050505] border border-white/[0.06] rounded-xl p-5 flex flex-col justify-between">
                   <div className="flex items-center gap-2 mb-4">
                     <Clock className="w-3.5 h-3.5 text-white/20" />
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20">
@@ -151,7 +151,7 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
 
                 {/* Rules Block */}
                 {festival.rules && festival.rules.length > 0 && (
-                  <div className="md:col-span-4 bg-[#0a0a0a] border border-white/[0.06] rounded-xl p-5">
+                  <div className="md:col-span-4 bg-[#050505] border border-white/[0.06] rounded-xl p-5">
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 mb-3">Rules</p>
                     <ul className="space-y-2">
                       {festival.rules.slice(0, 3).map((rule, i) => (

@@ -57,7 +57,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
         {/* DESKTOP LAYOUT (hidden md:block) */}
         <div className="hidden md:flex flex-col gap-8">
           {/* Neumorphic Player Container */}
-          <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#050505] border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]">
              {(!isIntersecting || !isIframeLoaded) && (
                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#050505]/60 backdrop-blur-sm z-20">
                  <FHLoader label="Loading" />
@@ -99,7 +99,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
              <div className="flex items-center gap-4">
                 <button 
                   onClick={handlePrev}
-                  className="w-14 h-14 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white"
+                  className="w-14 h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white"
                 >
                   <ChevronLeft className="w-5 h-5 -ml-0.5" />
                 </button>
@@ -108,7 +108,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
                 </div>
                 <button 
                   onClick={handleNext}
-                  className="w-14 h-14 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white"
+                  className="w-14 h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white"
                 >
                   <ChevronRight className="w-5 h-5 -mr-0.5" />
                 </button>
@@ -120,7 +120,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
         <div className="block md:hidden">
           <div className="px-2">
             {/* Neumorphic Player Container */}
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.03] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#050505] border border-white/[0.03] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
                {(!isIntersecting || !isIframeLoaded) && (
                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#050505]/60 backdrop-blur-sm z-20">
                    <FHLoader label="Loading Celebration" />
@@ -144,7 +144,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
           <div className="mt-4 flex items-center justify-between px-2 gap-2">
             <button
               onClick={handlePrev}
-              className="w-10 h-10 shrink-0 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-white/10 shadow-lg text-white/80 hover:text-white active:scale-95 transition-all duration-300"
+              className="w-10 h-10 shrink-0 rounded-full bg-[#050505] flex items-center justify-center border border-white/10 shadow-lg text-white/80 hover:text-white active:scale-95 transition-all duration-300"
               aria-label="Previous Release"
             >
               <ChevronLeft className="w-5 h-5 -ml-0.5" />
@@ -171,7 +171,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
 
             <button
               onClick={handleNext}
-              className="w-10 h-10 shrink-0 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-white/10 shadow-lg text-white/80 hover:text-white active:scale-95 transition-all duration-300"
+              className="w-10 h-10 shrink-0 rounded-full bg-[#050505] flex items-center justify-center border border-white/10 shadow-lg text-white/80 hover:text-white active:scale-95 transition-all duration-300"
               aria-label="Next Release"
             >
               <ChevronRight className="w-5 h-5 -mr-0.5" />

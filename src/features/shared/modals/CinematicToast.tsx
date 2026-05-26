@@ -31,7 +31,7 @@ export const CinematicToast: React.FC<CinematicToastProps> = ({ message }) => {
                 rotate: [0, 15, -15, 0],
               }}
               transition={{ duration: 0.6, ease: "easeInOut", repeat: Infinity, repeatDelay: 1 }}
-              className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-[0_10px_40px_rgba(255,255,255,0.6)]"
+              className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center"
             >
               <Heart size={24} className="fill-current text-black" />
             </motion.div>

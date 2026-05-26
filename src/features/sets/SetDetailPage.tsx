@@ -139,7 +139,7 @@ export function SetDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)] z-[200] flex items-center gap-2 pointer-events-none"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full z-[200] flex items-center gap-2 pointer-events-none"
           >
             <Bookmark size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
@@ -153,13 +153,7 @@ export function SetDetailPage() {
       <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-12 md:pt-12 md:pb-16 bg-[#030303] border-b border-white/[0.02]">
         
         {/* Cinematic Background Design */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Base ambient radial glow */}
-          <div 
-            className="absolute inset-0 opacity-20 transition-colors duration-700"
-            style={{ background: `radial-gradient(circle at center, ${localSet.accentColor || '#ffffff'}60 0%, transparent 70%)` }}
-          />
-        </div>
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" />
         
         {/* Massive SVG Typography Container */}
         <div className="w-full max-w-[1400px] flex items-center justify-center px-4 md:px-8 relative z-10 pointer-events-none mt-8">
@@ -227,7 +221,7 @@ export function SetDetailPage() {
               className={`px-8 py-3.5 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
                 isJoined
                   ? "bg-white/5 text-white/40 border border-white/5"
-                  : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)] hover:bg-white/90 hover:scale-105"
+                  : "bg-white text-black hover:bg-white/90 hover:scale-105"
               }`}
             >
               {isJoined ? "Joined" : "Join"}
@@ -261,7 +255,7 @@ export function SetDetailPage() {
 
       {/* ─── Layer I.V: Open Discussions ───────────────────────────────────────── */}
       {setThoughts.length > 0 && (
-        <section className="px-4 md:px-8 py-8 border-b border-white/[0.04] bg-white/[0.01]">
+        <section className="px-4 md:px-8 py-8 border-b border-white/[0.04]">
           <SectionHeader
             icon={MessageSquare}
             title="Open Discussions"

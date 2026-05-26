@@ -23,7 +23,7 @@ export function ThoughtCard({
     <>
       <div 
         onClick={onCardClick}
-        className={`relative flex-shrink-0 w-80 sm:w-96 h-44 rounded-xl overflow-hidden bg-[#0a0a0a] border border-white/10 flex flex-col justify-center group ${
+        className={`relative flex-shrink-0 w-80 sm:w-96 h-44 rounded-xl overflow-hidden bg-[#050505] border border-white/10 flex flex-col justify-center group ${
           onCardClick ? "cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]" : ""
         }`}
       >

@@ -67,7 +67,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({ w
         
         <div className="relative max-w-6xl mx-auto flex flex-col gap-8">
           {/* Neumorphic Player Container */}
-          <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#050505] border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]">
              {/* Loading State Overlay */}
              {(!isIntersecting || !isFullyLoaded) && (
                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#050505]/60 backdrop-blur-sm z-20">
@@ -100,7 +100,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({ w
              <div className="flex items-center gap-3">
                 <button 
                   onClick={handlePrev}
-                  className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white flex-shrink-0"
+                  className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white flex-shrink-0"
                 >
                   <ChevronLeft className="w-5 h-5 -ml-0.5" />
                 </button>
@@ -121,7 +121,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({ w
              <div className="flex items-center gap-3">
                 <button 
                   onClick={handleNext}
-                  className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white flex-shrink-0"
+                  className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white flex-shrink-0"
                 >
                   <ChevronRight className="w-5 h-5 -mr-0.5" />
                 </button>

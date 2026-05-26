@@ -16,7 +16,8 @@
       { "id": "rrr-original", "title": "RRR" },
       { "id": "kgf-original", "title": "KGF: Chapter 2" },
       { "id": "baahubali-original", "title": "Baahubali" }
-    ]
+    ],
+    "themeClasses": "bg-black text-blue-500 border border-blue-900/30 hover:bg-neutral-950 hover:text-blue-400"
   },
   {
     "id": "fh-002",
@@ -34,7 +35,8 @@
       { "id": "baahubali-original", "title": "Baahubali" },
       { "id": "og-original", "title": "OG" },
       { "id": "rrr-original", "title": "RRR" }
-    ]
+    ],
+    "themeClasses": "bg-black text-amber-500 border border-amber-900/30 hover:bg-neutral-950 hover:text-amber-400"
   },
   {
     "id": "fh-003",
@@ -44,13 +46,14 @@
     "works": 8,
     "image": "/stars/yash.jpg",
     "socials": {
-      "instagram": "@arjun_reddy_cuts"
+      "instagram": "@arjun_creates"
     },
     "workedOn": [
       { "id": "kgf-original", "title": "KGF: Chapter 2" },
       { "id": "vikram-original", "title": "Vikram" },
       { "id": "rrr-original", "title": "RRR" },
       { "id": "og-original", "title": "OG" }
-    ]
+    ],
+    "themeClasses": "bg-black text-red-600 border border-red-900/20 hover:bg-neutral-950 hover:text-red-500"
   }
 ]

@@ -30,8 +30,8 @@ const THEMES: Record<
     grainOpacity: 0.03,
   },
   "profile-ram-charan": {
-    bg: "#1a120b",
-    nameGradient: ["#4a3728", "#8b5e3c"],
+    bg: "#050505",
+    nameGradient: ["#737373", "#e5e5e5"],
     grainOpacity: 0.05,
   },
   "fh-001": {

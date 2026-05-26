@@ -38,11 +38,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
     >
       {/* Canvas — 16:9 purely typographic */}
       <div className="relative w-full aspect-video overflow-hidden flex flex-col justify-between">
-        {/* Subtle background glow based on accent color */}
-        <div 
-          className="absolute inset-0 opacity-10 pointer-events-none transition-opacity duration-700 group-hover:opacity-30"
-          style={{ background: `radial-gradient(circle at center, ${accentColor}40 0%, transparent 60%)` }}
-        />
+        {/* Subtle background based on accent color (glow removed) */}
 
         {/* Top-right CTA */}
         <button
