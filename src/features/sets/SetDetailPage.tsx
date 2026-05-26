@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, Film, Sparkles, Settings, Plus, Heart, Bookmark, Upload, LogOut } from 'lucide-react';
-import { SETS, FESTIVALS, GRID_ITEMS, PROFILES_DIRECTORY } from '../../mock';
+import { Users, Film, Sparkles, Settings, Plus, Heart, Bookmark, Upload, LogOut, MessageSquare } from 'lucide-react';
+import { SETS, FESTIVALS, GRID_ITEMS, PROFILES_DIRECTORY, THOUGHTS_MOCK } from '../../mock';
+import { ThoughtCard } from '../shared/thoughts/ThoughtCard';
 import { ActiveFestivalSpotlight } from './components/ActiveFestivalSpotlight';
 import { FestivalArchive } from './components/FestivalArchive';
 import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSection';
@@ -43,6 +44,11 @@ export function SetDetailPage() {
   // Works filtered for this set — using all works as proxy since mock works don't have setId yet
   // In production this will be a real backend filter
   const setWorks = useMemo(() => GRID_ITEMS.slice(0, 18), []);
+
+  const setThoughts = useMemo(
+    () => THOUGHTS_MOCK.filter(t => t.setId === id),
+    [id]
+  );
 
   const [isJoined, setIsJoined] = useState(false);
   const memberCount = (set?.members.length ?? 0) + (isJoined ? 1 : 0);
@@ -252,6 +258,28 @@ export function SetDetailPage() {
 
       {/* Divider */}
 
+
+      {/* ─── Layer I.V: Open Discussions ───────────────────────────────────────── */}
+      {setThoughts.length > 0 && (
+        <section className="px-4 md:px-8 py-8 border-b border-white/[0.04] bg-white/[0.01]">
+          <SectionHeader
+            icon={MessageSquare}
+            title="Open Discussions"
+            containerClassName="mb-6"
+          />
+          <div className="overflow-x-auto no-scrollbar pb-4">
+            <div className="flex gap-4 sm:gap-6 w-max">
+              {setThoughts.map((thought) => (
+                <ThoughtCard
+                  key={thought.id}
+                  thought={thought}
+                  onCardClick={() => navigate(`/sets/${id}/discussions/${thought.id}`)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ─── Layer II: Active Festival Spotlight ────────────────────────────── */}
       {activeFestival ? (

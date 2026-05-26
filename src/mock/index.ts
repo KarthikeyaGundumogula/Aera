@@ -131,3 +131,8 @@ export interface ProfileEntry {
  * Used by: PersonSearchInput for cast/crew selection.
  */
 export const PROFILES_DIRECTORY: ProfileEntry[] = profilesDirectoryData as ProfileEntry[];
+
+// ─── Thoughts & Sequences ───────────────────────────────────────────────────
+
+export * from "./thoughts";
+export * from "./discussionReplies";

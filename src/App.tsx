@@ -56,6 +56,9 @@ const SetDetailPage = lazy(() =>
 const SetsTheatrePage = lazy(() =>
   import("./features/sets").then((module) => ({ default: module.SetsTheatrePage })),
 );
+const DiscussionPage = lazy(() =>
+  import("./features/sets").then((module) => ({ default: module.DiscussionPage })),
+);
 const FestivalDetailPage = lazy(() =>
   import("./features/festivals").then((module) => ({
     default: module.FestivalDetailPage,
@@ -110,6 +113,7 @@ function AppRoutes() {
           <Route path="/sets" element={<SetsPage />} />
           <Route path="/sets/:id" element={<SetDetailPage />} />
           <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
+          <Route path="/sets/:setId/discussions/:discussionId" element={<DiscussionPage />} />
           
           <Route
             path="/lounge"

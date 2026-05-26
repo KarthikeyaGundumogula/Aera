@@ -113,13 +113,15 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
     // Use cullingViewport (stable) instead of raw frame-by-frame position
     const startCol = Math.floor(cullingViewport.x / cellW) - 1;
     const endCol = Math.ceil((cullingViewport.x + cullingViewport.w) / cellW) + 1;
-    const startRow = Math.floor(cullingViewport.y / cellH) - 1;
-    const endRow = Math.ceil((cullingViewport.y + cullingViewport.h) / cellH) + 1;
+    const startRow = Math.floor((cullingViewport.y - 61) / cellH) - 1;
+    const endRow = Math.ceil((cullingViewport.y + cullingViewport.h - 61) / cellH) + 1;
 
     const cells: { x: number; y: number }[] = [];
     for (let col = startCol; col <= endCol; col++) {
       for (let row = startRow; row <= endRow; row++) {
-        cells.push({ x: col, y: row });
+        if (row >= 0) {
+          cells.push({ x: col, y: row });
+        }
       }
     }
     return cells;

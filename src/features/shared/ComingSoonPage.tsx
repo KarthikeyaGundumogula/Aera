@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Logo } from "../../components/Logo";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
+import { DesktopHeader } from "../navigation/DesktopHeader";
 
 interface ComingSoonPageProps {
   label: string;
@@ -25,15 +26,7 @@ export function ComingSoonPage({ label, description }: ComingSoonPageProps) {
       />
 
       {/* Desktop Header */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
-        <Logo onClick={() => navigate("/")} showText={false} />
-        <button
-          onClick={() => navigate("/")}
-          className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
-        >
-          Center
-        </button>
-      </header>
+      <DesktopHeader />
 
       <main className="min-h-screen flex items-center justify-center px-6 pt-24">
         <div className="max-w-xl text-center">

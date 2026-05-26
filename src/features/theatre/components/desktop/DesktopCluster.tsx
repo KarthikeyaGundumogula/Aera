@@ -29,7 +29,7 @@ export const DesktopCluster = memo(function DesktopCluster({
   camY,
 }: DesktopClusterProps) {
   const worldX = gridX * (CLUSTER_WIDTH + CLUSTER_GAP);
-  const worldY = gridY * (CLUSTER_HEIGHT + CLUSTER_GAP);
+  const worldY = gridY * (CLUSTER_HEIGHT + CLUSTER_GAP) + 61;
 
   const screenX = useTransform(camX, (cam: number) => cam + worldX);
   const screenY = useTransform(camY, (cam: number) => cam + worldY);

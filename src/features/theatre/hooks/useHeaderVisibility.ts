@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
  */
 export function useHeaderVisibility() {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
   const scrollYRef = useRef(0);
   const lastYRef = useRef(0);
 
@@ -12,6 +13,8 @@ export function useHeaderVisibility() {
     const dy = y - lastYRef.current;
     lastYRef.current = y;
     scrollYRef.current = y;
+
+    setIsScrolled(Math.abs(y) > 10);
 
     // Show header if we're near the top or scrolling up
     if (y > -10) {
@@ -37,5 +40,5 @@ export function useHeaderVisibility() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  return { isHeaderVisible, handleScroll };
+  return { isHeaderVisible, isScrolled, handleScroll };
 }

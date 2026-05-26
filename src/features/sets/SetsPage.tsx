@@ -6,6 +6,7 @@ import { Logo } from '../../components/Logo';
 import { ProfileNav } from '../../components/ProfileNav';
 import { MobileTopHeader } from '../navigation/MobileTopHeader';
 import { GlobalSearch } from '../../components/search/GlobalSearch';
+import { DesktopHeader } from '../navigation/DesktopHeader';
 import { FestivalStage } from './components/FestivalStage';
 import { SetsGrid } from './components/SetsGrid';
 import { CreateSetModal } from './components/CreateSetModal';
@@ -40,52 +41,7 @@ export function SetsPage() {
       <MobileTopHeader />
 
       {/* Sticky Theatre-Style Header (Desktop) */}
-      <motion.header 
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
-      >
-        <div className="flex items-center gap-8">
-          <Logo onClick={() => navigate("/")} showText={false} />
-          <nav className="hidden lg:flex items-center gap-8">
-            <button
-              onClick={() => navigate("/")}
-              className={getNavClassName(location.pathname === "/")}
-            >
-              Center
-            </button>
-            <button
-              onClick={() => navigate("/lounge")}
-              className={getNavClassName(location.pathname === "/lounge")}
-            >
-              Lounge
-            </button>
-            <button
-              onClick={() => navigate("/theatre")}
-              className={getNavClassName(location.pathname === "/theatre")}
-            >
-              Theatre
-            </button>
-            <button
-              onClick={() => navigate("/originals")}
-              className={getNavClassName(location.pathname.startsWith("/originals"))}
-            >
-              Originals
-            </button>
-            <button
-              onClick={() => navigate("/sets")}
-              className={getNavClassName(location.pathname === "/sets")}
-            >
-              Sets
-            </button>
-          </nav>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <GlobalSearch />
-          <ProfileNav />
-        </div>
-      </motion.header>
+      <DesktopHeader />
 
       {/* Page body — padded below fixed header */}
       <div className="">

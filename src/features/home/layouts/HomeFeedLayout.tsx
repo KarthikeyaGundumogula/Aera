@@ -42,9 +42,11 @@ import { CinematicPageHeader } from '../../../components/CinematicPageHeader';
 import { ContactCTA } from "../components/ContactCTA";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
+import { TrendingSequences } from "../components/TrendingSequences";
 import { GlobalSearch } from "../../../components/search/GlobalSearch";
 import { FeedContext } from "../../../context/FeedContext";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
+import { DesktopHeader } from "../../navigation/DesktopHeader";
 
 // HomeFeedLayoutProps empty for now
 
@@ -209,43 +211,9 @@ export function HomeFeedLayout() {
       <MobileTopHeader />
 
       {/* Desktop Header */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5">
-        <div className="flex items-center gap-8">
-          <Logo onClick={() => navigate("/")} showText={true} />
-          <nav className="flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em]">
-            <button
-              onClick={() => navigate("/")}
-              className={`transition-colors ${location.pathname === "/" ? "text-white" : "text-white/60 hover:text-white"}`}
-            >
-              Center
-            </button>
-            <button
-              onClick={() => navigate("/theatre")}
-              className={`transition-colors ${location.pathname === "/theatre" ? "text-white" : "text-white/60 hover:text-white"}`}
-            >
-              Theatre
-            </button>
-            <button
-              onClick={() => navigate("/originals")}
-              className={`transition-colors ${location.pathname.startsWith("/originals") ? "text-white" : "text-white/60 hover:text-white"}`}
-            >
-              Originals
-            </button>
-            <button
-              onClick={() => navigate("/sets")}
-              className={`transition-colors ${location.pathname === "/sets" ? "text-white" : "text-white/60 hover:text-white"}`}
-            >
-              Sets
-            </button>
-          </nav>
-        </div>
-        <div className="flex items-center gap-6">
-          <GlobalSearch />
-          <ProfileNav />
-        </div>
-      </header>
+      <DesktopHeader />
 
-      <main className="pt-16 md:pt-20 px-0 w-full max-w-full overflow-x-hidden">
+      <main className="pt-[61px] px-0 w-full max-w-full overflow-x-hidden">
         {/* HERO - UPCOMING RELEASES */}
         <section className="px-4 md:px-0 mb-0">
           <div className="relative h-[65vh] md:h-[80vh] rounded-2xl md:rounded-none overflow-hidden bg-black">
@@ -376,6 +344,9 @@ export function HomeFeedLayout() {
           variant="featured"
           containerClassName="mt-4 mb-12"
         />
+
+        {/* TRENDING DISCUSSIONS */}
+        <TrendingSequences />
 
         {/* TOP ORIGINALS */}
         <section className="mb-12">
