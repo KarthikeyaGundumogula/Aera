@@ -12,7 +12,7 @@ export interface ThoughtItem {
   authorAvatar?: string;
   text: string;
   hits: number;
-  sequenceCount?: number;
+  threadCount?: number;
   reactionCount?: number;
   topReactions?: ("heart" | "zap" | "flame" | "star" | "sparkles")[];
   timestamp: string;
@@ -29,7 +29,7 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     authorAvatar: "https://i.pinimg.com/1200x/c0/83/8d/c0838da1580980cf7bcda233de7361bf.jpg",
     text: "The pacing in the second act of OG isn't just fast; it's rhythmic ☀️. Sujeeth treats every cut like a beat in a metronome. You don't watch it, you feel the tempo.",
     hits: 84,
-    sequenceCount: 12,
+    threadCount: 12,
     reactionCount: 342,
     topReactions: ["heart", "flame", "zap"],
     timestamp: "2 hours ago",
@@ -49,7 +49,7 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     authorAvatar: "https://i.pinimg.com/736x/44/d5/47/44d547fecab1aeb9bb359677353f81e3.jpg",
     text: "RRR’s water and fire motif isn't subtle, but the color grading in the pre-interval scene physically raises the temperature of the screen. Absolute mastery of visual warmth.",
     hits: 120,
-    sequenceCount: 45,
+    threadCount: 45,
     reactionCount: 892,
     topReactions: ["flame", "sparkles", "star"],
     timestamp: "5 hours ago",
@@ -69,7 +69,7 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     authorAvatar: "https://i.pinimg.com/736x/2b/bb/68/2bbb68f94cb4c55ecb121b6191b2c6a0.jpg",
     text: "Why does no one talk about the negative space in KGF's underground scenes? The darkness isn't just lighting; it's a character pressing down on Rocky. Claustrophobia as an art form.",
     hits: 42,
-    sequenceCount: 8,
+    threadCount: 8,
     reactionCount: 156,
     topReactions: ["zap", "heart"],
     timestamp: "1 day ago",
@@ -89,7 +89,7 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     authorAvatar: "https://i.pinimg.com/736x/11/1d/15/111d152a5dbfe972e2cf1cb58941655d.jpg",
     text: "Pushpa doesn't just walk; he commands the geometry of the frame. Sukumar stages him so that every other character subconsciously aligns to his posture.",
     hits: 95,
-    sequenceCount: 23,
+    threadCount: 23,
     reactionCount: 430,
     topReactions: ["star", "flame", "sparkles"],
     timestamp: "2 days ago",

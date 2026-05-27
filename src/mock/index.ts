@@ -132,7 +132,7 @@ export interface ProfileEntry {
  */
 export const PROFILES_DIRECTORY: ProfileEntry[] = profilesDirectoryData as ProfileEntry[];
 
-// ─── Thoughts & Sequences ───────────────────────────────────────────────────
+// ─── Thoughts & Discussions ───────────────────────────────────────────────────
 
 export * from "./thoughts";
 export * from "./discussionReplies";

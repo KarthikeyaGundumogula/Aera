@@ -44,7 +44,7 @@ import { CinematicPageHeader } from '../../../components/CinematicPageHeader';
 import { ContactCTA } from "../components/ContactCTA";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
-import { TrendingSequences } from "../components/TrendingSequences";
+import { TrendingDiscussions } from "../components/TrendingDiscussions";
 import { GlobalSearch } from "../../../components/search/GlobalSearch";
 import { FeedContext } from "../../../context/FeedContext";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
@@ -76,7 +76,7 @@ const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
 // Simulate a global store/cache
 let cachedItems: TheatreItem[] | null = null;
 
-export function HomeFeedLayout() {
+export function CenterFeedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [items, setItems] = useState<TheatreItem[] | null>(cachedItems);
@@ -360,7 +360,7 @@ export function HomeFeedLayout() {
         </section>
 
         {/* TRENDING DISCUSSIONS */}
-        <TrendingSequences />
+        <TrendingDiscussions />
 
         {/* TOP ORIGINALS */}
         <section className="mb-12">

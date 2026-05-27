@@ -45,9 +45,9 @@ export function ThoughtCard({
           <div className="flex items-end justify-between mt-auto">
             {/* Stats */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors" title="Sequences">
+              <div className="flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors" title="Threads">
                 <GitCommit className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-bold font-sans">{thought.sequenceCount || 0}</span>
+                <span className="text-[10px] font-bold font-sans">{thought.threadCount || 0}</span>
               </div>
               
               <div className="flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors group/reactions cursor-default">

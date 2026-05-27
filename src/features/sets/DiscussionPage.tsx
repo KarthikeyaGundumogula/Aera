@@ -218,7 +218,7 @@ function ThreadNode({
         className="py-2 text-[10px] font-bold uppercase tracking-widest text-white/60 cursor-pointer hover:text-white transition-colors"
         onClick={() => {}}
       >
-        Expand Sequence →
+        Expand Discussion →
       </button>
     );
   }

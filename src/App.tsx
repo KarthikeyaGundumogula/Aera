@@ -8,8 +8,9 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ScrollToTop } from "./components/utils/ScrollToTop";
 import { MobileNavBar } from "./features/navigation/MobileNavBar";
 import { AuthProvider } from "./context/AuthContext";
-const Home = lazy(() =>
-  import("./features/home/HomePage").then((m) => ({ default: m.Home })),
+import { ErrorBoundary } from "./components/ErrorBoundary";
+const CenterPage = lazy(() =>
+  import("./features/center").then((m) => ({ default: m.CenterPage })),
 );
 const TheatrePage = lazy(() =>
   import("./features/theatre/TheatrePage").then((m) => ({ default: m.TheatrePage })),
@@ -25,9 +26,9 @@ const ComingSoonPage = lazy(() =>
     default: module.ComingSoonPage,
   })),
 );
-const OriginalsTheatrePage = lazy(() =>
-  import("./features/originals/OriginalsTheatrePage").then((module) => ({
-    default: module.OriginalsTheatrePage,
+const ContextualTheatrePage = lazy(() =>
+  import("./features/theatre/ContextualTheatrePage").then((module) => ({
+    default: module.ContextualTheatrePage,
   })),
 );
 const UploadPage = lazy(() => import("./features/upload/UploadPage"));
@@ -55,9 +56,7 @@ const SetsPage = lazy(() =>
 const SetDetailPage = lazy(() =>
   import("./features/sets").then((module) => ({ default: module.SetDetailPage })),
 );
-const SetsTheatrePage = lazy(() =>
-  import("./features/sets").then((module) => ({ default: module.SetsTheatrePage })),
-);
+
 const DiscussionPage = lazy(() =>
   import("./features/sets").then((module) => ({ default: module.DiscussionPage })),
 );
@@ -66,11 +65,7 @@ const FestivalDetailPage = lazy(() =>
     default: module.FestivalDetailPage,
   })),
 );
-const FestivalTheatrePage = lazy(() =>
-  import("./features/festivals").then((module) => ({
-    default: module.FestivalTheatrePage,
-  })),
-);
+
 const WorkPage = lazy(() => import("./features/works/WorkPage"));
 
 function RouteFallback() {
@@ -100,9 +95,10 @@ function AppRoutes() {
       <MobileNavBar />
 
       <Suspense fallback={<RouteFallback />}>
-        <Routes location={backgroundLocation ?? location}>
+        <ErrorBoundary>
+          <Routes location={backgroundLocation ?? location}>
           <Route path="/" element={<LoungePage />} />
-          <Route path="/center" element={<Home />} />
+          <Route path="/center" element={<CenterPage />} />
           <Route path="/theatre" element={<TheatrePage />} />
           <Route
             path="/originals"
@@ -115,7 +111,7 @@ function AppRoutes() {
           />
           <Route path="/sets" element={<SetsPage />} />
           <Route path="/sets/:id" element={<SetDetailPage />} />
-          <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
+          <Route path="/sets/:id/theatre" element={<ContextualTheatrePage type="set" />} />
           <Route path="/sets/:setId/discussions/:discussionId" element={<DiscussionPage />} />
 
           <Route path="/profile/new" element={<ArtistSetupPage />} />
@@ -132,7 +128,7 @@ function AppRoutes() {
 
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/originals/:id" element={<OriginalPage />} />
-          <Route path="/originals/:id/theatre" element={<OriginalsTheatrePage />} />
+          <Route path="/originals/:id/theatre" element={<ContextualTheatrePage type="original" />} />
           <Route
             path="/originals/:id/releases"
             element={<ComingSoonPage label="Official Releases" />}
@@ -147,10 +143,11 @@ function AppRoutes() {
           />
           <Route path="/profile/:profileId" element={<ProfilePage />} />
           <Route path="/festivals/:id" element={<FestivalDetailPage />} />
-          <Route path="/festivals/:id/theatre" element={<FestivalTheatrePage />} />
+          <Route path="/festivals/:id/theatre" element={<ContextualTheatrePage type="festival" />} />
 
           <Route path="/works/:id" element={<WorkPage />} />
-        </Routes>
+          </Routes>
+        </ErrorBoundary>
 
         {backgroundLocation && (
           <Routes>

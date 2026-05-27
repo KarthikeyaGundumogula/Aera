@@ -4,7 +4,7 @@ import { SectionHeader } from "../../../components/SectionHeader";
 import { THOUGHTS_MOCK } from "../../../mock";
 import { ThoughtCard } from "../../shared/thoughts/ThoughtCard";
 
-export function TrendingSequences() {
+export function TrendingDiscussions() {
   const navigate = useNavigate();
   return (
     <section className="mb-12">

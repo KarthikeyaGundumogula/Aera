@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { HomeFeedLayout } from "./layouts/HomeFeedLayout";
+import { CenterFeedLayout } from "./layouts/CenterFeedLayout";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 /** Key used to remember that a desktop redirect has already happened this session. */
 const DESKTOP_REDIRECT_KEY = 'hasVisitedDesktop';
 
-export function Home() {
+export function CenterPage() {
   const isMobile = useMediaQuery();
   const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ export function Home() {
 
   return (
     <div className="min-h-screen font-sans selection:bg-brand-accent/30">
-      <HomeFeedLayout />
+      <CenterFeedLayout />
     </div>
   );
 }
