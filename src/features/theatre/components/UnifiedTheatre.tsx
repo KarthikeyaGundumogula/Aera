@@ -129,7 +129,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
               {allClusters.mobile.map((cluster) => (
                 <div
                   key={cluster.id}
-                  style={{ height: "clamp(320px, 90vw, 440px)" }}
+                  style={{ height: "40dvh" }}
                 >
                   <MobileClusterView cluster={cluster} />
                 </div>

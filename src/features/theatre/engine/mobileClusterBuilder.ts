@@ -10,8 +10,6 @@ export type MobileClusterType = 'A' | 'B' | 'C' | 'D' | 'E';
 export interface MobileSlot {
   item: TheatreItem;
   type: 'IMAX' | 'Academy' | 'Square' | 'Vertical' | 'Poster';
-  span: number; 
-  aspectClass: string; 
 }
 
 export interface MobileCluster {
@@ -22,28 +20,28 @@ export interface MobileCluster {
 
 const TEMPLATES: Record<MobileClusterType, Omit<MobileSlot, 'item'>[]> = {
   'A': [
-    { type: 'IMAX', span: 2, aspectClass: 'aspect-video' },
-    { type: 'Square', span: 1, aspectClass: 'aspect-square' },
-    { type: 'Square', span: 1, aspectClass: 'aspect-square' },
+    { type: 'IMAX' },
+    { type: 'Square' },
+    { type: 'Square' },
   ],
   'B': [
-    { type: 'Vertical', span: 1, aspectClass: 'aspect-[9/16]' },
-    { type: 'Academy', span: 1, aspectClass: 'aspect-[4/3]' },
-    { type: 'Square', span: 1, aspectClass: 'aspect-square' },
+    { type: 'Vertical' },
+    { type: 'Academy' },
+    { type: 'Square' },
   ],
   'C': [
-    { type: 'Square', span: 1, aspectClass: 'aspect-square' },
-    { type: 'Vertical', span: 1, aspectClass: 'aspect-[9/16]' },
-    { type: 'Academy', span: 1, aspectClass: 'aspect-[4/3]' },
+    { type: 'Square' },
+    { type: 'Vertical' },
+    { type: 'Academy' },
   ],
   'D': [
-    { type: 'Academy', span: 1, aspectClass: 'aspect-[4/3]' },
-    { type: 'Square', span: 1, aspectClass: 'aspect-square' },
-    { type: 'IMAX', span: 2, aspectClass: 'aspect-video' },
+    { type: 'Academy' },
+    { type: 'Square' },
+    { type: 'IMAX' },
   ],
   'E': [
-    { type: 'Poster', span: 1, aspectClass: 'aspect-[2/3]' },
-    { type: 'Poster', span: 1, aspectClass: 'aspect-[2/3]' },
+    { type: 'Poster' },
+    { type: 'Poster' },
   ]
 };
 

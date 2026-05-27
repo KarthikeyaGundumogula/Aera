@@ -7,99 +7,81 @@ interface MobileClusterViewProps {
 }
 
 /**
- * Renders a single mobile cluster with NORMALIZED height.
+ * Renders a single mobile cluster with perfect 2x6 geometric height constraint.
  *
  * All templates use h-full on the root so the parent container controls
- * the total cluster height (just like desktop StaticDesktopCluster uses
- * a fixed clamp height and distributes via CSS Grid 1fr rows).
- *
- * Space is distributed with flex proportions that approximate the natural
- * aspect ratios of each slot type:
- *
- *   A / D  — IMAX (~16:9) row gets flex-[9], square row gets flex-[7]
- *   B / C  — Academy (4:3) gets flex-[3] of right/left column,
- *             Square (1:1) gets flex-[4] of right/left column
- *   E      — Both posters fill their half equally (h-full)
- *
- * All cards use forceFill=true — the container, not the card, owns sizing.
- *
- * Layout patterns:
- *   A — "Feature Presentation":  IMAX full-width + 2 squares below
- *   B — "Asymmetric Left":       Vertical left (fill) | Academy + Square right
- *   C — "Asymmetric Right":      Square + Academy left | Vertical right (fill)
- *   D — "Pacing Block":          2 squares top + IMAX full-width below
- *   E — "The Gallery":           2 posters side-by-side
+ * the total cluster height. The CSS Grid inherently dictates all dimensions
+ * and aspect ratios perfectly based on the grid geometry.
  */
 export const MobileClusterView = memo(function MobileClusterView({
   cluster,
 }: MobileClusterViewProps) {
   const [s0, s1, s2] = cluster.slots;
-  // All cards forced to fill their container — aspect class is ignored.
-  const card = (slot: typeof s0) => <MobileCard slot={slot} forceFill />;
+
+  // Helper to render a card within a grid cell.
+  // The relative wrapper + absolute card ensures it fills the exact grid cell dimensions.
+  const gridCard = (slot: typeof s0, spanClass: string) => (
+    <div className={`relative ${spanClass}`}>
+      <MobileCard slot={slot} className="absolute inset-0" />
+    </div>
+  );
 
   switch (cluster.type) {
     // ── A: Feature Presentation ─────────────────────────────────────────────
-    // IMAX (16:9) on top → gets more vertical space (flex-[9])
-    // Two squares below  → flex-[7]
+    // IMAX (16:9) top (3 rows), Two squares below (3 rows each)
     case "A":
       return (
-        <div className="w-full h-full flex flex-col gap-[2px]">
-          <div className="flex-[9] min-h-0">{card(s0)}</div>
-          <div className="flex-[7] min-h-0 grid grid-cols-2 gap-[2px]">
-            {card(s1)}
-            {card(s2)}
-          </div>
+        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+          {gridCard(s0, "col-span-2 row-span-3")}
+          {gridCard(s1, "col-span-1 row-span-3")}
+          {gridCard(s2, "col-span-1 row-span-3")}
         </div>
       );
 
     // ── B: Asymmetric Left ──────────────────────────────────────────────────
-    // Vertical card fills full left column.
-    // Right column: Academy (4:3) → flex-[3], Square (1:1) → flex-[4].
+    // Vertical left (6 rows). Right: Two squares (3 rows each).
     case "B":
       return (
-        <div className="flex w-full h-full gap-[2px]">
-          <div className="w-1/2 h-full min-w-0">{card(s0)}</div>
-          <div className="w-1/2 h-full min-w-0 flex flex-col gap-[2px]">
-            <div className="flex-[3] min-h-0">{card(s1)}</div>
-            <div className="flex-[4] min-h-0">{card(s2)}</div>
+        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+          {gridCard(s0, "col-span-1 row-span-6")}
+          <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-[2px]">
+            {gridCard(s1, "row-span-3")}
+            {gridCard(s2, "row-span-3")}
           </div>
         </div>
       );
 
     // ── C: Asymmetric Right ─────────────────────────────────────────────────
-    // Left column: Square (1:1) → flex-[4], Academy (4:3) → flex-[3].
-    // Vertical card fills full right column.
+    // Left: Two squares (3 rows each). Vertical right (6 rows).
     case "C":
       return (
-        <div className="flex w-full h-full gap-[2px]">
-          <div className="w-1/2 h-full min-w-0 flex flex-col gap-[2px]">
-            <div className="flex-[4] min-h-0">{card(s0)}</div>
-            <div className="flex-[3] min-h-0">{card(s2)}</div>
+        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+          <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-[2px]">
+            {gridCard(s0, "row-span-3")}
+            {gridCard(s2, "row-span-3")}
           </div>
-          <div className="w-1/2 h-full min-w-0">{card(s1)}</div>
+          {gridCard(s1, "col-span-1 row-span-6")}
         </div>
       );
 
     // ── D: Pacing Block ─────────────────────────────────────────────────────
-    // Mirror of A: two squares on top → flex-[7], IMAX below → flex-[9]
+    // Two squares top (3 rows each), IMAX bottom (3 rows)
     case "D":
       return (
-        <div className="w-full h-full flex flex-col gap-[2px]">
-          <div className="flex-[7] min-h-0 grid grid-cols-2 gap-[2px]">
-            {card(s0)}
-            {card(s1)}
-          </div>
-          <div className="flex-[9] min-h-0">{card(s2)}</div>
+        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+          {gridCard(s0, "col-span-1 row-span-3")}
+          {gridCard(s1, "col-span-1 row-span-3")}
+          {gridCard(s2, "col-span-2 row-span-3")}
         </div>
       );
 
     // ── E: The Gallery ──────────────────────────────────────────────────────
-    // Two poster-format cards, equal height, side by side.
+    // Two poster-format cards, side by side (6 rows each)
     case "E":
       return (
-        <div className="grid grid-cols-2 gap-[2px] w-full h-full">
-          {card(s0)}
-          {card(s1)}
+        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+          {gridCard(s0, "col-span-1 row-span-6")}
+          {gridCard(s1, "col-span-1 row-span-6")}
         </div>
       );
 

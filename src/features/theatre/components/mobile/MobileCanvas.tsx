@@ -63,10 +63,9 @@ export function MobileCanvas() {
           <div
             key={cluster.id}
             className="w-full"
+            style={{ height: "40dvh" }}
           >
-            <MobileClusterView
-              cluster={cluster}
-            />
+            <MobileClusterView cluster={cluster} />
           </div>
         ))}
 

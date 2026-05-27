@@ -12,18 +12,17 @@ import {
 
 interface MobileCardProps {
   slot: MobileSlot;
-  /** When true, the card stretches to fill its parent height instead of using its aspect class. */
-  forceFill?: boolean;
+  className?: string;
 }
 
 /**
  * A single card rendered inside a mobile cluster.
- * Uses the slot's `aspectClass` for sizing unless `forceFill` is set (used in
- * asymmetric layouts where a vertical card must match the height of its sibling stack).
+ * The card stretches to fill its parent grid cell (`h-full`), as the CSS Grid
+ * handles all geometric constraints and aspect ratios automatically.
  */
 export const MobileCard = memo(function MobileCard({
   slot,
-  forceFill = false,
+  className = "",
 }: MobileCardProps) {
   const { item } = slot;
 
@@ -40,9 +39,9 @@ export const MobileCard = memo(function MobileCard({
 
   return (
     <div
-      className={`relative w-full overflow-hidden bg-zinc-900/40 border border-white/5 active:scale-[0.98] transition-transform ${
-        forceFill ? "h-full" : slot.aspectClass
-      } ${getWorkKind(item) === "script" ? "bg-[#f4f1ea] border-black/5" : ""}`}
+      className={`relative w-full h-full overflow-hidden bg-zinc-900/40 border border-white/5 active:scale-[0.98] transition-transform ${
+        getWorkKind(item) === "script" ? "bg-[#f4f1ea] border-black/5" : ""
+      } ${className}`}
     >
       {renderWork(item)}
     </div>
