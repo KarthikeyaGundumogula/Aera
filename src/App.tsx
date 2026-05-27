@@ -31,6 +31,7 @@ const OriginalsTheatrePage = lazy(() =>
   })),
 );
 const UploadPage = lazy(() => import("./features/upload/UploadPage"));
+const LoungePage = lazy(() => import("./features/lounge/LoungePage"));
 const ArtistSetupPage = lazy(() => import("./features/profile/ArtistSetupPage"));
 const LoginPage = lazy(() => import("./features/profile/LoginPage"));
 const StudioPage = lazy(() => import("./features/profile/StudioPage"));
@@ -115,10 +116,7 @@ function AppRoutes() {
           <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
           <Route path="/sets/:setId/discussions/:discussionId" element={<DiscussionPage />} />
           
-          <Route
-            path="/lounge"
-            element={<ComingSoonPage label="Lounge" />}
-          />
+          <Route path="/lounge" element={<LoungePage />} />
 
           <Route path="/profile/new" element={<ArtistSetupPage />} />
           <Route path="/profile/login" element={<LoginPage />} />

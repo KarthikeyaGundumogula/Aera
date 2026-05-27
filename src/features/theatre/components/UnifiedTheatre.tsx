@@ -127,7 +127,12 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
           {isMobile ? (
             <FeedContext.Provider value={mobileFlatItems}>
               {allClusters.mobile.map((cluster) => (
-                <MobileClusterView key={cluster.id} cluster={cluster} />
+                <div
+                  key={cluster.id}
+                  style={{ height: "clamp(320px, 90vw, 440px)" }}
+                >
+                  <MobileClusterView cluster={cluster} />
+                </div>
               ))}
             </FeedContext.Provider>
           ) : (

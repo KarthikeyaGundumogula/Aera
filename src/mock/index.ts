@@ -136,3 +136,13 @@ export const PROFILES_DIRECTORY: ProfileEntry[] = profilesDirectoryData as Profi
 
 export * from "./thoughts";
 export * from "./discussionReplies";
+
+// ─── Current User (Mock Auth) ───────────────────────────────────────────────
+
+export const MOCK_CURRENT_USER = {
+  id: "user-current",
+  name: "YOU (ARTIST)",
+  favoritedOriginalIds: ["og-original", "rrr-original", "kgf-original", "vikram-original"],
+  memberSetIds: ["set-neo-noir", "set-raw-grit", "set-epic-builders"],
+};
+

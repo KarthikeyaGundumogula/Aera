@@ -282,3 +282,19 @@ From `upload-page-ctx.md`:
 | `src/mock/index.ts` | All mock data exports |
 | `agents/context/upload-page-ctx.md` | Upload page context (keep updated) |
 | `agents/context/fe-context.md` | Main frontend context (keep updated) |
+
+---
+
+## 13. Discussion & Sets Architecture (Recent Updates)
+
+### DiscussionPage (`src/features/sets/DiscussionPage.tsx`)
+- **Structure**: Renders the Original Post (Thought) followed by nested Thread Replies (`MOCK_DISCUSSION_REPLIES`).
+- **Styling Rules**: No hardcoded color values exist in the component layer for artist tags.
+- **Theming**: Dynamically extracts `themeClasses` directly from `artists.json` (mock data) and applies them to the inline discussion tags (e.g., deep colored tinted strips for users).
+- **Interactivity**: 
+  - Profile pictures are scaled appropriately (`w-8 h-8` for OP, `w-7 h-7` for replies) for better visibility.
+  - Clicking on a Thought card (e.g., in TrendingSequences) navigates directly to the discussion page (`/sets/:setId/discussions/:discussionId`).
+
+### Artist Profiles & Palette (`src/features/profile/ArtistProfile.tsx` & `ProfilePage.tsx`)
+- **Glassmorphic Design**: Profile popups maintain a strict glassmorphic design (`bg-white/[0.03]`, `text-white`). They do not inherit the solid background themes of the discussion tags, ensuring design consistency across the site.
+- **Color Palette Standardization**: Deprecated brown shades (e.g., `#1a120b`, `#4a3728`) have been fully stripped from the codebase and replaced with the standard deep cinematic black (`#050505`) and neutral white/gray gradients to maintain a sleek, premium, and unified aesthetic.
