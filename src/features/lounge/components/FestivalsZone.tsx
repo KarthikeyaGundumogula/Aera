@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Trophy, Clock, Zap } from "lucide-react";
 import { Festival } from "../../../types";
+import { ARTISTS_MOCK } from "../../../mock";
 
 interface FestivalsZoneProps {
   festivals: Festival[];
@@ -86,15 +87,33 @@ function FestivalCard({ festival }: { festival: Festival }) {
           {festival.description}
         </p>
 
-        {/* Rules count */}
-        {festival.rules && festival.rules.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1">
-            <Trophy className="w-3 h-3 text-white/25" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-white/25">
-              {festival.rules.length} Rule{festival.rules.length !== 1 ? "s" : ""}
+        {/* Panelists Cluster */}
+        <div className="flex items-center justify-between mt-1 pt-3 border-t border-white/[0.04]">
+          <div className="flex items-center gap-2.5">
+            <div className="flex -space-x-1.5">
+              {ARTISTS_MOCK.slice(
+                festival.id.charCodeAt(festival.id.length - 1) % 3, 
+                (festival.id.charCodeAt(festival.id.length - 1) % 3) + 3
+              ).map((artist, i) => (
+                <div 
+                  key={i} 
+                  className="relative w-5 h-5 rounded-full border border-[#111] bg-[#222] overflow-hidden shadow-sm" 
+                  style={{ zIndex: 10 - i }}
+                  title={artist.name}
+                >
+                  {artist.image ? (
+                    <img src={artist.image} alt={artist.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[8px] font-bold">{artist.name[0]}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">
+              +{8 + (festival.id.charCodeAt(0) % 15)} Panelists
             </span>
           </div>
-        )}
+        </div>
       </div>
     </motion.button>
   );
@@ -110,7 +129,7 @@ export function FestivalsZone({ festivals }: FestivalsZoneProps) {
   });
 
   return (
-    <div className="overflow-x-auto no-scrollbar pb-2">
+    <div className="overflow-x-auto no-scrollbar pb-4">
       <div className="flex gap-4 w-max px-6 md:px-12">
         {sorted.map((fest) => (
           <FestivalCard key={fest.id} festival={fest} />

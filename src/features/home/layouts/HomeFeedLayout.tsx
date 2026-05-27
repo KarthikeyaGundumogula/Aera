@@ -15,10 +15,12 @@ import {
   Sun,
   ChevronRight,
   Users,
+  Trophy,
+  Youtube,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TheatreItem } from "../../../types";
-import { GRID_ITEMS, ORIGINALS } from "../../../mock";
+import { GRID_ITEMS, ORIGINALS, FESTIVALS } from "../../../mock";
 import { StageIcon } from "../../../components/icons/AppIcons";
 import { ProfileNav } from "../../../components/ProfileNav";
 
@@ -47,6 +49,7 @@ import { GlobalSearch } from "../../../components/search/GlobalSearch";
 import { FeedContext } from "../../../context/FeedContext";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 import { DesktopHeader } from "../../navigation/DesktopHeader";
+import { FestivalsZone } from "../../lounge/components/FestivalsZone";
 
 // HomeFeedLayoutProps empty for now
 
@@ -334,16 +337,27 @@ export function HomeFeedLayout() {
         <RollingTicker />
 
         {/* RECENT RELEASES */}
-        <RecentReleasesSection />
+        <RecentReleasesSection icon={Youtube} />
 
         {/* TOP ARTISTS */}
         <ArtistSpotlightGrid
+          icon={Users}
           title="Top Artists"
           artists={globalArtistStripItems}
           rows={2}
           variant="featured"
           containerClassName="mt-4 mb-12"
         />
+
+        {/* FESTIVALS */}
+        <section className="mb-12">
+          <SectionHeader
+            icon={Trophy}
+            title="Festivals"
+            containerClassName="px-6 md:px-12 mb-6"
+          />
+          <FestivalsZone festivals={FESTIVALS} />
+        </section>
 
         {/* TRENDING DISCUSSIONS */}
         <TrendingSequences />

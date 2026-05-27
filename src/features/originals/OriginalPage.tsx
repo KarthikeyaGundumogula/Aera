@@ -93,7 +93,7 @@ export function OriginalPage() {
             onClick={() => navigate('/')}
             className="px-6 py-2 bg-white text-black rounded-full font-bold"
           >
-            Center
+            Lounge
           </button>
         </div>
       </div>

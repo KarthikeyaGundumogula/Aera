@@ -6,7 +6,7 @@ import { ArrowLeft, CheckCircle2, ChevronRight } from "lucide-react";
 import { PortraitIdentitySection } from "./components/PortraitIdentitySection";
 import { AccessKeySection } from "./components/AccessKeySection";
 import { SocialsSection, type SocialsData } from "./components/SocialsSection";
-import { LiveStagePreview } from "./components/LiveStagePreview";
+
 import { ArtistProfile } from "../shared/profile";
 import { ARTISTS_MOCK } from "../../mock";
 import { OriginalArtist } from "../../types";
@@ -39,11 +39,7 @@ export default function ArtistSetupPage() {
     null,
   );
 
-  const labels = {
-    rite: "Stage Setup",
-    action: "Shape Your Stage",
-    prompt: "Your Stage For the Global theatre, Shape Your Hero, presnt yourself in your tone",
-  };
+
 
   const [formData, setFormData] = useState<ProfileFormData>({
     username: "",
@@ -177,16 +173,16 @@ export default function ArtistSetupPage() {
         </div>
 
         {/* ─── Page Header ─────────────────────────────────────────── */}
-        <header className="mb-20">
+        <header className="mb-12">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center gap-3 mb-5"
+            className="flex items-center gap-3 mb-4"
           >
-            <div className="h-px w-12 bg-white/20" />
+            <div className="h-px w-10 bg-white/20" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">
-              {labels.rite}
+              New Account
             </span>
           </motion.div>
 
@@ -194,40 +190,15 @@ export default function ArtistSetupPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl md:text-7xl font-black uppercase tracking-[-0.02em] leading-[0.88]"
+            className="text-5xl text-white/50 md:text-5xl font-black uppercase tracking-[-0.02em] leading-[0.9]"
           >
-            {labels.action.split(" ").slice(0, 2).join(" ")} <br />
-            <span className="text-white/25">
-              {labels.action.split(" ").slice(2).join(" ")}
-            </span>
+            Welcome to 
+            <br />
+            <span className="text-white">The Club</span>
           </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
-            className="mt-5 text-sm text-white/35 max-w-xs leading-relaxed"
-          >
-            {labels.prompt}
-          </motion.p>
         </header>
 
-        {/* ─── PERSISTENT VIEW FINDER ─────────────────────────────── */}
-        <div className="mb-20">
-          <LiveStagePreview
-            username={formData.username}
-            displayName={formData.displayName}
-            tagline={formData.tagline}
-            portrait={formData.portraitPreview}
-            imagePosition={formData.imagePosition}
-            themeTextColor={formData.themeTextColor}
-            themeBgColor={formData.themeBgColor}
-            onTextColorChange={handleTextColorChange}
-            onBgColorChange={handleBgColorChange}
-            onPortraitChange={handlePortraitChange}
-            onImagePositionChange={handleImagePositionChange}
-          />
-        </div>
+
 
         {/* ─── Form Sections ───────────────────────────────────────── */}
         <div className="flex flex-col gap-24">

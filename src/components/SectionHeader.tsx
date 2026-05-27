@@ -11,7 +11,7 @@ interface SectionHeaderProps {
 
 export const SectionHeader = memo(({ icon: Icon, iconNode, title, className = "", containerClassName = "", iconClassName="w-4 h-4" }: SectionHeaderProps) => {
   return (
-    <div className={`flex items-center gap-3 opacity-60 ${containerClassName} ${className}`}>
+    <div className={`flex items-center gap-3 opacity-100 ${containerClassName} ${className}`}>
       {iconNode ? iconNode : Icon ? <Icon className={iconClassName} /> : <div className="w-4 h-px bg-white" />}
       <h3 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] text-white/80 drop-shadow-md">
         {title}

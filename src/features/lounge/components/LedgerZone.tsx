@@ -85,7 +85,7 @@ export function LedgerZone({ items }: LedgerZoneProps) {
   if (!items.length) return null;
 
   return (
-    <div className="overflow-x-auto no-scrollbar pb-2">
+    <div className="overflow-x-auto no-scrollbar pb-4">
       <div className="flex gap-4 w-max px-6 md:px-12">
         {items.map((item) => (
           <LedgerCard key={item.id} item={item} />

@@ -27,11 +27,11 @@ function getAuthorAvatar(name: string): string {
 }
 
 const REACTION_GLOW: Record<ReactionType, string> = {
-  ignite: "text-orange-200/90",
-  resonate: "text-amber-200/90",
-  toast: "text-rose-200/90",
-  love: "text-red-200/90",
-  insight: "text-blue-200/90",
+  heart: "text-rose-200/90",
+  zap: "text-yellow-200/90",
+  flame: "text-orange-200/90",
+  star: "text-amber-200/90",
+  sparkles: "text-cyan-200/90",
 };
 
 /* ─── Clickable Artist Name ──────────────────────────────────── */

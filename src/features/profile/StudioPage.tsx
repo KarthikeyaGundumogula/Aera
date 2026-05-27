@@ -76,23 +76,34 @@ export default function StudioPage() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-24 mt-4 flex flex-col gap-10">
         {/* ─── Redesigned Contained 1:1 Live Stage Preview ─── */}
-        <LiveStagePreview
-          username={currentArtist.id.toUpperCase().replace("ART-", "")}
-          displayName={stageName}
-          tagline={tagline}
-          portrait={portraitPreview}
-          imagePosition={imagePosition}
-          themeTextColor={currentArtist.themeTextColor || "#fac107"}
-          themeBgColor={currentArtist.themeBgColor || "#0f1a42"}
-          socials={currentArtist.socials}
-          onTextColorChange={(color) => updateProfile({ themeTextColor: color })}
-          onBgColorChange={(color) => updateProfile({ themeBgColor: color })}
-          onPortraitChange={(_file, preview) => setPortraitPreview(preview)}
-          onImagePositionChange={(pos) => {
-            setImagePosition(pos);
-            updateProfile({ imagePosition: pos });
-          }}
-        />
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl w-fit mb-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+              Customize Your Stage Colors Below
+            </span>
+          </div>
+          <LiveStagePreview
+            username={currentArtist.id.toUpperCase().replace("ART-", "")}
+            displayName={stageName}
+            tagline={tagline}
+            portrait={portraitPreview}
+            imagePosition={imagePosition}
+            themeTextColor={currentArtist.themeTextColor || "#fac107"}
+            themeBgColor={currentArtist.themeBgColor || "#0f1a42"}
+            socials={currentArtist.socials}
+            onTextColorChange={(color) => updateProfile({ themeTextColor: color })}
+            onBgColorChange={(color) => updateProfile({ themeBgColor: color })}
+            onPortraitChange={(_file, preview) => setPortraitPreview(preview)}
+            onImagePositionChange={(pos) => {
+              setImagePosition(pos);
+              updateProfile({ imagePosition: pos });
+            }}
+          />
+        </div>
 
         {/* ─── Stage Control parameters Panel ─── */}
         <section className="bg-[#0b0c10] border border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">

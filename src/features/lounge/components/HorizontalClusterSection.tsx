@@ -9,6 +9,7 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 
 interface HorizontalClusterSectionProps {
   items: TheatreItem[];
+  compact?: boolean;
 }
 
 /**
@@ -21,7 +22,7 @@ interface HorizontalClusterSectionProps {
  * Mobile slots are 80vw wide so ~1.2 clusters are visible — natural peek into the next.
  * Desktop slots are 60vw wide so multiple clusters are visible across the wider screen.
  */
-export function HorizontalClusterSection({ items }: HorizontalClusterSectionProps) {
+export function HorizontalClusterSection({ items, compact = false }: HorizontalClusterSectionProps) {
   const isMobile = useMediaQuery();
 
   const mobileClusters = useMemo(
@@ -72,8 +73,8 @@ export function HorizontalClusterSection({ items }: HorizontalClusterSectionProp
               <div
                 key={cluster.id}
                 style={{
-                  width: "80vw",
-                  height: "clamp(320px, 90vw, 440px)",
+                  width: compact ? "70vw" : "80vw",
+                  height: compact ? "clamp(260px, 75vw, 360px)" : "clamp(320px, 90vw, 440px)",
                   flexShrink: 0,
                 }}
               >
@@ -107,9 +108,9 @@ export function HorizontalClusterSection({ items }: HorizontalClusterSectionProp
             // 60vw per cluster — shows ~1.6 at a time on wide screens
             <div
               key={cluster.id ?? idx}
-              style={{ width: "60vw", flexShrink: 0 }}
+              style={{ width: compact ? "45vw" : "60vw", flexShrink: 0 }}
             >
-              <StaticDesktopCluster cluster={cluster} />
+              <StaticDesktopCluster cluster={cluster} compact={compact} />
             </div>
           ))}
         </div>

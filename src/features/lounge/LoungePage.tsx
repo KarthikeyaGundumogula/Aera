@@ -17,8 +17,11 @@ import { DesktopHeader } from "../navigation/DesktopHeader";
 import { SectionHeader } from "../../components/SectionHeader";
 import { HorizontalClusterSection } from "./components/HorizontalClusterSection";
 import { FestivalsZone } from "./components/FestivalsZone";
-import { LedgerZone } from "./components/LedgerZone";
 import { DiscussionsZone } from "./components/DiscussionsZone";
+import { RecommendationsZone } from "./components/RecommendationsZone";
+import { LedgerTabsZone } from "./components/LedgerTabsZone";
+import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
+import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
 
 /**
  * Lounge — The app's personalized curation for the user.
@@ -104,7 +107,7 @@ export default function LoungePage() {
               The Lounge
             </h1>
             <p className="text-[11px] text-white/30 font-mono leading-relaxed max-w-md">
-              Works from your Originals. Festivals from your Sets. Your Ledger, your terms.
+              Festivals from your Sets. Active discussions. The latest releases. Your Ledger, your terms.
             </p>
           </motion.div>
 
@@ -121,12 +124,7 @@ export default function LoungePage() {
                 {favoritedOriginals.length} Originals
               </span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
-              <Clapperboard className="w-3 h-3 text-white/35" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/35">
-                {favoritedWorks.length} Works
-              </span>
-            </div>
+
             {liveFestivals.length > 0 && (
               <button
                 onClick={() => navigate(`/festivals/${liveFestivals[0].id}`)}
@@ -151,51 +149,14 @@ export default function LoungePage() {
         </section>
 
         {/* ══════════════════════════════════════════════════════
-            SCENE 1 — WORKS CLUSTER (Hero — primary surface)
-            One cluster from the user's favorited Originals.
-            Horizontal scroll = enter the theatre without leaving.
-        ══════════════════════════════════════════════════════ */}
-        {favoritedWorks.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-14"
-          >
-            {/* Section label + Originals pills */}
-            <div className="px-6 md:px-12 mb-4 flex items-center justify-between">
-              <SectionHeader
-                icon={Clapperboard}
-                title="Your Works"
-                containerClassName="opacity-100"
-              />
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                {favoritedOriginals.map((orig) => (
-                  <button
-                    key={orig.id}
-                    onClick={() => navigate(`/originals/${orig.id}`)}
-                    className="text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white/70 px-2.5 py-1 rounded-full border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.06] transition-all"
-                  >
-                    {orig.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* The cluster — full-bleed, no horizontal padding so it spans the screen */}
-            <HorizontalClusterSection items={favoritedWorks} />
-          </motion.section>
-        )}
-
-        {/* ══════════════════════════════════════════════════════
-            SCENE 2 — FESTIVALS IN YOUR SETS
+            SCENE 1 — FESTIVALS IN YOUR SETS
         ══════════════════════════════════════════════════════ */}
         {memberFestivals.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-14"
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-10"
           >
             <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
               <SectionHeader icon={Trophy} title="Festivals" containerClassName="opacity-100" />
@@ -211,37 +172,26 @@ export default function LoungePage() {
         )}
 
         {/* ══════════════════════════════════════════════════════
-            SCENE 3 — YOUR LEDGER
+            SCENE 2 — THIS WEEK'S RECOMMENDATIONS
         ══════════════════════════════════════════════════════ */}
-        {ledgerItems.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-14"
-          >
-            <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
-              <SectionHeader icon={BookOpen} title="Your Ledger" containerClassName="opacity-100" />
-              <button
-                onClick={() => navigate("/ledger")}
-                className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors"
-              >
-                Full Ledger <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-            <LedgerZone items={ledgerItems} />
-          </motion.section>
-        )}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-10"
+        >
+          <RecommendationsZone />
+        </motion.section>
 
         {/* ══════════════════════════════════════════════════════
-            SCENE 4 — DISCUSSIONS IN YOUR SETS
+            SCENE 3 — DISCUSSIONS IN YOUR SETS
         ══════════════════════════════════════════════════════ */}
         {memberDiscussions.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-14"
+            transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-10"
           >
             <SectionHeader
               icon={MessageSquare}
@@ -251,6 +201,48 @@ export default function LoungePage() {
             <DiscussionsZone thoughts={memberDiscussions} />
           </motion.section>
         )}
+
+        {/* ══════════════════════════════════════════════════════
+            SCENE 4 — YOUR LEDGER
+        ══════════════════════════════════════════════════════ */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-10"
+        >
+          <LedgerTabsZone />
+        </motion.section>
+
+        {/* ══════════════════════════════════════════════════════
+            SCENE 5 — THIS WEEK'S RELEASES
+        ══════════════════════════════════════════════════════ */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-10"
+        >
+          <YoutubeReleasesZone />
+        </motion.section>
+
+        {/* ══════════════════════════════════════════════════════
+            SCENE 6 — ORIGINAL SPOTLIGHT FEED
+        ══════════════════════════════════════════════════════ */}
+        {ORIGINALS.slice(0, 4).map((original, idx) => (
+          <motion.section
+            key={`spotlight-${original.id}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + (idx * 0.05), duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-10"
+          >
+            <OriginalSpotlightZone 
+              original={original} 
+              works={GRID_ITEMS.filter(w => w.category === "Edit").slice(0, 10)} 
+            />
+          </motion.section>
+        ))}
 
         {/* Empty state */}
         {!favoritedWorks.length &&

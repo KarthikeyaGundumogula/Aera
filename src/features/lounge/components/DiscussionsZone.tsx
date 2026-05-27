@@ -12,7 +12,7 @@ export function DiscussionsZone({ thoughts }: DiscussionsZoneProps) {
   if (!thoughts.length) return null;
 
   return (
-    <div className="overflow-x-auto no-scrollbar pb-2">
+    <div className="overflow-x-auto no-scrollbar pb-4">
       <div className="flex gap-4 sm:gap-6 w-max px-6 md:px-12">
         {thoughts.map((thought) => (
           <ThoughtCard

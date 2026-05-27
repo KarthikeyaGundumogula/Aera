@@ -34,6 +34,7 @@ const UploadPage = lazy(() => import("./features/upload/UploadPage"));
 const LoungePage = lazy(() => import("./features/lounge/LoungePage"));
 const ArtistSetupPage = lazy(() => import("./features/profile/ArtistSetupPage"));
 const LoginPage = lazy(() => import("./features/profile/LoginPage"));
+const ReservedArtistsPage = lazy(() => import("./features/profile/ReservedArtistsPage"));
 const StudioPage = lazy(() => import("./features/profile/StudioPage"));
 const ProfileEditPage = lazy(() => import("./features/profile/ProfileEditPage"));
 const OriginalCreatePage = lazy(() => import("./features/originals/OriginalCreatePage"));
@@ -100,7 +101,8 @@ function AppRoutes() {
 
       <Suspense fallback={<RouteFallback />}>
         <Routes location={backgroundLocation ?? location}>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LoungePage />} />
+          <Route path="/center" element={<Home />} />
           <Route path="/theatre" element={<TheatrePage />} />
           <Route
             path="/originals"
@@ -115,11 +117,10 @@ function AppRoutes() {
           <Route path="/sets/:id" element={<SetDetailPage />} />
           <Route path="/sets/:id/theatre" element={<SetsTheatrePage />} />
           <Route path="/sets/:setId/discussions/:discussionId" element={<DiscussionPage />} />
-          
-          <Route path="/lounge" element={<LoungePage />} />
 
           <Route path="/profile/new" element={<ArtistSetupPage />} />
           <Route path="/profile/login" element={<LoginPage />} />
+          <Route path="/profile/reserved" element={<ReservedArtistsPage />} />
           <Route path="/profile/edit" element={<ProfileEditPage />} />
           <Route path="/studio" element={<StudioPage />} />
           <Route path="/works/new" element={<UploadPage />} />

@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useRef, useMemo } from 'react';
+import { memo, useState, useEffect, useRef, useMemo, ElementType } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../../components/SectionHeader';
@@ -6,7 +6,19 @@ import { FHLoader } from '../../../components/FHLoader';
 import { buildEmbedUrl } from '../../../utils/embed';
 import { GRID_ITEMS, ORIGINALS } from '../../../mock';
 
-export const RecentReleasesSection = memo(function RecentReleasesSection() {
+interface RecentReleasesSectionProps {
+  title?: string;
+  icon?: ElementType;
+  className?: string;
+  headerClassName?: string;
+}
+
+export const RecentReleasesSection = memo(function RecentReleasesSection({ 
+  title = "Releases",
+  icon,
+  className = "pt-8 pb-12",
+  headerClassName = "mb-8"
+}: RecentReleasesSectionProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -46,13 +58,13 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
 
   const embedUrl = currentWork?.srcId ? buildEmbedUrl('youtube', currentWork.srcId) : '';
 
-  const handleNext = () => setCurrentIndex(i => (i + 1) % recentReleases.length);
-  const handlePrev = () => setCurrentIndex(i => (i - 1 + recentReleases.length) % recentReleases.length);
+  const handleNext = () => setCurrentIndex(i => Math.min(i + 1, recentReleases.length - 1));
+  const handlePrev = () => setCurrentIndex(i => Math.max(i - 1, 0));
 
   return (
-    <section className="pt-8 pb-12" ref={mainContainerRef} aria-label="Releases">
+    <section className={className} ref={mainContainerRef} aria-label="Releases">
       <div className="px-4 md:px-8 max-w-6xl mx-auto">
-        <SectionHeader title="Releases" containerClassName="mb-8" />
+        <SectionHeader title={title} icon={icon} containerClassName={headerClassName} />
         
         {/* DESKTOP LAYOUT (hidden md:block) */}
         <div className="hidden md:flex flex-col gap-8">
@@ -99,7 +111,12 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
              <div className="flex items-center gap-4">
                 <button 
                   onClick={handlePrev}
-                  className="w-14 h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white"
+                  disabled={currentIndex === 0}
+                  className={`w-14 h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] transition-all duration-300 ${
+                    currentIndex === 0 
+                      ? 'opacity-20 cursor-not-allowed text-white/50' 
+                      : 'hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] active:scale-95 text-white/50 hover:text-white'
+                  }`}
                 >
                   <ChevronLeft className="w-5 h-5 -ml-0.5" />
                 </button>
@@ -108,7 +125,12 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
                 </div>
                 <button 
                   onClick={handleNext}
-                  className="w-14 h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] transition-all duration-300 active:scale-95 text-white/50 hover:text-white"
+                  disabled={currentIndex === recentReleases.length - 1}
+                  className={`w-14 h-14 rounded-full bg-[#050505] flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] transition-all duration-300 ${
+                    currentIndex === recentReleases.length - 1 
+                      ? 'opacity-20 cursor-not-allowed text-white/50' 
+                      : 'hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] active:scale-95 text-white/50 hover:text-white'
+                  }`}
                 >
                   <ChevronRight className="w-5 h-5 -mr-0.5" />
                 </button>
@@ -144,7 +166,12 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
           <div className="mt-4 flex items-center justify-between px-2 gap-2">
             <button
               onClick={handlePrev}
-              className="w-10 h-10 shrink-0 rounded-full bg-[#050505] flex items-center justify-center border border-white/10 shadow-lg text-white/80 hover:text-white active:scale-95 transition-all duration-300"
+              disabled={currentIndex === 0}
+              className={`w-10 h-10 shrink-0 rounded-full bg-[#050505] flex items-center justify-center border border-white/10 shadow-lg transition-all duration-300 ${
+                currentIndex === 0 
+                  ? 'opacity-20 cursor-not-allowed text-white/50' 
+                  : 'text-white/80 hover:text-white active:scale-95'
+              }`}
               aria-label="Previous Release"
             >
               <ChevronLeft className="w-5 h-5 -ml-0.5" />
@@ -171,7 +198,12 @@ export const RecentReleasesSection = memo(function RecentReleasesSection() {
 
             <button
               onClick={handleNext}
-              className="w-10 h-10 shrink-0 rounded-full bg-[#050505] flex items-center justify-center border border-white/10 shadow-lg text-white/80 hover:text-white active:scale-95 transition-all duration-300"
+              disabled={currentIndex === recentReleases.length - 1}
+              className={`w-10 h-10 shrink-0 rounded-full bg-[#050505] flex items-center justify-center border border-white/10 shadow-lg transition-all duration-300 ${
+                currentIndex === recentReleases.length - 1 
+                  ? 'opacity-20 cursor-not-allowed text-white/50' 
+                  : 'text-white/80 hover:text-white active:scale-95'
+              }`}
               aria-label="Next Release"
             >
               <ChevronRight className="w-5 h-5 -mr-0.5" />

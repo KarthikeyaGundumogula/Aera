@@ -1,25 +1,25 @@
 import { useState, useRef } from "react";
-import { Flame, Activity, Wine, Heart, Lightbulb } from "lucide-react";
+import { Heart, Zap, Flame, Star, Sparkles } from "lucide-react";
 
-export type ReactionType = "ignite" | "resonate" | "toast" | "love" | "insight";
+export type ReactionType = "heart" | "zap" | "flame" | "star" | "sparkles";
 
 interface ReactionsProps {
   initialReactions?: {
-    ignite?: number;
-    resonate?: number;
-    toast?: number;
-    love?: number;
-    insight?: number;
+    heart?: number;
+    zap?: number;
+    flame?: number;
+    star?: number;
+    sparkles?: number;
   };
   onReact?: (type: ReactionType) => void;
 }
 
 const REACTION_CONFIG = [
-  { id: "ignite" as ReactionType, icon: Flame, activeColor: "text-orange-400", label: "Ignite" },
-  { id: "resonate" as ReactionType, icon: Activity, activeColor: "text-amber-400", label: "Resonate" },
-  { id: "toast" as ReactionType, icon: Wine, activeColor: "text-rose-400", label: "Toast" },
-  { id: "love" as ReactionType, icon: Heart, activeColor: "text-red-400", label: "Love" },
-  { id: "insight" as ReactionType, icon: Lightbulb, activeColor: "text-blue-400", label: "Insight" },
+  { id: "heart" as ReactionType, icon: Heart, activeColor: "text-rose-500", label: "Love" },
+  { id: "zap" as ReactionType, icon: Zap, activeColor: "text-yellow-500", label: "Zap" },
+  { id: "flame" as ReactionType, icon: Flame, activeColor: "text-orange-500", label: "Flame" },
+  { id: "star" as ReactionType, icon: Star, activeColor: "text-amber-400", label: "Star" },
+  { id: "sparkles" as ReactionType, icon: Sparkles, activeColor: "text-cyan-400", label: "Sparkles" },
 ] as const;
 
 export function Reactions({ initialReactions, onReact }: ReactionsProps) {

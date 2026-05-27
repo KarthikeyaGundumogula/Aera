@@ -15,14 +15,14 @@ export function MobileNavBar() {
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-[#050505] px-4 py-4">
       <div className="grid grid-cols-5 gap-1">
         <button
-          onClick={() => navigate("/")}
-          className={getNavItemClassName(location.pathname === "/")}
+          onClick={() => navigate("/center")}
+          className={getNavItemClassName(location.pathname === "/center")}
         >
           Center
         </button>
         <button
-          onClick={() => navigate("/lounge")}
-          className={getNavItemClassName(location.pathname === "/lounge")}
+          onClick={() => navigate("/")}
+          className={getNavItemClassName(location.pathname === "/")}
         >
           Lounge
         </button>

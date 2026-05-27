@@ -1,10 +1,11 @@
-import { memo } from 'react';
+import { memo, ElementType } from 'react';
 import { ArtistProfile } from '../features/shared/profile/ArtistProfile';
 import { SectionHeader } from './SectionHeader';
 import { OriginalArtist } from '../types';
 
 interface ArtistSpotlightGridProps {
   title?: string;
+  icon?: ElementType;
   artists: OriginalArtist[];
   rows?: 2 | 3;
   variant?: 'default' | 'featured';
@@ -13,6 +14,7 @@ interface ArtistSpotlightGridProps {
 
 export const ArtistSpotlightGrid = memo(function ArtistSpotlightGrid({
   title,
+  icon,
   artists,
   rows = 3,
   variant = 'default',
@@ -29,6 +31,7 @@ export const ArtistSpotlightGrid = memo(function ArtistSpotlightGrid({
         <div className="px-4 md:px-8">
           <SectionHeader 
             title={title} 
+            icon={icon}
             containerClassName="mb-6" 
           />
         </div>
