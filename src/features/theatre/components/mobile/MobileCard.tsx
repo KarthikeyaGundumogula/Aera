@@ -39,8 +39,8 @@ export const MobileCard = memo(function MobileCard({
 
   return (
     <div
-      className={`relative w-full h-full overflow-hidden bg-zinc-900/40 border border-white/5 active:scale-[0.98] transition-transform ${
-        getWorkKind(item) === "script" ? "bg-[#f4f1ea] border-black/5" : ""
+      className={`relative w-full h-full overflow-hidden bg-zinc-900/40 active:scale-[0.98] transition-transform ${
+        getWorkKind(item) === "script" ? "bg-[#f4f1ea]" : ""
       } ${className}`}
     >
       {renderWork(item)}

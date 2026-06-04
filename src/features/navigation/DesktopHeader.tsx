@@ -28,7 +28,7 @@ export function DesktopHeader({ isVisible = true, isScrolled: propIsScrolled }: 
 
   const navItems = [
     { label: "Center", path: "/center" },
-    { label: "Lounge", path: "/" },
+    { label: "Hall", path: "/" },
     { label: "Theatre", path: "/theatre" },
     { label: "Originals", path: "/originals" },
     { label: "Sets", path: "/sets" },

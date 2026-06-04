@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { Dna } from "lucide-react";
 
 interface CreationIdentitySectionProps {
   title: string;
@@ -15,7 +16,9 @@ export function CreationIdentitySection({ title, description, onChange }: Creati
       className="space-y-8"
     >
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold">I</div>
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10">
+          <Dna className="w-4 h-4 text-white/70" />
+        </div>
         <h2 className="text-xs font-black uppercase tracking-[0.3em] text-white/50">Core Identity</h2>
       </div>
 

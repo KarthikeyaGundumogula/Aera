@@ -63,7 +63,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
   return (
     <section className={className} ref={mainContainerRef} aria-label="Releases">
-      <div className="px-4 md:px-8 max-w-6xl mx-auto">
+      <div className="px-6 md:px-12 w-full">
         <SectionHeader title={title} icon={icon} containerClassName={headerClassName} />
         
         {/* DESKTOP LAYOUT (hidden md:block) */}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Film, Plus, X } from "lucide-react";
+import { Film, Plus, X, Shield } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { StudioWorkCard } from "./components/StudioWorkCard";
 import { LiveStagePreview } from "./components/LiveStagePreview";
@@ -232,9 +232,12 @@ export default function StudioPage() {
         <section className="bg-[#0b0c10] border border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
-              <h2 className="text-sm font-black uppercase tracking-[0.25em] text-white/80">
-                Security Settings
-              </h2>
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-white/40" />
+                <h2 className="text-sm font-black uppercase tracking-[0.25em] text-white/80">
+                  Security Settings
+                </h2>
+              </div>
               <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest mt-0.5">
                 Manage your account credentials and access
               </p>

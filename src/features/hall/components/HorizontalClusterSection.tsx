@@ -13,7 +13,7 @@ interface HorizontalClusterSectionProps {
 }
 
 /**
- * Horizontal cluster scroll for the Lounge.
+ * Horizontal cluster scroll for the Hall.
  *
  * Mobile  → MobileClusterView  (exactly what mobile Theatre uses)
  * Desktop → StaticDesktopCluster (exactly what desktop Theatre uses)

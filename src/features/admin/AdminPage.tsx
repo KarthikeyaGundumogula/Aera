@@ -52,7 +52,7 @@ export function AdminPage() {
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-              Exit to Lounge
+              Exit to Hall
             </span>
           </motion.button>
 

@@ -10,7 +10,7 @@ This document tracks the implementation status of the **TARS** (Rust/Axum) backe
 | **Database Schema** | 🟢 | Migrations 1-5 applied | N/A | PostgreSQL + SQLx |
 | **Auth System** | 🟡 | Password hashing done | Login UI ready | Need JWT issuing/validation |
 | **CDN / S3 Integration**| 🔴 | Not Started | Presigned URL logic | Need generation logic in TARS |
-| **Deterministic Layout** | 🔴 | Not Started | Engine exists (FE) | Move cluster logic to Rust |
+| **Deterministic Layout** | 🔴 | Not Started | Engine exists (Strict CSS Grid on FE) | Move cluster logic to Rust |
 
 ---
 

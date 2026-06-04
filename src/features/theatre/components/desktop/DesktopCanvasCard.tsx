@@ -60,7 +60,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
       whileHover={{
         zIndex: 20,
       }}
-      className={`relative group overflow-hidden border border-white/10 bg-zinc-900/20 rounded-sm transition-all duration-500 ${isPoster ? "ring-1 ring-white/5" : ""}`}
+      className={`relative group overflow-hidden bg-zinc-900/20 rounded-sm transition-all duration-500`}
       style={{
         gridColumn: `${slot.x + 1} / span ${slot.w}`,
         gridRow: `${slot.y + 1} / span ${slot.h}`,

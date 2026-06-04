@@ -26,7 +26,7 @@ export const FestivalArchive = memo(function FestivalArchive({ festivals }: Fest
   if (concluded.length === 0) return null;
 
   return (
-    <section className="px-4 md:px-8 pt-6 pb-4" aria-label="Festival Archive">
+    <section className="px-4 md:px-8 py-6" aria-label="Festival Archive">
       {/* Section Label */}
       <SectionHeader
         title="Previous Festivals"

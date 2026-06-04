@@ -21,9 +21,11 @@ interface SocialRowProps {
   placeholder: string;
   onChange: (value: string) => void;
   delay: number;
+  brandClass: string;
+  brandColor: string;
 }
 
-function SocialRow({ id, icon: Icon, label, prefix, value, placeholder, onChange, delay }: SocialRowProps) {
+function SocialRow({ id, icon: Icon, label, prefix, value, placeholder, onChange, delay, brandClass, brandColor }: SocialRowProps) {
   const hasValue = value.trim().length > 0;
   return (
     <motion.div
@@ -32,16 +34,16 @@ function SocialRow({ id, icon: Icon, label, prefix, value, placeholder, onChange
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay }}
       className={`
-        flex items-center gap-4 px-5 py-4 rounded-xl border transition-all duration-300
-        bg-white/[0.03]
+        flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-300
+        bg-white/[0.03] group
         ${hasValue
-          ? "border-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
-          : "border-white/[0.07] hover:border-white/15"
+          ? `${brandClass}`
+          : `border-white/[0.07] hover:border-white/15 ${brandClass.replace(/border-[a-z]+-[0-9]+\/30/, 'focus-within:border-white/30').replace(/shadow-.+\]/, '')}`
         }
       `}
     >
       {/* Platform Icon */}
-      <div className={`shrink-0 transition-colors duration-300 ${hasValue ? "text-white/70" : "text-white/25"}`}>
+      <div className={`shrink-0 transition-colors duration-300 ${hasValue ? brandColor : "text-white/25 group-focus-within:text-white/40"}`}>
         <Icon className="w-4 h-4" />
       </div>
 
@@ -80,14 +82,10 @@ export function SocialsSection({ socials, onChange }: SocialsSectionProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full"
+      className="w-full max-w-md mx-auto"
     >
-      {/* Section Eyebrow */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-px w-10 bg-white/20" />
-        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">
-          III — Socials
-        </span>
+      <div className="text-center mb-6 mt-2">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50">Social Links</h3>
       </div>
 
       <div className="space-y-3">
@@ -100,16 +98,20 @@ export function SocialsSection({ socials, onChange }: SocialsSectionProps) {
           placeholder="yourhandle"
           onChange={(v) => onChange("instagram", v)}
           delay={0}
+          brandClass="border-pink-500/30 focus-within:border-pink-500/50 shadow-[0_0_15px_rgba(236,72,153,0.15)]"
+          brandColor="text-pink-400"
         />
         <SocialRow
           id="social-twitter"
           icon={Twitter}
-          label="Twitter / X"
+          label="Twitter"
           prefix="@"
           value={socials.twitter}
           placeholder="yourhandle"
           onChange={(v) => onChange("twitter", v)}
           delay={0.06}
+          brandClass="border-blue-400/30 focus-within:border-blue-400/50 shadow-[0_0_15px_rgba(96,165,250,0.15)]"
+          brandColor="text-blue-400"
         />
         <SocialRow
           id="social-youtube"
@@ -117,9 +119,11 @@ export function SocialsSection({ socials, onChange }: SocialsSectionProps) {
           label="YouTube"
           prefix=""
           value={socials.youtube}
-          placeholder="Stage handle (e.g. @yourname)"
+          placeholder="Channel ID"
           onChange={(v) => onChange("youtube", v)}
           delay={0.12}
+          brandClass="border-red-500/30 focus-within:border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+          brandColor="text-red-500"
         />
       </div>
     </motion.section>

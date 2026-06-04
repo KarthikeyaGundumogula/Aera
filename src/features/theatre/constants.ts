@@ -15,7 +15,7 @@
 export const UNIT_SIZE = 62;
 
 /** Pixel gap between adjacent clusters in world-space. */
-export const CLUSTER_GAP = 4;
+export const CLUSTER_GAP = 0;
 
 /** Total pixel width of a single cluster block. */
 export const CLUSTER_WIDTH = 12 * UNIT_SIZE;

@@ -43,7 +43,7 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
   const isLive = festival.status === 'LIVE';
 
   return (
-    <section className="px-4 md:px-8 pt-10 pb-4" aria-label={`Active Festival: ${festival.title}`}>
+    <section className="px-4 md:px-8 py-6" aria-label={`Active Festival: ${festival.title}`}>
       {/* Section Label */}
       <SectionHeader
         title={isLive ? 'Happening Now' : 'Upcoming Festival'}

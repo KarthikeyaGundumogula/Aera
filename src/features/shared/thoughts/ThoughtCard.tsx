@@ -32,8 +32,8 @@ export function ThoughtCard({
     <>
       <div 
         onClick={onCardClick}
-        className={`relative flex-shrink-0 w-80 sm:w-96 h-48 rounded-xl overflow-hidden bg-[#050505] border border-white/10 flex flex-col justify-between group ${
-          onCardClick ? "cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]" : ""
+        className={`relative flex-shrink-0 w-80 sm:w-96 h-48 rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.06] hover:border-white/10 hover:bg-white/[0.05] transition-all flex flex-col justify-between group ${
+          onCardClick ? "cursor-pointer hover:scale-[1.01] active:scale-[0.99]" : ""
         }`}
       >
         <div className="relative z-10 p-6 flex flex-col h-full justify-between gap-4">
@@ -59,7 +59,7 @@ export function ThoughtCard({
                     return (
                       <div 
                         key={i} 
-                        className={`w-4 h-4 rounded-full bg-[#111] border border-[#222] flex items-center justify-center relative shadow-sm`}
+                        className={`w-4 h-4 rounded-full bg-black/40 border border-white/10 backdrop-blur-md flex items-center justify-center relative shadow-sm`}
                         style={{ zIndex: 10 - i }}
                       >
                         <Icon className={`w-2.5 h-2.5 ${color}`} />

@@ -1,6 +1,6 @@
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, Grid } from "lucide-react";
+import { Play, Grid, Clapperboard } from "lucide-react";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { FHLoader } from "../../../components/FHLoader";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
@@ -28,7 +28,7 @@ export function OriginalSpotlightZone({ original, works }: OriginalSpotlightZone
     <div className="relative">
       {/* Header & Tabs */}
       <div className="px-6 md:px-12 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <SectionHeader title={`${original.title}`} containerClassName="opacity-100" />
+        <SectionHeader icon={Clapperboard} title={`${original.title}`} containerClassName="opacity-100" />
 
         <div className="flex items-center gap-6">
           <button

@@ -24,6 +24,7 @@ import { GRID_ITEMS, ORIGINALS, FESTIVALS } from "../../../mock";
 import { StageIcon } from "../../../components/icons/AppIcons";
 import { ProfileNav } from "../../../components/ProfileNav";
 
+
 import { Logo } from "../../../components/Logo";
 import { TopOriginalsAccordion } from "../../originals/components/TopOriginalsAccordion";
 import { SectionHeader } from "../../../components/SectionHeader";
@@ -49,7 +50,7 @@ import { GlobalSearch } from "../../../components/search/GlobalSearch";
 import { FeedContext } from "../../../context/FeedContext";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 import { DesktopHeader } from "../../navigation/DesktopHeader";
-import { FestivalsZone } from "../../lounge/components/FestivalsZone";
+import { FestivalsZone } from "../../hall/components/FestivalsZone";
 
 // HomeFeedLayoutProps empty for now
 

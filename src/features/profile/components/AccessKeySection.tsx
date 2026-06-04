@@ -36,27 +36,22 @@ export function AccessKeySection({ onKeySet }: AccessKeySectionProps) {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="w-full"
     >
-      <div className="flex items-center gap-3 mb-8">
-        <div className="h-px w-10 bg-white/20" />
-        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">
-          II — Security
-        </span>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
         {/* Step 1: Entry */}
         <div className="space-y-2">
           <label className="block text-[9px] font-bold uppercase tracking-[0.35em] text-white/30 ml-1">
             Create Password
           </label>
           <div className="relative group">
-            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-white/30 transition-colors" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-white/30 transition-colors" />
             <input
               type={showFirst ? "text" : "password"}
               value={firstKey}
               onChange={(e) => handleKeyChange("first", e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-14 pr-12 py-5 text-sm font-mono tracking-widest placeholder:text-white/5 focus:border-white/30 focus:bg-white/[0.05] transition-all outline-none"
+              className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-11 pr-10 py-3.5 text-xs font-mono tracking-widest placeholder:text-white/10 focus:border-white/30 focus:bg-white/[0.05] transition-all outline-none"
             />
             <button
               type="button"
@@ -74,14 +69,14 @@ export function AccessKeySection({ onKeySet }: AccessKeySectionProps) {
             Confirm Password
           </label>
           <div className="relative group">
-            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-white/30 transition-colors" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-white/30 transition-colors" />
             <input
               type={showConfirm ? "text" : "password"}
               value={confirmKey}
               onChange={(e) => handleKeyChange("confirm", e.target.value)}
               placeholder="••••••••"
               className={`
-                w-full bg-white/[0.03] border rounded-2xl pl-14 pr-12 py-5 text-sm font-mono tracking-widest placeholder:text-white/5 focus:bg-white/[0.05] transition-all outline-none
+                w-full bg-white/[0.03] border rounded-xl pl-11 pr-10 py-3.5 text-xs font-mono tracking-widest placeholder:text-white/10 focus:bg-white/[0.05] transition-all outline-none
                 ${isMatching ? "border-white/60" : isMismatch ? "border-white/20" : "border-white/10 focus:border-white/30"}
               `}
             />

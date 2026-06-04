@@ -1,6 +1,6 @@
 import { useState, KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Calendar, Hash } from "lucide-react";
+import { X, Calendar, Hash, BookOpen } from "lucide-react";
 
 interface CreationMetaSectionProps {
   releaseDate: string;
@@ -44,7 +44,9 @@ export function CreationMetaSection({
       className="space-y-8"
     >
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold">II</div>
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10">
+          <BookOpen className="w-4 h-4 text-white/70" />
+        </div>
         <h2 className="text-xs font-black uppercase tracking-[0.3em] text-white/50">Chronicle & Essence</h2>
       </div>
 

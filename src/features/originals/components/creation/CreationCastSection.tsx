@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, User, Briefcase, Camera } from "lucide-react";
+import { Plus, X, User, Briefcase, Camera, Users } from "lucide-react";
 import { PersonSearchInput, CastMember } from "./PersonSearchInput";
 
 interface CreationCastSectionProps {
@@ -37,7 +37,9 @@ export function CreationCastSection({
       className="space-y-12"
     >
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold">III</div>
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10">
+          <Users className="w-4 h-4 text-white/70" />
+        </div>
         <h2 className="text-xs font-black uppercase tracking-[0.3em] text-white/50">The Collective</h2>
       </div>
 

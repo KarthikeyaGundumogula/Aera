@@ -5,7 +5,6 @@ import { Sparkles } from "lucide-react";
 
 import { FHLoader } from "../../../components/FHLoader";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { OriginalsCarousel } from "../../originals/components/OriginalsCarousel";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
 import { ORIGINALS, GRID_ITEMS } from "../../../mock";
 

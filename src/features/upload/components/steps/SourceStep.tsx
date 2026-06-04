@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, Upload, Image as ImageIcon, X, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Upload, Image as ImageIcon, X, Plus, Link } from "lucide-react";
 import { useRef } from "react";
 import type {
   UpdateUploadFormData,
@@ -80,7 +80,10 @@ export function SourceStep({
       className="w-full max-w-xl"
     >
       <div className="text-center mb-12">
-        <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2">The Source</h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Link className="w-4 h-4 text-white/50" />
+          <h2 className="text-sm font-bold uppercase tracking-[0.3em]">The Source</h2>
+        </div>
         <p className="text-white/40 text-xs text-balance">
           {isPoster 
             ? "Upload the high-resolution master of your poster"

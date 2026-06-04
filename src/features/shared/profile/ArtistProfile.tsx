@@ -5,7 +5,7 @@ import {
   useMotionValue,
 } from "motion/react";
 import React, { memo, useState, useEffect, useRef } from "react";
-import { Instagram, Twitter, Youtube } from "lucide-react";
+import { Instagram, Twitter, Youtube, Library } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { StageIcon, WorksIcon } from "../../../components/icons/AppIcons";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
@@ -347,9 +347,12 @@ export const ArtistProfile = memo(
 
                   <div className="flex-1 px-8 py-10 flex flex-col justify-start items-center gap-6 z-10 overflow-y-auto no-scrollbar">
                     <div className="space-y-4 w-full">
-                      <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20 text-center mb-6">
-                        Collected Originals
-                      </h3>
+                      <div className="flex items-center justify-center gap-2 mb-6">
+                        <Library className="w-3 h-3 text-white/20" />
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20 text-center">
+                          Collected Originals
+                        </h3>
+                      </div>
 
                       <div 
                         className="flex flex-row flex-wrap justify-center gap-3"

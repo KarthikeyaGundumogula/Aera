@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Film, Image as ImageIcon, BookOpen, ChevronRight } from "lucide-react";
+import { Film, Image as ImageIcon, BookOpen, ChevronRight, Dna } from "lucide-react";
 import { THEATRE_FORMATS } from "../../../../constants/formats";
 import type { UpdateUploadFormData, UploadCategory } from "../../types";
 
@@ -25,9 +25,12 @@ export function IdentityStep({
       className="w-full max-w-xl"
     >
       <div className="text-center mb-12">
-        <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2">
-          The Identity
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Dna className="w-4 h-4 text-white/50" />
+          <h2 className="text-sm font-bold uppercase tracking-[0.3em]">
+            The Identity
+          </h2>
+        </div>
         <p className="text-white/40 text-xs text-balance">
           Give your release a name and a category
         </p>
@@ -101,7 +104,7 @@ export function IdentityStep({
             <BookOpen className="w-5 h-5 md:w-6 md:h-6 mb-2 md:mb-3" />
             <div className="text-left">
               <div className="text-[9px] md:text-xs font-black uppercase tracking-widest leading-none mb-1">
-                Script
+                Story
               </div>
               <div
                 className={`text-[7px] md:text-[9px] font-bold uppercase tracking-widest ${category === "Script" ? "text-black/40" : "text-white/30"}`}

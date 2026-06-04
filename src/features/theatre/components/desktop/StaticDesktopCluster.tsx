@@ -29,7 +29,7 @@ export const StaticDesktopCluster = memo(function StaticDesktopCluster({
         gridTemplateColumns: `repeat(${cols}, 1fr)`,
         gridTemplateRows: `repeat(${rows}, 1fr)`,
         height: compact ? `clamp(280px, 31.5vw, 465px)` : `clamp(360px, 42vw, 620px)`,
-        gap: "2px",
+        gap: "0px",
       }}
     >
       {cluster.slots.map((slot, idx) =>

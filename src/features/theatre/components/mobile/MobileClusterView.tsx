@@ -31,7 +31,7 @@ export const MobileClusterView = memo(function MobileClusterView({
     // IMAX (16:9) top (3 rows), Two squares below (3 rows each)
     case "A":
       return (
-        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+        <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
           {gridCard(s0, "col-span-2 row-span-3")}
           {gridCard(s1, "col-span-1 row-span-3")}
           {gridCard(s2, "col-span-1 row-span-3")}
@@ -42,9 +42,9 @@ export const MobileClusterView = memo(function MobileClusterView({
     // Vertical left (6 rows). Right: Two squares (3 rows each).
     case "B":
       return (
-        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+        <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
           {gridCard(s0, "col-span-1 row-span-6")}
-          <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-[2px]">
+          <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-0">
             {gridCard(s1, "row-span-3")}
             {gridCard(s2, "row-span-3")}
           </div>
@@ -55,8 +55,8 @@ export const MobileClusterView = memo(function MobileClusterView({
     // Left: Two squares (3 rows each). Vertical right (6 rows).
     case "C":
       return (
-        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
-          <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-[2px]">
+        <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
+          <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-0">
             {gridCard(s0, "row-span-3")}
             {gridCard(s2, "row-span-3")}
           </div>
@@ -68,7 +68,7 @@ export const MobileClusterView = memo(function MobileClusterView({
     // Two squares top (3 rows each), IMAX bottom (3 rows)
     case "D":
       return (
-        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+        <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
           {gridCard(s0, "col-span-1 row-span-3")}
           {gridCard(s1, "col-span-1 row-span-3")}
           {gridCard(s2, "col-span-2 row-span-3")}
@@ -79,7 +79,7 @@ export const MobileClusterView = memo(function MobileClusterView({
     // Two poster-format cards, side by side (6 rows each)
     case "E":
       return (
-        <div className="grid grid-cols-2 grid-rows-6 gap-[2px] w-full h-full">
+        <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
           {gridCard(s0, "col-span-1 row-span-6")}
           {gridCard(s1, "col-span-1 row-span-6")}
         </div>

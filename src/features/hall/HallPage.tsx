@@ -24,12 +24,12 @@ import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
 
 /**
- * Lounge — The app's personalized curation for the user.
+ * Hall — The app's personalized curation for the user.
  *
  * Not a generic feed — a series of cinematic scenes the user steps into.
  * Works cluster is the hero at the top. Everything below is contextual.
  */
-export default function LoungePage() {
+export default function HallPage() {
   const navigate = useNavigate();
 
   // ── Works from Favorited Originals ────────────────────────────────────────
@@ -104,7 +104,7 @@ export default function LoungePage() {
               Your Space
             </p>
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none mb-4">
-              The Lounge
+              The Hall
             </h1>
             <p className="text-[11px] text-white/30 font-mono leading-relaxed max-w-md">
               Festivals from your Sets. Active discussions. The latest releases. Your Ledger, your terms.
@@ -118,16 +118,19 @@ export default function LoungePage() {
             transition={{ delay: 0.25, duration: 0.45 }}
             className="relative flex items-center gap-3 mt-6 flex-wrap"
           >
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+            <button 
+              onClick={() => document.getElementById('section-originals')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
+            >
               <Film className="w-3 h-3 text-white/35" />
               <span className="text-[9px] font-black uppercase tracking-widest text-white/35">
                 {favoritedOriginals.length} Originals
               </span>
-            </div>
+            </button>
 
             {liveFestivals.length > 0 && (
               <button
-                onClick={() => navigate(`/festivals/${liveFestivals[0].id}`)}
+                onClick={() => document.getElementById('section-festivals')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/15 transition-all cursor-pointer"
               >
                 <span className="relative flex h-2 w-2">
@@ -139,12 +142,16 @@ export default function LoungePage() {
                 </span>
               </button>
             )}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+            
+            <button 
+              onClick={() => document.getElementById('section-ledger')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
+            >
               <BookOpen className="w-3 h-3 text-white/35" />
               <span className="text-[9px] font-black uppercase tracking-widest text-white/35">
                 {ledgerItems.length} Ledger
               </span>
-            </div>
+            </button>
           </motion.div>
         </section>
 
@@ -153,6 +160,7 @@ export default function LoungePage() {
         ══════════════════════════════════════════════════════ */}
         {memberFestivals.length > 0 && (
           <motion.section
+            id="section-festivals"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -206,6 +214,7 @@ export default function LoungePage() {
             SCENE 4 — YOUR LEDGER
         ══════════════════════════════════════════════════════ */}
         <motion.section
+          id="section-ledger"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -231,6 +240,7 @@ export default function LoungePage() {
         ══════════════════════════════════════════════════════ */}
         {ORIGINALS.slice(0, 4).map((original, idx) => (
           <motion.section
+            id={idx === 0 ? "section-originals" : undefined}
             key={`spotlight-${original.id}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -251,7 +261,7 @@ export default function LoungePage() {
           !memberDiscussions.length && (
             <div className="flex flex-col items-center justify-center py-40 px-6 text-center">
               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/15 mb-3">
-                Your lounge is empty
+                Your hall is empty
               </p>
               <p className="text-[11px] text-white/15 font-mono max-w-xs leading-relaxed">
                 Favorite Originals, join Sets, and fill your Ledger to unlock

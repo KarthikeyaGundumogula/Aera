@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { memo, useState, useEffect } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Clapperboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { OriginalStar, OriginalMaker } from "../../../types";
 import { CreditTag } from "../tags";
@@ -238,7 +238,10 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                   </div>
 
                   <div className="flex-1 px-6 py-6 flex flex-col justify-start items-center gap-4 z-10 overflow-y-auto no-scrollbar">
-                    <h3 className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 text-center mb-4">Filmography</h3>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <Clapperboard className="w-3 h-3 text-white/20" />
+                      <h3 className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 text-center">Filmography</h3>
+                    </div>
                     
                     <div 
                       className="flex flex-row flex-wrap justify-center gap-2 w-full"

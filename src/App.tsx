@@ -32,7 +32,7 @@ const ContextualTheatrePage = lazy(() =>
   })),
 );
 const UploadPage = lazy(() => import("./features/upload/UploadPage"));
-const LoungePage = lazy(() => import("./features/lounge/LoungePage"));
+const HallPage = lazy(() => import("./features/hall/HallPage"));
 const ArtistSetupPage = lazy(() => import("./features/profile/ArtistSetupPage"));
 const LoginPage = lazy(() => import("./features/profile/LoginPage"));
 const ReservedArtistsPage = lazy(() => import("./features/profile/ReservedArtistsPage"));
@@ -97,7 +97,7 @@ function AppRoutes() {
       <Suspense fallback={<RouteFallback />}>
         <ErrorBoundary>
           <Routes location={backgroundLocation ?? location}>
-          <Route path="/" element={<LoungePage />} />
+          <Route path="/" element={<HallPage />} />
           <Route path="/center" element={<CenterPage />} />
           <Route path="/theatre" element={<TheatrePage />} />
           <Route

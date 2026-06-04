@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, CheckCircle2, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Search, X, Users } from "lucide-react";
 import { Original } from "../../../../types";
 import { OWN_RELEASE_ORIGINAL } from "../../../../constants/originals";
 import type { UpdateUploadFormData } from "../../types";
@@ -50,7 +50,10 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
       className="w-full max-w-4xl mx-auto"
     >
       <div className="text-center mb-10">
-        <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2 text-white/90">The Credits</h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Users className="w-4 h-4 text-white/50" />
+          <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-white/90">The Credits</h2>
+        </div>
         <p className="text-white/40 text-[10px] uppercase tracking-widest text-balance">Associate official FrameHouse projects with this release</p>
       </div>
 

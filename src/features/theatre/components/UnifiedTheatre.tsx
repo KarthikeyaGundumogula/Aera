@@ -123,7 +123,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
 
       {/* THEATRE CANVAS */}
       <main className={isFull ? "pt-24 pb-20" : ""}>
-        <div className="flex flex-col" style={{ gap: "2px" }}>
+        <div className="flex flex-col" style={{ gap: "0px" }}>
           {isMobile ? (
             <FeedContext.Provider value={mobileFlatItems}>
               {allClusters.mobile.map((cluster) => (

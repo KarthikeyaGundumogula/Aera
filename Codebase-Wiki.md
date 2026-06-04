@@ -18,7 +18,8 @@
    - *Scripts/Theories:* Textual expansions / narrative essays.
 3. **Origins:** The source material (e.g., movies like OG, RRR, KGF). Every Work is tied to an Original.
 4. **Presence:** A reputation score defined *only* by the accumulation of Credits received. It acts as an unlock mechanism for the platform's social economy.
-5. **Thoughts & Sequences (The Lobby):** A parallel communication layer distinct from Works. "Thoughts" are script-fragment notes tagged to Originals/Works. They earn "Hits" (Palms) instead of standard upvotes. When a threshold is met, the author can "Unlock" it into a "Sequence"—a deep, community-owned discussion thread housed inside Sets. This ensures the "Screen" (Theatre) remains pristine while the "Lobby" handles conversation.
+5. **Thoughts & Sequences (The Lobby):** A parallel communication layer distinct from Works. "Thoughts" are script-fragment notes tagged to Originals/Works. They earn "Hits" (Palms) instead of standard upvotes. When a threshold is met, the author can "Unlock" it into a "Sequence"—a deep, community-owned discussion thread housed inside Sets.
+6. **The Hall (formerly Lounge):** The personalized, curated timeline for the user. It functions not as a generic scroll feed, but as a series of cinematic scenes blending Works, Festivals, Discussions, and Ledger entries.
 
 ## 3. Web Development Rules & Architecture
 
@@ -40,9 +41,12 @@ The UI relies heavily on a determinative "Theatrical" layout engine.
 - A 12-column structure with fixed clusters (e.g., templates F-J) ensuring max 2 edits per cluster and at least 1 theory to provide breathing room.
 
 ### **Mobile Theatre (Vertical Cinema)**
-- Pure vertical alignment using rigid CSS grids (spans), definitively avoiding unoptimized dynamic masonry tools.
-- Strict height rules: A `Vertical` container height is exactly equal to two stacked `Square` containers plus the CSS gap.
-- Only Video edits are placed into `IMAX` containers.
+- Pure vertical alignment using mathematically strict `2 columns x 6 rows` CSS Grids (`MobileClusterView.tsx`).
+- The entire cluster container's height is bound to `40dvh` (or a `1:1` aspect ratio), which mathematically guarantees that the internal grid cells output perfect intrinsic geometries without complex height mapping:
+  - **Squares (1-col, 3-rows):** Perfect 1:1 aspect ratio.
+  - **Verticals (1-col, 6-rows):** Perfect 1:2 cinematic poster ratio.
+  - **IMAX (2-col, 3-rows):** Perfect 2:1 widescreen panorama.
+- Ensures exactly two clusters fit gracefully onto a mobile viewport with a slight tease of a third.
 
 ### **Immersive Modals (`WorkModal` & `QuickView`)**
 - `WorkModal` uses the maximum 95% threshold rules for width/containment. Pixel-perfect shrink-wrapping without distortion (aspect preservation). 

@@ -215,7 +215,7 @@ export function StaticFrame({
                       }`}
                     >
                       <RotateCw size={9} />
-                      {isFlipped ? "Image" : "Details"}
+                      {isFlipped ? "visulas" : "story"}
                     </button>
                   )}
                   {showClutterFreeToggle && (

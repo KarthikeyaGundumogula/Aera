@@ -150,7 +150,7 @@ export function SetDetailPage() {
       </AnimatePresence>
 
       {/* ─── Layer I: Atmos Header ────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-12 md:pt-12 md:pb-16 bg-[#030303] border-b border-white/[0.02]">
+      <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-8 md:pt-10 md:pb-10 bg-[#030303] border-b border-white/[0.02]">
         
         {/* Cinematic Background Design */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" />
@@ -255,7 +255,7 @@ export function SetDetailPage() {
 
       {/* ─── Layer I.V: Open Discussions ───────────────────────────────────────── */}
       {setThoughts.length > 0 && (
-        <section className="px-4 md:px-8 py-8 border-b border-white/[0.04]">
+        <section className="px-4 md:px-8 py-6 border-b border-white/[0.04] bg-[#050505]">
           <SectionHeader
             icon={MessageSquare}
             title="Open Discussions"
@@ -279,7 +279,7 @@ export function SetDetailPage() {
       {activeFestival ? (
         <ActiveFestivalSpotlight festival={activeFestival} set={localSet} />
       ) : (
-        <section className="px-4 md:px-8 py-10" aria-label="No Active Festival">
+        <section className="px-4 md:px-8 py-6" aria-label="No Active Festival">
           <SectionHeader
             title="No Active Festival"
             containerClassName="mb-6"

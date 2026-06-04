@@ -54,12 +54,13 @@
 ## 5. Product Concepts (What FrameHouse Is)
 
 - **Works**: Edits (video), Posters (image), Theories (text/script)
-- **Theatre**: 2D infinite cinematic canvas (desktop 12-col × 9-row clusters; mobile 2-col CSS grid)
+- **Theatre**: 2D infinite cinematic canvas. Desktop uses 12-col × 9-row clusters. Mobile uses a mathematically strict 2-col × 6-row CSS Grid forced to 40dvh height, outputting perfect 1:1, 1:2, and 2:1 geometries natively.
 - **Originals**: Each movie/series is a curated FrameHouse Original with its own theatre
 - **Credits**: Recognition system, higher weight than Likes. Requires Presence to give
 - **Presence**: Accumulated Credits received → unlocks giving Credits
 - **Presence Layers**: UI config objects created by Originals that users can apply to their profile
 - **Thoughts & Sequences (Lobby)**: Script-style text posts that earn "Hits" (Palms). When a threshold is met, the author unlocks a community-owned "Sequence" (discussion thread) living inside a Set. Profile pages segregate Works and Thoughts into distinct racks.
+- **The Hall**: The personalized, curated timeline for the user (formerly Lounge), rendering cinematic scenes of Works, Discussions, Festivals, and Ledgers instead of a generic scrolling feed.
 
 ---
 
@@ -89,7 +90,7 @@ src/
 │   │       └── ModalWrapper.tsx   # Backdrop + escape key handler
 │   ├── theatre/              # Desktop/mobile canvas + cluster engine
 │   ├── originals/            # Originals page + theatre
-│   ├── home/                 # Home feed
+│   ├── hall/                 # The Hall (Personalized curated scenes, formerly Lounge)
 │   └── navigation/           # MobileNavBar
 ├── mock/                     # All mock data
 │   ├── works.json

@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { ChevronLeft, ChevronRight, Monitor, Tv, Smartphone, Square, Film } from "lucide-react";
+import { ChevronLeft, ChevronRight, Monitor, Tv, Smartphone, Square, Film, Layout } from "lucide-react";
 import { WorkPreview } from "../WorkPreview";
 import { THEATRE_FORMATS } from "../../../../constants/formats";
 import type { Original } from "../../../../types";
@@ -31,7 +31,10 @@ export function FormatStep({ formData, currentOriginal, setFormData, onNext, onB
       {/* Visual Selector Side */}
       <div className="w-full lg:w-1/3 space-y-6">
         <div className="mb-8 text-center lg:text-left">
-          <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-2 text-white/80">The Format</h2>
+          <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+            <Layout className="w-4 h-4 text-white/50" />
+            <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-white/80">The Format</h2>
+          </div>
           <p className="text-white/40 text-xs">Select how your release is framed in the theatre</p>
         </div>
         

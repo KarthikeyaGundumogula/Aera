@@ -24,7 +24,7 @@ export function MobileNavBar() {
           onClick={() => navigate("/")}
           className={getNavItemClassName(location.pathname === "/")}
         >
-          Lounge
+          Hall
         </button>
         <button
           onClick={() => navigate("/theatre")}

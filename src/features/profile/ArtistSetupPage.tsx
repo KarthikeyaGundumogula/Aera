@@ -75,6 +75,8 @@ export default function ArtistSetupPage() {
     [],
   );
 
+
+
   const handlePortraitChange = useCallback((file: File, preview: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -201,7 +203,7 @@ export default function ArtistSetupPage() {
 
 
         {/* ─── Form Sections ───────────────────────────────────────── */}
-        <div className="flex flex-col gap-24">
+        <div className="flex flex-col gap-12">
           <AnimatePresence mode="wait">
             {step === 1 ? (
               <motion.div
@@ -210,7 +212,7 @@ export default function ArtistSetupPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col gap-24"
+                className="flex flex-col gap-12"
               >
                 {/* I — Public Profile */}
                 <PortraitIdentitySection
@@ -218,13 +220,17 @@ export default function ArtistSetupPage() {
                   displayName={formData.displayName}
                   tagline={formData.tagline}
                   onIdentityChange={handleIdentityChange}
+                  portraitPreview={formData.portraitPreview}
+                  onPortraitChange={handlePortraitChange}
+                  onPortraitClear={handlePortraitClear}
                 />
 
-                {/* II — Socials */}
                 <SocialsSection
                   socials={formData.socials}
                   onChange={handleSocialChange}
                 />
+
+
 
                 <motion.button
                   whileHover={{ scale: 1.02 }}
