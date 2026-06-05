@@ -99,3 +99,25 @@
   from { transform: translateX(-100%); }
   to { transform: translateX(100%); }
 }
+
+/* Double-tap Honour burst — Instagram-like ✦ star pop */
+@keyframes honour-flash {
+  0%   { opacity: 0;   transform: scale(0.4); filter: drop-shadow(0 0 0px #E11D48); }
+  25%  { opacity: 1;   transform: scale(1.15); filter: drop-shadow(0 0 16px #E11D48); }
+  55%  { opacity: 0.9; transform: scale(0.95); filter: drop-shadow(0 0 12px #E11D48); }
+  100% { opacity: 0;   transform: scale(1.35); filter: drop-shadow(0 0 0px #E11D48); }
+}
+
+/*
+ * Touch-capture overlay for double-tap detection above iframes.
+ * pointer-events: none on desktop — mouse users interact normally with the video.
+ * pointer-events: auto on coarse touch devices — captures double-taps for Honour.
+ */
+.honour-touch-capture {
+  pointer-events: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .honour-touch-capture {
+    pointer-events: auto;
+  }
+}
