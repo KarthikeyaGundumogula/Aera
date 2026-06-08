@@ -8,11 +8,10 @@ import { SectionHeader } from "../../../components/SectionHeader";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
 import { ORIGINALS, GRID_ITEMS } from "../../../mock";
 
-
 // Pick 4 originals for recommendations (mock logic)
 const RECOMMENDED_ORIGINALS = ORIGINALS.slice(0, 4);
 const RECOMMENDED_WORKS = GRID_ITEMS.filter((w) =>
-  RECOMMENDED_ORIGINALS.some((o) => w.originalIds?.includes(o.id))
+  RECOMMENDED_ORIGINALS.some((o) => w.originalIds?.includes(o.id)),
 ).slice(0, 15);
 
 function OriginalsCarousel() {
@@ -47,7 +46,9 @@ function OriginalsCarousel() {
 }
 
 export function RecommendationsZone() {
-  const [activeTab, setActiveTab] = useState<"originals" | "works">("originals");
+  const [activeTab, setActiveTab] = useState<"originals" | "works">(
+    "originals",
+  );
   const [isPending, setIsPending] = useState(false);
 
   // Fake loading effect
@@ -60,7 +61,11 @@ export function RecommendationsZone() {
   return (
     <div className="relative">
       <div className="px-6 md:px-12 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <SectionHeader icon={Sparkles} title="This Week's Recommendations" containerClassName="opacity-100" />
+        <SectionHeader
+          icon={Sparkles}
+          title="Talk of the week"
+          containerClassName="opacity-100"
+        />
 
         {/* Tab Switcher */}
         <div className="flex items-center gap-6">

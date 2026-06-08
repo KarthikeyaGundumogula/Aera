@@ -22,6 +22,7 @@ import { RecommendationsZone } from "./components/RecommendationsZone";
 import { LedgerTabsZone } from "./components/LedgerTabsZone";
 import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
+import { RecommendationFAB } from "../../components/RecommendationFAB";
 
 /**
  * Hall — The app's personalized curation for the user.
@@ -270,6 +271,9 @@ export default function HallPage() {
             </div>
           )}
       </main>
+
+      {/* Global FAB for recommendations in Hall */}
+      <RecommendationFAB />
     </div>
   );
 }

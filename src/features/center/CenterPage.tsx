@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CenterFeedLayout } from "./layouts/CenterFeedLayout";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { RecommendationFAB } from "../../components/RecommendationFAB";
 
 /** Key used to remember that a desktop redirect has already happened this session. */
 const DESKTOP_REDIRECT_KEY = 'hasVisitedDesktop';
@@ -22,6 +23,7 @@ export function CenterPage() {
   return (
     <div className="min-h-screen font-sans selection:bg-brand-accent/30">
       <CenterFeedLayout />
+      <RecommendationFAB />
     </div>
   );
 }
