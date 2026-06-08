@@ -252,3 +252,22 @@ You are building **FrameHouse**, a digital theatre for cinematic expressions—w
   - When any modal opens, the `body` is instantly set to `position: fixed` with its `top` offset set to the negative value of the current `window.scrollY`.
   - This "pins" the background page exactly where it is, blocking all touch-driven scrolling.
   - On close, the `body` is restored and the browser is manually scrolled back to the saved `scrollY` position, ensuring zero layout jumps or orientation loss.
+
+## Recommendation Cinematic UI (The Swipe Catalogue)
+- **Concept**: A Tinder-style swipeable catalogue for recommendations, limited to 5 cards per session to prevent infinite scrolling fatigue.
+- **Interaction Model (Emil Kowalski Physics)**:
+  - **Momentum Drag**: Utilizes velocity-based gesture detection (`velocity > 0.3` OR `distance > 100px`) instead of strict distance thresholds for natural swipe mechanics.
+  - **Directional Exits**: Cards exit definitively in the direction of the swipe and enter dynamically from the opposite side using `AnimatePresence mode="wait"`.
+- **Cinematic Reveal Sequence (FAB Trigger)**:
+  1. **Arm Snap**: The FAB clapperboard arm drops rapidly (180ms).
+  2. **Projector Flash**: A horizontal slit of amber light expands across the viewport via `clip-path` (80ms-200ms) mimicking a film projector gate.
+  3. **Letterbox Reveal**: The modal card itself expands vertically from the center utilizing `clip-path: inset()` instead of animating `height` (avoiding layout thrashing).
+  4. **Staggered Content**: Internal card content staggers in (30-80ms delays) using only `opacity` and minor `y` transform to avoid reflow.
+- **Card Layout**:
+  - **Left**: Poster image with dead-center title and format labels. Clickable to navigate directly to the Original.
+  - **Right**: Score, Artist details, and expandable Notes (truncated to 3 lines via `-webkit-line-clamp`).
+  - **Presence Integration**: The StageIcon (Sun) is highlighted in amber alongside the user's presence score.
+  - **Independent State**: Boost and Ledger actions maintain independent state per card without resetting upon swipe.
+- **Visual Hygiene**:
+  - **External Indicators**: The 5-dot progression indicator lives cleanly *below* the card container (`mt-4`) rather than cluttering the internal art space.
+  - **Looping End Screen**: Reaching the end triggers a minimal "All caught up" cinematic prompt before auto-looping back to the first card after 1.8s.
