@@ -542,7 +542,10 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                       }}
                     >
                       <button
-                        onClick={() => setRecState(rec.id, { boosted: !state.boosted })}
+                        onPointerDown={(e) => {
+                          e.preventDefault(); // Prevents iOS double-tap hover bug
+                          setRecState(rec.id, { boosted: !state.boosted });
+                        }}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest active:scale-[0.97] ${
                           state.boosted
                             ? "bg-[#B45309]/10 text-[#B45309] border border-[#B45309]/28 shadow-[0_0_14px_rgba(180,83,9,0.16)]"
@@ -554,7 +557,10 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                         {state.boosted ? `Boosted · ${rec.vouchCount + 1}` : `Boost · ${rec.vouchCount}`}
                       </button>
                       <button
-                        onClick={() => setRecState(rec.id, { inLedger: !state.inLedger })}
+                        onPointerDown={(e) => {
+                          e.preventDefault(); // Prevents iOS double-tap hover bug
+                          setRecState(rec.id, { inLedger: !state.inLedger });
+                        }}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest active:scale-[0.97] ${
                           state.inLedger
                             ? "bg-white/[0.07] text-white/75 border border-white/[0.16]"

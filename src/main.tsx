@@ -5,7 +5,7 @@ import App from './App.tsx';
 import './styles/index.css';
 
 // Register service worker for PWA
-registerSW({ immediate: true });
+registerSW();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
