@@ -478,7 +478,7 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                             style={{ background: "linear-gradient(to bottom, rgba(180,83,9,0.6), transparent)" }}
                           />
                           <p
-                            className="text-[11px] sm:text-[12px] text-white/45 leading-relaxed"
+                            className="text-[13px] sm:text-[14px] text-white/50 leading-relaxed font-medium"
                             style={{
                               display: "-webkit-box",
                               WebkitBoxOrient: "vertical",
