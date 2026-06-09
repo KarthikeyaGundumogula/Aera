@@ -18,10 +18,11 @@ interface ArtistProfileProps {
   onClose?: () => void;
   index?: number;
   variant?: "default" | "featured";
+  zIndex?: string;
 }
 
 export const ArtistProfile = memo(
-  ({ artist, index = 0, variant = "default", onClose }: ArtistProfileProps) => {
+  ({ artist, index = 0, variant = "default", onClose, zIndex = "z-[160]" }: ArtistProfileProps) => {
     if (!artist) return null;
 
     const [localIsOpen, setLocalIsOpen] = useState(false);
@@ -154,7 +155,7 @@ export const ArtistProfile = memo(
           isOpen={isOpen} 
           onClose={() => setIsOpen(false)}
           className="bg-black/80 backdrop-blur-xl"
-          zIndex="z-[160]"
+          zIndex={zIndex}
         >
           <div className="perspective-2000 w-full max-w-[340px] sm:max-w-[380px] h-fit">
             <motion.div

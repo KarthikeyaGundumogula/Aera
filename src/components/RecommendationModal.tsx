@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { ModalWrapper } from "../features/shared/modals/ModalWrapper";
 import { StageIcon } from "./icons/AppIcons";
 import { MOCK_RECOMMENDATIONS } from "../mock/recommendations";
+import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
+import { OriginalArtist } from "../types";
 
 interface RecommendationModalProps {
   isOpen: boolean;
@@ -12,7 +14,7 @@ interface RecommendationModalProps {
 }
 
 function formatScore(n: number): string {
-  return n.toLocaleString("en-IN");
+  return n.toString();
 }
 
 const NOTES_CLIP = 150;
@@ -78,6 +80,7 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
   const [cardState, setCardState] = useState<CardState>({});
   const [isEndScreen, setIsEndScreen] = useState(false);
   const [hasRevealedOnce, setHasRevealedOnce] = useState(false);
+  const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const isDragging = useRef(false);
   const dragStart = useRef<{ x: number; time: number } | null>(null);
   // Ref mirror of index — avoids stale closure when rapid swipes fire
@@ -91,6 +94,7 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
       setCardState({});
       setIsEndScreen(false);
       setHasRevealedOnce(false);
+      setIsArtistModalOpen(false);
       // Mark reveal done after stagger completes so subsequent swipes don't re-stagger
       const t = setTimeout(() => setHasRevealedOnce(true), 1600);
       return () => clearTimeout(t);
@@ -429,7 +433,8 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
 
                         {/* Artist */}
                         <motion.div
-                          className="flex items-center gap-2.5 mb-4"
+                          className="flex items-center gap-2.5 mb-4 group cursor-pointer hover:bg-white/[0.04] p-1.5 -ml-1.5 rounded-xl transition-colors"
+                          onClick={() => setIsArtistModalOpen(true)}
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
@@ -473,7 +478,7 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                             style={{ background: "linear-gradient(to bottom, rgba(180,83,9,0.6), transparent)" }}
                           />
                           <p
-                            className="text-[10px] sm:text-[11px] text-white/42 leading-relaxed"
+                            className="text-[11px] sm:text-[12px] text-white/45 leading-relaxed"
                             style={{
                               display: "-webkit-box",
                               WebkitBoxOrient: "vertical",
@@ -619,6 +624,21 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Artist ID Card Modal overlay */}
+      <ArtistProfile 
+        artist={
+          isArtistModalOpen && !isEndScreen && rec ? {
+            id: rec.artist.id,
+            name: rec.artist.name,
+            image: rec.artist.profilePicture,
+            presence: rec.artist.presence,
+            works: 0,
+          } : null
+        } 
+        onClose={() => setIsArtistModalOpen(false)} 
+        zIndex="z-[250]"
+      />
     </ModalWrapper>
   );
 }
