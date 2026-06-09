@@ -1,6 +1,6 @@
-export type SetRole = 'Captain' | 'Organizer' | 'Member';
+type SetRole = 'Captain' | 'Organizer' | 'Member';
 
-export interface SetMember {
+interface SetMember {
   profileId: string;
   role: SetRole;
   joinedAt: string;

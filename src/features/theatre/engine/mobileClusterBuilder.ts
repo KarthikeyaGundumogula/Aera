@@ -5,7 +5,7 @@ import {
   isScriptWork,
 } from "../../shared/work";
 
-export type MobileClusterType = 'A' | 'B' | 'C' | 'D' | 'E';
+type MobileClusterType = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface MobileSlot {
   item: TheatreItem;

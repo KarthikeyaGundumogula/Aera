@@ -74,7 +74,7 @@ const ProfileSkeleton: React.FC = () => {
 
 const loadedProfiles = new Set<string>();
 
-export const ProfilePage: React.FC = () => {
+const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);

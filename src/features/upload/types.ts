@@ -19,7 +19,7 @@ export interface UploadFormData {
   platform: UploadPlatform;
 }
 
-export type UploadFormPatch = Partial<UploadFormData>;
+type UploadFormPatch = Partial<UploadFormData>;
 export type UpdateUploadFormData = (data: UploadFormPatch) => void;
 
 export interface UploadFlowConfig {

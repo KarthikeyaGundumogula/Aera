@@ -53,9 +53,9 @@ export function EditFrame({
   const [doubleTapFlash, setDoubleTapFlash] = useState(false);
 
   // Refs for timeouts (stable, no stale-closure risk)
-  const glowTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const honourTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const glowTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const honourTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Outer frame ref — native touchend listener attached here
   const frameRef = useRef<HTMLDivElement>(null);

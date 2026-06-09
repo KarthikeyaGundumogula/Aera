@@ -1,4 +1,4 @@
-export interface ThoughtContextTag {
+interface ThoughtContextTag {
   type: "Original" | "Work" | "Artist";
   id: string;
   title: string;

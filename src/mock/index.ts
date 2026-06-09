@@ -37,7 +37,7 @@ const ALL_WORKS: TheatreItem[] = (worksData as any[]).map((w) => ({
 interface ArtistRow extends OriginalArtist {
   originalId: string;
 }
-const ALL_ARTISTS = artistsData as ArtistRow[];
+const ALL_ARTISTS = artistsData as unknown as ArtistRow[];
 
 // ─── Assembled exports (simulates backend JOINs) ───────────────────────────
 
@@ -82,10 +82,7 @@ export const ORIGINALS_DATA: Record<string, Original> = Object.fromEntries(
 
 // FEATURED_ITEMS removed in favor of using ORIGINALS directly in HomeFeedLayout
 
-/**
- * FEATURED_MOMENT — A single highlighted work for the home page.
- */
-export const FEATURED_MOMENT: TheatreItem = ALL_WORKS[0];
+
 
 /**
  * STARS_MOCK — All stars (real actors/characters) as a flat array.

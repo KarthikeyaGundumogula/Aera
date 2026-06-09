@@ -12,7 +12,7 @@
  */
 
 /** Pixel size of one grid unit (1 col-width = 1 row-height). */
-export const UNIT_SIZE = 62;
+const UNIT_SIZE = 62;
 
 /** Pixel gap between adjacent clusters in world-space. */
 export const CLUSTER_GAP = 0;

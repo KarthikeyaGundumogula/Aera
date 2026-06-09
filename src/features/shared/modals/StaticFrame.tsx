@@ -78,16 +78,16 @@ export function StaticFrame({
   const [isClutterFree, setIsClutterFree] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const [titleGlow, setTitleGlow] = useState(false);
-  const glowTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const glowTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [honouring, setHonouring] = useState(false);
-  const honourTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const honourTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Poster drag constraints
   const posterConstraintsRef = useRef<HTMLDivElement>(null);
   // Outer frame ref — native double-tap listener attaches here
   const frameRef = useRef<HTMLDivElement>(null);
   // Double-tap flash
   const [doubleTapFlash, setDoubleTapFlash] = useState(false);
-  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const pages = showPages ? (item.images ?? []).slice(0, 10) : [item.image || ""];
   const total = pages.length;

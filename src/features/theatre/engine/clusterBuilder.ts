@@ -30,7 +30,7 @@ function getSeedFromItems(items: TheatreItem[]): number {
   return Math.abs(hash);
 }
 
-export type Bucket = {
+type Bucket = {
   imax: TheatreItem[];
   wide: TheatreItem[];
   vertical: TheatreItem[];
@@ -130,7 +130,7 @@ const CLUSTER_TEMPLATES = {
   ],
 };
 
-export function classify(items: TheatreItem[]): Bucket {
+function classify(items: TheatreItem[]): Bucket {
   const bucket: Bucket = {
     imax: [],
     wide: [],

@@ -3,7 +3,7 @@
  * Shape mirrors the future backend payload from the Rust/Axum TARS API.
  */
 
-export interface RecommendationArtist {
+interface RecommendationArtist {
   id: string;
   name: string;
   stageName: string;
@@ -11,7 +11,7 @@ export interface RecommendationArtist {
   presence: number;
 }
 
-export interface RecommendationOriginal {
+interface RecommendationOriginal {
   id: string;
   title: string;
   coverImage: string;
@@ -155,5 +155,4 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
   },
 ];
 
-/** The active weekly recommendation spotlight */
-export const FEATURED_RECOMMENDATION = MOCK_RECOMMENDATIONS[0];
+

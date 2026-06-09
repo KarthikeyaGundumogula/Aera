@@ -26,7 +26,7 @@ export function Reactions({ initialReactions, onReact }: ReactionsProps) {
   const [counts, setCounts] = useState(initialReactions || {});
   const [myReaction, setMyReaction] = useState<ReactionType | null>(null);
   const [animatingId, setAnimatingId] = useState<string | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handleReact = (type: ReactionType) => {
     // Clear any running animation
