@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
-import { Film, BookOpen, Trophy, MessageSquare, Clapperboard, ChevronRight } from "lucide-react";
+import { Film, BookOpen, Trophy, MessageSquare, Clapperboard, ChevronRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -11,6 +11,7 @@ import {
   MOCK_CURRENT_USER,
 } from "../../mock";
 import { mockLedger } from "../../mock/ledger";
+import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { DesktopHeader } from "../navigation/DesktopHeader";
@@ -22,7 +23,7 @@ import { RecommendationsZone } from "./components/RecommendationsZone";
 import { LedgerTabsZone } from "./components/LedgerTabsZone";
 import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
-import { RecommendationFAB } from "../../components/RecommendationFAB";
+import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZone";
 
 /**
  * Hall — The app's personalized curation for the user.
@@ -107,7 +108,7 @@ export default function HallPage() {
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none mb-4">
               The Hall
             </h1>
-            <p className="text-[11px] text-white/30 font-mono leading-relaxed max-w-md">
+            <p className="text-[11px] text-white/30 font-mono leading-relaxed max-w-md line-clamp-2">
               Festivals from your Sets. Active discussions. The latest releases. Your Ledger, your terms.
             </p>
           </motion.div>
@@ -143,6 +144,18 @@ export default function HallPage() {
                 </span>
               </button>
             )}
+
+            {MOCK_RECOMMENDATIONS?.length > 0 && (
+              <button 
+                onClick={() => document.getElementById('section-recommendations')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
+              >
+                <Sparkles className="w-3 h-3 text-white/35" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/35">
+                  {MOCK_RECOMMENDATIONS.length} Recommendations
+                </span>
+              </button>
+            )}
             
             <button 
               onClick={() => document.getElementById('section-ledger')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
@@ -157,6 +170,19 @@ export default function HallPage() {
         </section>
 
         {/* ══════════════════════════════════════════════════════
+            NEW SCENE — ARTIST RECOMMENDATIONS
+        ══════════════════════════════════════════════════════ */}
+        <motion.section
+          id="section-recommendations"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-6 scroll-mt-24"
+        >
+          <ArtistRecommendationsZone />
+        </motion.section>
+
+        {/* ══════════════════════════════════════════════════════
             SCENE 1 — FESTIVALS IN YOUR SETS
         ══════════════════════════════════════════════════════ */}
         {memberFestivals.length > 0 && (
@@ -165,7 +191,7 @@ export default function HallPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-10"
+            className="mb-10 scroll-mt-24"
           >
             <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
               <SectionHeader icon={Trophy} title="Festivals" containerClassName="opacity-100" />
@@ -219,13 +245,13 @@ export default function HallPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10"
+          className="mb-10 scroll-mt-24"
         >
           <LedgerTabsZone />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
-            SCENE 5 — THIS WEEK'S RELEASES
+            SCENE 5 — TOP RELEASES THIS WEEK
         ══════════════════════════════════════════════════════ */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -246,7 +272,7 @@ export default function HallPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + (idx * 0.05), duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-10"
+            className={`mb-10 ${idx === 0 ? "scroll-mt-24" : ""}`}
           >
             <OriginalSpotlightZone 
               original={original} 
@@ -271,9 +297,6 @@ export default function HallPage() {
             </div>
           )}
       </main>
-
-      {/* Global FAB for recommendations in Hall */}
-      <RecommendationFAB />
     </div>
   );
 }

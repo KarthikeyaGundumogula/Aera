@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BookOpen, X, Zap, ChevronDown, Film } from "lucide-react";
+import { BookOpen, X, Zap, ChevronDown, Film, Bookmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModalWrapper } from "../features/shared/modals/ModalWrapper";
 import { StageIcon } from "./icons/AppIcons";
@@ -69,7 +69,7 @@ const STAGGER = {
 };
 
 /** Per-card interaction state keyed by rec id */
-type CardState = Record<string, { boosted: boolean; inLedger: boolean; notesExpanded: boolean }>;
+type CardState = Record<string, { boosted: boolean; inLedger: boolean; notesExpanded: boolean; saved: boolean }>;
 
 export function RecommendationModal({ isOpen, onClose }: RecommendationModalProps) {
   const navigate = useNavigate();
@@ -102,12 +102,12 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
   }, [isOpen]);
 
   const rec = recs[index];
-  const state = cardState[rec?.id] ?? { boosted: false, inLedger: false, notesExpanded: false };
+  const state = cardState[rec?.id] ?? { boosted: false, inLedger: false, notesExpanded: false, saved: false };
 
   function setRecState(id: string, patch: Partial<typeof state>) {
     setCardState((prev) => ({
       ...prev,
-      [id]: { ...{ boosted: false, inLedger: false, notesExpanded: false }, ...prev[id], ...patch },
+      [id]: { ...{ boosted: false, inLedger: false, notesExpanded: false, saved: false }, ...prev[id], ...patch },
     }));
   }
 
@@ -575,6 +575,21 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                       >
                         <BookOpen className="w-3 h-3 shrink-0" />
                         {state.inLedger ? "In Ledger" : "Add to Ledger"}
+                      </button>
+                      <button
+                        onPointerDown={(e) => {
+                          e.preventDefault(); // Prevents iOS double-tap hover bug
+                          setRecState(rec.id, { saved: !state.saved });
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest active:scale-[0.97] ${
+                          state.saved
+                            ? "bg-white/[0.07] text-white/75 border border-white/[0.16]"
+                            : "bg-white/[0.03] text-white/35 border border-white/[0.06] hover:text-white/65 hover:bg-white/[0.05]"
+                        }`}
+                        style={{ transition: "color 150ms ease-out, background 150ms ease-out, border-color 150ms ease-out, transform 100ms ease-out" }}
+                      >
+                        <Bookmark className="w-3 h-3 shrink-0" />
+                        {state.saved ? "Saved" : "Save"}
                       </button>
                     </motion.div>
 

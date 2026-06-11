@@ -9,6 +9,7 @@ import { ScrollToTop } from "./components/utils/ScrollToTop";
 import { MobileNavBar } from "./features/navigation/MobileNavBar";
 import { AuthProvider } from "./context/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { GlobalActionFAB } from "./components/GlobalActionFAB";
 const CenterPage = lazy(() =>
   import("./features/center").then((m) => ({ default: m.CenterPage })),
 );
@@ -168,6 +169,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <AppRoutes />
+        <GlobalActionFAB />
       </BrowserRouter>
     </AuthProvider>
   );

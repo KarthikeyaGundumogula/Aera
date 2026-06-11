@@ -19,6 +19,8 @@ interface RecommendationOriginal {
   genres: string[];
   /** Format classification: "Feature Film" | "Series" | "Short Film" | "Anthology" etc. */
   format: string;
+  director?: string;
+  dop?: string;
 }
 
 export interface Recommendation {
@@ -43,6 +45,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       presence: 3000,
       genres: ["Mass Action", "South Cinema", "Rebellion"],
       format: "Feature Film",
+      director: "Prashanth Neel",
+      dop: "Bhuvan Gowda"
     },
     artist: {
       id: "fh-001",
@@ -66,6 +70,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       presence: 1500,
       genres: ["Epic", "Period Drama", "Pan-India"],
       format: "Feature Film",
+      director: "S.S. Rajamouli",
+      dop: "K.K. Senthil Kumar"
     },
     artist: {
       id: "fh-002",
@@ -90,6 +96,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       presence: 2480,
       genres: ["Mass", "Comeback", "Raw Power"],
       format: "Feature Film",
+      director: "Sujeeth",
+      dop: "Ravi K. Chandran"
     },
     artist: {
       id: "fh-003",
@@ -114,6 +122,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       presence: 4200,
       genres: ["Epic", "Mythology", "Spectacle"],
       format: "Feature Film",
+      director: "S.S. Rajamouli",
+      dop: "K.K. Senthil Kumar"
     },
     artist: {
       id: "fh-004",
@@ -138,6 +148,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       presence: 1800,
       genres: ["Thriller", "Action", "Multi-starrer"],
       format: "Feature Film",
+      director: "Lokesh Kanagaraj",
+      dop: "Girish Gangadharan"
     },
     artist: {
       id: "fh-005",
