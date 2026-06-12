@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Clapperboard, X, BookPlus, Sparkles } from "lucide-react";
 import { RecommendationModal } from "./RecommendationModal";
+import { CreateRecommendationModal } from "./CreateRecommendationModal";
 import { LedgerEntryModal } from "../features/ledger/components/LedgerEntryModal";
 
 // --- Radial Math for the "Film Strip" Arc ---
@@ -90,6 +91,7 @@ function ActionNode({
 export function GlobalActionFAB() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
+  const [isCreateRecOpen, setIsCreateRecOpen] = useState(false);
   const [isSnapping, setIsSnapping] = useState(false);
   const [flashVisible, setFlashVisible] = useState(false);
   const [showHint, setShowHint] = useState(true);
@@ -220,7 +222,7 @@ export function GlobalActionFAB() {
       window.removeEventListener("keydown", handleInteraction);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
-  }, [isMenuOpen, isModalOpen, isLedgerModalOpen]);
+  }, [isMenuOpen, isModalOpen, isLedgerModalOpen, isCreateRecOpen]);
 
   // Listen for global event to open Ledger Modal
   useEffect(() => {
@@ -400,6 +402,7 @@ export function GlobalActionFAB() {
                 delay={0}
                 onClick={() => {
                   setIsMenuOpen(false);
+                  setIsCreateRecOpen(true);
                 }}
               />
               <ActionNode
@@ -518,6 +521,11 @@ export function GlobalActionFAB() {
       <RecommendationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      <CreateRecommendationModal
+        isOpen={isCreateRecOpen}
+        onClose={() => setIsCreateRecOpen(false)}
       />
 
       <LedgerEntryModal 

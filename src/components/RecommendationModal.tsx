@@ -164,6 +164,8 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
   if (!rec && !isEndScreen) return null;
 
   const notesIsLong = rec ? rec.notes.length > NOTES_CLIP : false;
+  const highestScore = rec ? (rec.artist as any).highestScore || 4500 : 4500;
+  const isHighestRated = rec ? rec.score >= highestScore : false;
 
   return (
     <ModalWrapper isOpen={isOpen} onClose={onClose} zIndex="z-[200]" isImmersive>
@@ -405,7 +407,7 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                             ease: [0.23, 1, 0.32, 1],
                           }}
                         >
-                          <div className="flex items-center gap-1.5 mb-1">
+                          <div className="flex items-center gap-1.5 mb-2">
                             <p className="text-[7px] font-black uppercase tracking-[0.45em] text-white/20">
                               Recommendation Score
                             </p>
@@ -413,12 +415,85 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
-                          <span
-                            className="block font-black text-white leading-none tracking-tight"
-                            style={{ fontSize: "clamp(1.9rem, 4.5vw, 3rem)", textShadow: "0 0 28px rgba(255,255,255,0.07)" }}
-                          >
-                            {formatScore(rec.score)}
-                          </span>
+
+                          {/* Visual Bars */}
+                          <div className="flex items-end gap-[4px] h-[40px] mb-3">
+                            {[0, 1, 2, 3, 4].map((i) => {
+                              const chunkStart = i * 0.2;
+                              const chunkEnd = (i + 1) * 0.2;
+                              const ratio = rec.score / highestScore;
+
+                              let fillPct = 0;
+                              if (ratio >= chunkEnd) fillPct = 1;
+                              else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
+
+                              const maxHeight = 16 + i * 6; // 16, 22, 28, 34, 40
+
+                              return (
+                                <div
+                                  key={i}
+                                  className="relative w-[8px] rounded-[1.5px] bg-white/[0.06] overflow-hidden transition-colors group-hover:bg-white/[0.08]"
+                                  style={{ height: `${maxHeight}px` }}
+                                >
+                                  <div
+                                    className="absolute bottom-0 left-0 w-full rounded-[1.5px]"
+                                    style={{
+                                      height: `${fillPct * 100}%`,
+                                      backgroundColor: "#10B981",
+                                      boxShadow: fillPct === 1 ? `0 0 10px rgba(16, 185, 129, 0.4)` : "none",
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                            {rec.score > highestScore && (() => {
+                              const overRatio = (rec.score - highestScore) / highestScore;
+                              const fillPct = Math.min(overRatio / 0.2, 1);
+                              const r = Math.round(217 + (255 - 217) * fillPct);
+                              const g = Math.round(119 + (220 - 119) * fillPct);
+                              const b = Math.round(6 + (100 - 6) * fillPct);
+                              const barColor = `rgb(${r}, ${g}, ${b})`;
+                              const glowSize = 8 + fillPct * 10;
+
+                              return (
+                                <div
+                                  className="relative w-[8px] rounded-[1.5px] bg-white/[0.06] ml-[2px] overflow-hidden transition-colors group-hover:bg-white/[0.08]"
+                                  style={{ height: "46px" }}
+                                >
+                                  <div
+                                    className="absolute bottom-0 left-0 w-full rounded-[1.5px]"
+                                    style={{
+                                      height: `${fillPct * 100}%`,
+                                      backgroundColor: barColor,
+                                      boxShadow: `0 0 ${glowSize}px ${barColor}`,
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })()}
+                          </div>
+
+                          {/* Numerical Score */}
+                          <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                            <span
+                              className="block font-black text-white leading-none tracking-tight"
+                              style={{ fontSize: "clamp(1.9rem, 4.5vw, 3rem)", textShadow: "0 0 28px rgba(255,255,255,0.07)" }}
+                            >
+                              {formatScore(rec.score)}
+                            </span>
+                            <span className="text-[10px] font-black tracking-widest">
+                              <span className="text-white/30">/ </span>
+                              <span className="text-[#B45309]/80">{highestScore}</span>
+                            </span>
+                          </div>
+
+                          {isHighestRated && (
+                            <div className="mt-2.5">
+                              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#B45309] bg-[#B45309]/10 border border-[#B45309]/20 px-2 py-1 rounded-sm inline-block">
+                                Highest Rated
+                              </span>
+                            </div>
+                          )}
 
                           {/* Tooltip */}
                           <div className="absolute left-0 top-full mt-2 w-48 sm:w-56 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 group-focus:opacity-100 group-focus:scale-100 transition-all duration-200 pointer-events-none z-50 origin-top-left">
@@ -446,7 +521,7 @@ export function RecommendationModal({ isOpen, onClose }: RecommendationModalProp
                           <img
                             src={rec.artist.profilePicture}
                             alt={rec.artist.name}
-                            className="w-8 h-8 rounded-full object-cover object-top shrink-0 border border-white/[0.10]"
+                            className="w-8 h-8 rounded-lg object-cover object-top shrink-0 border border-white/[0.10]"
                           />
                           <div className="min-w-0">
                             <p className="text-[10px] font-black uppercase tracking-widest text-white/85 truncate leading-none">

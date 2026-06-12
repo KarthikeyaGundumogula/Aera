@@ -12,7 +12,7 @@ export function ArtistRecommendationsZone() {
     <div className="relative">
       <SectionHeader
         icon={Sparkles}
-        title="Artist Recommendations"
+        title="Recommendations"
         containerClassName="px-6 md:px-12 mb-5 opacity-100"
       />
 

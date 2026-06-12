@@ -24,20 +24,21 @@ export function RecommendationCard({ rec }: Props) {
 
   return (
     <div className="flex flex-col gap-2.5 shrink-0">
-      {/* ── Above-card Header ── */}
-      <div className="flex items-center justify-between px-1">
-        {/* Format on Left */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[7px] font-black uppercase tracking-[0.25em] px-2 py-0.5 rounded-full border border-white/[0.08] text-white/40 bg-white/[0.02]">
-            {rec.original.format}
+      {/* ── Metadata Tags Row (Above Card) ── */}
+      <div className="flex items-center justify-between px-2 mb-2.5">
+        {/* Left: Format Tag */}
+        <div className="flex items-center gap-2">
+          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/70 border border-white/30 px-3 py-1 rounded-full bg-white/[0.03] backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.03)]">
+            {rec.original.format === "FEATURE" ? "Feature Film" : rec.original.format}
           </span>
         </div>
-        {/* Genres on Right */}
-        <div className="flex items-center gap-1.5 justify-end">
-          {rec.original.genres.slice(0, 2).map((genre) => (
-             <span key={genre} className="text-[7px] font-black uppercase tracking-[0.25em] px-2 py-0.5 rounded-full border border-white/[0.08] text-white/40 bg-white/[0.02]">
-               {genre}
-             </span>
+        
+        {/* Right: Genre Tags */}
+        <div className="flex items-center gap-1.5">
+          {rec.original.genres.slice(0, 2).map((g) => (
+            <span key={g} className="text-[8px] font-black uppercase tracking-[0.2em] text-white/30 border border-white/5 px-2.5 py-1 rounded-full bg-black/10 backdrop-blur-md">
+              {g}
+            </span>
           ))}
         </div>
       </div>
@@ -53,7 +54,7 @@ export function RecommendationCard({ rec }: Props) {
       <motion.div 
          layout 
          transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }}
-         className="relative h-[135px] shrink-0 overflow-hidden rounded-t-2xl bg-[#040302] group/poster cursor-pointer"
+         className="relative aspect-[21/9] w-full shrink-0 overflow-hidden rounded-t-2xl bg-[#040302] group/poster cursor-pointer"
          onClick={(e) => {
            e.stopPropagation();
            navigate(`/originals/${rec.original.id}`);
@@ -107,41 +108,100 @@ export function RecommendationCard({ rec }: Props) {
               onMouseLeave={() => setShowTooltip(false)}
               onClick={(e) => { e.stopPropagation(); setShowTooltip(!showTooltip); }}
             >
-              <div className="flex items-center gap-1 mb-1">
+              <div className="flex items-center gap-1 mb-2">
                 <span className="text-[7px] font-black uppercase text-white/30 tracking-[0.2em]">Score</span>
                 <Info className={`w-2.5 h-2.5 transition-colors ${showTooltip ? "text-amber-500" : "text-white/20"}`} />
               </div>
               
-              <span 
-                 className="text-3xl font-black text-white leading-none tracking-tighter block"
-                 style={{ textShadow: "0 0 16px rgba(255,255,255,0.05)" }}
-              >
-                {rec.score.toString()}
-              </span>
+              {/* Visual Bars (Sub Hero) */}
+              <div className="flex items-end gap-[3px] h-[36px] mb-2.5">
+                {[0, 1, 2, 3, 4].map((i) => {
+                  const chunkStart = i * 0.2;
+                  const chunkEnd = (i + 1) * 0.2;
+                  const ratio = rec.score / highestScore;
+
+                  let fillPct = 0;
+                  if (ratio >= chunkEnd) fillPct = 1;
+                  else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
+
+                  const maxHeight = 12 + i * 6; // 12, 18, 24, 30, 36
+
+                  return (
+                    <div
+                      key={i}
+                      className="relative w-[6px] sm:w-[8px] rounded-[1.5px] bg-white/[0.06] overflow-hidden"
+                      style={{ height: `${maxHeight}px` }}
+                    >
+                      <div
+                        className="absolute bottom-0 left-0 w-full rounded-[1.5px]"
+                        style={{
+                          height: `${fillPct * 100}%`,
+                          backgroundColor: "#10B981",
+                          boxShadow: fillPct === 1 ? `0 0 8px rgba(16, 185, 129, 0.4)` : "none",
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+                {rec.score > highestScore && (() => {
+                  const overRatio = (rec.score - highestScore) / highestScore;
+                  const fillPct = Math.min(overRatio / 0.2, 1);
+                  const r = Math.round(217 + (255 - 217) * fillPct);
+                  const g = Math.round(119 + (220 - 119) * fillPct);
+                  const b = Math.round(6 + (100 - 6) * fillPct);
+                  const barColor = `rgb(${r}, ${g}, ${b})`;
+                  const glowSize = 6 + fillPct * 8;
+
+                  return (
+                    <div
+                      className="relative w-[6px] sm:w-[8px] rounded-[1.5px] bg-white/[0.06] ml-[1px] overflow-hidden"
+                      style={{ height: "42px" }}
+                    >
+                      <div
+                        className="absolute bottom-0 left-0 w-full rounded-[1.5px]"
+                        style={{
+                          height: `${fillPct * 100}%`,
+                          backgroundColor: barColor,
+                          boxShadow: `0 0 ${glowSize}px ${barColor}`,
+                        }}
+                      />
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Numerical Score (Sub-sub Hero) */}
+              <div className="flex items-baseline gap-1 whitespace-nowrap mt-0.5">
+                <span 
+                   className="text-[14px] sm:text-[16px] font-black text-white leading-none tracking-tighter"
+                   style={{ textShadow: "0 0 10px rgba(255,255,255,0.05)" }}
+                >
+                  {rec.score.toString()}
+                </span>
+                <span className="text-[8px] font-black tracking-widest">
+                  <span className="text-white/30">/ </span>
+                  <span className="text-amber-500/80">{highestScore}</span>
+                </span>
+              </div>
 
               {/* Highest Score Tag */}
-              <div className="mt-2 mb-1">
-                 {isHighestRated ? (
-                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-sm inline-block leading-relaxed">
-                       Highest Rated
-                    </span>
-                 ) : (
-                    <div>
-                       <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/20 mb-0.5">Highest Given</p>
-                       <p className="text-[8px] font-mono font-bold text-white/50">{highestScore}</p>
-                    </div>
-                 )}
-              </div>
+              {isHighestRated && (
+                <div className="mt-2 mb-1">
+                  <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-sm inline-block leading-relaxed">
+                     Highest Rated
+                  </span>
+                </div>
+              )}
 
               {/* Score Tooltip */}
               <div 
-                className={`absolute left-0 top-full mt-2 w-48 origin-top-left z-30 transition-all duration-200 pointer-events-none ${
+                className={`absolute left-0 top-full mt-2 w-52 origin-top-left z-30 transition-all duration-200 pointer-events-none ${
                   showTooltip ? "opacity-100 scale-100" : "opacity-0 scale-95"
                 }`}
               >
                 <div className="bg-[#0A0806]/95 backdrop-blur-xl border border-[#B45309]/30 rounded-xl p-3 shadow-[0_8px_32px_rgba(180,83,9,0.2)]">
                   <p className="text-[10px] text-white/80 leading-relaxed font-medium">
-                    How strongly the artist recommends this original.
+                    How strongly the artist recommends this original, compared to their all-time highest given score.
                   </p>
                 </div>
               </div>
@@ -179,7 +239,7 @@ export function RecommendationCard({ rec }: Props) {
               <img 
                  src={rec.artist.profilePicture} 
                  alt={rec.artist.name} 
-                 className="w-8 h-8 rounded-full border border-white/[0.1] object-cover object-top shrink-0" 
+                 className="w-8 h-8 rounded-lg border border-white/[0.1] object-cover object-top shrink-0" 
               />
               <div className="min-w-0">
                 <p className="text-[11px] font-black uppercase tracking-widest text-white/85 truncate leading-none mb-1">

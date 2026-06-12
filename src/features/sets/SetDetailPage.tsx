@@ -205,7 +205,7 @@ export function SetDetailPage() {
                 <img
                   src={captain.profilePicture}
                   alt={captain.name}
-                  className="w-5 h-5 rounded-full object-cover object-top flex-shrink-0"
+                  className="w-5 h-5 rounded-md object-cover object-top flex-shrink-0"
                 />
               )}
               <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 group-hover:text-white/70 transition-colors">

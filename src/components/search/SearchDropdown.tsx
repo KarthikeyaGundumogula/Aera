@@ -142,7 +142,7 @@ export const SearchDropdown = memo(function SearchDropdown({
                     }}
                     className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-colors ${isFocused ? 'bg-white/10' : 'hover:bg-white/5'}`}
                   >
-                    <div className="w-12 h-12 rounded-full bg-white/5 overflow-hidden shrink-0 border border-white/5">
+                    <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden shrink-0 border border-white/5">
                        {artist.profilePicture ? (
                          <img src={artist.profilePicture} alt="" className="w-full h-full object-cover" />
                        ) : (

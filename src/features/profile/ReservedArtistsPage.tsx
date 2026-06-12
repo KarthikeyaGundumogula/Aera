@@ -58,7 +58,7 @@ export default function ReservedArtistsPage() {
               className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-colors"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/10">
                   <img src={artist.image} alt={artist.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -120,7 +120,7 @@ export default function ReservedArtistsPage() {
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="w-20 h-20 mx-auto rounded-full overflow-hidden mb-6 border-2 border-white/10">
+              <div className="w-20 h-20 mx-auto rounded-xl overflow-hidden mb-6 border-2 border-white/10">
                 <img src={selectedArtist.image} alt={selectedArtist.name} className="w-full h-full object-cover" />
               </div>
 
