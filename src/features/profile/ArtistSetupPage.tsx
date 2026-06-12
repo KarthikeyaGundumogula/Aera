@@ -11,20 +11,10 @@ import { ArtistProfile } from "../shared/profile";
 import { ARTISTS_MOCK } from "../../mock";
 import { OriginalArtist } from "../../types";
 import { useAuth } from "../../context/AuthContext";
+import { useProfileForm } from "./hooks/useProfileForm";
 
 
-interface ProfileFormData {
-  username: string;
-  displayName: string;
-  tagline: string;
-  password: string;
-  socials: SocialsData;
-  portraitFile: File | null;
-  portraitPreview: string | null;
-  imagePosition: string;
-  themeTextColor: string;
-  themeBgColor: string;
-}
+
 
 /**
  * ArtistSetupPage — "Stage Setup"
@@ -41,80 +31,51 @@ export default function ArtistSetupPage() {
 
 
 
-  const [formData, setFormData] = useState<ProfileFormData>({
-    username: "",
-    displayName: "",
-    tagline: "",
-    password: "",
-    socials: { instagram: "", twitter: "", youtube: "" },
-    portraitFile: null,
-    portraitPreview: null,
-    imagePosition: "50% 0%",
-    themeTextColor: "#fac107",
-    themeBgColor: "#0f1a42",
-  });
+  const { formData, updateField, updateSocial, setPortrait, clearPortrait } = useProfileForm();
 
   const handleIdentityChange = useCallback(
-    (field: "username" | "displayName" | "tagline", value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
+    (field: "username" | "name" | "bio", value: string) => {
+      updateField(field, value);
     },
-    [],
+    [updateField]
   );
 
   const handleAccessKeySet = useCallback((key: string) => {
-    setFormData((prev) => ({ ...prev, password: key }));
-  }, []);
+    updateField("password", key);
+  }, [updateField]);
 
   const handleSocialChange = useCallback(
-    (platform: keyof SocialsData, value: string) => {
-      setFormData((prev) => ({
-        ...prev,
-        socials: { ...prev.socials, [platform]: value },
-      }));
+    (platform: "instagram" | "twitter" | "youtube", value: string) => {
+      updateSocial(platform, value);
     },
-    [],
+    [updateSocial]
   );
 
-
-
   const handlePortraitChange = useCallback((file: File, preview: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      portraitFile: file,
-      portraitPreview: preview,
-      imagePosition: "50% 0%",
-    }));
-  }, []);
+    setPortrait(file, preview);
+  }, [setPortrait]);
 
   const handlePortraitClear = useCallback(() => {
-    setFormData((prev) => {
-      if (prev.portraitPreview) URL.revokeObjectURL(prev.portraitPreview);
-      return {
-        ...prev,
-        portraitFile: null,
-        portraitPreview: null,
-        imagePosition: "50% 0%",
-      };
-    });
-  }, []);
+    clearPortrait();
+  }, [clearPortrait]);
 
   const handleImagePositionChange = useCallback((position: string) => {
-    setFormData((prev) => ({ ...prev, imagePosition: position }));
+    // Left empty for compatibility if imagePosition was removed
   }, []);
 
   const handleTextColorChange = useCallback((color: string) => {
-    setFormData((prev) => ({ ...prev, themeTextColor: color }));
-  }, []);
+    updateField("themeTextColor", color);
+  }, [updateField]);
 
   const handleBgColorChange = useCallback((color: string) => {
-    setFormData((prev) => ({ ...prev, themeBgColor: color }));
-  }, []);
+    updateField("themeBgColor", color);
+  }, [updateField]);
 
   const isStep1Ready =
     formData.username.trim().length > 0 &&
-    formData.displayName.trim().length > 0;
+    formData.name.trim().length > 0;
 
-  const isReadyToSave = isStep1Ready && formData.password.length > 0;
+  const isReadyToSave = isStep1Ready && (formData.password?.length ?? 0) > 0;
 
   const handleClaim = useCallback(() => {
     if (!isReadyToSave) return;
@@ -124,8 +85,8 @@ export default function ArtistSetupPage() {
     const artistDetails = {
       ...mockArtist,
       id: `profile-${formData.username}`,
-      name: formData.displayName || mockArtist.name,
-      bio: formData.tagline || mockArtist.bio,
+      name: formData.name || mockArtist.name,
+      bio: formData.bio || mockArtist.bio,
       image: formData.portraitPreview || mockArtist.image,
       themeBgColor: formData.themeBgColor,
       themeTextColor: formData.themeTextColor,
@@ -217,9 +178,16 @@ export default function ArtistSetupPage() {
                 {/* I — Public Profile */}
                 <PortraitIdentitySection
                   username={formData.username}
-                  displayName={formData.displayName}
-                  tagline={formData.tagline}
-                  onIdentityChange={handleIdentityChange}
+                  displayName={formData.name}
+                  tagline={formData.bio}
+                  onIdentityChange={(f, v) => {
+                    const fieldMap = {
+                      displayName: "name",
+                      tagline: "bio",
+                      username: "username"
+                    } as const;
+                    handleIdentityChange(fieldMap[f], v);
+                  }}
                   portraitPreview={formData.portraitPreview}
                   onPortraitChange={handlePortraitChange}
                   onPortraitClear={handlePortraitClear}
@@ -326,8 +294,8 @@ export default function ArtistSetupPage() {
                         onClick={() =>
                           setSuccessArtist({
                             ...ARTISTS_MOCK[0],
-                            name: formData.username,
-                            bio: formData.tagline,
+                            name: formData.name,
+                            bio: formData.bio,
                             image:
                               formData.portraitPreview || ARTISTS_MOCK[0].image,
                           })

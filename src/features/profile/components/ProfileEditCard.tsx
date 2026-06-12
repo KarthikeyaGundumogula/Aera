@@ -15,6 +15,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import type { OriginalArtist } from "../../../types";
+import { useProfileForm } from "../hooks/useProfileForm";
 
 /* ────────────────────────────────────────────────────────────────────────────
  *  Types
@@ -39,22 +40,7 @@ interface SocialsState {
 
 export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
   /* ── local state ──────────────────────────────────────────────────── */
-  const [name, setName] = useState(artist.name);
-  const [bio, setBio] = useState(artist.bio ?? "");
-  const [socials, setSocials] = useState<SocialsState>({
-    instagram: artist.socials?.instagram ?? "",
-    twitter: artist.socials?.twitter ?? "",
-    youtube: artist.socials?.youtube ?? "",
-  });
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [portraitPreview, setPortraitPreview] = useState<string | null>(
-    artist.image || null,
-  );
-  const [portraitFile, setPortraitFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { formData, updateField, updateSocial, setPortrait, clearPortrait, setFormData } = useProfileForm(artist);
 
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
   const [isSaved, setIsSaved] = useState(false);
@@ -67,23 +53,16 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file?.type.startsWith("image/")) return;
-      if (portraitPreview && portraitPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(portraitPreview);
-      }
-      setPortraitFile(file);
-      setPortraitPreview(URL.createObjectURL(file));
+      const preview = URL.createObjectURL(file);
+      setPortrait(file, preview);
       e.target.value = "";
     },
-    [portraitPreview],
+    [setPortrait],
   );
 
   const handlePortraitClear = useCallback(() => {
-    if (portraitPreview && portraitFile) {
-      URL.revokeObjectURL(portraitPreview);
-    }
-    setPortraitFile(null);
-    setPortraitPreview(artist.image || null);
-  }, [portraitPreview, portraitFile, artist.image]);
+    clearPortrait(artist.image || null);
+  }, [clearPortrait, artist.image]);
 
   const toggleSection = useCallback(
     (section: ActiveSection) => {
@@ -93,22 +72,22 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
   );
 
   const passwordsMatch =
-    newPassword.length > 0 && newPassword === confirmPassword;
+    (formData.newPassword?.length ?? 0) > 0 && formData.newPassword === formData.confirmPassword;
   const passwordError =
-    confirmPassword.length > 0 && newPassword !== confirmPassword;
+    (formData.confirmPassword?.length ?? 0) > 0 && formData.newPassword !== formData.confirmPassword;
 
   const handleSave = useCallback(() => {
     const updated: OriginalArtist = {
       ...artist,
-      name,
-      bio,
-      image: portraitPreview ?? artist.image,
-      socials: { ...socials },
+      name: formData.name,
+      bio: formData.bio,
+      image: formData.portraitPreview ?? artist.image,
+      socials: { ...formData.socials },
     };
     onSave(updated);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
-  }, [artist, name, bio, portraitPreview, socials, onSave]);
+  }, [artist, formData.name, formData.bio, formData.portraitPreview, formData.socials, onSave]);
 
   const handlePasswordSave = useCallback(() => {
     if (!passwordsMatch) return;
@@ -116,26 +95,18 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
     // In a real app, this would be a specific password-only API call
     const updated = {
       ...artist,
-      newPassword,
+      newPassword: formData.newPassword,
     };
     onSave(updated);
     setIsPasswordSaved(true);
     setTimeout(() => {
       setIsPasswordSaved(false);
       setActiveSection(null);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      updateField("currentPassword", "");
+      updateField("newPassword", "");
+      updateField("confirmPassword", "");
     }, 2000);
-  }, [artist, newPassword, passwordsMatch, onSave]);
-
-  useEffect(() => {
-    return () => {
-      if (portraitPreview && portraitPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(portraitPreview);
-      }
-    };
-  }, [portraitPreview]);
+  }, [artist, formData.newPassword, passwordsMatch, onSave, updateField]);
 
   /* ── render ───────────────────────────────────────────────────────── */
   return (
@@ -150,9 +121,9 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
         {/* Portrait */}
         <div className="relative group">
           <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/15 transition-all duration-300 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.06)]">
-            {portraitPreview ? (
+            {formData.portraitPreview ? (
               <img loading="lazy"
-                src={portraitPreview}
+                src={formData.portraitPreview}
                 alt="Portrait"
                 className="w-full h-full object-cover object-top"
               />
@@ -182,7 +153,7 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
           </button>
 
           {/* Clear badge */}
-          {portraitFile && (
+          {formData.portraitFile && (
             <motion.button
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -211,8 +182,8 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
         <div className="relative group/name w-full max-w-xs flex items-center justify-center gap-2">
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={formData.name}
+            onChange={(e) => updateField("name", e.target.value)}
             className="w-full text-center bg-transparent text-xl font-black tracking-tight outline-none border-b border-transparent hover:border-white/10 focus:border-white/30 transition-all py-1 placeholder:text-white/10"
             placeholder="Your name"
             id="edit-name"
@@ -223,8 +194,8 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
         {/* Bio with visual hint */}
         <div className="w-full relative group/bio">
           <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
+            value={formData.bio}
+            onChange={(e) => updateField("bio", e.target.value.slice(0, BIO_MAX))}
             placeholder="A line about your craft..."
             rows={3}
             className="w-full bg-white/[0.04] border border-white/5 rounded-xl px-4 py-3 text-sm text-white/70 font-medium placeholder:text-white/15 outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all resize-none leading-relaxed"
@@ -236,10 +207,10 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
           </div>
           <span
             className={`absolute right-3 bottom-2 text-[9px] font-bold tabular-nums pointer-events-none transition-colors ${
-              bio.length >= BIO_MAX ? "text-white/50" : "text-white/15"
+              formData.bio.length >= BIO_MAX ? "text-white/50" : "text-white/15"
             }`}
           >
-            {bio.length}/{BIO_MAX}
+            {formData.bio.length}/{BIO_MAX}
           </span>
         </div>
       </div>
@@ -256,9 +227,9 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
             icon={<Instagram className="w-4 h-4" />}
             label="Instagram"
             prefix="@"
-            value={socials.instagram}
+            value={formData.socials.instagram}
             onChange={(v) =>
-              setSocials((prev) => ({ ...prev, instagram: v }))
+              updateSocial("instagram", v)
             }
             id="edit-social-instagram"
           />
@@ -266,9 +237,9 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
             icon={<Twitter className="w-4 h-4" />}
             label="Twitter / X"
             prefix="@"
-            value={socials.twitter}
+            value={formData.socials.twitter}
             onChange={(v) =>
-              setSocials((prev) => ({ ...prev, twitter: v }))
+              updateSocial("twitter", v)
             }
             id="edit-social-twitter"
           />
@@ -276,9 +247,9 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
             icon={<Youtube className="w-4 h-4" />}
             label="YouTube"
             prefix=""
-            value={socials.youtube}
+            value={formData.socials.youtube}
             onChange={(v) =>
-              setSocials((prev) => ({ ...prev, youtube: v }))
+              updateSocial("youtube", v)
             }
             id="edit-social-youtube"
           />
@@ -322,9 +293,9 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
                 <button 
                   onClick={() => {
                     setActiveSection(null);
-                    setCurrentPassword("");
-                    setNewPassword("");
-                    setConfirmPassword("");
+                    updateField("currentPassword", "");
+                    updateField("newPassword", "");
+                    updateField("confirmPassword", "");
                   }}
                   className="text-[9px] font-bold uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors px-2 py-1"
                 >
@@ -335,21 +306,21 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
               <div className="space-y-3">
                 <PasswordInput
                   label="Current Password"
-                  value={currentPassword}
-                  onChange={setCurrentPassword}
+                  value={formData.currentPassword ?? ""}
+                  onChange={(v) => updateField("currentPassword", v)}
                   id="edit-current-password"
                 />
                 <PasswordInput
                   label="New Password"
-                  value={newPassword}
-                  onChange={setNewPassword}
+                  value={formData.newPassword ?? ""}
+                  onChange={(v) => updateField("newPassword", v)}
                   id="edit-new-password"
                 />
                 <div className="relative">
                   <PasswordInput
                     label="Confirm New Password"
-                    value={confirmPassword}
-                    onChange={setConfirmPassword}
+                    value={formData.confirmPassword ?? ""}
+                    onChange={(v) => updateField("confirmPassword", v)}
                     id="edit-confirm-password"
                   />
                   {passwordsMatch && (
@@ -370,7 +341,7 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                disabled={!passwordsMatch || !currentPassword}
+                disabled={!passwordsMatch || !formData.currentPassword}
                 onClick={handlePasswordSave}
                 className="w-full py-3 bg-white/10 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.3em] hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 transition-all flex items-center justify-center gap-2 mt-4"
               >

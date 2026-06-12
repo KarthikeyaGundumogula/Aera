@@ -75,8 +75,7 @@ function CinematicInput({
       <Tag
         id={id}
         value={value}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onChange={(e: any) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
         rows={as === "textarea" ? 3 : undefined}

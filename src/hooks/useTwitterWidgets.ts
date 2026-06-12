@@ -2,11 +2,15 @@ import { useEffect, useRef, useCallback, useState } from "react";
 
 declare global {
   interface Window {
-    twttr?: any;
+    twttr?: {
+      widgets?: {
+        load: (el: HTMLElement) => unknown;
+      };
+    };
   }
 }
 
-export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: any) {
+export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: unknown) {
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<NodeJS.Timeout | number | null>(null);
@@ -35,7 +39,7 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
       if (!window.twttr?.widgets || !containerRef.current) return;
 
       const p = window.twttr.widgets.load(containerRef.current);
-      if (p && typeof p.then === "function") {
+      if (p instanceof Promise) {
         p.then(() => {
           if (renderGenRef.current !== generation) return;
           // Use ResizeObserver instead of layout thrashing polling
@@ -58,7 +62,7 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
           } else {
             setIsLoaded(true);
           }
-        }).catch((err: any) => {
+        }).catch((err: unknown) => {
           console.error("Twitter widget load error", err);
           if (renderGenRef.current === generation) setIsLoaded(true);
         });
@@ -84,10 +88,10 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
         script.onload = doLoad;
         document.body.appendChild(script);
       } else {
-        if (pollRef.current) clearInterval(pollRef.current as any);
+        if (pollRef.current) clearInterval(pollRef.current as number);
         pollRef.current = setInterval(() => {
           if (window.twttr?.widgets) {
-            if (pollRef.current) clearInterval(pollRef.current as any);
+            if (pollRef.current) clearInterval(pollRef.current as number);
             pollRef.current = null;
             doLoad();
           }
@@ -95,7 +99,7 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
         
         setTimeout(() => {
           if (pollRef.current) {
-            clearInterval(pollRef.current as any);
+            clearInterval(pollRef.current as number);
             pollRef.current = null;
           }
           if (renderGenRef.current === generation) {
@@ -114,7 +118,7 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: an
     return () => {
       clearTimeout(fallback);
       if (pollRef.current) {
-        clearInterval(pollRef.current as any);
+        clearInterval(pollRef.current as number);
         pollRef.current = null;
       }
       renderGenRef.current++; // Invalidate pending loads

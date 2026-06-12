@@ -7,10 +7,10 @@ import { RecentReleasesSection } from "../../shared/components/RecentReleasesSec
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
 import { ORIGINALS, GRID_ITEMS } from "../../../mock";
 
-import { TheatreItem } from "../../../types";
+import { TheatreItem, Original } from "../../../types";
 
 interface OriginalSpotlightZoneProps {
-  original: any;
+  original: Original;
   works: TheatreItem[];
 }
 
