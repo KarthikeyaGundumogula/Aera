@@ -9,6 +9,10 @@ interface RecommendationArtist {
   stageName: string;
   profilePicture: string;
   presence: number;
+  /** Number of originals the artist has credited work on */
+  works?: number;
+  /** Artist's personal all-time highest score ever given */
+  highestScore?: number;
 }
 
 interface RecommendationOriginal {
@@ -21,6 +25,8 @@ interface RecommendationOriginal {
   format: string;
   director?: string;
   dop?: string;
+  /** Lead cast/stars */
+  stars?: string[];
 }
 
 export interface Recommendation {
@@ -33,6 +39,10 @@ export interface Recommendation {
   vouchCount: number;
   /** Contextual label shown above the card: "New for you", "Trending in your Sets", etc. */
   contextLabel: string;
+  /** Whether the current user has favorited this original */
+  favorited?: boolean;
+  /** Whether the recommending artist themselves has liked/favorited this original */
+  artistLiked?: boolean;
 }
 
 export const MOCK_RECOMMENDATIONS: Recommendation[] = [
@@ -46,7 +56,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       genres: ["Mass Action", "South Cinema", "Rebellion"],
       format: "Feature Film",
       director: "Prashanth Neel",
-      dop: "Bhuvan Gowda"
+      dop: "Bhuvan Gowda",
+      stars: ["Yash", "Sanjay Dutt", "Raveena Tandon"],
     },
     artist: {
       id: "fh-001",
@@ -54,12 +65,16 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       stageName: "@karthik_g",
       profilePicture: "/stars/pawan-kalyan.jpeg",
       presence: 1540,
+      works: 12,
+      highestScore: 4500,
     },
     score: 3000,
     notes:
-      "This sequence redefines the weight of consequences. The buildup is meticulously crafted, eliminating any dead air. The visual scaling combined with the visceral audio cues turns this into an absolute masterclass in tension and release. It does not just demand attention — it commands the entire theatre.",
+      "This sequence redefines the weight of consequences. The buildup is meticulously crafted, eliminating any dead air. The visual scaling combined with the visceral audio cues turns this into an absolute masterclass",
     vouchCount: 218,
     contextLabel: "New for you",
+    favorited: true,
+    artistLiked: true,
   },
   {
     id: "rec-002",
@@ -71,7 +86,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       genres: ["Epic", "Period Drama", "Pan-India"],
       format: "Feature Film",
       director: "S.S. Rajamouli",
-      dop: "K.K. Senthil Kumar"
+      dop: "K.K. Senthil Kumar",
+      stars: ["Ram Charan", "Jr. NTR", "Alia Bhatt"],
     },
     artist: {
       id: "fh-002",
@@ -80,12 +96,16 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       profilePicture:
         "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
       presence: 842,
+      works: 7,
+      highestScore: 3200,
     },
     score: 1847,
     notes:
-      "Naatu Naatu is not just a song — it is a cultural declaration. The choreography, the setting, the sheer scale of confidence radiating from every frame makes this the defining moment of pan-Indian cinema in this decade.",
+      "Naatu Naatu is not just a song — it is a cultural declaration. The choreography, the setting, and the sheer scale of confidence radiating from every frame make this the defining moment of pan-Indian cinema.",
     vouchCount: 134,
     contextLabel: "Trending in your Sets",
+    favorited: false,
+    artistLiked: false,
   },
   {
     id: "rec-003",
@@ -97,7 +117,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       genres: ["Mass", "Comeback", "Raw Power"],
       format: "Feature Film",
       director: "Sujeeth",
-      dop: "Ravi K. Chandran"
+      dop: "Ravi K. Chandran",
+      stars: ["Pawan Kalyan", "Priyanka Arul Mohan"],
     },
     artist: {
       id: "fh-003",
@@ -106,12 +127,16 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       profilePicture:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
       presence: 960,
+      works: 9,
+      highestScore: 3800,
     },
     score: 2480,
     notes:
-      "Pawan Kalyan's silence in this scene speaks louder than any dialogue. The restraint is surgical. Every frame communicates what years of absence feel like — this is not an actor performing, this is a force returning.",
+      "Pawan Kalyan's silence in this scene speaks louder than any dialogue. The restraint is surgical. Every frame communicates what years of absence feel like — this is not an actor performing, this is a force.",
     vouchCount: 192,
     contextLabel: "From your Originals",
+    favorited: true,
+    artistLiked: true,
   },
   {
     id: "rec-004",
@@ -123,7 +148,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       genres: ["Epic", "Mythology", "Spectacle"],
       format: "Feature Film",
       director: "S.S. Rajamouli",
-      dop: "K.K. Senthil Kumar"
+      dop: "K.K. Senthil Kumar",
+      stars: ["Prabhas", "Rana Daggubati", "Anushka Shetty"],
     },
     artist: {
       id: "fh-004",
@@ -132,12 +158,16 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       profilePicture:
         "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop",
       presence: 1120,
+      works: 15,
+      highestScore: 4500,
     },
     score: 4200,
     notes:
-      "The waterfall sequence is not cinema — it is architecture. S.S. Rajamouli builds a world inside a single shot that most directors cannot achieve in an entire film. The scale here is not spectacle for its own sake. It earns every frame.",
+      "The waterfall sequence is not cinema — it is architecture. S.S. Rajamouli builds a world inside a single shot that most directors cannot achieve in an entire film. The scale here is not spectacle for its own.",
     vouchCount: 347,
     contextLabel: "Top rated this week",
+    favorited: false,
+    artistLiked: true,
   },
   {
     id: "rec-005",
@@ -149,7 +179,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       genres: ["Thriller", "Action", "Multi-starrer"],
       format: "Feature Film",
       director: "Lokesh Kanagaraj",
-      dop: "Girish Gangadharan"
+      dop: "Girish Gangadharan",
+      stars: ["Kamal Haasan", "Fahadh Faasil", "Vijay Sethupathi"],
     },
     artist: {
       id: "fh-005",
@@ -158,12 +189,16 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       profilePicture:
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
       presence: 620,
+      works: 5,
+      highestScore: 2800,
     },
     score: 1620,
     notes:
-      "Lokesh Kanagaraj treats continuity as philosophy. Every detail in this universe pays rent. The callback to the earlier films is not fan service — it is architecture. The way this scene recontextualises what came before it is nothing short of surgical storytelling.",
+      "Lokesh Kanagaraj treats continuity as philosophy. Every detail in this universe pays rent. The callback to earlier films is not fan service — it is architecture. The way this scene recontextualises what came.",
     vouchCount: 89,
     contextLabel: "Hidden gem",
+    favorited: true,
+    artistLiked: false,
   },
 ];
 

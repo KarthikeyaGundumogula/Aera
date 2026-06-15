@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Sparkles } from "lucide-react";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
-import { RecommendationCard } from "./RecommendationCard";
+import { RecommendationCard } from "../../../components/RecommendationCard";
 
 export function ArtistRecommendationsZone() {
   if (!MOCK_RECOMMENDATIONS || MOCK_RECOMMENDATIONS.length === 0) return null;

@@ -1,13 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
-import { Infinity as InfinityIcon } from "lucide-react";
+import { Info } from "lucide-react";
 
 const AMBER      = "#D97706";
 const AMBER_DIM  = "rgba(217,119,6,0.12)";
 const AMBER_GLOW = "rgba(217,119,6,0.30)";
 
-const USER_LAST_PEAK = 4200;
-const TICK_MS        = 16;
+const VISUAL_MAX = 5000;
+const TICK_MS    = 16;
 
 function lerpRGB(r1: number, g1: number, b1: number, r2: number, g2: number, b2: number, t: number): string {
   const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
@@ -30,12 +30,11 @@ interface RecommendationScoreProps {
 
 export function RecommendationScore({ score, onChange, onPeakFlash }: RecommendationScoreProps) {
   const [isHolding, setIsHolding] = useState(false);
-  const [hasPeaked, setHasPeaked] = useState(score >= USER_LAST_PEAK);
+  const [showScoreTooltip, setShowScoreTooltip] = useState(false);
 
   const holdStartRef = useRef<number>(0);
   const rafRef       = useRef<number | null>(null);
   const scoreRef     = useRef<number>(score);
-  const hasPeakedRef = useRef<boolean>(score >= USER_LAST_PEAK);
 
   const shakeX = useMotionValue(0);
   const springX = useSpring(shakeX, { stiffness: 600, damping: 8 });
@@ -51,48 +50,43 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
   // Sync internal refs if parent changes score directly (e.g., reset)
   useEffect(() => {
     scoreRef.current = score;
-    const ratio = score / USER_LAST_PEAK;
+    const ratio = score / VISUAL_MAX;
     scoreColorMV.set(scoreRatioToColor(ratio));
     const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
     glowRadiusMV.set(glowT * 48);
     glowAlphaMV.set(glowT * 0.65);
-    
-    if (score < USER_LAST_PEAK) {
-      hasPeakedRef.current = false;
-      setHasPeaked(false);
-    } else {
-      hasPeakedRef.current = true;
-      setHasPeaked(true);
-    }
   }, [score, scoreColorMV, glowRadiusMV, glowAlphaMV]);
 
   const stopHold = useCallback(() => {
     setIsHolding(false);
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     shakeX.set(0);
-  }, [shakeX]);
+
+    // Round to nearest 10 on release for cleaner UI
+    if (scoreRef.current > 0) {
+      const snapped = Math.round(scoreRef.current / 10) * 10;
+      scoreRef.current = snapped;
+      onChange(snapped);
+    }
+  }, [shakeX, onChange]);
 
   const startHold = useCallback(() => {
     setIsHolding(true);
     holdStartRef.current = performance.now();
 
     const tick = () => {
-      const currentRatio = scoreRef.current / USER_LAST_PEAK;
-      let rate = 0;
-      if (currentRatio < 0.6) {
-        const progress = currentRatio / 0.6;
-        rate = 3500 * (1 - Math.pow(progress, 2)) + 400;
-      } else {
-        const tensionProgress = (currentRatio - 0.6) / 0.6;
-        rate = 400 * Math.pow(1.6, tensionProgress * 5);
-      }
+      const now = performance.now();
+      const holdDuration = (now - holdStartRef.current) / 1000; // in seconds
+      
+      // Fast, constantly accelerating rate. NO breaks, NO slowing down.
+      const rate = 3000 + (1500 * holdDuration) + (500 * Math.pow(holdDuration, 2));
       
       const increment = (rate * TICK_MS) / 1000;
       scoreRef.current += increment;
       const rounded = Math.round(scoreRef.current);
       onChange(rounded);
 
-      const ratio = rounded / USER_LAST_PEAK;
+      const ratio = rounded / VISUAL_MAX;
       scoreColorMV.set(scoreRatioToColor(ratio));
       const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
       glowRadiusMV.set(glowT * 48);
@@ -103,17 +97,11 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
         shakeX.set((Math.random() - 0.5) * intensity * 2);
       }
 
-      if (!hasPeakedRef.current && rounded >= USER_LAST_PEAK) {
-        hasPeakedRef.current = true;
-        setHasPeaked(true);
-        if (onPeakFlash) onPeakFlash();
-      }
-
       rafRef.current = requestAnimationFrame(tick);
     };
 
     rafRef.current = requestAnimationFrame(tick);
-  }, [shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange, onPeakFlash]);
+  }, [shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -128,7 +116,7 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
     onChange(newScore);
     scoreRef.current = newScore;
 
-    const ratio = newScore / USER_LAST_PEAK;
+    const ratio = newScore / VISUAL_MAX;
     scoreColorMV.set(scoreRatioToColor(ratio));
     const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
     glowRadiusMV.set(glowT * 48);
@@ -140,157 +128,141 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
     } else {
       shakeX.set(0);
     }
-
-    if (!hasPeakedRef.current && newScore >= USER_LAST_PEAK) {
-      hasPeakedRef.current = true;
-      setHasPeaked(true);
-      if (onPeakFlash) onPeakFlash();
-    } else if (newScore < USER_LAST_PEAK) {
-      hasPeakedRef.current = false;
-      setHasPeaked(false);
-    }
-  }, [isHolding, shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange, onPeakFlash]);
+  }, [isHolding, shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange]);
 
   useEffect(() => {
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, []);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25">
-          Recommendation Score
-        </span>
-        {score > 0 && (
-          <button
-            onClick={() => { stopHold(); onChange(0); }}
-            className="text-[9px] uppercase tracking-[0.2em] text-white/15 hover:text-white/40 transition-colors focus:outline-none"
-          >
-            Reset
-          </button>
-        )}
-      </div>
-
-      <motion.div style={{ x: springX }} className="flex items-center w-full mb-4 mt-1">
-        <div className="w-1/2 flex items-baseline gap-3">
-          <motion.span
-            className="text-4xl font-black tracking-tighter leading-none"
-            style={{
-              fontVariantNumeric: "tabular-nums",
-              color: scoreColorMV,
-              textShadow: glowShadow,
-            }}
-          >
-            {score === 0 ? "—" : score.toString()}
-          </motion.span>
-
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[8px] uppercase tracking-[0.2em] text-white/20 font-medium">
-              Your peak
+    <div className="flex flex-col">
+      {/* Top Row: Label & Reset & Score Number */}
+      <div className="flex items-end justify-between mb-4">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25">
+              Score
             </span>
-            <div className="flex items-center gap-1.5">
-              <InfinityIcon 
-                className="w-3 h-3" 
-                style={{ 
-                  color: hasPeaked ? `${AMBER}55` : "rgba(255,255,255,0.15)",
-                  transition: "color 0.4s ease"
-                }} 
-              />
-              <span
-                className="text-sm font-semibold tabular-nums"
-                style={{
-                  color: hasPeaked ? `${AMBER}55` : "rgba(255,255,255,0.15)",
-                  textDecoration: hasPeaked ? "line-through" : "none",
-                  transition: "color 0.4s ease, text-decoration 0.3s ease",
-                }}
+            <div 
+              className="relative flex items-center"
+              onMouseEnter={() => setShowScoreTooltip(true)}
+              onMouseLeave={() => setShowScoreTooltip(false)}
+              onClick={(e) => { e.stopPropagation(); setShowScoreTooltip(!showScoreTooltip); }}
+            >
+              <Info className={`w-3 h-3 transition-colors cursor-help ${showScoreTooltip ? "text-[#D97706]" : "text-white/15"}`} />
+              
+              <div 
+                className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-[220px] p-2 bg-black/90 backdrop-blur-md border border-white/10 rounded-lg shadow-xl text-[10px] text-white/80 leading-relaxed pointer-events-none transition-all duration-200 origin-bottom z-[250] ${showScoreTooltip ? "opacity-100 scale-100" : "opacity-0 scale-[0.97]"}`}
               >
-                {USER_LAST_PEAK}
-              </span>
+                Give your personal rating to the experience you had with no boundaries go bonkers
+              </div>
             </div>
+          </div>
+          <div className="h-[12px]">
+            <AnimatePresence>
+              {score > 0 && (
+                <motion.button
+                  initial={{ opacity: 0, x: -4 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -4 }}
+                  onClick={() => { stopHold(); onChange(0); }}
+                  className="text-[8px] uppercase tracking-[0.2em] text-white/15 hover:text-white/40 transition-colors focus:outline-none text-left"
+                >
+                  Reset
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        <div className="w-1/2 flex items-end justify-center gap-[4px] h-[44px] pb-1 relative group touch-none">
-          <input
-            type="range"
-            min={0}
-            max={USER_LAST_PEAK * 1.25}
-            value={score}
-            onChange={(e) => handleScrub(Number(e.target.value))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
-            style={{ touchAction: "none" }}
-          />
+        {/* Score Number (Top Right) */}
+        <div className="flex items-end justify-end h-[32px] pb-1">
+          <motion.div style={{ x: springX }}>
+            <motion.span
+              className="text-3xl font-black tracking-tighter leading-none"
+              style={{
+                fontVariantNumeric: "tabular-nums",
+                color: scoreColorMV,
+                textShadow: glowShadow,
+              }}
+            >
+              {score === 0 ? "—" : score.toString()}
+            </motion.span>
+          </motion.div>
+        </div>
+      </div>
 
-          {[0, 1, 2, 3, 4].map((i) => {
-            const chunkStart = i * 0.2;
-            const chunkEnd = (i + 1) * 0.2;
-            const ratio = score / USER_LAST_PEAK;
+      {/* Middle Row: Visual Bars (Centered) */}
+      <div className="flex items-end justify-center gap-[4px] h-[36px] pb-2 relative group touch-none mb-4 w-full">
+        <input
+          type="range"
+          min={0}
+          max={VISUAL_MAX * 1.5}
+          value={score}
+          onChange={(e) => handleScrub(Number(e.target.value))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
+          style={{ touchAction: "none" }}
+        />
 
-            let fillPct = 0;
-            if (ratio >= chunkEnd) fillPct = 1;
-            else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
+        {[0, 1, 2, 3, 4].map((i) => {
+          const chunkStart = i * 0.2;
+          const chunkEnd = (i + 1) * 0.2;
+          const ratio = score / VISUAL_MAX;
 
-            const maxHeight = 12 + i * 6;
+          let fillPct = 0;
+          if (ratio >= chunkEnd) fillPct = 1;
+          else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
+
+          const maxHeight = 16 + i * 4;
+
+          return (
+            <div
+              key={i}
+              className="relative w-[8px] rounded-[2px] bg-white/[0.08] overflow-hidden transition-all duration-300 group-hover:bg-white/[0.12]"
+              style={{ height: `${maxHeight}px` }}
+            >
+              <div
+                className="absolute bottom-0 left-0 w-full rounded-[2px] transition-all duration-[50ms]"
+                style={{
+                  height: `${fillPct * 100}%`,
+                  backgroundColor: "#10B981",
+                  boxShadow: fillPct === 1 ? `0 0 10px rgba(16, 185, 129, 0.4)` : "none",
+                }}
+              />
+            </div>
+          );
+        })}
+        <AnimatePresence>
+          {score > VISUAL_MAX && (() => {
+            const overRatio = (score - VISUAL_MAX) / VISUAL_MAX;
+            const fillPct = Math.min(overRatio / 0.2, 1);
+            
+            const r = Math.round(217 + (255 - 217) * fillPct);
+            const g = Math.round(119 + (220 - 119) * fillPct);
+            const b = Math.round(6 + (100 - 6) * fillPct);
+            const barColor = `rgb(${r}, ${g}, ${b})`;
+            const glowSize = 10 + fillPct * 12;
 
             return (
-              <div
-                key={i}
-                className="relative w-[8px] rounded-[2px] bg-white/[0.08] overflow-hidden transition-all duration-300 group-hover:bg-white/[0.12]"
-                style={{ height: `${maxHeight}px` }}
+              <motion.div
+                initial={{ opacity: 0, height: 6 }}
+                animate={{ opacity: 1, height: 36 }}
+                exit={{ opacity: 0, height: 6 }}
+                className="relative w-[8px] rounded-[2px] bg-white/[0.08] ml-[1px] overflow-hidden transition-all duration-300 group-hover:bg-white/[0.12]"
               >
                 <div
                   className="absolute bottom-0 left-0 w-full rounded-[2px] transition-all duration-[50ms]"
                   style={{
                     height: `${fillPct * 100}%`,
-                    backgroundColor: "#10B981",
-                    boxShadow: fillPct === 1 ? `0 0 10px rgba(16, 185, 129, 0.4)` : "none",
+                    backgroundColor: barColor,
+                    boxShadow: `0 0 ${glowSize}px ${barColor}`,
                   }}
                 />
-              </div>
+              </motion.div>
             );
-          })}
-          <AnimatePresence>
-            {score > USER_LAST_PEAK && (() => {
-              const overRatio = (score - USER_LAST_PEAK) / USER_LAST_PEAK;
-              const fillPct = Math.min(overRatio / 0.2, 1);
-              
-              const r = Math.round(217 + (255 - 217) * fillPct);
-              const g = Math.round(119 + (220 - 119) * fillPct);
-              const b = Math.round(6 + (100 - 6) * fillPct);
-              const barColor = `rgb(${r}, ${g}, ${b})`;
-              const glowSize = 10 + fillPct * 12;
-
-              return (
-                <motion.div
-                  initial={{ opacity: 0, height: 6 }}
-                  animate={{ opacity: 1, height: 42 }}
-                  exit={{ opacity: 0, height: 6 }}
-                  className="relative w-[8px] rounded-[2px] bg-white/[0.08] ml-[2px] overflow-hidden transition-all duration-300 group-hover:bg-white/[0.12]"
-                >
-                  <div
-                    className="absolute bottom-0 left-0 w-full rounded-[2px] transition-all duration-[50ms]"
-                    style={{
-                      height: `${fillPct * 100}%`,
-                      backgroundColor: barColor,
-                      boxShadow: `0 0 ${glowSize}px ${barColor}`,
-                    }}
-                  />
-                </motion.div>
-              );
-            })()}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-
-      <p className="text-[10px] text-white/20 mb-5 leading-relaxed">
-        {score === 0
-          ? "How strong is your recommendation? Hold to score."
-          : score < USER_LAST_PEAK * 0.5
-          ? "Keep going…"
-          : score < USER_LAST_PEAK
-          ? "Approaching your peak."
-          : "You've surpassed your own peak. That's rare."}
-      </p>
+          })()}
+        </AnimatePresence>
+      </div>
 
       <motion.button
         id="recommendation-score-hold-btn"
@@ -322,14 +294,6 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
         />
 
         <div className="relative flex items-center justify-center gap-2.5 h-full">
-          <InfinityIcon
-            className="w-4 h-4"
-            style={{
-              color: isHolding ? (scoreColorMV as any) : "rgba(255,255,255,0.25)",
-              transition: "color 0.2s ease",
-            }}
-            strokeWidth={1.75}
-          />
           <motion.span
             className="text-[11px] font-black uppercase tracking-[0.3em]"
             style={{
