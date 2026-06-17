@@ -25,10 +25,10 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
   const ratio = rec.score / highestScore;
 
   return (
-    <div className={`flex flex-col gap-2.5 shrink-0 ${variant === "modal" ? "w-full" : ""}`}>
+    <div className={`flex flex-col gap-1.5 shrink-0 ${variant === "modal" ? "w-full" : ""}`}>
       {/* ── Metadata Tags Row (Above Card) ── */}
       {variant === "default" && (
-        <div className="flex items-center justify-between px-2 mb-2.5">
+        <div className="flex items-center justify-between px-2">
         {/* Left: Format Tag */}
         <div className="flex items-center gap-2">
           <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/70 border border-white/30 px-3 py-1 rounded-full bg-white/[0.03] backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.03)]">
@@ -39,7 +39,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
         {/* Right: Genre Tags */}
         <div className="flex items-center gap-1.5">
           {rec.original.genres.slice(0, 2).map((g) => (
-            <span key={g} className="text-[8px] font-black uppercase tracking-[0.2em] text-white/30 border border-white/5 px-2.5 py-1 rounded-full bg-black/10 backdrop-blur-md">
+            <span key={g} className="text-[8px] font-black uppercase tracking-[0.2em] text-white/60 border border-white/20 px-2.5 py-1 rounded-full bg-black/10 backdrop-blur-md">
               {g}
             </span>
           ))}
@@ -51,7 +51,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
       <div
         className={
           variant === "default"
-            ? "relative w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
+            ? "relative flex-1 h-[340px] w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
             : "relative w-full overflow-hidden"
         }
         style={
@@ -61,22 +61,20 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
         }
       >
         {/* ── Horizontal Layout: Poster (Left) + Content (Right) ── */}
-        <div className="flex">
+        <div className="flex h-full">
 
           {/* LEFT: Portrait Poster Column — presented as a cinematic standalone poster */}
-          <div className="w-[130px] sm:w-[150px] shrink-0 flex flex-col bg-transparent relative z-10">
-            {/* Poster — stacked cleanly at the top */}
-            <div className="px-2.5 pt-2.5 pb-2">
+          <div className="w-[130px] sm:w-[150px] shrink-0 flex flex-col bg-transparent relative z-10 h-full">
+            {/* Poster — fixed height so tall images don't inflate card */}
+            <div className="px-2.5 pt-2.5 pb-2 shrink-0">
               <div
-                className="relative w-full overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
-                style={{ aspectRatio: "2/3" }}
+                className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
                 onClick={(e) => { e.stopPropagation(); navigate(`/originals/${rec.original.id}`); }}
               >
                 <img
                   src={rec.original.coverImage}
                   alt={rec.original.title}
-                  className="w-full h-full object-cover object-top transition-[transform,filter] duration-700 group-hover/poster:scale-105 group-hover/poster:brightness-[0.6]"
-                />
+                  className="w-full h-full object-cover object-top transition-[transform,filter] duration-700 group-hover/poster:scale-105 group-hover/poster:brightness-[0.6]" />
                 {/* Gradient blend toward right */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#050302]/50" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050302]/70 via-transparent to-transparent" />

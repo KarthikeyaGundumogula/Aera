@@ -42,7 +42,8 @@ function ArtistName({ name, className }: { name: string; className?: string }) {
     (a) => a.name.toLowerCase() === name.toLowerCase()
   ) || ARTISTS_MOCK[0];
 
-  const themeClasses = (artistData as any)?.themeClasses;
+  // OriginalArtist does not carry themeClasses in the data model — omit the branch
+  const themeClasses = undefined;
 
   return (
     <>
@@ -156,7 +157,7 @@ function InlineReplyBox({
           className="w-full bg-white/[0.04] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
           onKeyDown={(e) => {
             if (e.key === "Escape") onCancel();
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(e as any);
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit({ preventDefault: () => {} } as React.FormEvent);
           }}
         />
         <div className="flex justify-between items-center">
@@ -454,7 +455,7 @@ export function DiscussionPage() {
               rows={2}
               className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleRootSubmit(e as any);
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleRootSubmit({ preventDefault: () => {} } as React.FormEvent);
               }}
             />
             <div className="flex justify-end">

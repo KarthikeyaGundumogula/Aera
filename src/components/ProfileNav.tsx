@@ -8,7 +8,13 @@ import { useAuth } from "../context/AuthContext";
  * ProfileNav component — A sleek, premium dropdown menu
  * that handles artist-focused navigation.
  */
-export function ProfileNav({ className = "" }: { className?: string }) {
+export function ProfileNav({ 
+  className = "",
+  beforeNavigate 
+}: { 
+  className?: string;
+  beforeNavigate?: (path: string) => boolean;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
@@ -50,6 +56,9 @@ export function ProfileNav({ className = "" }: { className?: string }) {
   ];
 
   const handleNav = (path: string) => {
+    if (beforeNavigate) {
+      if (!beforeNavigate(path)) return;
+    }
     navigate(path);
     setIsOpen(false);
   };
@@ -129,8 +138,10 @@ export function ProfileNav({ className = "" }: { className?: string }) {
               </button>
               <button 
                 onClick={() => {
+                  if (beforeNavigate && !beforeNavigate("/")) return;
                   logout();
-                  handleNav("/");
+                  navigate("/");
+                  setIsOpen(false);
                 }}
                 className="w-full flex items-center justify-center gap-2 py-2 text-[9px] font-bold uppercase tracking-[0.25em] text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
               >

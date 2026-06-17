@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { OriginalArtist, TheatreItem } from "../types";
-import { ARTISTS_MOCK, GRID_ITEMS } from "../mock";
+import { ARTISTS_MOCK, GRID_ITEMS } from "@/mock";
 
 // Helper functions to manage cookies client-side.
 // NOTE: In production, the backend sets this cookie with the HttpOnly, Secure, and SameSite flags.
@@ -190,22 +190,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateWorkTitle = useCallback((workId: string | number, newTitle: string) => {
-    setUserWorks(prevWorks => {
-      const nextWorks = prevWorks.map((w) =>
-        w.id === workId ? { ...w, title: newTitle } : w
-      );
-      const globalIdx = GRID_ITEMS.findIndex((w) => w.id === workId);
-      if (globalIdx > -1) {
-        GRID_ITEMS[globalIdx].title = newTitle;
-      }
-      return nextWorks;
-    });
+    setUserWorks(prevWorks =>
+      prevWorks.map((w) => (w.id === workId ? { ...w, title: newTitle } : w))
+    );
   }, []);
 
   const addWork = useCallback((work: TheatreItem) => {
     setCurrentArtist(prevArtist => {
       if (!prevArtist) return prevArtist;
-      const workWithMeta = {
+      const workWithMeta: TheatreItem = {
         ...work,
         artistId: prevArtist.id,
         artist: prevArtist.name,
@@ -216,7 +209,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         sessionStorage.setItem(`framehouse_user_works_${prevArtist.id}`, JSON.stringify(nextWorks));
         return nextWorks;
       });
-      GRID_ITEMS.unshift(workWithMeta);
+      // NOTE: GRID_ITEMS is intentionally NOT mutated here.
+      // The user's works are tracked exclusively in userWorks state.
+      // Theatre pages that need to show the logged-in user's works should
+      // read from AuthContext.userWorks instead of the global GRID_ITEMS array.
       return prevArtist;
     });
   }, []);

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react";
 import { Info } from "lucide-react";
 
 const AMBER      = "#D97706";
@@ -297,7 +297,7 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
           <motion.span
             className="text-[11px] font-black uppercase tracking-[0.3em]"
             style={{
-              color: isHolding ? (scoreColorMV as any) : "rgba(255,255,255,0.2)",
+              color: isHolding ? (scoreColorMV as MotionValue<string>) : "rgba(255,255,255,0.2)",
               transition: "color 0.2s ease",
               textShadow: isHolding ? glowShadow : "none",
             }}

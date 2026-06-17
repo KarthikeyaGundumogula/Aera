@@ -4,6 +4,7 @@ import { GRID_ITEMS } from "../../../../mock";
 import { buildMobileClusters, MobileCluster } from "../../engine/mobileClusterBuilder";
 import { MobileClusterView } from "./MobileClusterView";
 import { FeedContext } from "../../../../context/FeedContext";
+import type { TheatreItem } from "../../../../types";
 
 export function MobileCanvas() {
   const [clusters, setClusters] = useState<MobileCluster[]>([]);
@@ -52,7 +53,10 @@ export function MobileCanvas() {
   }, [loadMore]);
 
   // ── Compute flat items for FeedContext ────────────────────────────
-  const flatItems = useMemo(() => clusters.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as any[]), [clusters]);
+  const flatItems = useMemo(
+    () => clusters.flatMap((c) => c.slots.map((s) => s.item).filter((item): item is TheatreItem => item != null)),
+    [clusters]
+  );
 
   // ── Render ────────────────────────────────────────────────────────
   return (

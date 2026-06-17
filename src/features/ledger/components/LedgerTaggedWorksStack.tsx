@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import type { LedgerTaggedWork } from "../../../mock/ledger";
-import { useWorkNavigation } from "../../shared/../../hooks/useWorkNavigation";
+import type { TheatreItem } from "../../../types";
+import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
 export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] }) {
   const { openWork } = useWorkNavigation();
@@ -18,10 +19,10 @@ export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] })
               title: `Inspired by ${work.authorName}`,
               category: work.type === 'poster' ? 'Poster' : 'Edit',
               image: work.thumbnailUrl,
-              platform: work.platform || 'youtube',
+              platform: (work.platform ?? 'youtube') as 'youtube' | 'twitter',
               srcId: work.srcId || "dQw4w9WgXcQ",
               originalIds: [],
-            } as any)}
+            } as TheatreItem)}
             className="relative rounded-lg overflow-hidden border border-white/20 shadow-xl w-32 h-20 sm:w-40 sm:h-24 flex-shrink-0 cursor-pointer outline-none focus:ring-2 focus:ring-brand-accent/50 bg-black group"
             whileHover={{ scale: 1.05, y: -2 }}
             transition={{ type: "spring", stiffness: 300 }}

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import type { OriginalArtist } from "../../../types";
 
 export interface SocialsData {
   instagram: string;
@@ -21,7 +22,29 @@ export interface ProfileFormData {
   themeBgColor: string;
 }
 
-export function useProfileForm(initialData?: Partial<ProfileFormData>) {
+/** Map an OriginalArtist record into the hook's initial form shape. */
+function artistToFormData(artist: OriginalArtist): Partial<ProfileFormData> {
+  return {
+    name: artist.name,
+    bio: artist.bio ?? "",
+    portraitPreview: artist.image || null,
+    themeTextColor: artist.themeTextColor ?? "#fac107",
+    themeBgColor: artist.themeBgColor ?? "#0f1a42",
+    socials: {
+      instagram: artist.socials?.instagram ?? "",
+      twitter: artist.socials?.twitter ?? "",
+      youtube: artist.socials?.youtube ?? "",
+    },
+  };
+}
+
+export function useProfileForm(initialData?: Partial<ProfileFormData> | OriginalArtist) {
+  // Normalise: accept either a ProfileFormData partial or an OriginalArtist record
+  const resolved: Partial<ProfileFormData> =
+    initialData && 'name' in initialData && !('socials' in initialData && typeof (initialData as Partial<ProfileFormData>).socials === 'object')
+      ? artistToFormData(initialData as OriginalArtist)
+      : (initialData as Partial<ProfileFormData> | undefined) ?? {};
+
   const [formData, setFormData] = useState<ProfileFormData>({
     username: "",
     name: "",
@@ -35,7 +58,7 @@ export function useProfileForm(initialData?: Partial<ProfileFormData>) {
     confirmPassword: "",
     themeTextColor: "#fac107",
     themeBgColor: "#0f1a42",
-    ...initialData,
+    ...resolved,
   });
 
   const updateField = useCallback(<K extends keyof ProfileFormData>(

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Film, Plus, X, Shield } from "lucide-react";
@@ -12,6 +12,7 @@ import { ProfileNav } from "../../components/ProfileNav";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import ArtistSetupPage from "./ArtistSetupPage";
 import { PasswordResetModal } from "./components/PasswordResetModal";
+import { UnsavedChangesModal } from "./components/UnsavedChangesModal";
 
 export default function StudioPage() {
   const { currentArtist, userWorks, updateProfile, updateWorkTitle, logout } = useAuth();
@@ -28,8 +29,14 @@ export default function StudioPage() {
     youtube: "",
   });
 
-  // Password reset modal state
+  const [themeTextColor, setThemeTextColor] = useState("#fac107");
+  const [themeBgColor, setThemeBgColor] = useState("#0f1a42");
+
+  // Modals state
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  const isNavigatingRef = useRef(false);
 
   // Sync profile details when loaded
   useEffect(() => {
@@ -43,8 +50,80 @@ export default function StudioPage() {
         twitter: currentArtist.socials?.twitter || "",
         youtube: currentArtist.socials?.youtube || "",
       });
+      setThemeTextColor(currentArtist.themeTextColor || "#fac107");
+      setThemeBgColor(currentArtist.themeBgColor || "#0f1a42");
     }
   }, [currentArtist]);
+
+  const isDirty = 
+    stageName.trim() !== currentArtist?.name ||
+    tagline.trim() !== (currentArtist?.bio || "") ||
+    portraitPreview !== currentArtist?.image ||
+    imagePosition !== (currentArtist?.imagePosition || "50% 0%") ||
+    socials.instagram !== (currentArtist?.socials?.instagram || "") ||
+    socials.twitter !== (currentArtist?.socials?.twitter || "") ||
+    socials.youtube !== (currentArtist?.socials?.youtube || "") ||
+    themeTextColor !== (currentArtist?.themeTextColor || "#fac107") ||
+    themeBgColor !== (currentArtist?.themeBgColor || "#0f1a42");
+
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    // Prevent browser back button
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      if (isNavigatingRef.current) return;
+
+      // The trap state was popped, meaning we are at the real URL now.
+      // We pause here to show the modal.
+      setPendingNavigation(() => () => {
+        isNavigatingRef.current = true;
+        window.history.back();
+      });
+      setIsWarningModalOpen(true);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isDirty]);
+
+  const handleNavigation = (path: string) => {
+    if (isDirty) {
+      setPendingNavigation(() => () => {
+        isNavigatingRef.current = true;
+        navigate(path);
+      });
+      setIsWarningModalOpen(true);
+      return;
+    }
+    isNavigatingRef.current = true;
+    navigate(path);
+  };
+
+  const handleConfirmLeave = () => {
+    setIsWarningModalOpen(false);
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleCancelLeave = () => {
+    setIsWarningModalOpen(false);
+    setPendingNavigation(null);
+    // If the pending navigation was a back button press, we must re-push the trap state
+    // because it was already popped by the browser.
+    window.history.pushState(null, "", window.location.href);
+  };
 
   // If not logged in, render the Stage setup (ArtistSetupPage)
   if (!currentArtist) {
@@ -58,7 +137,11 @@ export default function StudioPage() {
       image: portraitPreview || currentArtist.image,
       imagePosition: imagePosition,
       socials: socials,
+      themeTextColor,
+      themeBgColor,
     });
+    // Optional: reset navigation ref if they save and stay
+    isNavigatingRef.current = false;
   };
 
   return (
@@ -68,9 +151,20 @@ export default function StudioPage() {
 
       {/* Header bar (Desktop) */}
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-[100] items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
-        <Logo onClick={() => navigate("/")} showText={false} />
+        <Logo onClick={() => handleNavigation("/")} showText={false} />
         <div className="flex items-center gap-8">
-          <ProfileNav />
+          <ProfileNav beforeNavigate={(path) => {
+            if (isDirty) {
+              setPendingNavigation(() => () => {
+                isNavigatingRef.current = true;
+                navigate(path);
+              });
+              setIsWarningModalOpen(true);
+              return false; // Prevent ProfileNav from navigating immediately
+            }
+            isNavigatingRef.current = true;
+            return true;
+          }} />
         </div>
       </header>
 
@@ -92,16 +186,13 @@ export default function StudioPage() {
             tagline={tagline}
             portrait={portraitPreview}
             imagePosition={imagePosition}
-            themeTextColor={currentArtist.themeTextColor || "#fac107"}
-            themeBgColor={currentArtist.themeBgColor || "#0f1a42"}
+            themeTextColor={themeTextColor}
+            themeBgColor={themeBgColor}
             socials={currentArtist.socials}
-            onTextColorChange={(color) => updateProfile({ themeTextColor: color })}
-            onBgColorChange={(color) => updateProfile({ themeBgColor: color })}
+            onTextColorChange={setThemeTextColor}
+            onBgColorChange={setThemeBgColor}
             onPortraitChange={(_file, preview) => setPortraitPreview(preview)}
-            onImagePositionChange={(pos) => {
-              setImagePosition(pos);
-              updateProfile({ imagePosition: pos });
-            }}
+            onImagePositionChange={setImagePosition}
           />
         </div>
 
@@ -212,15 +303,7 @@ export default function StudioPage() {
           <div className="lg:col-span-2 flex flex-col justify-end gap-3 self-stretch lg:pt-6">
             <button
               onClick={handleProfileSave}
-              disabled={
-                stageName.trim() === currentArtist.name &&
-                tagline.trim() === (currentArtist.bio || "") &&
-                portraitPreview === currentArtist.image &&
-                imagePosition === (currentArtist.imagePosition || "50% 0%") &&
-                socials.instagram === (currentArtist.socials?.instagram || "") &&
-                socials.twitter === (currentArtist.socials?.twitter || "") &&
-                socials.youtube === (currentArtist.socials?.youtube || "")
-              }
+              disabled={!isDirty}
               className="w-full py-3.5 bg-white text-black hover:bg-white/90 disabled:opacity-20 disabled:hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 shadow-lg"
             >
               Save Stage
@@ -268,7 +351,7 @@ export default function StudioPage() {
             </div>
 
             <button
-              onClick={() => navigate("/works/new")}
+              onClick={() => handleNavigation("/works/new")}
               className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -296,7 +379,7 @@ export default function StudioPage() {
                Release your first cinematic work to establish your timeline.
               </p>
               <button
-                onClick={() => navigate("/works/new")}
+                onClick={() => handleNavigation("/works/new")}
                 className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-widest transition-all active:scale-95"
               >
                 <Plus className="w-4 h-4" /> Release First Work
@@ -309,6 +392,12 @@ export default function StudioPage() {
       <PasswordResetModal 
         isOpen={isPasswordModalOpen} 
         onClose={() => setIsPasswordModalOpen(false)} 
+      />
+
+      <UnsavedChangesModal
+        isOpen={isWarningModalOpen}
+        onConfirm={handleConfirmLeave}
+        onCancel={handleCancelLeave}
       />
     </div>
   );

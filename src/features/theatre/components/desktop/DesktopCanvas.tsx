@@ -6,6 +6,7 @@ import { buildClusters } from "../../engine/clusterBuilder";
 import { DesktopCluster } from "./DesktopCluster";
 import { CLUSTER_WIDTH, CLUSTER_HEIGHT, CLUSTER_GAP } from "../../constants";
 import { FeedContext } from "../../../../context/FeedContext";
+import type { TheatreItem } from "../../../../types";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -55,7 +56,10 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
 
   // Pre-compute cluster pool once from mock data
   const clusterPool = useMemo(() => buildClusters(GRID_ITEMS), []);
-  const flatItems = useMemo(() => clusterPool.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as any[]), [clusterPool]);
+  const flatItems = useMemo(
+    () => clusterPool.flatMap((c) => c.slots.map((s) => s.item).filter((item): item is TheatreItem => item != null)),
+    [clusterPool]
+  );
 
   // ── Camera ──────────────────────────────────────────────────────────────
   const camX = useMotionValue(0);

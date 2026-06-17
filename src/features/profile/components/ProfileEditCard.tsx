@@ -40,7 +40,7 @@ interface SocialsState {
 
 export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
   /* ── local state ──────────────────────────────────────────────────── */
-  const { formData, updateField, updateSocial, setPortrait, clearPortrait, setFormData } = useProfileForm(artist as any);
+  const { formData, updateField, updateSocial, setPortrait, clearPortrait, setFormData } = useProfileForm(artist);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

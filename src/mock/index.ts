@@ -19,18 +19,26 @@ import festivalsData from "./festivals.json";
 import { Original, OriginalArtist, OriginalStar, OriginalMaker, TheatreItem, Set, Festival } from "../types";
 import { buildThumbnail } from "../utils/embed";
 
+/** Shape of raw entries in works.json — extends TheatreItem with deprecated singular field. */
+interface WorkRow extends Omit<TheatreItem, 'originalIds'> {
+  originalIds?: string[];
+  /** @deprecated Use `originalIds` */
+  originalId?: string;
+}
+
 // ─── Raw table casts ────────────────────────────────────────────────────────
 
 /** All fan-made works (edits, posters, scripts).
  *  Derives `image` from srcId at assembly time so the JSON stays lean. */
-const ALL_WORKS: TheatreItem[] = (worksData as any[]).map((w) => ({
+const ALL_WORKS: TheatreItem[] = (worksData as WorkRow[]).map((w): TheatreItem => ({
   ...w,
   // Hydrate thumbnail: prefer explicit image, else build from srcId
   image:
     w.image ??
-    (w.platform && w.srcId ? buildThumbnail(w.platform, w.srcId) : undefined),
+    (w.platform && w.srcId ? buildThumbnail(w.platform as 'youtube' | 'twitter', w.srcId) : undefined),
   // Handle rename transition: singular to array
   originalIds: w.originalIds ?? (w.originalId ? [w.originalId] : []),
+  platform: w.platform as 'youtube' | 'twitter' | undefined,
 }));
 
 /** All fan creators. */
@@ -134,12 +142,14 @@ export const PROFILES_DIRECTORY: ProfileEntry[] = profilesDirectoryData as Profi
 export * from "./thoughts";
 export * from "./discussionReplies";
 
-// ─── Current User (Mock Auth) ───────────────────────────────────────────────
+// ─── Current User (Mock Auth) ────────────────────────────────────────────────
 
-export const MOCK_CURRENT_USER = {
+export const CURRENT_USER_MOCK = {
   id: "user-current",
   name: "YOU (ARTIST)",
   favoritedOriginalIds: ["og-original", "rrr-original", "kgf-original", "vikram-original"],
   memberSetIds: ["set-neo-noir", "set-raw-grit", "set-epic-builders"],
 };
 
+/** @deprecated Use `CURRENT_USER_MOCK` instead. */
+export const MOCK_CURRENT_USER = CURRENT_USER_MOCK;

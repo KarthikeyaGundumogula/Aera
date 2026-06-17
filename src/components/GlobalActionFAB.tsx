@@ -3,22 +3,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clapperboard, X, BookPlus, Sparkles } from "lucide-react";
 import { RecommendationModal } from "./RecommendationModal";
 import { CreateRecommendationModal } from "./CreateRecommendationModal";
-import { LedgerEntryModal } from "../features/ledger/components/LedgerEntryModal";
+import { LedgerEntryModal } from "@/features/ledger/components/LedgerEntryModal";
+import { ActionNode, ARC_RADIUS } from "./fab/ActionNode";
 
-// --- Radial Math for the "Film Strip" Arc ---
-const R = 110;
-const FILM_WIDTH = 56;
 
 // SVG sweep for the film strip background (-80 to -190 degrees for a wide arc)
 const sweepStart = -80 * (Math.PI / 180);
 const sweepEnd = -190 * (Math.PI / 180);
-const pStart = { x: Math.cos(sweepStart) * R, y: Math.sin(sweepStart) * R };
-const pEnd = { x: Math.cos(sweepEnd) * R, y: Math.sin(sweepEnd) * R };
-const filmPath = `M ${pStart.x} ${pStart.y} A ${R} ${R} 0 0 0 ${pEnd.x} ${pEnd.y}`;
+const pStart = { x: Math.cos(sweepStart) * ARC_RADIUS, y: Math.sin(sweepStart) * ARC_RADIUS };
+const pEnd = { x: Math.cos(sweepEnd) * ARC_RADIUS, y: Math.sin(sweepEnd) * ARC_RADIUS };
+const filmPath = `M ${pStart.x} ${pStart.y} A ${ARC_RADIUS} ${ARC_RADIUS} 0 0 0 ${pEnd.x} ${pEnd.y}`;
 
 // Outer and inner edges of the film strip (the double border)
-const outerR = R + 22;
-const innerR = R - 22;
+const outerR = ARC_RADIUS + 22;
+const innerR = ARC_RADIUS - 22;
 const oStart = { x: Math.cos(sweepStart) * outerR, y: Math.sin(sweepStart) * outerR };
 const oEnd = { x: Math.cos(sweepEnd) * outerR, y: Math.sin(sweepEnd) * outerR };
 const outerPath = `M ${oStart.x} ${oStart.y} A ${outerR} ${outerR} 0 0 0 ${oEnd.x} ${oEnd.y}`;
@@ -27,66 +25,6 @@ const iStart = { x: Math.cos(sweepStart) * innerR, y: Math.sin(sweepStart) * inn
 const iEnd = { x: Math.cos(sweepEnd) * innerR, y: Math.sin(sweepEnd) * innerR };
 const innerPath = `M ${iStart.x} ${iStart.y} A ${innerR} ${innerR} 0 0 0 ${iEnd.x} ${iEnd.y}`;
 
-/**
- * ActionNode - Icon that seamlessly blends into the film track
- */
-function ActionNode({
-  icon,
-  label,
-  angleDeg,
-  delay,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  angleDeg: number;
-  delay: number;
-  onClick: () => void;
-}) {
-  const angleRad = angleDeg * (Math.PI / 180);
-  const targetX = Math.cos(angleRad) * R;
-  const targetY = Math.sin(angleRad) * R;
-
-  return (
-    <motion.div
-      initial={{ x: 0, y: 0, opacity: 0, scale: 0.5 }}
-      animate={{ x: targetX, y: targetY, opacity: 1, scale: 1 }}
-      exit={{ x: 0, y: 0, opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-      transition={{ type: "spring", stiffness: 400, damping: 25, delay }}
-      className="absolute top-1/2 left-1/2 -mt-6 z-[110] flex items-center justify-end"
-      // Shift 240px container so rightmost 48px is at the FAB center
-      style={{ width: 240, marginLeft: -216 }}
-    >
-      {/* High-Contrast Telemetry Hint */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, transition: { duration: 0.1 } }}
-        transition={{ delay: delay + 0.1, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-        className="mr-3 pointer-events-none flex flex-col items-end"
-      >
-        <div className="flex items-center gap-2 bg-[#050505]/60 px-2.5 py-1 rounded-sm backdrop-blur-xl border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-          <span className="text-[7px] font-mono font-bold text-[#D97706] uppercase tracking-widest opacity-80">
-            {label.split(" ")[1] ? label.split(" ")[1].substring(0,3) : "ACT"} //
-          </span>
-          <span className="text-[10px] uppercase tracking-[0.25em] font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] whitespace-nowrap">
-            {label}
-          </span>
-        </div>
-      </motion.div>
-
-      {/* Raw Icon (no background, blends perfectly into the arc) */}
-      <motion.button
-        onClick={onClick}
-        whileTap={{ scale: 0.9 }}
-        whileHover={{ scale: 1.15 }}
-        className="w-12 h-12 shrink-0 flex items-center justify-center text-white/80 hover:text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] focus:outline-none transition-all duration-300"
-      >
-        {icon}
-      </motion.button>
-    </motion.div>
-  );
-}
 
 export function GlobalActionFAB() {
   const [isModalOpen, setIsModalOpen] = useState(false);

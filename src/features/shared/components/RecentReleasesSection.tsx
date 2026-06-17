@@ -51,7 +51,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
   const currentOriginal = useMemo(() => {
     if (!currentWork) return null;
-    return ORIGINALS.find(o => currentWork.originalIds?.includes(o.id) || (currentWork as any).originalId === o.id) || null;
+    return ORIGINALS.find(o => currentWork.originalIds?.includes(o.id)) || null;
   }, [currentWork]);
 
   if (!recentReleases.length) return null;

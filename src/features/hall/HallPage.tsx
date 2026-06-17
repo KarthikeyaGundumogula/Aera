@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { motion } from "motion/react";
 import { Film, BookOpen, Trophy, MessageSquare, Clapperboard, ChevronRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,7 @@ import {
   ORIGINALS,
   FESTIVALS,
   THOUGHTS_MOCK,
-  MOCK_CURRENT_USER,
+  CURRENT_USER_MOCK,
 } from "../../mock";
 import { mockLedger } from "../../mock/ledger";
 import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
@@ -34,9 +34,15 @@ import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZon
 export default function HallPage() {
   const navigate = useNavigate();
 
+  // ── Scroll anchor refs ───────────────────────────────────────────────
+  const originalsRef = useRef<HTMLElement>(null);
+  const festivalsRef = useRef<HTMLElement>(null);
+  const recommendationsRef = useRef<HTMLElement>(null);
+  const ledgerRef = useRef<HTMLElement>(null);
+
   // ── Works from Favorited Originals ────────────────────────────────────────
   const favIds = useMemo(
-    () => new Set(MOCK_CURRENT_USER.favoritedOriginalIds),
+    () => new Set(CURRENT_USER_MOCK.favoritedOriginalIds),
     []
   );
 
@@ -55,7 +61,7 @@ export default function HallPage() {
 
   // ── Festivals from member Sets ────────────────────────────────────────────
   const memberSetIds = useMemo(
-    () => new Set(MOCK_CURRENT_USER.memberSetIds),
+    () => new Set(CURRENT_USER_MOCK.memberSetIds),
     []
   );
 
@@ -121,7 +127,7 @@ export default function HallPage() {
             className="relative flex items-center gap-3 mt-6 flex-wrap"
           >
             <button 
-              onClick={() => document.getElementById('section-originals')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              onClick={() => originalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
             >
               <Film className="w-3 h-3 text-white/35" />
@@ -132,7 +138,7 @@ export default function HallPage() {
 
             {liveFestivals.length > 0 && (
               <button
-                onClick={() => document.getElementById('section-festivals')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                onClick={() => festivalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/15 transition-all cursor-pointer"
               >
                 <span className="relative flex h-2 w-2">
@@ -147,7 +153,7 @@ export default function HallPage() {
 
             {MOCK_RECOMMENDATIONS?.length > 0 && (
               <button 
-                onClick={() => document.getElementById('section-recommendations')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                onClick={() => recommendationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
               >
                 <Sparkles className="w-3 h-3 text-white/35" />
@@ -158,7 +164,7 @@ export default function HallPage() {
             )}
             
             <button 
-              onClick={() => document.getElementById('section-ledger')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              onClick={() => ledgerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
             >
               <BookOpen className="w-3 h-3 text-white/35" />
@@ -173,6 +179,7 @@ export default function HallPage() {
             NEW SCENE — ARTIST RECOMMENDATIONS
         ══════════════════════════════════════════════════════ */}
         <motion.section
+          ref={recommendationsRef}
           id="section-recommendations"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -187,6 +194,7 @@ export default function HallPage() {
         ══════════════════════════════════════════════════════ */}
         {memberFestivals.length > 0 && (
           <motion.section
+            ref={festivalsRef}
             id="section-festivals"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -241,6 +249,7 @@ export default function HallPage() {
             SCENE 4 — YOUR LEDGER
         ══════════════════════════════════════════════════════ */}
         <motion.section
+          ref={ledgerRef}
           id="section-ledger"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -267,6 +276,7 @@ export default function HallPage() {
         ══════════════════════════════════════════════════════ */}
         {ORIGINALS.slice(0, 4).map((original, idx) => (
           <motion.section
+            ref={idx === 0 ? originalsRef : undefined}
             id={idx === 0 ? "section-originals" : undefined}
             key={`spotlight-${original.id}`}
             initial={{ opacity: 0, y: 20 }}
