@@ -101,7 +101,7 @@ export function OriginalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] overflow-y-auto no-scrollbar transition-all duration-300 pt-[68px] md:pt-[72px]">
+    <div className="min-h-screen bg-surface-deep overflow-y-auto no-scrollbar transition-all duration-300 pt-[68px] md:pt-[72px]">
       {/* Hero Header Transformation */}
       <motion.div 
         animate={{ 

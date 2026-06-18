@@ -210,7 +210,7 @@ export function CenterFeedLayout() {
   }
 
   return (
-    <div className="bg-[#050505] min-h-screen text-white pb-24">
+    <div className="bg-surface-deep min-h-screen text-white pb-24">
       {/* Mobile Header */}
       <MobileTopHeader />
 
@@ -219,8 +219,8 @@ export function CenterFeedLayout() {
 
       <main className="pt-[61px] px-0 w-full max-w-full overflow-x-hidden">
         {/* HERO - UPCOMING RELEASES */}
-        <section className="px-4 md:px-0 mb-0">
-          <div className="relative h-[65vh] md:h-[80vh] rounded-2xl md:rounded-none overflow-hidden bg-black">
+        <section className="px-0 mb-0">
+          <div className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-black">
             {/* Background Color Glow */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <AnimatePresence mode="popLayout">

@@ -28,7 +28,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
       return (
-        <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center gap-6 p-8">
+        <div className="min-h-screen bg-surface-deep text-white flex flex-col items-center justify-center gap-6 p-8">
           <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">
             Something went wrong
           </div>

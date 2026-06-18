@@ -103,7 +103,7 @@ export function SetDetailPage() {
 
   if (!localSet) {
     return (
-      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-4 text-white">
+      <div className="min-h-screen bg-surface-deep flex flex-col items-center justify-center gap-4 text-white">
         <p className="text-[11px] uppercase tracking-[0.4em] text-white/30">Set Not Found</p>
         <button
           onClick={() => navigate('/sets')}
@@ -116,7 +116,7 @@ export function SetDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden pt-[68px] md:pt-[72px]">
+    <div className="min-h-screen bg-surface-deep text-white overflow-x-hidden pt-[68px] md:pt-[72px]">
 
       {/* ─── Sticky Header ───────────────────────────────────────────────────── */}
       <CinematicPageHeader
@@ -255,7 +255,7 @@ export function SetDetailPage() {
 
       {/* ─── Layer I.V: Open Discussions ───────────────────────────────────────── */}
       {setThoughts.length > 0 && (
-        <section className="px-4 md:px-8 py-6 border-b border-white/[0.04] bg-[#050505]">
+        <section className="px-4 md:px-8 py-6 border-b border-white/[0.04] bg-surface-deep">
           <SectionHeader
             icon={MessageSquare}
             title="Open Discussions"

@@ -58,7 +58,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#050505] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl pointer-events-auto"
+              className="bg-surface-deep border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl pointer-events-auto"
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5">
                 <div className="flex items-center gap-3">

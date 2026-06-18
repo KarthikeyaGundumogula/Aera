@@ -8,6 +8,7 @@ Do not ship generic template-looking UI. Frontend output should look intentional
 
 ### Banned Patterns
 
+- Hardcoding `bg-[#050505]` for deep black backgrounds. **Always use the semantic token `bg-surface-deep`** when the deep black theme is required.
 - Default card grids with uniform spacing and no hierarchy
 - Stock hero section with centered headline, gradient blob, and generic CTA
 - Unmodified library defaults passed off as finished design

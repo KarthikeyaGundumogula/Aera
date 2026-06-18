@@ -30,7 +30,7 @@ export default function LoginPage() {
 
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-surface-deep text-white overflow-x-hidden font-sans selection:bg-white selection:text-black">
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
       <div
         className="fixed inset-0 z-0 overflow-hidden pointer-events-none"

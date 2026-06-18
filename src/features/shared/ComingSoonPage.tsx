@@ -12,7 +12,7 @@ export function ComingSoonPage({ label, description }: ComingSoonPageProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-surface-deep text-white">
       {/* Mobile Header */}
       <MobileTopHeader
         rightActions={

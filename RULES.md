@@ -40,3 +40,4 @@
 7. **Refactoring & Cleaning**: Read and rely on `agents/refactor-cleaner.md` guidelines for dead-code elimination, duplicate elimination, and keeping the codebase pristine. Do not hesitate to rename or refactor components/patterns if they don't match functionality or flow.
 8. **Code Review**: Whenever a code review is requested, strictly follow the protocols, checklists, and severity levels defined in `agents/rules/common/code-review.md`. Ensure all mandatory triggers are met before completion.
 9. **Image Alignment**: Always ensure images (`img` tags) use `object-cover object-top`. Images must be attached to the top of their container, and any necessary cropping should happen only at the bottom. This is a platform-wide cinematic design requirement.
+10. **Global Dark Theme**: Never hardcode `bg-[#050505]` for deep black backgrounds. Always use the semantic token `bg-surface-deep` globally across the application.

@@ -71,7 +71,7 @@ export function OriginalManagementModal({
         initial={{ scale: 0.95, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 20 }}
-        className="relative w-full max-w-2xl bg-[#050505] border border-white/10 rounded-[32px] overflow-hidden flex flex-col max-h-[90vh] shadow-[0_30px_100px_rgba(0,0,0,0.8)]"
+        className="relative w-full max-w-2xl bg-surface-deep border border-white/10 rounded-[32px] overflow-hidden flex flex-col max-h-[90vh] shadow-[0_30px_100px_rgba(0,0,0,0.8)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

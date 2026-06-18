@@ -27,7 +27,7 @@ export function AddPanelistModal({ isOpen, onClose, onAdd }: AddPanelistModalPro
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-md bg-[#050505] border border-white/10 rounded-3xl p-6 md:p-8 relative"
+        className="w-full max-w-md bg-surface-deep border border-white/10 rounded-3xl p-6 md:p-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button

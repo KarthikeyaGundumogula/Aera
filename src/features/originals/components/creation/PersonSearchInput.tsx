@@ -200,7 +200,7 @@ export function PersonSearchInput({
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
-                className="absolute left-0 right-0 top-full mt-2 z-50 rounded-xl border border-white/10 bg-[#050505] backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden"
+                className="absolute left-0 right-0 top-full mt-2 z-50 rounded-xl border border-white/10 bg-surface-deep backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden"
               >
                 {allResults.length > 0 && (
                   <div className="max-h-[200px] overflow-y-auto no-scrollbar">

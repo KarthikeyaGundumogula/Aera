@@ -49,11 +49,11 @@ const DEFAULT_THEME = {
 
 const ProfileSkeleton: React.FC = () => {
   return (
-    <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden flex flex-col font-sans">
+    <div className="relative w-full min-h-screen bg-surface-deep overflow-hidden flex flex-col font-sans">
       <div className="fixed inset-0 z-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
       </div>
-      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-[#050505]/95 border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-surface-deep/95 border-b border-white/5">
         <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
         <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
       </header>
@@ -184,7 +184,7 @@ const ProfilePage: React.FC = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-surface-deep flex items-center justify-center p-6 text-center">
         <div>
           <h1 className="text-4xl font-black uppercase tracking-tighter mb-4 text-white/20">
             Archive Not Found
@@ -247,7 +247,7 @@ const ProfilePage: React.FC = () => {
       />
 
       {/* ─── THEATRE SECTION ─── */}
-      <div className="relative z-20 w-full bg-[#050505] min-h-screen pt-2 pb-20 text-white">
+      <div className="relative z-20 w-full bg-surface-deep min-h-screen pt-2 pb-20 text-white">
         <section className="px-8 md:px-12">
           {/* Header with Enter Theatre button - Matching OriginalTheatreSection */}
           <div className="mb-12 flex items-center justify-between">

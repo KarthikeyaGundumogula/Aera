@@ -36,7 +36,7 @@ export function SetsPage() {
     `text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${active ? "text-white" : "text-white/60 hover:text-white"}`;
 
   return (
-    <div className="min-h-screen bg-[#050505] overflow-y-auto no-scrollbar pt-16 md:pt-24">
+    <div className="min-h-screen bg-surface-deep overflow-y-auto no-scrollbar pt-16 md:pt-24">
       {/* Mobile Header */}
       <MobileTopHeader />
 

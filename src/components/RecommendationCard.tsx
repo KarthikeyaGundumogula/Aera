@@ -24,6 +24,10 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
   const isHighestRated = rec.score >= highestScore;
   const ratio = rec.score / highestScore;
 
+  const isLongText = rec.notes.length >= 280;
+  const hideScoreRow = notesExpanded && rec.notes.length >= 180;
+  const hideArtistRow = notesExpanded && isLongText;
+
   return (
     <div className={`flex flex-col gap-1.5 shrink-0 ${variant === "modal" ? "w-full" : ""}`}>
       {/* ── Metadata Tags Row (Above Card) ── */}
@@ -151,7 +155,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   <p className="text-[13px] leading-relaxed font-medium" style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 5, overflow: "hidden" }}>
                     {rec.notes}
                   </p>
-                  {rec.notes.length > 90 && (
+                  {rec.notes.length > 180 && (
                     <div className="mt-2 text-[8px] font-black uppercase tracking-widest flex items-center gap-0.5">
                       <ChevronDown className="w-3 h-3" /> MORE
                     </div>
@@ -184,7 +188,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   >
                     {rec.notes}
                   </motion.p>
-                  {rec.notes.length > 90 && (
+                  {rec.notes.length > 180 && (
                     <motion.div
                       layout
                       className="mt-2 text-[8px] font-black uppercase tracking-widest text-amber-500/80 hover:text-amber-500 transition-colors w-fit cursor-pointer flex items-center gap-0.5"
@@ -201,12 +205,15 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                 {/* Animated Footer */}
                 <motion.div
                   layout
-                  animate={{ opacity: notesExpanded ? 0 : 1, filter: notesExpanded ? "blur(4px)" : "blur(0px)" }}
-                  transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                   className="px-3 py-2 flex flex-col gap-2 shrink-0 border-t border-white/[0.04] w-full relative z-10 mt-auto"
                 >
                     {/* Artist row: avatar + name + stats + artistLiked heart */}
-                    <div className="flex items-center gap-2.5">
+                    <motion.div
+                      layout
+                      animate={{ opacity: hideArtistRow ? 0 : 1, filter: hideArtistRow ? "blur(4px)" : "blur(0px)", height: hideArtistRow ? 0 : "28px", overflow: "hidden" }}
+                      transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                      className="flex items-center gap-2.5"
+                    >
                 {/* Artist Avatar — clickable */}
                 <button
                   className="shrink-0 hover:opacity-80 transition-opacity focus:outline-none"
@@ -251,13 +258,22 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Partition between artist info and score+user-favorite */}
-              <div className="h-px bg-white/[0.05]" />
+              <motion.div
+                layout
+                animate={{ opacity: hideScoreRow ? 0 : 1, height: hideScoreRow ? 0 : "1px", marginTop: hideScoreRow ? 0 : undefined, marginBottom: hideScoreRow ? 0 : undefined }}
+                className="w-full bg-white/[0.05]"
+              />
 
               {/* Score + Favorite Row — matched to 28px artist row height */}
-              <div className="flex items-center gap-2.5 h-[28px]">
+              <motion.div
+                layout
+                animate={{ opacity: hideScoreRow ? 0 : 1, filter: hideScoreRow ? "blur(4px)" : "blur(0px)", height: hideScoreRow ? 0 : "28px", overflow: "hidden" }}
+                transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                className="flex items-center gap-2.5"
+              >
 
                 {/* Bars block */}
                 <div
@@ -372,7 +388,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   </motion.div>
                 </button>
 
-              </div>
+              </motion.div>
                 </motion.div>
               </div>
             </div>

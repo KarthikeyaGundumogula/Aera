@@ -41,7 +41,7 @@ export function ActionNode({ icon, label, angleDeg, delay, onClick }: ActionNode
         transition={{ delay: delay + 0.1, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
         className="mr-3 pointer-events-none flex flex-col items-end"
       >
-        <div className="flex items-center gap-2 bg-[#050505]/60 px-2.5 py-1 rounded-sm backdrop-blur-xl border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+        <div className="flex items-center gap-2 bg-surface-deep/60 px-2.5 py-1 rounded-sm backdrop-blur-xl border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
           <span className="text-[7px] font-mono font-bold text-[#D97706] uppercase tracking-widest opacity-80">
             {label.split(" ")[1] ? label.split(" ")[1].substring(0, 3) : "ACT"} //
           </span>

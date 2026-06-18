@@ -98,7 +98,7 @@ export default function ArtistSetupPage() {
   const handleModalClose = () => setSuccessArtist(null);
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-y-auto font-sans selection:bg-white selection:text-black pb-40">
+    <div className="relative min-h-screen bg-surface-deep text-white overflow-y-auto font-sans selection:bg-white selection:text-black pb-40">
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
       <div
         className="absolute inset-0 z-0 overflow-hidden pointer-events-none"

@@ -31,7 +31,7 @@ export function AdminPage() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-surface-deep text-white overflow-hidden font-sans selection:bg-white selection:text-black">
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
       <div
         className="absolute inset-0 z-0 overflow-hidden pointer-events-none"

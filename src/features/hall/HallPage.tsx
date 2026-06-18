@@ -86,7 +86,7 @@ export default function HallPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pb-28">
+    <div className="min-h-screen bg-surface-deep text-white pb-28">
       <MobileTopHeader />
       <DesktopHeader />
 

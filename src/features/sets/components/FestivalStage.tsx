@@ -13,7 +13,7 @@ export const FestivalStage = memo(function FestivalStage() {
 
   return (
     <section
-      className="w-full pt-6 pb-8 border-b border-white/[0.02] bg-[#050505]"
+      className="w-full pt-6 pb-8 border-b border-white/[0.02] bg-surface-deep"
       aria-label="Live Festival Stage"
     >
       <div className="px-6 flex items-center gap-3 mb-6">
@@ -32,7 +32,7 @@ export const FestivalStage = memo(function FestivalStage() {
             <article
               key={festival.id}
               onClick={() => navigate(`/festivals/${festival.id}`)}
-              className="group relative flex-none w-[85vw] md:w-[50vw] lg:w-[40vw] max-w-[600px] aspect-video snap-center cursor-pointer rounded-2xl overflow-hidden bg-[#050505] border border-white/5 hover:border-white/20 transition-all duration-500 shadow-2xl"
+              className="group relative flex-none w-[85vw] md:w-[50vw] lg:w-[40vw] max-w-[600px] aspect-video snap-center cursor-pointer rounded-2xl overflow-hidden bg-surface-deep border border-white/5 hover:border-white/20 transition-all duration-500 shadow-2xl"
             >
               {/* Image & Overlay */}
               <img

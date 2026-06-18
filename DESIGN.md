@@ -1,7 +1,7 @@
 ---
 name: Aera
 colors:
-  surface: "#1A0F0A"
+  surface: "#050505"
   surface-dim: "#000000"
   surface-bright: "#2D1B14"
   on-surface: "#ffffff"
@@ -12,7 +12,7 @@ colors:
   on-primary-container: "#ffffff"
   accent: "#D97706"
   accent-muted: "#A16207"
-  background: "#1A0F0A"
+  background: "#050505"
   outline: "rgba(255, 255, 255, 0.1)"
 typography:
   display:
@@ -75,7 +75,7 @@ Aera employs a **Cinematic, Dark-Luxury** design language. The aesthetic evokes 
 ## Colors
 The palette is rooted in deep darkness to make media the undeniable focal point, with warm, theatrical accents.
 
-- **Background:** Core backgrounds utilize a rich, dark brown/black (`#1A0F0A` to `#000000`).
+- **Background:** Core backgrounds utilize a rich, deep grey-black (`#050505` to `#000000`).
 - **Accent:** "Theatre Amber" (`#D97706`) is used sparingly for highlights, focus states, and scrollbar thumbs to mimic warm incandescent theatre lighting.
 - **Text:** High-contrast white for primary actions and active states. Secondary text aggressively steps down in opacity (`40%` to `45%`) to create dramatic hierarchy.
 - **Surfaces:** Floating elements rely on highly translucent blacks (`rgba(0, 0, 0, 0.8)`) rather than solid grays, maintaining the depth of the dark canvas.

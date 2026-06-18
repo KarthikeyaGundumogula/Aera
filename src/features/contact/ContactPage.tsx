@@ -45,7 +45,7 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-white selection:text-black font-sans">
+    <div className="min-h-screen bg-surface-deep text-white selection:bg-white selection:text-black font-sans">
       {/* Background Ambience */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] blur-[150px] rounded-full" />
@@ -53,7 +53,7 @@ export default function ContactPage() {
       </div>
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-surface-deep/95 border-b border-white/5">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/")}

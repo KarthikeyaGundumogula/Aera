@@ -28,7 +28,7 @@ export default function ReservedArtistsPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white flex flex-col items-center py-24 font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-surface-deep text-white flex flex-col items-center py-24 font-sans selection:bg-white selection:text-black">
       <button
         onClick={() => navigate(-1)}
         className="absolute top-12 left-6 group flex items-center gap-3 w-fit text-white/40 hover:text-white/70 transition-all active:scale-95"

@@ -36,7 +36,7 @@ export default function OriginalCreatePage() {
   }, [formData.title, navigate]);
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-y-auto font-sans selection:bg-white selection:text-black pb-32">
+    <div className="relative min-h-screen bg-surface-deep text-white overflow-y-auto font-sans selection:bg-white selection:text-black pb-32">
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-white/[0.02] blur-[140px] rounded-full animate-pulse" />

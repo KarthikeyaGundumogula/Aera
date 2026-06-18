@@ -114,7 +114,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-6 pt-2 space-y-5 bg-[#050505]">
+            <div className="px-5 pb-6 pt-2 space-y-5 bg-surface-deep">
               {/* Description */}
               <p className="text-[11px] text-white/50 leading-relaxed max-w-lg">
                 {set.description}

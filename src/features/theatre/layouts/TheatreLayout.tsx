@@ -47,7 +47,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
     `text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${active ? "text-white" : "text-white/60 hover:text-white"}`;
 
   return (
-    <div className="bg-[#050505] h-screen text-white selection:bg-brand-accent/30 overflow-hidden">
+    <div className="bg-surface-deep h-screen text-white selection:bg-brand-accent/30 overflow-hidden">
       {/* THEATRE HEADER ENGINE */}
       {!artistId && <MobileTopHeader isVisible={isHeaderVisible} />}
       <AnimatePresence mode="wait">

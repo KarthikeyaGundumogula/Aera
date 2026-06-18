@@ -145,7 +145,7 @@ export default function StudioPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white font-sans selection:bg-white selection:text-black overflow-x-hidden pb-32">
+    <div className="relative min-h-screen bg-surface-deep text-white font-sans selection:bg-white selection:text-black overflow-x-hidden pb-32">
       {/* Mobile Header */}
       <MobileTopHeader showSearch={false} />
 

@@ -99,7 +99,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
   }
 
   return (
-    <div className={`w-full ${isFull ? "min-h-screen bg-[#050505] text-white" : ""}`}>
+    <div className={`w-full ${isFull ? "min-h-screen bg-surface-deep text-white" : ""}`}>
       {/* FULL PAGE HEADER */}
       {isFull && (
         <header className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex items-center justify-between bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">

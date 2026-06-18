@@ -41,6 +41,7 @@ import {
   LedgerPage,
   // Center
   CenterPage,
+  RecommendationsPage,
   // Misc
   ContactPage,
   AdminPage,
@@ -51,7 +52,7 @@ import {
 
 function RouteFallback() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
+    <div className="min-h-screen bg-surface-deep text-white flex items-center justify-center">
       <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/35">
         Loading Scene
       </p>
@@ -63,7 +64,7 @@ function RouteFallback() {
 
 function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-surface-deep text-white flex flex-col items-center justify-center gap-4">
       <p className="text-[9px] font-black uppercase tracking-[0.5em] text-white/20">
         Scene not found
       </p>
@@ -106,6 +107,7 @@ function AppRoutes() {
 
             {/* ── Discovery ───────────────────────────────── */}
             <Route path="/center" element={<CenterPage />} />
+            <Route path="/recommendations" element={<RecommendationsPage />} />
             <Route path="/theatre" element={<TheatrePage />} />
 
             {/* ── Originals ───────────────────────────────── */}

@@ -14,9 +14,9 @@ function SkeletonBlock({ className = "", style }: { className?: string, style?: 
 
 export function HomePageSkeleton() {
   return (
-    <div className="bg-[#050505] min-h-screen text-white pb-24">
+    <div className="bg-surface-deep min-h-screen text-white pb-24">
       {/* Header skeleton */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-[#050505]/95 border-b border-white/5 md:px-8 md:py-6">
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-surface-deep/95 border-b border-white/5 md:px-8 md:py-6">
         <SkeletonBlock className="h-5 w-20 rounded-md" />
         <div className="flex items-center gap-4">
           <SkeletonBlock className="h-5 w-5 rounded-full" />

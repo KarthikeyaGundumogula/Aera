@@ -102,6 +102,12 @@ export const CenterPage = lazy(() =>
   import("@/features/center").then((m) => ({ default: m.CenterPage }))
 );
 
+// ─── Recommendations ───────────────────────────────────────────────────────────
+export const RecommendationsPage = lazy(() =>
+  import("@/features/recommendations").then((m) => ({ default: m.RecommendationsPage }))
+);
+
+
 // ─── Contact ─────────────────────────────────────────────────────────────────
 export const ContactPage = lazy(() =>
   import("@/features/contact").then((m) => ({ default: m.ContactPage }))
