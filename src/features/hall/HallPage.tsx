@@ -24,6 +24,7 @@ import { LedgerTabsZone } from "./components/LedgerTabsZone";
 import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
 import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZone";
+import { HallHero } from "./components/HallHero";
 
 /**
  * Hall — The app's personalized curation for the user.
@@ -95,88 +96,7 @@ export default function HallPage() {
         {/* ══════════════════════════════════════════════════════
             HERO — Identity + Live stats
         ══════════════════════════════════════════════════════ */}
-        <section className="relative overflow-hidden px-6 md:px-12 pt-10 pb-10">
-          {/* Ambient background glow */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-96 h-40 bg-white/[0.012] rounded-full blur-[80px]" />
-            <div className="absolute top-4 right-1/3 w-64 h-28 bg-white/[0.008] rounded-full blur-[60px]" />
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="relative"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-500/80 animate-pulse" />
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">
-                Welcome back, Karthikeya
-              </p>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-[0.95] mb-5 max-w-2xl text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/30">
-              The stage is yours.
-            </h1>
-            <p className="text-[12px] text-white/40 font-light leading-relaxed max-w-md">
-              Your personalized curated sets and the latest discussions are ready. Dive back into the narrative and shape your legacy.
-            </p>
-          </motion.div>
-
-          {/* Stat pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.45 }}
-            className="relative flex items-center gap-3 mt-6 flex-wrap"
-          >
-            <button 
-              onClick={() => originalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
-            >
-              <Film className="w-3 h-3 text-white/35" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/35">
-                {favoritedOriginals.length} Originals
-              </span>
-            </button>
-
-            {liveFestivals.length > 0 && (
-              <button
-                onClick={() => festivalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/15 transition-all cursor-pointer"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">
-                  {liveFestivals.length} Live Festival{liveFestivals.length !== 1 ? "s" : ""}
-                </span>
-              </button>
-            )}
-
-            {MOCK_RECOMMENDATIONS?.length > 0 && (
-              <button 
-                onClick={() => recommendationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
-              >
-                <Sparkles className="w-3 h-3 text-white/35" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/35">
-                  {MOCK_RECOMMENDATIONS.length} Recommendations
-                </span>
-              </button>
-            )}
-            
-            <button 
-              onClick={() => ledgerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
-            >
-              <BookOpen className="w-3 h-3 text-white/35" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/35">
-                {ledgerItems.length} Ledger
-              </span>
-            </button>
-          </motion.div>
-        </section>
+        <HallHero />
 
         {/* ══════════════════════════════════════════════════════
             NEW SCENE — ARTIST RECOMMENDATIONS
