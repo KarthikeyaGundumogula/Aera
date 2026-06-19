@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from "lucide-react";
@@ -18,6 +18,21 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
   const [favorited, setFavorited] = useState(rec.favorited ?? false);
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [canExpand, setCanExpand] = useState(false);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (textRef.current && !notesExpanded) {
+        setCanExpand(textRef.current.scrollHeight > textRef.current.clientHeight);
+      }
+    };
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [rec.notes, notesExpanded]);
+
   const navigate = useNavigate();
 
   const highestScore = rec.artist.highestScore || 4500;
@@ -155,7 +170,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   <p className="text-[13px] leading-relaxed font-medium" style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 5, overflow: "hidden" }}>
                     {rec.notes}
                   </p>
-                  {rec.notes.length > 180 && (
+                  {(canExpand || notesExpanded) && (
                     <div className="mt-2 text-[8px] font-black uppercase tracking-widest flex items-center gap-0.5">
                       <ChevronDown className="w-3 h-3" /> MORE
                     </div>
@@ -175,6 +190,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                 {/* Animated Notes */}
                 <motion.div layout className="px-3 py-2 shrink-0 w-full relative z-20">
                   <motion.p
+                    ref={textRef}
                     layout
                     className={`leading-relaxed font-medium transition-colors duration-300 text-white/85 ${
                       notesExpanded ? "text-[13px] sm:text-[14px]" : "text-[12px] sm:text-[13px]"
@@ -188,7 +204,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   >
                     {rec.notes}
                   </motion.p>
-                  {rec.notes.length > 180 && (
+                  {(canExpand || notesExpanded) && (
                     <motion.div
                       layout
                       className="mt-2 text-[8px] font-black uppercase tracking-widest text-amber-500/80 hover:text-amber-500 transition-colors w-fit cursor-pointer flex items-center gap-0.5"

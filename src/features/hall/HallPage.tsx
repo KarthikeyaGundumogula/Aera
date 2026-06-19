@@ -108,14 +108,17 @@ export default function HallPage() {
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
             className="relative"
           >
-            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-white/25 mb-2">
-              Your Space
-            </p>
-            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none mb-4">
-              The Hall
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500/80 animate-pulse" />
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">
+                Welcome back, Karthikeya
+              </p>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-[0.95] mb-5 max-w-2xl text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/30">
+              The stage is yours.
             </h1>
-            <p className="text-[11px] text-white/30 font-mono leading-relaxed max-w-md line-clamp-2">
-              Festivals from your Sets. Active discussions. The latest releases. Your Ledger, your terms.
+            <p className="text-[12px] text-white/40 font-light leading-relaxed max-w-md">
+              Your personalized curated sets and the latest discussions are ready. Dive back into the narrative and shape your legacy.
             </p>
           </motion.div>
 

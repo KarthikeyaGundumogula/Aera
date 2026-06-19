@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from "lucide-react";
@@ -18,6 +18,21 @@ export function FeedRecommendationCard({ rec }: Props) {
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const navigate = useNavigate();
+
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [canExpand, setCanExpand] = useState(false);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (textRef.current && !notesExpanded) {
+        setCanExpand(textRef.current.scrollHeight > textRef.current.clientHeight);
+      }
+    };
+    // Check initially and on resize
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [rec.notes, notesExpanded]);
 
   const highestScore = rec.artist.highestScore || 4500;
   const isHighestRated = rec.score >= highestScore;
@@ -115,6 +130,7 @@ export function FeedRecommendationCard({ rec }: Props) {
               {/* Notes */}
               <motion.div layout className="px-3 py-2 shrink-0 w-full relative z-20 min-h-[120px]">
                 <motion.p
+                  ref={textRef}
                   layout
                   className={`leading-relaxed font-medium transition-colors duration-300 text-white/85 ${
                     notesExpanded ? "text-[13px] sm:text-[14px]" : "text-[12px] sm:text-[13px]"
@@ -128,7 +144,7 @@ export function FeedRecommendationCard({ rec }: Props) {
                 >
                   {rec.notes}
                 </motion.p>
-                {rec.notes.length > 200 && (
+                {(canExpand || notesExpanded) && (
                   <motion.div
                     layout
                     className="mt-2 text-[8px] font-black uppercase tracking-widest text-amber-500/80 hover:text-amber-500 transition-colors w-fit cursor-pointer flex items-center gap-0.5"
