@@ -1,7 +1,7 @@
 export interface TheatreItem {
   id: string | number;
   title?: string;
-  category?: 'Edit' | 'Poster' | 'Script' | 'Call' | 'Original';
+  category?: 'Edit' | 'Poster' | 'Script' | 'Call' | 'Original' | 'Recommendation';
   credits?: number; 
   artist?: string;
   artistId?: string;
@@ -20,4 +20,5 @@ export interface TheatreItem {
   captions?: string[]; // Optional captions/text for each script page
   aspectRatio?: number; 
   originalIds?: string[]; // Reference to Originals (can be multiple)
+  recId?: string;        // Links to Recommendation.id — only set when category === 'Recommendation'
 }

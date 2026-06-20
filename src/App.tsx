@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-route
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { MobileNavBar } from "@/features/navigation/MobileNavBar";
 import { AuthProvider } from "@/context/AuthContext";
+import { RecommendationProvider } from "@/context/RecommendationContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { GlobalActionFAB } from "@/components/GlobalActionFAB";
 
@@ -185,10 +186,12 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-        <GlobalActionFAB />
-      </BrowserRouter>
+      <RecommendationProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <GlobalActionFAB />
+        </BrowserRouter>
+      </RecommendationProvider>
     </AuthProvider>
   );
 }

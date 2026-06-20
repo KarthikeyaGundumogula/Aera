@@ -20,9 +20,7 @@ export function WorkSwiper({ initialItem, feedContext, onClose }: WorkSwiperProp
     return idx === -1 ? 0 : idx;
   });
   
-  const [showSwipeHint, setShowSwipeHint] = useState(() => {
-    return localStorage.getItem("framehouse_swipe_hint") !== "true";
-  });
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
 
   // Safely wrap the absolute page back to a valid array index
   const activeIndex = ((page % feedContext.length) + feedContext.length) % feedContext.length;
@@ -137,10 +135,10 @@ export function WorkSwiper({ initialItem, feedContext, onClose }: WorkSwiperProp
         <AnimatePresence>
           {showSwipeHint && feedContext.length > 1 && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute bottom-28 inset-x-0 z-[300] pointer-events-none flex justify-center sm:hidden"
+              className="absolute top-24 inset-x-0 z-[300] pointer-events-none flex justify-center sm:hidden"
             >
               <motion.div
                 animate={{ x: [-10, 10, -10] }}

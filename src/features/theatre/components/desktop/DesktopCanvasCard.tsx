@@ -5,6 +5,7 @@ import { ClusterSlot } from "../../engine/clusterBuilder";
 import { EditWork } from "../../../shared/work/EditWork";
 import { PosterWork } from "../../../shared/work/PosterWork";
 import { ScriptWork } from "../../../shared/work/ScriptWork";
+import { RecommendationWork } from "../../../shared/work/RecommendationWork";
 import { getWorkKind } from "../../../shared/work/types";
 
 // ─── Desktop Canvas Card ────────────────────────────────────────────────────
@@ -26,6 +27,14 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
 
   const renderWork = (work: TheatreItem) => {
     switch (getWorkKind(work)) {
+      case "recommendation":
+        return (
+          <RecommendationWork
+            item={work}
+            variant="theatre-desktop"
+            priority="lazy"
+          />
+        );
       case "script":
         return (
           <ScriptWork

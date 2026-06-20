@@ -3,6 +3,7 @@ import {
   isEditWork,
   isPosterWork,
   isScriptWork,
+  isRecommendationWork,
 } from "../../shared/work/types";
 
 /**
@@ -37,10 +38,11 @@ type Bucket = {
   square: TheatreItem[];
   poster: TheatreItem[];
   script: TheatreItem[];
+  recommendation: TheatreItem[];
 };
 
 export interface ClusterSlot {
-  type: "IMAX" | "WIDE" | "VERTICAL" | "SQUARE" | "WIDE_LG" | "WIDE_SM";
+  type: "IMAX" | "WIDE" | "VERTICAL" | "SQUARE";
   x: number;
   y: number;
   w: number;
@@ -138,10 +140,16 @@ function classify(items: TheatreItem[]): Bucket {
     square: [],
     poster: [],
     script: [],
+    recommendation: [],
   };
 
   for (const item of items) {
     const r = item.aspectRatio || 1;
+
+    if (isRecommendationWork(item)) {
+      bucket.recommendation.push(item);
+      continue;
+    }
 
     if (isScriptWork(item)) {
       bucket.script.push(item);
@@ -207,11 +215,16 @@ function createFallback(id: string, w: number, h: number, rng: () => number): Th
   };
 }
 
+interface ClusterState {
+  sinceLastRec: number;
+}
+
 function fillCluster(
   type: keyof typeof CLUSTER_TEMPLATES, 
   bucket: Bucket, 
   masterBucket: Bucket,
-  rng: () => number
+  rng: () => number,
+  clusterState: ClusterState
 ): Cluster {
   const template = CLUSTER_TEMPLATES[type];
   const slots: ClusterSlot[] = template.map(s => ({ ...s, item: undefined })) as ClusterSlot[];
@@ -219,18 +232,29 @@ function fillCluster(
 
   const isEdit = (it: TheatreItem) => isEditWork(it);
 
+  // PASS 0: High-Priority Recommendations (Forces 'min 1 per 2 clusters' rule)
+  let placedRec = false;
+  if (clusterState.sinceLastRec >= 1 && bucket.recommendation.length > 0) {
+    for (const slot of slots) {
+      if (slot.item) continue;
+      if (slot.type === "SQUARE" || slot.type === "VERTICAL") {
+        slot.item = bucket.recommendation.shift()!;
+        placedRec = true;
+        break; // Max 1 per cluster
+      }
+    }
+  }
+
   // PASS 1: Primary items
   for (const slot of slots) {
-    if (editCount >= 6) break; 
-    
+    if (editCount >= 6) break;
+
     let item: TheatreItem | undefined = undefined;
     switch (slot.type) {
-      case "IMAX": item = bucket.imax.shift(); break;
-      case "WIDE": item = bucket.wide.shift(); break;
-      case "WIDE_LG": item = bucket.wide.shift(); break;
-      case "WIDE_SM": item = bucket.wide.shift(); break;
+      case "IMAX":     item = bucket.imax.shift();     break;
+      case "WIDE":     item = bucket.wide.shift();     break;
       case "VERTICAL": item = bucket.vertical.shift(); break;
-      case "SQUARE": item = bucket.square.shift(); break;
+      case "SQUARE":   item = bucket.square.shift();   break;
     }
 
     if (item) {
@@ -262,33 +286,49 @@ function fillCluster(
     }
   }
 
+  // PASS 3.5: Low-Priority Recommendations (Fills left-over squares)
+  if (!placedRec && bucket.recommendation.length > 0) {
+    for (const slot of slots) {
+      if (slot.item) continue;
+      if (slot.type === "SQUARE" || slot.type === "VERTICAL") {
+        slot.item = bucket.recommendation.shift()!;
+        placedRec = true;
+        break; // Max 1 per cluster
+      }
+    }
+  }
+
+  if (placedRec) {
+    clusterState.sinceLastRec = 0;
+  } else {
+    clusterState.sinceLastRec++;
+  }
+
   // PASS 4: Strategic Duplication
+  // Pre-compute fallback pools once — avoids re-spreading large arrays on every empty slot.
+  const fallbackEdits = [...masterBucket.imax, ...masterBucket.wide, ...masterBucket.vertical, ...masterBucket.square];
+  const fallbackAll   = [...fallbackEdits, ...masterBucket.poster, ...masterBucket.script];
+
+  const getRandom = (arr: TheatreItem[]) => arr.length > 0 ? arr[Math.floor(rng() * arr.length)] : undefined;
+
   for (let i = 0; i < slots.length; i++) {
     const slot = slots[i];
     if (slot.item) continue;
 
     let repeatedItem: TheatreItem | undefined = undefined;
-    const getRandom = (arr: TheatreItem[]) => arr.length > 0 ? arr[Math.floor(rng() * arr.length)] : undefined;
 
     switch (slot.type) {
-      case "IMAX": repeatedItem = getRandom(masterBucket.imax); break;
-      case "WIDE": repeatedItem = getRandom(masterBucket.wide); break;
+      case "IMAX":     repeatedItem = getRandom(masterBucket.imax);     break;
+      case "WIDE":     repeatedItem = getRandom(masterBucket.wide);     break;
       case "VERTICAL": repeatedItem = getRandom(masterBucket.vertical); break;
-      case "SQUARE": repeatedItem = getRandom(masterBucket.square); break;
+      case "SQUARE":   repeatedItem = getRandom(masterBucket.square);   break;
     }
 
-    if (!repeatedItem) {
-      const anyEdits = [...masterBucket.imax, ...masterBucket.wide, ...masterBucket.vertical, ...masterBucket.square];
-      repeatedItem = getRandom(anyEdits);
-    }
-
-    if (!repeatedItem) {
-      const allMedia = [...masterBucket.imax, ...masterBucket.wide, ...masterBucket.vertical, ...masterBucket.square, ...masterBucket.poster, ...masterBucket.script];
-      repeatedItem = getRandom(allMedia);
-    }
+    if (!repeatedItem) repeatedItem = getRandom(fallbackEdits);
+    if (!repeatedItem) repeatedItem = getRandom(fallbackAll);
 
     if (repeatedItem) {
-      slots[i].item = { ...repeatedItem, id: `${repeatedItem.id}-dup-${i}-${rng().toString(36).substr(2, 9)}` };
+      slots[i].item = { ...repeatedItem, id: `${repeatedItem.id}-dup-${i}-${rng().toString(36).substring(2, 11)}` };
     } else {
       slots[i].item = createFallback(`${type}-${i}-${rng()}`, slots[i].w, slots[i].h, rng);
     }
@@ -299,15 +339,27 @@ function fillCluster(
 
 export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'canvas'): Cluster[] {
   if (!items.length) return [];
-  
-  const seed = getSeedFromItems(items);
-  const rng = createPRNG(seed);
 
-  const masterItems = [...items];
-  const masterBucket = classify(masterItems);
-  const bucket = classify([...items]); 
+  const seed = getSeedFromItems(items);
+  const rng  = createPRNG(seed);
+
+  // Classify once, then deep-clone arrays for the working bucket.
+  // This avoids running the full O(n) classify() loop twice.
+  const masterBucket = classify([...items]);
+  const bucket: Bucket = {
+    imax:     [...masterBucket.imax],
+    wide:     [...masterBucket.wide],
+    vertical: [...masterBucket.vertical],
+    square:   [...masterBucket.square],
+    poster:   [...masterBucket.poster],
+    script:   [...masterBucket.script],
+    recommendation: [...masterBucket.recommendation],
+  };
+
   const clusters: Cluster[] = [];
-  const imaxHistory: number[] = [0, 0]; 
+  // imaxHistory tracks IMAX-slot density over the last 2 clusters (sliding window).
+  let imaxPrev = 0;
+  let imaxCurr = 0;
 
   const shuffle = <T,>(array: T[]) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -322,22 +374,27 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
   shuffle(bucket.vertical);
   shuffle(bucket.script);
 
-  const hasContent = (b: Bucket) => 
-    b.imax.length > 0 || b.wide.length > 0 || b.vertical.length > 0 || b.square.length > 0 || b.poster.length > 0 || b.script.length > 0;
+  const hasContent = (b: Bucket) =>
+    b.imax.length > 0 || b.wide.length > 0 || b.vertical.length > 0 ||
+    b.square.length > 0 || b.poster.length > 0 || b.script.length > 0 || 
+    b.recommendation.length > 0;
+
+  const clusterState: ClusterState = { sinceLastRec: 0 };
 
   while (hasContent(bucket)) {
-    const isFirst = clusters.length === 0;
-    const imaxWindowSum = imaxHistory.reduce((a, b) => a + b, 0);
-    const type = chooseCluster(bucket, imaxWindowSum, isFirst, mode, rng);
-    const cluster = fillCluster(type, bucket, masterBucket, rng);
-    
-    clusters.push(cluster);
-    
-    const currentImaxCount = cluster.slots.filter(s => s.type === 'IMAX' && s.item && (isEditWork(s.item))).length;
-    imaxHistory.push(currentImaxCount);
-    if (imaxHistory.length > 2) imaxHistory.shift();
+    const isFirst      = clusters.length === 0;
+    // Direct sum on 2-element window — no reduce() overhead.
+    const imaxWindowSum = imaxPrev + imaxCurr;
+    const type    = chooseCluster(bucket, imaxWindowSum, isFirst, mode, rng);
+    const cluster = fillCluster(type, bucket, masterBucket, rng, clusterState);
 
-    if (clusters.length > 100) break; 
+    clusters.push(cluster);
+
+    // Slide the IMAX window forward.
+    imaxPrev = imaxCurr;
+    imaxCurr = cluster.slots.filter(s => s.type === 'IMAX' && s.item && isEditWork(s.item)).length;
+
+    if (clusters.length > 100) break; // Safety ceiling
   }
 
   return clusters;

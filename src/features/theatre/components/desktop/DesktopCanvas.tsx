@@ -175,7 +175,12 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
       >
       {/* Infinite cluster field */}
       {visibleCells.map(({ x, y }) => {
-        const index = Math.abs((x * 31 + y * 17) % clusterPool.length);
+        // Bit-mixing hash: spreads (x, y) more uniformly across the pool.
+        // Uses Cantor pairing + multiplicative mixing to minimise adjacent collisions
+        // even when clusterPool is small (e.g. 5–10 clusters).
+        const cantor  = ((x + y) * (x + y + 1)) / 2 + y;
+        const mixed   = Math.abs((cantor * 2654435761) >>> 0); // Knuth multiplicative hash
+        const index = mixed % clusterPool.length;
         return (
           <DesktopCluster
             key={`${x}-${y}`}

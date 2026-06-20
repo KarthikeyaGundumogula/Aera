@@ -193,7 +193,7 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
       </div>
 
       {/* Middle Row: Visual Bars (Centered) */}
-      <div className="flex items-end justify-center gap-[4px] h-[36px] pb-2 relative group touch-none mb-4 w-full">
+      <div className="flex items-end justify-center gap-[4px] h-[50px] pb-2 relative group touch-none mb-4 w-full">
         <input
           type="range"
           min={0}
@@ -204,63 +204,64 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
           style={{ touchAction: "none" }}
         />
 
-        {[0, 1, 2, 3, 4].map((i) => {
-          const chunkStart = i * 0.2;
-          const chunkEnd = (i + 1) * 0.2;
-          const ratio = score / VISUAL_MAX;
-
-          let fillPct = 0;
-          if (ratio >= chunkEnd) fillPct = 1;
-          else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
-
-          const maxHeight = 16 + i * 4;
-
-          return (
-            <div
-              key={i}
-              className="relative w-[8px] rounded-[2px] bg-white/[0.08] overflow-hidden transition-all duration-300 group-hover:bg-white/[0.12]"
-              style={{ height: `${maxHeight}px` }}
-            >
-              <div
-                className="absolute bottom-0 left-0 w-full rounded-[2px] transition-all duration-[50ms]"
-                style={{
-                  height: `${fillPct * 100}%`,
-                  backgroundColor: "#10B981",
-                  boxShadow: fillPct === 1 ? `0 0 10px rgba(16, 185, 129, 0.4)` : "none",
-                }}
-              />
-            </div>
-          );
-        })}
         <AnimatePresence>
-          {score > VISUAL_MAX && (() => {
-            const overRatio = (score - VISUAL_MAX) / VISUAL_MAX;
-            const fillPct = Math.min(overRatio / 0.2, 1);
-            
-            const r = Math.round(217 + (255 - 217) * fillPct);
-            const g = Math.round(119 + (220 - 119) * fillPct);
-            const b = Math.round(6 + (100 - 6) * fillPct);
-            const barColor = `rgb(${r}, ${g}, ${b})`;
-            const glowSize = 10 + fillPct * 12;
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            if (i === 5 && score <= VISUAL_MAX) return null;
+
+            const heights = [20, 26, 32, 38, 44, 50];
+            const colors = [
+              "#E7E5E4", // dim_white
+              "#FDE68A", // light_amber_1
+              "#FCD34D", // medium_amber
+              "#F59E0B", // deep_amber
+              "#D97706", // ultra_deep_burnt_amber
+              "#F59E0B", // max_glowing_amber (Peak)
+            ];
+            const shadows = [
+              "rgba(231,229,228,0.4)",
+              "rgba(253,230,138,0.4)",
+              "rgba(252,211,77,0.4)",
+              "rgba(245,158,11,0.5)",
+              "rgba(217,119,6,0.6)",
+              "rgba(245,158,11,0.8)",
+            ];
+
+            let fillPct = 0;
+            if (i < 5) {
+              const chunkStart = i * 0.2;
+              const chunkEnd = (i + 1) * 0.2;
+              const ratio = score / VISUAL_MAX;
+              if (ratio >= chunkEnd) fillPct = 1;
+              else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
+            } else {
+              const overRatio = (score - VISUAL_MAX) / VISUAL_MAX;
+              fillPct = Math.min(overRatio / 0.2, 1);
+            }
+
+            const isPeak = i === 5;
+            const barHeight = heights[i];
+            const glowSize = isPeak ? 10 + fillPct * 12 : 10;
 
             return (
               <motion.div
-                initial={{ opacity: 0, height: 6 }}
-                animate={{ opacity: 1, height: 36 }}
-                exit={{ opacity: 0, height: 6 }}
-                className="relative w-[8px] rounded-[2px] bg-white/[0.08] ml-[1px] overflow-hidden transition-all duration-300 group-hover:bg-white/[0.12]"
+                key={i}
+                initial={isPeak ? { opacity: 0, height: 6 } : false}
+                animate={isPeak ? { opacity: 1, height: barHeight } : false}
+                exit={isPeak ? { opacity: 0, height: 6 } : undefined}
+                className={`relative w-[8px] rounded-[2px] bg-[#27272A] overflow-hidden transition-all duration-300 group-hover:bg-[#27272A]/80 ${isPeak ? 'ml-[4px]' : ''}`}
+                style={!isPeak ? { height: `${barHeight}px` } : undefined}
               >
                 <div
                   className="absolute bottom-0 left-0 w-full rounded-[2px] transition-all duration-[50ms]"
                   style={{
                     height: `${fillPct * 100}%`,
-                    backgroundColor: barColor,
-                    boxShadow: `0 0 ${glowSize}px ${barColor}`,
+                    backgroundColor: colors[i],
+                    boxShadow: fillPct > 0 ? `0 0 ${glowSize}px ${shadows[i]}` : "none",
                   }}
                 />
               </motion.div>
             );
-          })()}
+          })}
         </AnimatePresence>
       </div>
 

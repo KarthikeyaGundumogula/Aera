@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { motion, useTransform, MotionValue } from "motion/react";
 import { Cluster } from "../../engine/clusterBuilder";
 import { DesktopCanvasCard } from "./DesktopCanvasCard";
@@ -17,9 +17,12 @@ export const StaticDesktopCluster = memo(function StaticDesktopCluster({
   cluster,
   compact = false,
 }: StaticDesktopClusterProps) {
-  // Derive grid dimensions from the template's own slot data
-  const cols = cluster.slots.reduce((max, s) => Math.max(max, s.x + s.w), 0);
-  const rows = cluster.slots.reduce((max, s) => Math.max(max, s.y + s.h), 0);
+  // Derive grid dimensions from the template's own slot data.
+  // Memoized since cluster is built once and never mutated.
+  const { cols, rows } = useMemo(() => ({
+    cols: cluster.slots.reduce((max, s) => Math.max(max, s.x + s.w), 0),
+    rows: cluster.slots.reduce((max, s) => Math.max(max, s.y + s.h), 0),
+  }), [cluster]);
 
   return (
     <div

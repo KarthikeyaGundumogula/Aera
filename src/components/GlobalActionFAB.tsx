@@ -5,6 +5,7 @@ import { RecommendationModal } from "./RecommendationModal";
 import { CreateRecommendationModal } from "./CreateRecommendationModal";
 import { LedgerEntryModal } from "@/features/ledger/components/LedgerEntryModal";
 import { ActionNode, ARC_RADIUS } from "./fab/ActionNode";
+import { useRecommendationContext } from "../context/RecommendationContext";
 
 
 // SVG sweep for the film strip background (-80 to -190 degrees for a wide arc)
@@ -27,7 +28,13 @@ const innerPath = `M ${iStart.x} ${iStart.y} A ${innerR} ${innerR} 0 0 0 ${iEnd.
 
 
 export function GlobalActionFAB() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {
+    isOpen: isModalOpen,
+    startIndex: recStartIndex,
+    openRecommendation,
+    closeRecommendation
+  } = useRecommendationContext();
+
   const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
   const [isCreateRecOpen, setIsCreateRecOpen] = useState(false);
   const [isSnapping, setIsSnapping] = useState(false);
@@ -177,7 +184,7 @@ export function GlobalActionFAB() {
     setIsSnapping(true);
     setTimeout(() => setFlashVisible(true), 120);
     setTimeout(() => {
-      setIsModalOpen(true);
+      openRecommendation(0);
       setIsSnapping(false);
     }, 400);
     setTimeout(() => {
@@ -219,17 +226,17 @@ export function GlobalActionFAB() {
             transition={{ duration: 0.5, delay: 1.5, ease: [0.23, 1, 0.32, 1] }}
             className="fixed bottom-[164px] right-5 md:bottom-[108px] md:right-10 z-[90] flex items-center gap-3 bg-[#0A0806]/95 backdrop-blur-xl border border-[#B45309]/30 rounded-2xl py-3 px-4 shadow-[0_8px_32px_rgba(180,83,9,0.2)] origin-bottom-right pointer-events-auto"
           >
-            <div className="flex flex-col pr-1 cursor-pointer" onClick={() => setShowHint(false)}>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-[#B45309] mb-0.5">Hold for</span>
-              <span className="text-[11px] font-medium text-white/90 whitespace-nowrap">This Week's Picks</span>
-            </div>
-            <span className="relative flex h-2 w-2 shrink-0 mr-1">
+            <span className="relative flex h-2 w-2 shrink-0 mr-2 ml-0.5 mt-0.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B45309] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#B45309]"></span>
             </span>
+            <div className="flex flex-col pr-1 cursor-pointer" onClick={() => setShowHint(false)}>
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-[#B45309] mb-0.5">Quick Actions</span>
+              <span className="text-[11px] font-medium text-white/90 whitespace-nowrap">Tap to Create • Hold for Picks</span>
+            </div>
             <button 
               onClick={(e) => { e.stopPropagation(); setShowHint(false); }}
-              className="p-1 -mr-2 rounded-full text-white/30 hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
+              className="p-1 -mr-2 ml-1 rounded-full text-white/30 hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -458,7 +465,8 @@ export function GlobalActionFAB() {
 
       <RecommendationModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={closeRecommendation}
+        startIndex={recStartIndex}
       />
 
       <CreateRecommendationModal

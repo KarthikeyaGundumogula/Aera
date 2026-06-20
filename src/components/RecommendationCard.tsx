@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from "lucide-react";
 import { Recommendation } from "../mock/recommendations";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
+import { ResonanceBars } from "./ResonanceBars";
 
 interface Props {
   rec: Recommendation;
@@ -299,56 +300,12 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   onClick={(e) => { e.stopPropagation(); setShowTooltip(!showTooltip); }}
                 >
                   {/* Bars */}
-                  <div className="flex items-end gap-[2.5px] shrink-0 h-full">
-                    {[0, 1, 2, 3, 4].map((i) => {
-                      const chunkStart = i * 0.2;
-                      const chunkEnd = (i + 1) * 0.2;
-                      let fillPct = 0;
-                      if (ratio >= chunkEnd) fillPct = 1;
-                      else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
-                      // 9, 13.5, 18, 22.5, 27 — fits within 28px height perfectly
-                      const maxHeight = 9 + i * 4.5;
-                      return (
-                        <div
-                          key={i}
-                          className="relative w-[4.5px] sm:w-[5px] rounded-[1px] bg-white/[0.06] overflow-hidden"
-                          style={{ height: `${maxHeight}px` }}
-                        >
-                          <div
-                            className="absolute bottom-0 left-0 w-full rounded-[1px]"
-                            style={{
-                              height: `${fillPct * 100}%`,
-                              backgroundColor: "#10B981",
-                              boxShadow: fillPct === 1 ? `0 0 8px rgba(16,185,129,0.4)` : "none",
-                            }}
-                          />
-                        </div>
-                      );
-                    })}
-                    {rec.score > highestScore && (() => {
-                      const overRatio = (rec.score - highestScore) / highestScore;
-                      const fillPct = Math.min(overRatio / 0.2, 1);
-                      const r = Math.round(217 + (255 - 217) * fillPct);
-                      const g = Math.round(119 + (220 - 119) * fillPct);
-                      const b = Math.round(6 + (100 - 6) * fillPct);
-                      const barColor = `rgb(${r}, ${g}, ${b})`;
-                      return (
-                        <div
-                          className="relative w-[4.5px] sm:w-[5px] rounded-[1px] bg-white/[0.06] ml-[1px] overflow-hidden"
-                          style={{ height: "28px" }}
-                        >
-                          <div
-                            className="absolute bottom-0 left-0 w-full rounded-[1px]"
-                            style={{
-                              height: `${fillPct * 100}%`,
-                              backgroundColor: barColor,
-                              boxShadow: `0 0 ${6 + fillPct * 8}px ${barColor}`,
-                            }}
-                          />
-                        </div>
-                      );
-                    })()}
-                  </div>
+                  <ResonanceBars
+                    score={rec.score}
+                    highestScore={highestScore}
+                    size="md"
+                    colorVariant="amber"
+                  />
 
                   {/* Score numbers */}
                   <div className="flex items-baseline gap-0.5 whitespace-nowrap">
@@ -410,45 +367,45 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
             </div>
 
             {/* ACTION ROW (At the very bottom, fixed in flow) */}
-            <div className="shrink-0 px-3 pb-2 bg-[#080604] relative z-20">
+            <div className="shrink-0 px-3 pb-2 bg-transparent relative z-20">
               <div
-                className={`flex items-center gap-1 pt-1 border-t transition-colors duration-300 ${!notesExpanded ? "border-white/[0.04]" : "border-transparent"}`}
+                className={`flex items-center gap-0.5 sm:gap-1 pt-1 border-t transition-colors duration-300 ${!notesExpanded ? "border-white/[0.04]" : "border-transparent"}`}
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 <button
                   onPointerDown={(e) => { e.preventDefault(); setBoosted(!boosted); }}
-                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
+                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
                     boosted
                       ? "bg-[#B45309]/10 text-[#B45309] shadow-[0_0_14px_rgba(180,83,9,0.16)]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
                   }`}
                 >
                   <Zap className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" fill={boosted ? "currentColor" : "none"} />
-                  <span className="hidden sm:inline">{boosted ? "Boosted" : "Boost"}</span>
+                  <span className="hidden sm:inline truncate">{boosted ? "Boosted" : "Boost"}</span>
                 </button>
 
                 <button
                   onPointerDown={(e) => { e.preventDefault(); setInLedger(!inLedger); }}
-                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
+                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
                     inLedger
                       ? "text-white bg-white/[0.12]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
                   }`}
                 >
                   <BookOpen className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" fill={inLedger ? "currentColor" : "none"} />
-                  <span className="hidden sm:inline">{inLedger ? "Added" : "Add"}</span>
+                  <span className="hidden sm:inline truncate">{inLedger ? "Added" : "Add"}</span>
                 </button>
 
                 <button
                   onPointerDown={(e) => { e.preventDefault(); setSaved(!saved); }}
-                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
+                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
                     saved
                       ? "text-white bg-white/[0.12]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
                   }`}
                 >
                   <Bookmark className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" fill={saved ? "currentColor" : "none"} />
-                  <span className="hidden sm:inline">{saved ? "Saved" : "Save"}</span>
+                  <span className="hidden sm:inline truncate">{saved ? "Saved" : "Save"}</span>
                 </button>
               </div>
             </div>

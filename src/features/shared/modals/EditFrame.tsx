@@ -126,7 +126,28 @@ export function EditFrame({
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/works/${item.id}`;
-    navigator.clipboard?.writeText(url).catch(() => {});
+    
+    const showToast = () => {
+      setToastMessage("LINK COPIED");
+      setTimeout(() => setToastMessage(null), 2500);
+    };
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url)
+        .then(showToast)
+        .catch((err) => {
+          console.warn("Failed to copy link via navigator.clipboard, trying fallback:", err);
+          const success = copyTextFallback(url);
+          if (success) {
+            showToast();
+          }
+        });
+    } else {
+      const success = copyTextFallback(url);
+      if (success) {
+        showToast();
+      }
+    }
   };
 
   const handleHonour = (e: React.MouseEvent) => {
@@ -197,7 +218,7 @@ export function EditFrame({
               onClick={handleShare}
               title="Copy link"
               aria-label="Share"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/6 transition-all duration-150 active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
             >
               <Share2 size={14} strokeWidth={2} />
             </button>
@@ -321,4 +342,24 @@ export function EditFrame({
       {content}
     </ModalWrapper>
   );
+}
+
+function copyTextFallback(text: string): boolean {
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textArea);
+    return successful;
+  } catch (err) {
+    console.error("Fallback: Oops, unable to copy", err);
+    return false;
+  }
 }

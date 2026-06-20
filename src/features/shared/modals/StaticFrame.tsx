@@ -18,6 +18,9 @@ import { CurateOverlay } from "./CurateOverlay";
 import { CinematicToast } from "./CinematicToast";
 import { PerimeterOutline } from "./PerimeterOutline";
 import { HonourIcon } from "../../../components/icons/HonourIcon";
+import { ResonanceBars } from "../../../components/ResonanceBars";
+import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
+import { RecommendationCard } from "../../../components/RecommendationCard";
 
 interface StaticFrameProps {
   item: TheatreItem;
@@ -129,7 +132,28 @@ export function StaticFrame({
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/works/${item.id}`;
-    navigator.clipboard?.writeText(url).catch(() => {});
+    
+    const showToast = () => {
+      setToastMessage("LINK COPIED");
+      setTimeout(() => setToastMessage(null), 2500);
+    };
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url)
+        .then(showToast)
+        .catch((err) => {
+          console.warn("Failed to copy link via navigator.clipboard, trying fallback:", err);
+          const success = copyTextFallback(url);
+          if (success) {
+            showToast();
+          }
+        });
+    } else {
+      const success = copyTextFallback(url);
+      if (success) {
+        showToast();
+      }
+    }
   };
 
   const fireHonour = () => {
@@ -260,7 +284,7 @@ export function StaticFrame({
                     onClick={handleShare}
                     title="Copy link"
                     aria-label="Share"
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/6 transition-all duration-150 active:scale-95"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
                   >
                     <Share2 size={14} strokeWidth={2} />
                   </button>
@@ -312,7 +336,7 @@ export function StaticFrame({
 
         {/* ── Content (image / flip-card) ─────────────────────── */}
         <div
-          className={`flex-1 overflow-y-auto flex flex-col gap-3 ${isClutterFree ? "p-0" : "p-4 sm:p-5"} ${showPages ? "pt-2" : ""}`}
+          className={`flex-1 overflow-y-auto flex flex-col gap-3 ${isClutterFree || item.recId ? "p-0" : "p-4 sm:p-5"} ${showPages ? "pt-2" : ""}`}
           style={{ overscrollBehavior: "contain" }}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
@@ -393,42 +417,55 @@ export function StaticFrame({
             /* Poster — drag-to-pan + double-tap to honour */
             /* onTouchEnd is on the outer div, NOT the draggable, because
                Framer Motion's drag intercepts pointer events on the motion.div */
-            <div
-              ref={posterConstraintsRef}
-              className="relative flex justify-center overflow-hidden rounded-[16px]"
-            >
-              <motion.div
-                drag
-                dragConstraints={posterConstraintsRef}
-                dragElastic={0.08}
-                dragMomentum={false}
-                whileTap={{ cursor: "grabbing" }}
-                className="relative rounded-[16px] overflow-hidden border border-white/8 bg-[#0d0d0b] inline-block max-w-full cursor-grab"
+            item.recId ? (() => {
+              const rec = MOCK_RECOMMENDATIONS.find((r) => r.id === item.recId);
+              if (rec) {
+                return (
+                  <div className="w-full h-full pointer-events-auto">
+                    <RecommendationCard rec={rec} variant="modal" />
+                  </div>
+                );
+              }
+              return null;
+            })() : (
+              <div
+                ref={posterConstraintsRef}
+                className="relative flex justify-center overflow-hidden rounded-[16px] w-full"
               >
-                <img
-                  src={pages[0]}
-                  alt={item.title || "Poster"}
-                  className="max-w-full h-auto block select-none"
-                  draggable={false}
-                  loading={isActive ? "eager" : "lazy"}
-                  fetchPriority={isActive ? "high" : "low"}
-                  decoding="async"
-                  onLoad={(e) => {
-                    const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
-                    if (w && h) setImgAspect(w / h);
-                  }}
-                />
-                {showClutterFreeToggle && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setIsClutterFree((v) => !v); }}
-                    className="absolute bottom-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white/40 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
-                    aria-label={isClutterFree ? "Show frame" : "Focus mode"}
-                  >
-                    {isClutterFree ? <EyeOff size={12} /> : <Eye size={12} />}
-                  </button>
-                )}
-              </motion.div>
-            </div>
+                <motion.div
+                  drag
+                  dragConstraints={posterConstraintsRef}
+                  dragElastic={0.08}
+                  dragMomentum={false}
+                  whileTap={{ cursor: "grabbing" }}
+                  className="relative rounded-[16px] overflow-hidden border border-white/8 bg-[#0d0d0b] inline-block max-w-full cursor-grab"
+                >
+                  <img
+                    src={pages[0]}
+                    alt={item.title || "Poster"}
+                    className="max-w-full h-auto block select-none"
+                    draggable={false}
+                    loading={isActive ? "eager" : "lazy"}
+                    fetchPriority={isActive ? "high" : "low"}
+                    decoding="async"
+                    onLoad={(e) => {
+                      const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
+                      if (w && h) setImgAspect(w / h);
+                    }}
+                  />
+                  
+                  {showClutterFreeToggle && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setIsClutterFree((v) => !v); }}
+                      className="absolute bottom-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white/40 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
+                      aria-label={isClutterFree ? "Show frame" : "Focus mode"}
+                    >
+                      {isClutterFree ? <EyeOff size={12} /> : <Eye size={12} />}
+                    </button>
+                  )}
+                </motion.div>
+              </div>
+            )
           )}
 
           {/* Pagination row */}
@@ -557,4 +594,24 @@ export function StaticFrame({
       {content}
     </ModalWrapper>
   );
+}
+
+function copyTextFallback(text: string): boolean {
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textArea);
+    return successful;
+  } catch (err) {
+    console.error("Fallback: Oops, unable to copy", err);
+    return false;
+  }
 }

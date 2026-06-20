@@ -37,6 +37,7 @@ export default function StudioPage() {
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const isNavigatingRef = useRef(false);
+  const trapActiveRef = useRef(false);
 
   // Sync profile details when loaded
   useEffect(() => {
@@ -56,9 +57,9 @@ export default function StudioPage() {
   }, [currentArtist]);
 
   const isDirty = 
-    stageName.trim() !== currentArtist?.name ||
-    tagline.trim() !== (currentArtist?.bio || "") ||
-    portraitPreview !== currentArtist?.image ||
+    stageName.trim() !== (currentArtist?.name || "").trim() ||
+    tagline.trim() !== (currentArtist?.bio || "").trim() ||
+    (portraitPreview || null) !== (currentArtist?.image || null) ||
     imagePosition !== (currentArtist?.imagePosition || "50% 0%") ||
     socials.instagram !== (currentArtist?.socials?.instagram || "") ||
     socials.twitter !== (currentArtist?.socials?.twitter || "") ||
@@ -67,6 +68,20 @@ export default function StudioPage() {
     themeBgColor !== (currentArtist?.themeBgColor || "#0f1a42");
 
   useEffect(() => {
+    if (isDirty && !trapActiveRef.current) {
+      // Push trap when becoming dirty
+      window.history.pushState(null, "", window.location.href);
+      trapActiveRef.current = true;
+    } else if (!isDirty && trapActiveRef.current) {
+      // Pop trap silently when returning to clean state
+      isNavigatingRef.current = true;
+      window.history.back();
+      trapActiveRef.current = false;
+      setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, 50);
+    }
+
     if (!isDirty) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -74,10 +89,10 @@ export default function StudioPage() {
       e.returnValue = "";
     };
 
-    // Prevent browser back button
-    window.history.pushState(null, "", window.location.href);
     const handlePopState = () => {
       if (isNavigatingRef.current) return;
+      
+      trapActiveRef.current = false; // The trap was popped by the user
 
       // The trap state was popped, meaning we are at the real URL now.
       // We pause here to show the modal.
@@ -123,6 +138,7 @@ export default function StudioPage() {
     // If the pending navigation was a back button press, we must re-push the trap state
     // because it was already popped by the browser.
     window.history.pushState(null, "", window.location.href);
+    trapActiveRef.current = true;
   };
 
   // If not logged in, render the Stage setup (ArtistSetupPage)

@@ -9,6 +9,8 @@ import { RecommendationCard } from "./RecommendationCard";
 interface RecommendationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** If set, the modal opens at this rec index. Defaults to 0. */
+  startIndex?: number;
 }
 
 
@@ -41,6 +43,7 @@ const cardVariants = {
 export function RecommendationModal({
   isOpen,
   onClose,
+  startIndex = 0,
 }: RecommendationModalProps) {
   const navigate = useNavigate();
   const recs = MOCK_RECOMMENDATIONS;
@@ -49,17 +52,17 @@ export function RecommendationModal({
   const [direction, setDirection] = useState(0);
   const [isEndScreen, setIsEndScreen] = useState(false);
   const isDragging = useRef(false);
-  // Ref mirror of index — avoids stale closure when rapid swipes fire
-  // before React has committed the state update.
   const indexRef = useRef(0);
 
   useEffect(() => {
     if (isOpen) {
-      setIndex(0);
+      const clampedStart = Math.max(0, Math.min(startIndex, recs.length - 1));
+      indexRef.current = clampedStart;
+      setIndex(clampedStart);
       setDirection(0);
       setIsEndScreen(false);
     }
-  }, [isOpen]);
+  }, [isOpen, startIndex, recs.length]);
 
   const rec = recs[index];
 

@@ -5,10 +5,11 @@ import {
   EditWork,
   PosterWork,
   ScriptWork,
+  RecommendationWork,
   getWorkKind,
 } from "../../../shared/work";
 
-// ─── Mobile Card ────────────────────────────────────────────────────────────
+// ─── Mobile Card ─────────────────────────────────────────────────────────────
 
 interface MobileCardProps {
   slot: MobileSlot;
@@ -16,9 +17,9 @@ interface MobileCardProps {
 }
 
 /**
- * A single card rendered inside a mobile cluster.
- * The card stretches to fill its parent grid cell (`h-full`), as the CSS Grid
- * handles all geometric constraints and aspect ratios automatically.
+ * A single card rendered inside a mobile cluster grid cell.
+ * Stretches to fill whatever space its parent gives it (`h-full`).
+ * CSS Grid in MobileClusterView handles all geometry — no sizing logic here.
  */
 export const MobileCard = memo(function MobileCard({
   slot,
@@ -26,8 +27,13 @@ export const MobileCard = memo(function MobileCard({
 }: MobileCardProps) {
   const { item } = slot;
 
+  // Compute once per render — used for both the bg class and the render switch.
+  const kind = getWorkKind(item);
+
   const renderWork = (work: TheatreItem) => {
-    switch (getWorkKind(work)) {
+    switch (kind) {
+      case "recommendation":
+        return <RecommendationWork item={work} variant="theatre-mobile" priority="lazy" />;
       case "script":
         return <ScriptWork item={work} variant="theatre-mobile" priority="lazy" />;
       case "poster":
@@ -40,7 +46,7 @@ export const MobileCard = memo(function MobileCard({
   return (
     <div
       className={`relative w-full h-full overflow-hidden bg-zinc-900/40 active:scale-[0.98] transition-transform ${
-        getWorkKind(item) === "script" ? "bg-[#f4f1ea]" : ""
+        kind === "script" ? "bg-[#f4f1ea]" : ""
       } ${className}`}
     >
       {renderWork(item)}

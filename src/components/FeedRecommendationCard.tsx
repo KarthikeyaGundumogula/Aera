@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from "lucide-react";
 import { Recommendation } from "../mock/recommendations";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
+import { ResonanceBars } from "./ResonanceBars";
 
 interface Props {
   rec: Recommendation;
@@ -158,6 +159,10 @@ export function FeedRecommendationCard({ rec }: Props) {
                 )}
               </motion.div>
 
+              {/* Flex spacer — absorbs leftover height when notes are short, 
+                  so the gap appears here instead of between metric/action rows */}
+              <div className="flex-1" />
+
               {/* Artist Footer */}
               <motion.div
                 layout
@@ -225,56 +230,12 @@ export function FeedRecommendationCard({ rec }: Props) {
                 onClick={(e) => { e.stopPropagation(); setShowTooltip(!showTooltip); }}
               >
                 {/* Bars */}
-                <div className="flex items-end gap-[2.5px] shrink-0 h-full">
-                  {[0, 1, 2, 3, 4].map((i) => {
-                    const chunkStart = i * 0.2;
-                    const chunkEnd = (i + 1) * 0.2;
-                    let fillPct = 0;
-                    if (ratio >= chunkEnd) fillPct = 1;
-                    else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
-                    // 9, 13.5, 18, 22.5, 27 — fits within 28px height perfectly
-                    const maxHeight = 9 + i * 4.5;
-                    return (
-                      <div
-                        key={i}
-                        className="relative w-[4.5px] sm:w-[5px] rounded-[1px] bg-white/[0.06] overflow-hidden"
-                        style={{ height: `${maxHeight}px` }}
-                      >
-                        <div
-                          className="absolute bottom-0 left-0 w-full rounded-[1px]"
-                          style={{
-                            height: `${fillPct * 100}%`,
-                            backgroundColor: "#10B981",
-                            boxShadow: fillPct === 1 ? `0 0 8px rgba(16,185,129,0.4)` : "none",
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                  {rec.score > highestScore && (() => {
-                    const overRatio = (rec.score - highestScore) / highestScore;
-                    const fillPct = Math.min(overRatio / 0.2, 1);
-                    const r = Math.round(217 + (255 - 217) * fillPct);
-                    const g = Math.round(119 + (220 - 119) * fillPct);
-                    const b = Math.round(6 + (100 - 6) * fillPct);
-                    const barColor = `rgb(${r}, ${g}, ${b})`;
-                    return (
-                      <div
-                        className="relative w-[4.5px] sm:w-[5px] rounded-[1px] bg-white/[0.06] ml-[1px] overflow-hidden"
-                        style={{ height: "28px" }}
-                      >
-                        <div
-                          className="absolute bottom-0 left-0 w-full rounded-[1px]"
-                          style={{
-                            height: `${fillPct * 100}%`,
-                            backgroundColor: barColor,
-                            boxShadow: `0 0 ${6 + fillPct * 8}px ${barColor}`,
-                          }}
-                        />
-                      </div>
-                    );
-                  })()}
-                </div>
+                <ResonanceBars
+                  score={rec.score}
+                  highestScore={highestScore}
+                  size="md"
+                  colorVariant="amber"
+                />
 
                 {/* Score numbers */}
                 <div className="flex items-baseline gap-0.5 whitespace-nowrap">

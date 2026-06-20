@@ -18,6 +18,8 @@ import setsData from "./sets.json";
 import festivalsData from "./festivals.json";
 import { Original, OriginalArtist, OriginalStar, OriginalMaker, TheatreItem, Set, Festival } from "../types";
 import { buildThumbnail } from "../utils/embed";
+import { MOCK_RECOMMENDATIONS } from "./recommendations";
+import { recToTheatreItem } from "../utils/recAdapter";
 
 /** Shape of raw entries in works.json — extends TheatreItem with deprecated singular field. */
 interface WorkRow extends Omit<TheatreItem, 'originalIds'> {
@@ -53,7 +55,10 @@ const ALL_ARTISTS = artistsData as unknown as ArtistRow[];
  * GRID_ITEMS — Every work in the system.
  * Used by: Theatre canvases, HomeFeedLayout, OriginalTheatreSection.
  */
-export const GRID_ITEMS: TheatreItem[] = ALL_WORKS;
+export const GRID_ITEMS: TheatreItem[] = [
+  ...ALL_WORKS,
+  ...MOCK_RECOMMENDATIONS.map(recToTheatreItem)
+];
 
 /**
  * ORIGINALS — Full Original objects with topArtists, works, heroHighlights.
