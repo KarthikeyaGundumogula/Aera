@@ -42,7 +42,7 @@ export function ArtistRecommendationsZone() {
           {MOCK_RECOMMENDATIONS.length >= 5 && (
             <button
               onClick={() => navigate("/recommendations")}
-              className="flex-shrink-0 h-[340px] w-[140px] sm:w-[160px] flex flex-col items-center justify-center gap-4 transition-all hover:opacity-80 active:scale-[0.98] group"
+              className="flex-shrink-0 h-[310px] w-[140px] sm:w-[160px] flex flex-col items-center justify-center gap-4 transition-all hover:opacity-80 active:scale-[0.98] group"
             >
               <div className="w-12 h-12 rounded-full border border-white/15 flex items-center justify-center bg-transparent group-hover:border-amber-500/50 group-hover:bg-amber-500/10 transition-colors">
                 <ArrowRight className="w-5 h-5 text-white/50 group-hover:text-amber-500 transition-colors" />

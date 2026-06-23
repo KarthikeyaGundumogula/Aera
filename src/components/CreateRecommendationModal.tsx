@@ -273,6 +273,7 @@ export function CreateRecommendationModal({
                   <div className="relative pb-1">
                     <RecommendationScore
                       score={score}
+                      peak={4200}
                       onChange={setScore}
                       onPeakFlash={() => {
                         setPeakFlash(true);

@@ -39,11 +39,17 @@ export interface Recommendation {
   vouchCount: number;
   /** Contextual label shown above the card: "New for you", "Trending in your Sets", etc. */
   contextLabel: string;
+  /** When this recommendation was posted */
+  postedAt?: string;
   /** Whether the current user has favorited this original */
   favorited?: boolean;
   /** Whether the recommending artist themselves has liked/favorited this original */
   artistLiked?: boolean;
 }
+
+const NOW = Date.now();
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
 
 export const MOCK_RECOMMENDATIONS: Recommendation[] = [
   {
@@ -68,11 +74,11 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       works: 12,
       highestScore: 4500,
     },
-    score: 3000,
-    notes:
-      "This sequence redefines the weight of consequences. The buildup is meticulously crafted, eliminating any dead air. The visual scaling combined with the visceral audio cues turns this into an absolute masterclass",
-    vouchCount: 218,
-    contextLabel: "New for you",
+    score: 4200,
+    postedAt: new Date(NOW - 2 * HOUR).toISOString(),
+    notes: "This sequence redefines the weight of consequences. The buildup is meticulously crafted, eliminating any dead air. The visual scaling combined with the visceral audio cues turns this into an absolute masterclass of cinematic tension, delivering a crescendo that hits with the force of a sledgehammer.",
+    vouchCount: 124,
+    contextLabel: "From your Sets",
     favorited: true,
     artistLiked: true,
   },
@@ -99,7 +105,8 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       works: 7,
       highestScore: 3200,
     },
-    score: 1847,
+    score: 4200,
+    postedAt: new Date(NOW - 3 * HOUR).toISOString(),
     notes:
       "Naatu Naatu is not just a song — it is a cultural declaration. The choreography, the setting, and the sheer scale of confidence radiating from every frame make this the defining moment of pan-Indian cinema.",
     vouchCount: 134,
@@ -131,6 +138,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       highestScore: 3800,
     },
     score: 2480,
+    postedAt: new Date(NOW - 4 * HOUR).toISOString(),
     notes:
       "Pawan Kalyan's silence in this scene speaks louder than any dialogue. The restraint is surgical. Every frame communicates what years of absence feel like — this is not an actor performing, this is a force.",
     vouchCount: 192,
@@ -162,6 +170,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       highestScore: 4500,
     },
     score: 4200,
+    postedAt: new Date(NOW - 1 * DAY).toISOString(),
     notes:
       "The waterfall sequence is not cinema — it is architecture. S.S. Rajamouli builds a world inside a single shot that most directors cannot achieve in an entire film. The scale here is not spectacle for its own.",
     vouchCount: 347,
@@ -190,16 +199,14 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
         "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
       presence: 450,
       works: 3,
-      highestScore: 2500,
+      highestScore: 3500,
     },
-    score: 2100,
-    notes:
-      "A masterclass in subtle acting. The train station scene alone is worth a thousand words. True cinema.",
-    vouchCount: 56,
-    contextLabel: "Short Review",
+    score: 3500,
+    postedAt: new Date(NOW - 5 * HOUR).toISOString(),
+    notes: "Perfect pacing here. The scene doesn't scream at you; it whispers, building a creeping dread that pays off brilliantly. It's the small details—the framing, the subtle sound design—that elevate this above typical genre fare.",
+    vouchCount: 89,
+    contextLabel: "Trending Now",
     favorited: false,
     artistLiked: true,
   },
 ];
-
-

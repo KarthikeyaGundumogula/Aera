@@ -24,11 +24,12 @@ function scoreRatioToColor(ratio: number): string {
 
 interface RecommendationScoreProps {
   score: number;
+  peak?: number;
   onChange: (score: number) => void;
   onPeakFlash?: () => void;
 }
 
-export function RecommendationScore({ score, onChange, onPeakFlash }: RecommendationScoreProps) {
+export function RecommendationScore({ score, peak, onChange, onPeakFlash }: RecommendationScoreProps) {
   const [isHolding, setIsHolding] = useState(false);
   const [showScoreTooltip, setShowScoreTooltip] = useState(false);
 
@@ -97,11 +98,16 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
         shakeX.set((Math.random() - 0.5) * intensity * 2);
       }
 
+      // Check if we just crossed the user's peak
+      if (peak !== undefined && scoreRef.current - increment < peak && rounded >= peak) {
+        if (onPeakFlash) onPeakFlash();
+      }
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
     rafRef.current = requestAnimationFrame(tick);
-  }, [shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange]);
+  }, [shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange, peak, onPeakFlash]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -137,8 +143,8 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
   return (
     <div className="flex flex-col">
       {/* Top Row: Label & Reset & Score Number */}
-      <div className="flex items-end justify-between mb-4">
-        <div className="flex flex-col gap-1.5">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex flex-col gap-1.5 mt-2">
           <div className="flex items-center gap-1.5">
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25">
               Score
@@ -176,7 +182,7 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
         </div>
 
         {/* Score Number (Top Right) */}
-        <div className="flex items-end justify-end h-[32px] pb-1">
+        <div className="flex flex-col items-end min-h-[32px]">
           <motion.div style={{ x: springX }}>
             <motion.span
               className="text-3xl font-black tracking-tighter leading-none"
@@ -189,6 +195,21 @@ export function RecommendationScore({ score, onChange, onPeakFlash }: Recommenda
               {score === 0 ? "—" : score.toString()}
             </motion.span>
           </motion.div>
+          
+          {peak !== undefined && score > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-1.5 mt-1"
+            >
+              <span className="text-[8px] font-black uppercase tracking-widest text-white/30">
+                Peak: {peak}
+              </span>
+              <span className={`text-[8px] font-black uppercase tracking-widest ${score >= peak ? 'text-[#EF4444]' : 'text-white/15'}`}>
+                {score >= peak ? 'New Peak!' : `-${peak - score}`}
+              </span>
+            </motion.div>
+          )}
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from 
 import { Recommendation } from "../mock/recommendations";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { ResonanceBars } from "./ResonanceBars";
+import { formatRelativeTime } from "../utils/time";
 
 interface Props {
   rec: Recommendation;
@@ -43,7 +44,7 @@ export function FeedRecommendationCard({ rec }: Props) {
     <div className="flex flex-col gap-1.5 shrink-0 w-full">
 
       {/* ── The Card ── */}
-      <div className="relative w-full h-auto overflow-hidden">
+      <div className="relative w-full h-auto">
         {/* ── Horizontal Layout: Poster (Left) + Content (Right) ── */}
         <div className="flex h-full">
 
@@ -59,6 +60,15 @@ export function FeedRecommendationCard({ rec }: Props) {
                   src={rec.original.coverImage}
                   alt={rec.original.title}
                   className="w-full h-full object-cover object-top transition-[transform,filter] duration-700 group-hover/poster:scale-105 group-hover/poster:brightness-[0.6]" />
+                
+                {isHighestRated && (
+                  <div className="absolute top-2 left-2 z-20 -rotate-[8deg] pointer-events-none opacity-95 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]">
+                    <div className="inline-block text-[7px] font-mono font-black uppercase tracking-[0.2em] text-[#EF4444] bg-[#050302]/40 border-[1.5px] border-[#EF4444]/90 px-1.5 py-0.5 rounded-[2px] backdrop-blur-md whitespace-nowrap">
+                      ARTISTS PEAK
+                    </div>
+                  </div>
+                )}
+
                 {/* Gradient blend toward right */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#050302]/50" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050302]/70 via-transparent to-transparent" />
@@ -109,27 +119,27 @@ export function FeedRecommendationCard({ rec }: Props) {
 
             {/* TOP: Film Title */}
             <div
-              className="px-3 pt-3 pb-2 cursor-pointer border-b border-white/[0.04]"
+              className="px-3 pt-3 pb-2 cursor-pointer border-b border-white/[0.04] flex items-start justify-between gap-2"
               onClick={(e) => { e.stopPropagation(); navigate(`/originals/${rec.original.id}`); }}
             >
-              {isHighestRated && (
-                <span className="inline-block text-[6px] font-black uppercase tracking-[0.2em] text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-sm mb-1.5 leading-relaxed">
-                  Highest Rated
-                </span>
-              )}
               <h3
-                className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05]"
+                className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2"
                 style={{ textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}
               >
                 {rec.original.title}
               </h3>
+              {rec.postedAt && (
+                <span className="text-[9px] font-medium tracking-wide text-white/20 shrink-0 pt-1">
+                  {formatRelativeTime(rec.postedAt)}
+                </span>
+              )}
             </div>
 
             {/* MIDDLE + FOOTER Container */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex flex-col">
               
               {/* Notes */}
-              <motion.div layout className="px-3 py-2 shrink-0 w-full relative z-20 min-h-[120px]">
+              <motion.div layout className="px-3 py-2 shrink-0 w-full relative z-20">
                 <motion.p
                   ref={textRef}
                   layout
@@ -159,9 +169,6 @@ export function FeedRecommendationCard({ rec }: Props) {
                 )}
               </motion.div>
 
-              {/* Flex spacer — absorbs leftover height when notes are short, 
-                  so the gap appears here instead of between metric/action rows */}
-              <div className="flex-1" />
 
               {/* Artist Footer */}
               <motion.div
@@ -246,6 +253,7 @@ export function FeedRecommendationCard({ rec }: Props) {
                     <span className="text-white/25">/ </span>
                     <span className="text-amber-500/80">{highestScore.toLocaleString()}</span>
                   </span>
+
                 </div>
 
                 {/* Info icon */}

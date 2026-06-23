@@ -1,12 +1,12 @@
 [
   {
-    "id": "set-neo-noir",
-    "title": "Neo-Noir",
-    "description": "A collective dedicated to the dark, high-contrast visual language of modern noir. Deep shadows, neon highlights, and moral ambiguity.",
+    "id": "set-rebelwood",
+    "title": "RebelWood",
+    "description": "Find the Raw Intensity in his hands and hear the dinosaur's breath to experince grand cinema",
     "captainId": "profile-karthik-g",
     "coverImage": "/posters/og.jpeg",
     "accentColor": "#00FFC2",
-    "themeLine": "Where the shadows find their light.",
+    "themeLine": "India's Biggest Superstar's arena",
     "members": [
       { "profileId": "profile-karthik-g", "role": "Captain", "joinedAt": "2024-01-01T10:00:00Z" },
       { "profileId": "profile-arjun-reddy", "role": "Organizer", "joinedAt": "2024-02-15T12:00:00Z" }
@@ -16,13 +16,13 @@
     "tickerText": "THE NOIR RITUAL IS LIVE — SUBMIT YOUR EDITS NOW"
   },
   {
-    "id": "set-epic-builders",
-    "title": "Epic Builders",
-    "description": "Creators of grand-scale cinematic moments. If it feels like a legend, it belongs here.",
+    "id": "set-pawanism",
+    "title": "Pawanism",
+    "description": "Here you can expereince this `Peelche gaalilo pawanism` ",
     "captainId": "profile-arjun-reddy",
     "coverImage": "/posters/rrr.jpeg",
     "accentColor": "#FFD700",
-    "themeLine": "Building legends, frame by frame.",
+    "themeLine": "Ghambheera Comingback for his throne",
     "members": [
       { "profileId": "profile-arjun-reddy", "role": "Captain", "joinedAt": "2024-01-10T09:00:00Z" },
       { "profileId": "profile-karthik-g", "role": "Member", "joinedAt": "2024-03-01T14:30:00Z" }
@@ -32,9 +32,9 @@
     "tickerText": "THE MYTHOS FESTIVAL IS LIVE — COME CREATE"
   },
   {
-    "id": "set-raw-grit",
-    "title": "Raw Grit",
-    "description": "Unfiltered, intense, and uncompromising visuals. Inspired by the mines of KGF and the streets of Vikram.",
+    "id": "set-twod-in-action",
+    "title": "Tollywood In Action",
+    "description": "Unfiltered, intense, and uncompromising visuals.",
     "captainId": "profile-jr-ntr",
     "coverImage": "/posters/kgf.jpeg",
     "accentColor": "#FF4500",

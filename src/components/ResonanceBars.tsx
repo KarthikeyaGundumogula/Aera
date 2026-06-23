@@ -64,16 +64,16 @@ export function ResonanceBars({
     "#FEF3C7", // Bar 2: Amber 100
     "#FDE68A", // Bar 3: Amber 200
     "#FCD34D", // Bar 4: Amber 300
-    "#FBBF24", // Bar 5: Amber 400
-    "#F59E0B", // Bar 6: Amber 500 (Peak, vibrant)
+    "#F59E0B", // Bar 5: Amber 500 (Peak)
+    "#EF4444", // Bar 6: Cinematic Red (Overdrive)
   ];
   const amberShadows = [
     "rgba(231,229,228,0.4)",
     "rgba(254,243,199,0.4)",
     "rgba(253,230,138,0.4)",
     "rgba(252,211,77,0.4)",
-    "rgba(251,191,36,0.5)",
-    "rgba(245,158,11,0.7)",
+    "rgba(245,158,11,0.6)",
+    "rgba(239,68,68,0.8)", // Red glow
   ];
 
   return (
