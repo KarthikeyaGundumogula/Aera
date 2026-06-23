@@ -122,7 +122,7 @@ export default function HallPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-10 scroll-mt-24"
+            className="mb-6 scroll-mt-24"
           >
             <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
               <SectionHeader icon={Trophy} title="Festivals" containerClassName="opacity-100" />
@@ -144,7 +144,7 @@ export default function HallPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10"
+          className="mb-6"
         >
           <RecommendationsZone />
         </motion.section>
@@ -157,7 +157,7 @@ export default function HallPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-10"
+            className="mb-6"
           >
             <SectionHeader
               icon={MessageSquare}
@@ -177,7 +177,7 @@ export default function HallPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10 scroll-mt-24"
+          className="mb-6 scroll-mt-24"
         >
           <LedgerTabsZone />
         </motion.section>
@@ -189,7 +189,7 @@ export default function HallPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10"
+          className="mb-6"
         >
           <YoutubeReleasesZone />
         </motion.section>
@@ -205,7 +205,7 @@ export default function HallPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + (idx * 0.05), duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className={`mb-10 ${idx === 0 ? "scroll-mt-24" : ""}`}
+            className={`mb-6 ${idx === 0 ? "scroll-mt-24" : ""}`}
           >
             <OriginalSpotlightZone 
               original={original} 

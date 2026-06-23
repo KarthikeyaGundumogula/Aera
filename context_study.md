@@ -1,4 +1,4 @@
-# Aera / FrameHouse — Codebase Study & Upload Page Deep-Dive
+# FrameHouse / FrameHouse — Codebase Study & Upload Page Deep-Dive
 
 ## 1. RULES.md — Non-Negotiables
 

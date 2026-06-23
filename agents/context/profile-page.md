@@ -18,10 +18,10 @@ My plan for the Setup Page is to:
 **Shall we proceed with the Artist Setup Page updates?**
 
 ```markdown:profile_page_documentation.md
-# Aera: Profile Stage Architecture & Design Documentation
+# FrameHouse: Profile Stage Architecture & Design Documentation
 
 ## 1. Overview
-The Profile Page (or "The Stage") is the definitive identity record for creators within the Aera Archive. It is designed to feel like a high-fidelity cinematic archive, balancing immersive visual scale with technical metadata markers.
+The Profile Page (or "The Stage") is the definitive identity record for creators within the FrameHouse Archive. It is designed to feel like a high-fidelity cinematic archive, balancing immersive visual scale with technical metadata markers.
 
 ## 2. Core Architecture
 ### Performance & Responsiveness

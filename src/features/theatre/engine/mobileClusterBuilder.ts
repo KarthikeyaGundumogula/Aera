@@ -11,7 +11,7 @@ import {
 // Unified 3-type slot model (Academy collapsed into Square — identical geometry).
 type MobileClusterType = 'A' | 'B' | 'C' | 'D' | 'E';
 
-export type MobileSlotType = 'Wide' | 'Vertical' | 'Square';
+type MobileSlotType = 'Wide' | 'Vertical' | 'Square';
 
 export interface MobileSlot {
   item: TheatreItem;

@@ -1,4 +1,4 @@
-# Aera (FrameHouse) Codebase Wiki
+# FrameHouse (FrameHouse) Codebase Wiki
 
 ## 1. Project Vision & Core Philosophy
 

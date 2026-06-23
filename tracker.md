@@ -1,11 +1,11 @@
 # FrameHouse Backend Progress Tracker
 
-This document tracks the implementation status of the **TARS** (Rust/Axum) backend and its integration with the **Aera** frontend.
+This document tracks the implementation status of the **TARS** (Rust/Axum) backend and its integration with the **FrameHouse** frontend.
 
 ---
 
 ## 🏗️ 1. Core Infrastructure
-| Feature | Status | TARS (Rust) | Frontend (Aera) | Notes |
+| Feature | Status | TARS (Rust) | Frontend (FrameHouse) | Notes |
 | :--- | :---: | :--- | :--- | :--- |
 | **Database Schema** | 🟢 | Migrations 1-5 applied | N/A | PostgreSQL + SQLx |
 | **Auth System** | 🟡 | Password hashing done | Login UI ready | Need JWT issuing/validation |
@@ -15,7 +15,7 @@ This document tracks the implementation status of the **TARS** (Rust/Axum) backe
 ---
 
 ## 🎬 2. Originals Engine
-| Feature | Status | TARS (Rust) | Frontend (Aera) | Notes |
+| Feature | Status | TARS (Rust) | Frontend (FrameHouse) | Notes |
 | :--- | :---: | :--- | :--- | :--- |
 | **Original Creation** | 🟢 | Handler + DB Atomic | Admin UI ready | Stars/Makers linkage active |
 | **Fetch All Originals** | 🟡 | Handler exists | Using Mock data | Wire `/api/originals` |
@@ -25,7 +25,7 @@ This document tracks the implementation status of the **TARS** (Rust/Axum) backe
 ---
 
 ## 🖼️ 3. Works Engine (Artifacts)
-| Feature | Status | TARS (Rust) | Frontend (Aera) | Notes |
+| Feature | Status | TARS (Rust) | Frontend (FrameHouse) | Notes |
 | :--- | :---: | :--- | :--- | :--- |
 | **POST Edit (Video)** | 🟡 | Basic handler | Step 5 SEAL ready | Needs proper artist_id linkage |
 | **POST Poster (Image)**| 🟡 | Stub (UUID return) | Geometry step ready| Needs file storage logic |
@@ -35,7 +35,7 @@ This document tracks the implementation status of the **TARS** (Rust/Axum) backe
 ---
 
 ## 👤 4. Artist Vault & Presence
-| Feature | Status | TARS (Rust) | Frontend (Aera) | Notes |
+| Feature | Status | TARS (Rust) | Frontend (FrameHouse) | Notes |
 | :--- | :---: | :--- | :--- | :--- |
 | **Artist Profiles** | 🟢 | Handler exists | UI Components ready | |
 | **Presence Tracking** | 🔴 | Not Started | Mock presence | logic for credit-based rank |
@@ -45,7 +45,7 @@ This document tracks the implementation status of the **TARS** (Rust/Axum) backe
 ---
 
 ## 📒 5. Watchlist / Ledger
-| Feature | Status | TARS (Rust) | Frontend (Aera) | Notes |
+| Feature | Status | TARS (Rust) | Frontend (FrameHouse) | Notes |
 | :--- | :---: | :--- | :--- | :--- |
 | **Fetch Watchlist** | 🔴 | Not Started | LedgerPage UI | |
 | **Add to Watchlist** | 🔴 | Not Started | AddEntry modal | |
@@ -54,7 +54,7 @@ This document tracks the implementation status of the **TARS** (Rust/Axum) backe
 ---
 
 ## 💎 6. Social & Credits
-| Feature | Status | TARS (Rust) | Frontend (Aera) | Notes |
+| Feature | Status | TARS (Rust) | Frontend (FrameHouse) | Notes |
 | :--- | :---: | :--- | :--- | :--- |
 | **Give Credit** | 🔴 | Not Started | UI trigger exists | Need idempotency logic |
 | **Activity Feed** | 🔴 | Not Started | Placeholder | |
@@ -74,4 +74,4 @@ This document tracks the implementation status of the **TARS** (Rust/Axum) backe
 - **Database**: PostgreSQL with `sqlx`
 - **API Framework**: `axum`
 - **Auth**: Argon2 password hashing
-- **Mock Sync**: `src/mock/` in Aera mirrors the PRD schemas.
+- **Mock Sync**: `src/mock/` in FrameHouse mirrors the PRD schemas.

@@ -324,7 +324,7 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
               textShadow: isHolding ? glowShadow : "none",
             }}
           >
-            {isHolding ? "Scoring…" : "Set Score"}
+            {isHolding ? "Scoring…" : "Hold To Score"}
           </motion.span>
 
           {isHolding && (

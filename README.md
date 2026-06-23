@@ -17,10 +17,10 @@ FrameHouse is a React-based web application that serves as a cinematic gallery, 
 
 ## Project Notes
 
-- Mobile and desktop layouts are separated under [`src/layouts`](/Users/karthikeya/Documents/The creatorz/Aera/src/layouts).
-- Original-specific views live under [`src/pages`](/Users/karthikeya/Documents/The creatorz/Aera/src/pages).
-- Mock data is organized as JSON under [`src/mock`](/Users/karthikeya/Documents/The creatorz/Aera/src/mock) to stay closer to future backend payloads.
-- Shared UI icon mappings live in [`src/components/AppIcons.tsx`](/Users/karthikeya/Documents/The creatorz/Aera/src/components/AppIcons.tsx).
+- Mobile and desktop layouts are separated under [`src/layouts`](/Users/karthikeya/Documents/The creatorz/FrameHouse/src/layouts).
+- Original-specific views live under [`src/pages`](/Users/karthikeya/Documents/The creatorz/FrameHouse/src/pages).
+- Mock data is organized as JSON under [`src/mock`](/Users/karthikeya/Documents/The creatorz/FrameHouse/src/mock) to stay closer to future backend payloads.
+- Shared UI icon mappings live in [`src/components/AppIcons.tsx`](/Users/karthikeya/Documents/The creatorz/FrameHouse/src/components/AppIcons.tsx).
 
 ## Data Rule
 

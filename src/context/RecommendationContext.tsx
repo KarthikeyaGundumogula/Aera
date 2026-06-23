@@ -7,7 +7,7 @@ interface RecommendationContextValue {
   closeRecommendation: () => void;
 }
 
-export const RecommendationContext = createContext<RecommendationContextValue | undefined>(undefined);
+const RecommendationContext = createContext<RecommendationContextValue | undefined>(undefined);
 
 export function RecommendationProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);

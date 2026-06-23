@@ -102,7 +102,7 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., _RRR_, _O
 **2. Cinematic Poster (Static Visual)**
 ```json
 {
-  "title": "Aera Official Poster",
+  "title": "FrameHouse Official Poster",
   "category": "Poster",
   "originalIds": ["og-uuid-1"],
   "aspectRatio": 0.666,
@@ -113,7 +113,7 @@ The "Movie" or "Series" that acts as the focal anchor for works (e.g., _RRR_, _O
 **3. Cinematic Script (Narrative Arc / Storyboard)**
 ```json
 {
-  "title": "Aera Narrative Arc",
+  "title": "FrameHouse Narrative Arc",
   "category": "Script",
   "originalIds": ["og-uuid-1"],
   "aspectRatio": 1.0,

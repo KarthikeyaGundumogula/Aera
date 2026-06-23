@@ -150,7 +150,7 @@ export function SetDetailPage() {
       </AnimatePresence>
 
       {/* ─── Layer I: Atmos Header ────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-8 md:pt-10 md:pb-10 bg-[#030303] border-b border-white/[0.02]">
+      <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-8 md:pt-10 md:pb-6 bg-[#030303] border-b border-white/[0.02]">
         
         {/* Cinematic Background Design */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" />

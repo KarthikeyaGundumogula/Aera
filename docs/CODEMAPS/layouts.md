@@ -76,5 +76,5 @@ We use a decentralized "Native" click model where the component itself is respon
 ```
 
 ## Related Documentation
-- [Theatre Layout Engine (Backend Guide)](file:///Users/karthikeya/Documents/The%20creatorz/Aera/docs/theatre-layout-engine.md)
-- [Frontend Context](file:///Users/karthikeya/Documents/The%20creatorz/Aera/agents/context/fe-context.md)
+- [Theatre Layout Engine (Backend Guide)](file:///Users/karthikeya/Documents/The%20creatorz/FrameHouse/docs/theatre-layout-engine.md)
+- [Frontend Context](file:///Users/karthikeya/Documents/The%20creatorz/FrameHouse/agents/context/fe-context.md)

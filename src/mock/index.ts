@@ -153,8 +153,6 @@ export const CURRENT_USER_MOCK = {
   id: "user-current",
   name: "Karthikeya",
   favoritedOriginalIds: ["og-original", "rrr-original", "kgf-original", "vikram-original"],
-  memberSetIds: ["set-neo-noir", "set-raw-grit", "set-epic-builders"],
+  memberSetIds: ["set-rebelwood", "set-pawanism", "set-twod-in-action"],
 };
 
-/** @deprecated Use `CURRENT_USER_MOCK` instead. */
-export const MOCK_CURRENT_USER = CURRENT_USER_MOCK;

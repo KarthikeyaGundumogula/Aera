@@ -1,5 +1,5 @@
 ---
-name: Aera
+name: FrameHouse
 colors:
   surface: "#050505"
   surface-dim: "#000000"
@@ -70,7 +70,7 @@ components:
 ---
 
 ## Brand & Style
-Aera employs a **Cinematic, Dark-Luxury** design language. The aesthetic evokes the hushed, anticipatory atmosphere of a physical theatre just before a premiere. It balances stark, high-contrast typography with deeply textured, immersive backgrounds. The brand feels exclusive, premium, and inherently tied to the magic of the silver screen.
+FrameHouse employs a **Cinematic, Dark-Luxury** design language. The aesthetic evokes the hushed, anticipatory atmosphere of a physical theatre just before a premiere. It balances stark, high-contrast typography with deeply textured, immersive backgrounds. The brand feels exclusive, premium, and inherently tied to the magic of the silver screen.
 
 ## Colors
 The palette is rooted in deep darkness to make media the undeniable focal point, with warm, theatrical accents.
