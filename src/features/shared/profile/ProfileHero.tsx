@@ -1,20 +1,19 @@
 import { useId } from "react";
-import { motion } from "motion/react";
-import { Users, Sun, Heart, Instagram, Twitter, Youtube } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Users, Heart, Instagram, Twitter, Youtube } from "lucide-react";
+import { SpiritIcon } from "../../../components/icons/AppIcons";
 
 interface ProfileHeroProps {
   name: string;
   handle: string;
   tagline: string;
   image: string;
-  followers?: number | string;
-  presence?: number | string;
+  spirit?: number | string;
+  favoritesCount?: number | string;
   theme?: {
     nameGradient: [string, string];
   };
   imagePosition?: string;
-  isFollowing?: boolean;
-  onFollow?: () => void;
   isFavorited?: boolean;
   onFavorite?: () => void;
   className?: string;
@@ -36,14 +35,12 @@ export function ProfileHero({
   handle,
   tagline,
   image,
-  followers = 0,
-  presence = 0,
+  spirit = 0,
+  favoritesCount = 0,
   theme = {
     nameGradient: ["#fac107", "#fac107"],
   },
   imagePosition = "50% 0%",
-  isFollowing = false,
-  onFollow,
   isFavorited = false,
   onFavorite,
   className = "",
@@ -63,6 +60,19 @@ export function ProfileHero({
       className={`relative z-30 w-full flex flex-col items-center overflow-hidden transition-all duration-700 ${className}`}
       style={{ transform: `scale(${scale})`, transformOrigin: "top center" }}
     >
+      {/* Profile-Hero Level Amber Flare Effect */}
+      <AnimatePresence>
+        {isFavorited && (
+          <motion.div
+            key="hero-amber-flare"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: [0, 0.6, 0], scale: [0.8, 1.1, 1] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeOut", opacity: { times: [0, 0.2, 1] } }}
+            className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#B45309]/30 blur-[150px] rounded-full pointer-events-none z-0"
+          />
+        )}
+      </AnimatePresence>
       {/* 5-Row Fractional Grid (Strictly for Name and Portrait) */}
       <div className="relative w-full h-[35vh] md:h-[50vh] grid grid-cols-1 grid-rows-5 justify-items-center items-stretch mt-4 md:mt-0">
         {/* Rows 1, 2, 3: Background Username */}
@@ -129,6 +139,7 @@ export function ProfileHero({
             )}
           </div>
 
+
           {/* Avant-Garde Floating Vertical Social Instrument (Attached to the right flank of the portrait frame) */}
           {socials && (Object.keys(socials).length > 0) && (
             <div className="absolute -right-12 md:-right-16 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4 py-4 z-20 group">
@@ -189,67 +200,68 @@ export function ProfileHero({
           </p>
         </div>
 
-        {/* Bottom Half: Centered Metrics & Actions */}
-        {(!hideMetrics || !hideActions) && (
-          <div className="w-full flex flex-col items-center gap-10">
-            {!hideMetrics && (
-              <div className="flex justify-center gap-12 md:gap-24">
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <Users
-                    className="w-4 h-4 md:w-6 md:h-6 opacity-50 text-white"
-                  />
-                  <span
-                    className="text-sm md:text-xl font-black tracking-tight text-white"
-                  >
-                    {followers}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <Sun
-                    className="w-4 h-4 md:w-6 md:h-6 opacity-50 text-white"
-                  />
-                  <span
-                    className="text-sm md:text-xl font-black tracking-tight text-white"
-                  >
-                    {presence}
-                  </span>
-                </div>
-              </div>
-            )}
+        {/* Bottom Half: Centered Metrics & Actions Row */}
+        {(!hideActions) && (
+          <div className="w-full flex justify-center mt-2 z-20">
+            <div className="flex items-center gap-8">
+              
+              {/* Spirit Metric */}
+              {!hideMetrics && spirit && (
+                <>
+                  <div className="flex items-center gap-3">
+                    <SpiritIcon className="w-8 h-8 text-white/80" />
+                    <span className="font-mono text-2xl font-bold tracking-tighter text-white">
+                      {spirit}
+                    </span>
+                  </div>
+                  <div className="w-px h-8 bg-white/20" />
+                </>
+              )}
 
-            {!hideActions && (
+              {/* Favorites Action & Count */}
               <div className="flex items-center gap-4">
+                <span className="font-mono text-2xl font-bold tracking-tighter text-white">
+                  {favoritesCount}
+                </span>
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={onFollow}
-                  className={`
-                    px-10 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500
-                    ${isFollowing 
-                      ? "bg-white/10 text-white/60 border border-white/10" 
-                      : "bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)]"
-                    }
-                  `}
-                >
-                  {isFollowing ? "Following" : "Follow"}
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={onFavorite}
-                  className={`
-                    p-3.5 rounded-full border transition-all duration-500
-                    ${isFavorited 
-                      ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)]" 
-                      : "bg-white/[0.03] border-white/10 text-white/30 hover:text-white hover:bg-white/10 backdrop-blur-md"
-                    }
-                  `}
+                  className="relative p-2 transition-all duration-300 flex items-center justify-center overflow-visible"
                 >
-                  <Heart className={`w-4 h-4 ${isFavorited ? "fill-current" : ""}`} />
+                  {/* Subtle expansion ripple on favorite */}
+                  <AnimatePresence>
+                    {isFavorited && (
+                      <motion.div
+                        key="favorite-ripple"
+                        initial={{ scale: 0.5, opacity: 0.8 }}
+                        animate={{ scale: 3, opacity: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.7, ease: "easeOut" }}
+                        className="absolute inset-0 bg-[#B45309]/40 rounded-full pointer-events-none blur-sm"
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      scale: isFavorited ? [1, 1.5, 1.1] : [1, 0.8, 1],
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  >
+                    <Heart 
+                      className={`relative z-10 w-8 h-8 transition-colors duration-500 ${
+                        isFavorited 
+                          ? "fill-[#B45309] text-[#B45309] drop-shadow-[0_0_20px_rgba(180,83,9,0.8)]" 
+                          : "text-white/60 hover:text-white"
+                      }`} 
+                    />
+                  </motion.div>
                 </motion.button>
               </div>
-            )}
+
+            </div>
           </div>
         )}
       </div>

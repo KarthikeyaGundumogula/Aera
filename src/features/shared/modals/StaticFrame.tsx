@@ -18,7 +18,6 @@ import { CurateOverlay } from "./CurateOverlay";
 import { CinematicToast } from "./CinematicToast";
 import { PerimeterOutline } from "./PerimeterOutline";
 import { HonourIcon } from "../../../components/icons/HonourIcon";
-import { ResonanceBars } from "../../../components/ResonanceBars";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { RecommendationCard } from "../../../components/RecommendationCard";
 
@@ -122,7 +121,7 @@ export function StaticFrame({
       artistData || {
         id: String(item.id),
         name: item.artist || "Anonymous",
-        presence: 0,
+        spirit: 0,
         works: 0,
         image: item.artistAvatar || item.image || "",
       }
@@ -529,6 +528,7 @@ export function StaticFrame({
                     filled={isHonoured}
                     className="shrink-0"
                     style={{
+                      filter: isHonoured ? "drop-shadow(0 0 8px rgba(225,29,72,0.6))" : "none",
                       transform: honouring ? "scale(1.6)" : "scale(1)",
                       transition: honouring
                         ? "transform 90ms cubic-bezier(0.23, 1, 0.32, 1)"

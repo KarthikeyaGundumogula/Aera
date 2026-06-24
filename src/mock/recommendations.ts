@@ -8,7 +8,7 @@ interface RecommendationArtist {
   name: string;
   stageName: string;
   profilePicture: string;
-  presence: number;
+  spirit: number;
   /** Number of originals the artist has credited work on */
   works?: number;
   /** Artist's personal all-time highest score ever given */
@@ -19,7 +19,7 @@ interface RecommendationOriginal {
   id: string;
   title: string;
   coverImage: string;
-  presence: number;
+  spirit: number;
   genres: string[];
   /** Format classification: "Feature Film" | "Series" | "Short Film" | "Anthology" etc. */
   format: string;
@@ -58,7 +58,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       id: "kgf-original",
       title: "KGF: Chapter 2",
       coverImage: "/posters/kgf.jpeg",
-      presence: 3000,
+      spirit: 3000,
       genres: ["Mass Action", "South Cinema", "Rebellion"],
       format: "Feature Film",
       director: "Prashanth Neel",
@@ -70,7 +70,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       name: "Karthik G",
       stageName: "@karthik_g",
       profilePicture: "/stars/pawan-kalyan.jpeg",
-      presence: 1540,
+      spirit: 1540,
       works: 12,
       highestScore: 4500,
     },
@@ -88,7 +88,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       id: "rrr-original",
       title: "RRR",
       coverImage: "/posters/rrr.jpeg",
-      presence: 1500,
+      spirit: 1500,
       genres: ["Epic", "Period Drama", "Pan-India"],
       format: "Feature Film",
       director: "S.S. Rajamouli",
@@ -101,7 +101,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       stageName: "@priya_archives",
       profilePicture:
         "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
-      presence: 842,
+      spirit: 842,
       works: 7,
       highestScore: 3200,
     },
@@ -120,7 +120,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       id: "og-original",
       title: "OG",
       coverImage: "/posters/og.jpeg",
-      presence: 2480,
+      spirit: 2480,
       genres: ["Mass", "Comeback", "Raw Power"],
       format: "Feature Film",
       director: "Sujeeth",
@@ -133,7 +133,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       stageName: "@arjun_dev",
       profilePicture:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      presence: 960,
+      spirit: 960,
       works: 9,
       highestScore: 3800,
     },
@@ -152,7 +152,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       id: "baahubali-original",
       title: "Baahubali",
       coverImage: "/posters/bahubali.jpeg",
-      presence: 4200,
+      spirit: 4200,
       genres: ["Epic", "Mythology", "Spectacle"],
       format: "Feature Film",
       director: "S.S. Rajamouli",
@@ -165,7 +165,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       stageName: "@meera_rao",
       profilePicture:
         "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop",
-      presence: 1120,
+      spirit: 1120,
       works: 15,
       highestScore: 4500,
     },
@@ -184,7 +184,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       id: "jersey-original",
       title: "Jersey",
       coverImage: "/posters/jersey.jpeg",
-      presence: 1200,
+      spirit: 1200,
       genres: ["Sports", "Drama", "Emotional"],
       format: "Feature Film",
       director: "Gowtam Tinnanuri",
@@ -197,7 +197,7 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
       stageName: "@ravi_t",
       profilePicture:
         "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop",
-      presence: 450,
+      spirit: 450,
       works: 3,
       highestScore: 3500,
     },

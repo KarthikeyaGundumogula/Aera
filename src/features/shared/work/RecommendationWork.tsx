@@ -3,7 +3,7 @@ import { TheatreItem } from "../../../types";
 import { BaseWorkProps } from "./types";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
-import { ResonanceBars } from "../../../components/ResonanceBars";
+import { SurgeBars } from "../../../components/SurgeBars";
 
 // ─── RecommendationWork ───────────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ interface RecommendationWorkProps extends Pick<BaseWorkProps, "variant" | "prior
  *   ✓ Hierarchy through scale contrast (title vs bars vs avatar size)
  *   ✓ Depth through layering  (4 z-layers: image → gradient → text → avatar)
  *   ✓ Designed hover/active state (poster scales, avatar ring glows)
- *   ✓ Color used semantically (amber = resonance signal, not decoration)
+ *   ✓ Color used semantically (amber = surge signal, not decoration)
  */
 export const RecommendationWork = memo(function RecommendationWork({
   item,
@@ -54,12 +54,12 @@ export const RecommendationWork = memo(function RecommendationWork({
       {/* Layer 2: Gradient overlay — bottom up, fades title area */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-      {/* Layer 3: Top-right — Glassmorphic ResonanceBars Hint */}
+      {/* Layer 3: Top-right — Glassmorphic SurgeBars Hint */}
       {rec && (
         <div className="absolute top-2.5 right-2.5 z-10">
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/40 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-            <ResonanceBars 
-              score={rec.score} 
+            <SurgeBars 
+              score={rec.score || 0} 
               highestScore={rec.artist.highestScore ?? 4500} 
               size="sm" 
               colorVariant="amber" 

@@ -1,6 +1,6 @@
 import React from "react";
 
-interface ResonanceBarsProps {
+interface SurgeBarsProps {
   score: number;
   highestScore: number;
   size?: "sm" | "md" | "lg";
@@ -8,13 +8,13 @@ interface ResonanceBarsProps {
   className?: string;
 }
 
-export function ResonanceBars({
+export function SurgeBars({
   score,
   highestScore,
   size = "sm",
   colorVariant = "white",
   className = "",
-}: ResonanceBarsProps) {
+}: SurgeBarsProps) {
   const ratio = Math.min(score / highestScore, 1);
 
   // Define sizing presets (6 heights now)

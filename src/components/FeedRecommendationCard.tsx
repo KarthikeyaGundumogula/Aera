@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from "lucide-react";
 import { Recommendation } from "../mock/recommendations";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
-import { ResonanceBars } from "./ResonanceBars";
+import { SurgeBars } from "./SurgeBars";
+import { PosterImage } from "./PosterImage";
 import { formatRelativeTime } from "../utils/time";
 
 interface Props {
@@ -56,7 +57,7 @@ export function FeedRecommendationCard({ rec }: Props) {
                 className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
                 onClick={(e) => { e.stopPropagation(); navigate(`/originals/${rec.original.id}`); }}
               >
-                <img
+                <PosterImage
                   src={rec.original.coverImage}
                   alt={rec.original.title}
                   className="w-full h-full object-cover object-top transition-[transform,filter] duration-700 group-hover/poster:scale-105 group-hover/poster:brightness-[0.6]" />
@@ -209,7 +210,7 @@ export function FeedRecommendationCard({ rec }: Props) {
                 {/* Artist stats */}
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[7px] font-black text-white/25 uppercase tracking-[0.15em]">
-                    {rec.artist.presence.toLocaleString()} presence
+                    {rec.artist.spirit.toLocaleString()} spirit
                   </span>
                   {rec.artist.works != null && (
                     <>
@@ -237,8 +238,8 @@ export function FeedRecommendationCard({ rec }: Props) {
                 onClick={(e) => { e.stopPropagation(); setShowTooltip(!showTooltip); }}
               >
                 {/* Bars */}
-                <ResonanceBars
-                  score={rec.score}
+                <SurgeBars
+                  score={rec.score || 0}
                   highestScore={highestScore}
                   size="md"
                   colorVariant="amber"
@@ -247,11 +248,11 @@ export function FeedRecommendationCard({ rec }: Props) {
                 {/* Score numbers */}
                 <div className="flex items-baseline gap-0.5 whitespace-nowrap">
                   <span className="text-[14px] font-black text-white leading-none tracking-tighter">
-                    {rec.score.toLocaleString()}
+                    {rec.score.toString()}
                   </span>
                   <span className="text-[7px] font-black tracking-widest">
                     <span className="text-white/25">/ </span>
-                    <span className="text-amber-500/80">{highestScore.toLocaleString()}</span>
+                    <span className="text-amber-500/80">{highestScore.toString()}</span>
                   </span>
 
                 </div>
@@ -358,8 +359,9 @@ export function FeedRecommendationCard({ rec }: Props) {
             id: rec.artist.id,
             name: rec.artist.name,
             image: rec.artist.profilePicture,
-            presence: rec.artist.presence,
+            spirit: rec.artist.spirit,
             works: rec.artist.works ?? 0,
+            socials: { instagram: "artist_ig", twitter: "artist_x", youtube: "artist_yt" },
           }}
           onClose={() => setIsArtistModalOpen(false)}
           zIndex="z-[250]"

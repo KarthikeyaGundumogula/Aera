@@ -190,7 +190,7 @@ export function CenterFeedLayout() {
             .flatMap((org) => org.topArtists)
             .map((a) => [a.id, a]),
         ).values(),
-      ).sort((a, b) => b.presence - a.presence),
+      ).sort((a, b) => b.spirit - a.spirit),
     [deferredOriginals],
   );
 

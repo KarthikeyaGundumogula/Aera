@@ -76,7 +76,6 @@ const loadedProfiles = new Set<string>();
 
 const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
-  const [isFollowing, setIsFollowing] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
@@ -121,8 +120,8 @@ const ProfilePage: React.FC = () => {
         name: artist.name,
         tagline: artist.bio || "Artist",
         image: artist.image,
-        followers: `${(Math.random() * 2 + 0.5).toFixed(1)}M`,
-        presence: artist.presence.toLocaleString(),
+        spirit: artist.spirit.toLocaleString(),
+        favoritesCount: "18.4K",
         type: "ARTIST" as const,
         socials: artist.socials,
       };
@@ -141,8 +140,8 @@ const ProfilePage: React.FC = () => {
         name: star.actorName,
         tagline: star.characterName,
         image: star.imageUrl,
-        followers: "8.2M",
-        presence: "2,480",
+        spirit: "2,480",
+        favoritesCount: "142K",
         type: "STAR" as const,
         socials: { instagram: star.actorName.toLowerCase().replace(/ /g, ""), twitter: star.actorName.toLowerCase().replace(/ /g, "") },
       };
@@ -161,8 +160,8 @@ const ProfilePage: React.FC = () => {
         name: maker.actorName,
         tagline: maker.characterName,
         image: maker.imageUrl,
-        followers: "1.4M",
-        presence: "1,840",
+        spirit: "1,840",
+        favoritesCount: "82K",
         type: "MAKER" as const,
         socials: { instagram: maker.actorName.toLowerCase().replace(/ /g, ""), twitter: maker.actorName.toLowerCase().replace(/ /g, "") },
       };
@@ -235,11 +234,9 @@ const ProfilePage: React.FC = () => {
         handle={profile.id.toUpperCase().replace("PROFILE-", "")}
         tagline={profile.tagline}
         image={profile.image}
-        followers={profile.followers}
-        presence={profile.presence}
+        spirit={profile.spirit}
+        favoritesCount={profile.favoritesCount}
         theme={theme}
-        isFollowing={isFollowing}
-        onFollow={() => setIsFollowing(!isFollowing)}
         isFavorited={isFavorited}
         onFavorite={() => setIsFavorited(!isFavorited)}
         socials={profile.socials}

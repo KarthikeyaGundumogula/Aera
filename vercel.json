@@ -1,6 +1,26 @@
 {
   "rewrites": [
     {
+      "source": "/originals/(.*)",
+      "destination": "/api/metadata"
+    },
+    {
+      "source": "/works/(.*)",
+      "destination": "/api/metadata"
+    },
+    {
+      "source": "/festivals/(.*)",
+      "destination": "/api/metadata"
+    },
+    {
+      "source": "/sets/(.*)",
+      "destination": "/api/metadata"
+    },
+    {
+      "source": "/artists/(.*)",
+      "destination": "/api/metadata"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

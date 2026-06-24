@@ -2,8 +2,8 @@
   {
     "id": "fh-001",
     "name": "Karthik G",
-    "bio": "Cinematic visualist from Hyderabad. Specializes in high-fidelity motion design and south-noir aesthetics. Pushing the boundaries of FrameHouse.",
-    "presence": 1540,
+    "bio": "Cinematic visualist crafting high-fidelity south-noir.",
+    "spirit": 1540,
     "works": 24,
     "image": "/stars/pawan-kalyan.jpeg",
     "socials": {
@@ -23,7 +23,7 @@
     "id": "fh-002",
     "name": "Priya Nair",
     "bio": "I can Edit",
-    "presence": 842,
+    "spirit": 842,
     "works": 12,
     "image": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
     "socials": {
@@ -41,8 +41,8 @@
   {
     "id": "fh-003",
     "name": "Arjun Reddy",
-    "bio": "Visual sculptor from Bangalore. Crafting the future of cinematic interactivity around the Tollywood and Kollywood universes.",
-    "presence": 620,
+    "bio": "Visual sculptor shaping the future of interactive cinema.",
+    "spirit": 620,
     "works": 8,
     "image": "/stars/yash.jpg",
     "socials": {

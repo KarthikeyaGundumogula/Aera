@@ -22,14 +22,14 @@ function scoreRatioToColor(ratio: number): string {
   return lerpRGB(217, 119, 6, 245, 158, 11, Math.min((ratio - 1) * 2, 1));
 }
 
-interface RecommendationScoreProps {
+interface SurgeScoreProps {
   score: number;
   peak?: number;
   onChange: (score: number) => void;
   onPeakFlash?: () => void;
 }
 
-export function RecommendationScore({ score, peak, onChange, onPeakFlash }: RecommendationScoreProps) {
+export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScoreProps) {
   const [isHolding, setIsHolding] = useState(false);
   const [showScoreTooltip, setShowScoreTooltip] = useState(false);
 
@@ -51,12 +51,13 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
   // Sync internal refs if parent changes score directly (e.g., reset)
   useEffect(() => {
     scoreRef.current = score;
-    const ratio = score / VISUAL_MAX;
+    const effectiveMax = peak ?? VISUAL_MAX;
+    const ratio = score / effectiveMax;
     scoreColorMV.set(scoreRatioToColor(ratio));
     const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
     glowRadiusMV.set(glowT * 48);
     glowAlphaMV.set(glowT * 0.65);
-  }, [score, scoreColorMV, glowRadiusMV, glowAlphaMV]);
+  }, [score, peak, scoreColorMV, glowRadiusMV, glowAlphaMV]);
 
   const stopHold = useCallback(() => {
     setIsHolding(false);
@@ -79,15 +80,25 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
       const now = performance.now();
       const holdDuration = (now - holdStartRef.current) / 1000; // in seconds
       
-      // Fast, constantly accelerating rate. NO breaks, NO slowing down.
-      const rate = 3000 + (1500 * holdDuration) + (500 * Math.pow(holdDuration, 2));
+      const effectiveMax = peak ?? VISUAL_MAX;
+      
+      // Dynamic acceleration based on peak so it always takes ~2.0 seconds to fill
+      const baseRate = 0.1 * effectiveMax;
+      const accel = 0.4 * effectiveMax;
+      let rate = baseRate + (accel * holdDuration);
+      
+      // Drastically slow down the rate to give the feeling of pushing past the peak
+      if (scoreRef.current >= effectiveMax) {
+        // Slow crawl: 3% of peak per second, with a minimum of 15 pts/sec
+        rate = Math.max(15, 0.03 * effectiveMax);
+      }
       
       const increment = (rate * TICK_MS) / 1000;
       scoreRef.current += increment;
       const rounded = Math.round(scoreRef.current);
       onChange(rounded);
 
-      const ratio = rounded / VISUAL_MAX;
+      const ratio = rounded / effectiveMax;
       scoreColorMV.set(scoreRatioToColor(ratio));
       const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
       glowRadiusMV.set(glowT * 48);
@@ -122,7 +133,8 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
     onChange(newScore);
     scoreRef.current = newScore;
 
-    const ratio = newScore / VISUAL_MAX;
+    const effectiveMax = peak ?? VISUAL_MAX;
+    const ratio = newScore / effectiveMax;
     scoreColorMV.set(scoreRatioToColor(ratio));
     const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
     glowRadiusMV.set(glowT * 48);
@@ -134,7 +146,7 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
     } else {
       shakeX.set(0);
     }
-  }, [isHolding, shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange]);
+  }, [isHolding, shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange, peak]);
 
   useEffect(() => {
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
@@ -214,11 +226,11 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
       </div>
 
       {/* Middle Row: Visual Bars (Centered) */}
-      <div className="flex items-end justify-center gap-[4px] h-[50px] pb-2 relative group touch-none mb-4 w-full">
+      <div className="flex items-end justify-center gap-[4px] h-[50px] pb-2 relative group touch-none mb-2 w-full">
         <input
           type="range"
           min={0}
-          max={VISUAL_MAX * 1.5}
+          max={(peak ?? VISUAL_MAX) * 1.5}
           value={score}
           onChange={(e) => handleScrub(Number(e.target.value))}
           className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
@@ -227,7 +239,8 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
 
         <AnimatePresence>
           {[0, 1, 2, 3, 4, 5].map((i) => {
-            if (i === 5 && score <= VISUAL_MAX) return null;
+            const effectiveMax = peak ?? VISUAL_MAX;
+            if (i === 5 && score <= effectiveMax) return null;
 
             const heights = [20, 26, 32, 38, 44, 50];
             const colors = [
@@ -236,7 +249,7 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
               "#FCD34D", // medium_amber
               "#F59E0B", // deep_amber
               "#D97706", // ultra_deep_burnt_amber
-              "#F59E0B", // max_glowing_amber (Peak)
+              "#EF4444", // Cinematic Red (Peak overdrive)
             ];
             const shadows = [
               "rgba(231,229,228,0.4)",
@@ -244,19 +257,18 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
               "rgba(252,211,77,0.4)",
               "rgba(245,158,11,0.5)",
               "rgba(217,119,6,0.6)",
-              "rgba(245,158,11,0.8)",
+              "rgba(239,68,68,0.8)",
             ];
 
             let fillPct = 0;
             if (i < 5) {
               const chunkStart = i * 0.2;
               const chunkEnd = (i + 1) * 0.2;
-              const ratio = score / VISUAL_MAX;
+              const ratio = Math.min(score / effectiveMax, 1);
               if (ratio >= chunkEnd) fillPct = 1;
               else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
             } else {
-              const overRatio = (score - VISUAL_MAX) / VISUAL_MAX;
-              fillPct = Math.min(overRatio / 0.2, 1);
+              fillPct = score > effectiveMax ? 1 : 0;
             }
 
             const isPeak = i === 5;
@@ -283,6 +295,35 @@ export function RecommendationScore({ score, peak, onChange, onPeakFlash }: Reco
               </motion.div>
             );
           })}
+        </AnimatePresence>
+      </div>
+
+      {/* Dynamic Score Label */}
+      <div className="flex justify-center mb-5 h-[14px]">
+        <AnimatePresence mode="wait">
+          {score > 0 && (
+            <motion.span
+              key={
+                score > (peak ?? VISUAL_MAX) ? "peak" :
+                (score / (peak ?? VISUAL_MAX)) > 0.8 ? "five" :
+                (score / (peak ?? VISUAL_MAX)) > 0.6 ? "four" :
+                (score / (peak ?? VISUAL_MAX)) > 0.4 ? "three" :
+                (score / (peak ?? VISUAL_MAX)) > 0.2 ? "two" : "one"
+              }
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="text-[10px] text-white/50 tracking-widest uppercase font-semibold"
+            >
+              {score > (peak ?? VISUAL_MAX) ? "Peak Cinema" :
+               (score / (peak ?? VISUAL_MAX)) > 0.8 ? "Absolute cinema" :
+               (score / (peak ?? VISUAL_MAX)) > 0.6 ? "Remarkable Cinematic Experience" :
+               (score / (peak ?? VISUAL_MAX)) > 0.4 ? "It had its moments" :
+               (score / (peak ?? VISUAL_MAX)) > 0.2 ? "Hard to connect" :
+               "Not Meant For Me"}
+            </motion.span>
+          )}
         </AnimatePresence>
       </div>
 

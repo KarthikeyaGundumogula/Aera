@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
 import { X, Sparkles, ChevronLeft, Infinity, Film, Search } from "lucide-react";
-import { RecommendationScore } from "./resonance/RecommendationScore";
+import { SurgeInputSection } from "./surge/SurgeInputSection";
 import { GrainOverlay } from "./effects/GrainOverlay";
 import { CinematicInput } from "./recommendation/CinematicInput";
 import { OriginalsSearch } from "./recommendation/OriginalsSearch";
@@ -37,8 +37,8 @@ export function CreateRecommendationModal({
 
   // Score
   const [score, setScore] = useState(0);
-  const [peakFlash, setPeakFlash] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [peakFlash, setPeakFlash] = useState(false);
 
   // Reset on open
   useEffect(() => {
@@ -47,7 +47,6 @@ export function CreateRecommendationModal({
       setIsSearchOpen(false);
       setNotes("");
       setScore(0);
-      setPeakFlash(false);
       setSubmitted(false);
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -270,17 +269,11 @@ export function CreateRecommendationModal({
                   </div>
 
                   {/* Score Area */}
-                  <div className="relative pb-1">
-                    <RecommendationScore
-                      score={score}
-                      peak={4200}
-                      onChange={setScore}
-                      onPeakFlash={() => {
-                        setPeakFlash(true);
-                        setTimeout(() => setPeakFlash(false), 700);
-                      }}
-                    />
-                  </div>
+                  <SurgeInputSection
+                    score={score}
+                    peak={4200}
+                    onChange={setScore}
+                  />
 
                 </div>
               </div>

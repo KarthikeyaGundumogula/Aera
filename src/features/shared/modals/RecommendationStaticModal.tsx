@@ -10,7 +10,7 @@ interface RecommendationStaticModalProps {
 
 /**
  * RecommendationStaticModal — Static content viewer for Recommendations.
- * Thin wrapper around StaticFrame, which now handles injecting the ResonanceBars overlay.
+ * Thin wrapper around StaticFrame, which now handles injecting the SurgeBars overlay.
  */
 export function RecommendationStaticModal({ item, onClose, standalone = true, isActive = true }: RecommendationStaticModalProps) {
   if (!item) return null;

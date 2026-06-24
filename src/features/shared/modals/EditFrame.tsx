@@ -116,7 +116,7 @@ export function EditFrame({
       artistData || {
         id: String(item.id),
         name: item.artist || "Anonymous",
-        presence: 0,
+        spirit: 0,
         works: 0,
         image: item.artistAvatar || item.image || "",
       }

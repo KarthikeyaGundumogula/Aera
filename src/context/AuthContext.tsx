@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: payload.id,
               name: payload.username,
               image: "",
-              presence: 100,
+              spirit: 100,
               works: 0,
               bio: "Cinematic Visionary",
               themeBgColor: "#0f1a42",

@@ -4,7 +4,7 @@ export interface OriginalArtist {
   id: string;
   name: string;
   image: string;
-  presence: number;
+  spirit: number;
   works: number;
   bio?: string;
   socials?: {

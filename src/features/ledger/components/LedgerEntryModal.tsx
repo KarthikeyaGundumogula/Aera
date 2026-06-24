@@ -3,7 +3,8 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import { X, Search, Infinity, Film, Eye, Clock, BookmarkPlus, ChevronLeft } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
 import { mockLedger, LedgerItem } from "../../../mock/ledger";
-import { RecommendationScore } from "../../../components/resonance/RecommendationScore";
+import { SurgeScore } from "../../../components/surge/SurgeScore";
+import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 const AMBER     = "#D97706";
@@ -201,9 +202,9 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
   const [afterThoughts, setAfterThoughts] = useState("");
   const [isAdded, setIsAdded] = useState(false);
 
-  // ── Resonance score (only used in "watched" mode) ──────────────────────────
-  const [resonanceScore, setResonanceScore] = useState(0);
-  const [peakFlash, setPeakFlash]           = useState(false);
+  // ── Surge score (only used in "watched" mode) ──────────────────────────
+  const [surgeScore, setSurgeScore] = useState(0);
+  const [peakFlash, setPeakFlash]           = useState(false); // kept for global flash overlay above modal
 
   // Reset everything on open
   useEffect(() => {
@@ -214,15 +215,15 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
       setExpectations("");
       setAfterThoughts("");
       setIsAdded(false);
-      setResonanceScore(0);
+      setSurgeScore(0);
       setPeakFlash(false);
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Also reset resonance when switching away from "watched"
+  // Also reset surge when switching away from "watched"
   useEffect(() => {
     if (status !== "watched") {
-      setResonanceScore(0);
+      setSurgeScore(0);
       setPeakFlash(false);
     }
   }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -481,7 +482,7 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                     </div>
                   </div>
 
-                  {/* Dynamic text fields + resonance (watched) */}
+                  {/* Dynamic text fields + surge (watched) */}
                   <AnimatePresence mode="wait">
                     {status === "want_to_watch" ? (
                       <motion.div
@@ -523,15 +524,12 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                           onChange={setAfterThoughts}
                         />
 
-                        {/* ── Resonance Score (watched only) ─────────── */}
-                        <div className="h-px bg-white/[0.04]" aria-hidden />
-                        <RecommendationScore
-                          score={resonanceScore}
-                          onChange={setResonanceScore}
-                          onPeakFlash={() => {
-                            setPeakFlash(true);
-                            setTimeout(() => setPeakFlash(false), 700);
-                          }}
+                        {/* ── Surge Score (watched only) ─────────── */}
+                        <SurgeInputSection
+                          score={surgeScore}
+                          peak={4200}
+                          onChange={setSurgeScore}
+                          withDivider
                         />
                       </motion.div>
                     )}

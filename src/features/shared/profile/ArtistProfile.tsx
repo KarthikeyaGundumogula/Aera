@@ -5,9 +5,9 @@ import {
   useMotionValue,
 } from "motion/react";
 import React, { memo, useState, useEffect, useRef } from "react";
-import { Instagram, Twitter, Youtube, Library } from "lucide-react";
+import { Instagram, Twitter, Youtube, Library, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { StageIcon, WorksIcon } from "../../../components/icons/AppIcons";
+import { StageIcon, SpiritIcon, WorksIcon } from "../../../components/icons/AppIcons";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
 import { OriginalArtist } from "../../../types";
 import { CreditTag } from "../tags";
@@ -27,6 +27,7 @@ export const ArtistProfile = memo(
 
     const [localIsOpen, setLocalIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
+    const [isFavorited, setIsFavorited] = useState(false);
     
     // Support both internal (click card) and external (WorkModal) triggers
     const isOpen = onClose ? !!artist : localIsOpen;
@@ -119,15 +120,15 @@ export const ArtistProfile = memo(
                     <p
                       className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
                     >
-                      <StageIcon
+                      <SpiritIcon
                         className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
                       />
-                      Stage
+                      Spirit
                     </p>
                     <p
                       className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
                     >
-                      {artist.presence}
+                      {artist.spirit}
                     </p>
                   </div>
                   <div>
@@ -263,12 +264,12 @@ export const ArtistProfile = memo(
                   <div className="mt-6 mx-6 p-4 rounded-xl bg-white/5 border border-white/5 flex justify-around items-center z-10">
                     <div className="flex flex-col items-center">
                       <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">
-                        Stage
+                        Spirit
                       </span>
                       <div className="flex items-center gap-2">
-                        <StageIcon className="w-3 h-3 text-white/80" />
+                        <SpiritIcon className="w-3 h-3 text-white/80" />
                         <span className="text-sm font-black text-white">
-                          {artist.presence}
+                          {artist.spirit}
                         </span>
                       </div>
                     </div>
@@ -283,6 +284,44 @@ export const ArtistProfile = memo(
                           {artist.works}
                         </span>
                       </div>
+                    </div>
+                    <div className="w-px h-6 bg-white/10" />
+                    <div className="flex flex-col items-center justify-center">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => { e.stopPropagation(); setIsFavorited(!isFavorited); }}
+                        className="relative p-1 transition-all duration-300 flex items-center justify-center overflow-visible"
+                      >
+                        <AnimatePresence>
+                          {isFavorited && (
+                            <motion.div
+                              key="favorite-ripple-modal"
+                              initial={{ scale: 0.5, opacity: 0.8 }}
+                              animate={{ scale: 3, opacity: 0 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.7, ease: "easeOut" }}
+                              className="absolute inset-0 bg-[#B45309]/40 rounded-full pointer-events-none blur-[2px]"
+                            />
+                          )}
+                        </AnimatePresence>
+
+                        <motion.div
+                          initial={false}
+                          animate={{
+                            scale: isFavorited ? [1, 1.5, 1.1] : [1, 0.8, 1],
+                          }}
+                          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                        >
+                          <Heart 
+                            className={`relative z-10 w-5 h-5 transition-colors duration-500 ${
+                              isFavorited 
+                                ? "fill-[#B45309] text-[#B45309] drop-shadow-[0_0_15px_rgba(180,83,9,0.8)]" 
+                                : "text-white/40 hover:text-white"
+                            }`} 
+                          />
+                        </motion.div>
+                      </motion.button>
                     </div>
                   </div>
 
