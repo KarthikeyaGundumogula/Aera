@@ -93,7 +93,7 @@ export function RecommendationsZone() {
                 : "text-white/40 hover:text-white/70"
             }`}
           >
-            Works
+            Stage
             {activeTab === "works" && (
               <motion.div
                 layoutId="recTabIndicator"

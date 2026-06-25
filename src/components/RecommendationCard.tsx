@@ -21,8 +21,10 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
   const [favorited, setFavorited] = useState(rec.favorited ?? false);
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 
   const textRef = useRef<HTMLParagraphElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canExpand, setCanExpand] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,18 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
     window.addEventListener("resize", checkOverflow);
     return () => window.removeEventListener("resize", checkOverflow);
   }, [rec.notes, notesExpanded]);
+
+  useEffect(() => {
+    if (notesExpanded && scrollContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+      setIsScrolledToBottom(scrollHeight - scrollTop <= clientHeight + 5);
+    }
+  }, [notesExpanded]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    setIsScrolledToBottom(scrollHeight - scrollTop <= clientHeight + 5);
+  };
 
   const navigate = useNavigate();
 
@@ -175,7 +189,12 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
             {/* NOTES — flex-1 fills all remaining space so footer+action are pinned to bottom.
                 min-h-[122px] = 5 lines × 13px × 1.625 line-height + py-2 padding.
                 Short notes show empty space inside this zone; gap below action row = 0. */}
-            <motion.div layout className="flex-1 min-h-0 px-3 py-2 w-full relative z-20 overflow-y-auto no-scrollbar">
+            <motion.div 
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              layout 
+              className="flex-1 min-h-0 px-3 py-2 w-full relative z-20 overflow-y-auto no-scrollbar"
+            >
               <motion.p
                 ref={textRef}
                 layout
@@ -202,6 +221,13 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   </motion.span>
                   {notesExpanded ? "LESS" : "MORE"}
                 </motion.div>
+              )}
+              
+              {/* Scroll down hint gradient overlay */}
+              {notesExpanded && !isScrolledToBottom && (
+                <div className="sticky bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#080604] via-[#080604]/90 to-transparent pointer-events-none flex items-end justify-center -mx-3 -mb-2 pb-1.5 z-10">
+                  <ChevronDown className="w-3 h-3 text-amber-500/50 animate-bounce" />
+                </div>
               )}
             </motion.div>
 

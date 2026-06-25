@@ -60,7 +60,7 @@ export function LedgerTabsZone() {
                   : "text-white/40 hover:text-white/70"
               }`}
             >
-              Works
+              Stage
               {activeTab === "works" && (
                 <motion.div
                   layoutId="ledgerTabIndicator"

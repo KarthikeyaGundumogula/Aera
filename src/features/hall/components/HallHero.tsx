@@ -49,7 +49,7 @@ export function HallHero() {
             animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
             exit={{ opacity: 0, filter: "blur(4px)", y: -4 }}
             transition={{ duration: 0.4 }}
-            className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.2] mb-5 max-w-4xl text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/30 italic"
+            className="text-3xl md:text-4xl font-bold tracking-tight leading-relaxed mb-5 pb-2 max-w-4xl text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/30 italic"
             style={{ fontFamily: "'Playfair Display', 'Tiro Devanagari Hindi', 'Tiro Telugu', serif" }}
           >
             {randomQuote}

@@ -54,7 +54,7 @@ export function OriginalSpotlightZone({ original, works }: OriginalSpotlightZone
               activeTab === "works" ? "text-white" : "text-white/40 hover:text-white/70"
             }`}
           >
-            Works
+            Stage
             {activeTab === "works" && (
               <motion.div
                 layoutId={`spotlightTab-${original.id}`}
