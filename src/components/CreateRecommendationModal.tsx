@@ -212,7 +212,7 @@ export function CreateRecommendationModal({
                         <img
                           src={selectedOriginal.coverImage}
                           alt={selectedOriginal.title}
-                          className="absolute inset-0 w-full h-full object-cover transition-[filter] duration-500 group-hover:brightness-50"
+                          className="absolute inset-0 w-full h-full object-cover object-top transition-[filter] duration-500 group-hover:brightness-50"
                         />
                         <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                           <Search className="w-5 h-5 text-white/80 mb-2" />

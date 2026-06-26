@@ -38,7 +38,7 @@ export const FestivalStage = memo(function FestivalStage() {
               <img
                 src={festival.coverImage}
                 alt={festival.title}
-                className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 group-hover:opacity-70 transition-all duration-700"
+                className="absolute inset-0 w-full h-full object-cover object-top opacity-50 group-hover:scale-105 group-hover:opacity-70 transition-all duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-transparent pointer-events-none" />
 

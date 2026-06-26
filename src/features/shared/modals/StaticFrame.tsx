@@ -255,7 +255,7 @@ export function StaticFrame({
                     aria-label={`Open ${item.artist || 'artist'} profile`}
                   >
                     {item.artistAvatar ? (
-                      <img src={item.artistAvatar} alt={item.artist || ""} className="w-full h-full object-cover" />
+                      <img src={item.artistAvatar} alt={item.artist || ""} className="w-full h-full object-cover object-top" />
                     ) : (
                       <span className="text-[10px] font-black text-white/40">
                         {(item.artist || "?").charAt(0).toUpperCase()}
@@ -378,7 +378,7 @@ export function StaticFrame({
                   <div className="absolute inset-0 overflow-hidden rounded-[16px]">
                     <img
                       src={pages[pageIndex]}
-                      className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-15"
+                      className="absolute inset-0 w-full h-full object-cover object-top blur-3xl scale-110 opacity-15"
                       alt=""
                       loading="lazy"
                       decoding="async"

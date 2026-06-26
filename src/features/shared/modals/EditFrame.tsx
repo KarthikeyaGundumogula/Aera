@@ -189,7 +189,7 @@ export function EditFrame({
               aria-label={`Open ${item.artist || "artist"} profile`}
             >
               {item.artistAvatar ? (
-                <img src={item.artistAvatar} alt={item.artist || ""} className="w-full h-full object-cover" />
+                <img src={item.artistAvatar} alt={item.artist || ""} className="w-full h-full object-cover object-top" />
               ) : (
                 <span className="text-[10px] font-black text-white/40">
                   {(item.artist || "?").charAt(0).toUpperCase()}

@@ -122,7 +122,7 @@ export function ProfileHero({
               <img loading="lazy"
                 src={image}
                 alt={name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
                 style={{ objectPosition: imagePosition }}
               />
             ) : (

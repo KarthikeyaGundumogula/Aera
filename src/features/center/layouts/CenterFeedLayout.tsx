@@ -231,7 +231,7 @@ export function CenterFeedLayout() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
                   src={ORIGINALS[heroIndex].coverImage}
-                  className="absolute inset-0 w-full h-full object-cover blur-[72px] scale-125"
+                  className="absolute inset-0 w-full h-full object-cover object-top blur-[72px] scale-125"
                 />
               </AnimatePresence>
             </div>
@@ -257,7 +257,7 @@ export function CenterFeedLayout() {
                   <img
                     loading="lazy"
                     src={ORIGINALS[heroIndex].coverImage}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />

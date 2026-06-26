@@ -116,7 +116,7 @@ export function StudioWorkCard({ item, onRename }: StudioWorkCardProps) {
             src={imgSrc}
             alt={item.title}
             loading="lazy"
-            className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+            className={`w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105 ${
               isLoaded ? "opacity-100" : "opacity-0"
             }`}
           />

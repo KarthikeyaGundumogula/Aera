@@ -59,7 +59,7 @@ export default function ReservedArtistsPage() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/10">
-                  <img src={artist.image} alt={artist.name} className="w-full h-full object-cover" />
+                  <img src={artist.image} alt={artist.name} className="w-full h-full object-cover object-top" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function ReservedArtistsPage() {
               </button>
 
               <div className="w-20 h-20 mx-auto rounded-xl overflow-hidden mb-6 border-2 border-white/10">
-                <img src={selectedArtist.image} alt={selectedArtist.name} className="w-full h-full object-cover" />
+                <img src={selectedArtist.image} alt={selectedArtist.name} className="w-full h-full object-cover object-top" />
               </div>
 
               <h2 className="text-xl font-black uppercase tracking-widest mb-3">

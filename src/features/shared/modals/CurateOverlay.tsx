@@ -99,7 +99,7 @@ export function CurateOverlay({
                       src={item.coverImage}
                       alt={item.title}
                       onClick={() => handleNavigation(item.id)}
-                      className="w-14 h-9 sm:w-20 sm:h-12 object-cover rounded-md sm:rounded-lg opacity-90 cursor-pointer hover:opacity-100 transition-opacity"
+                      className="w-14 h-9 sm:w-20 sm:h-12 object-cover object-top rounded-md sm:rounded-lg opacity-90 cursor-pointer hover:opacity-100 transition-opacity"
                     />
                     <div
                       className="flex-1 min-w-0 cursor-pointer"

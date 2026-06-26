@@ -30,7 +30,7 @@ export function LedgerTaggedWorksStack({ works }: { works: LedgerTaggedWork[] })
             <img loading="lazy" 
               src={work.thumbnailUrl} 
               alt={`Inspired by ${work.authorName}`} 
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" 
+              className="w-full h-full object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-300" 
             />
             <div className="absolute inset-0 flex flex-col justify-end p-2 bg-gradient-to-t from-black/90 via-black/20 to-transparent">
               <span className="text-[9px] font-black uppercase tracking-widest text-white/90 truncate drop-shadow-md">

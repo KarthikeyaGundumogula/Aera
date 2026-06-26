@@ -85,7 +85,7 @@ function RichText({ text, glowClass }: { text: string; glowClass?: string }) {
                   onClick={(e) => { e.stopPropagation(); navigate(`/work/${work.id}`); }}
                   className="inline-flex items-center gap-1.5 px-1.5 py-0.5 mx-0.5 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors align-middle cursor-pointer"
                 >
-                  <img src={work.image} className="w-4 h-4 rounded-sm object-cover inline-block" />
+                  <img src={work.image} className="w-4 h-4 rounded-sm object-cover object-top inline-block" />
                   <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/90">{work.title}</span>
                 </button>
               );
@@ -106,7 +106,7 @@ function RichText({ text, glowClass }: { text: string; glowClass?: string }) {
                 onClick={() => navigate(`/work/${work.id}`)}
                 className="flex items-center gap-2.5 p-1.5 pr-4 rounded-lg bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors cursor-pointer"
               >
-                <img src={work.image} alt={work.title} className="w-8 h-8 rounded object-cover" />
+                <img src={work.image} alt={work.title} className="w-8 h-8 rounded object-cover object-top" />
                 <div className="flex flex-col text-left">
                   <span className="text-[9px] font-bold uppercase tracking-wider text-white/80">{work.title}</span>
                   <span className="text-[8px] uppercase tracking-widest text-white/35">{work.category}</span>
@@ -167,7 +167,7 @@ function InlineReplyBox({
               if (!work) return <span key={code} className="text-[9px] text-red-400/60 italic">#{code} not found</span>;
               return (
                 <div key={code} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/10">
-                  <img src={work.image} alt={work.title} className="w-4 h-4 rounded object-cover" />
+                  <img src={work.image} alt={work.title} className="w-4 h-4 rounded object-cover object-top" />
                   <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">{work.title}</span>
                 </div>
               );
@@ -256,7 +256,7 @@ function ThreadNode({
           {(() => {
             const avatar = getAuthorAvatar(reply.authorName);
             return avatar ? (
-              <img src={avatar} className="w-7 h-7 rounded-md object-cover border border-white/10 flex-shrink-0" alt={reply.authorName} />
+              <img src={avatar} className="w-7 h-7 rounded-md object-cover object-top border border-white/10 flex-shrink-0" alt={reply.authorName} />
             ) : (
               <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{reply.authorName[0]}</div>
             );
@@ -431,7 +431,7 @@ export function DiscussionPage() {
             {(() => {
               const avatar = getAuthorAvatar(thought.authorName);
               return avatar ? (
-                <img src={avatar} className="w-8 h-8 rounded-md object-cover border border-white/10 flex-shrink-0" alt={thought.authorName} />
+                <img src={avatar} className="w-8 h-8 rounded-md object-cover object-top border border-white/10 flex-shrink-0" alt={thought.authorName} />
               ) : (
                 <div className="w-8 h-8 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[12px] font-bold flex-shrink-0">{thought.authorName[0]}</div>
               );

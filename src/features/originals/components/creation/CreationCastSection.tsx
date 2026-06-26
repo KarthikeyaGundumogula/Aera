@@ -159,7 +159,7 @@ function SelectedPersonRow({
           <img loading="lazy"
             src={person.profilePicture}
             alt={person.actorName}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

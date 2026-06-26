@@ -135,7 +135,7 @@ export function PersonSearchInput({
                 <img loading="lazy"
                   src={selectedProfile.profilePicture}
                   alt={selectedProfile.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -215,7 +215,7 @@ export function PersonSearchInput({
                             <img loading="lazy"
                               src={profile.profilePicture}
                               alt={profile.name}
-                              className="w-full h-full object-cover grayscale opacity-60"
+                              className="w-full h-full object-cover object-top grayscale opacity-60"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">

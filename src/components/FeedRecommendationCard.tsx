@@ -65,7 +65,10 @@ export function FeedRecommendationCard({ rec }: Props) {
     <div className="flex flex-col gap-1.5 shrink-0 w-full">
 
       {/* ── The Card ── */}
-      <div className="relative w-full h-auto">
+      <div 
+        className="relative w-full h-auto cursor-pointer"
+        onClick={handleCardClick}
+      >
         {/* ── Horizontal Layout: Poster (Left) + Content (Right) ── */}
         <div className="flex h-full">
 

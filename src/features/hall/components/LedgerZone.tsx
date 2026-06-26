@@ -44,7 +44,7 @@ function LedgerCard({ item }: { item: LedgerItem }) {
         <img
           src={item.originalPosterUrl}
           alt={item.originalName}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 

@@ -185,7 +185,7 @@ export function OriginalManagementModal({
                       >
                         <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex-shrink-0">
                           {person.profilePicture ? (
-                            <img loading="lazy" src={person.profilePicture} alt={person.actorName} className="w-full h-full object-cover" />
+                            <img loading="lazy" src={person.profilePicture} alt={person.actorName} className="w-full h-full object-cover object-top" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><User className="w-4 h-4 text-white/20" /></div>
                           )}

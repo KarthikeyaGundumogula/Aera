@@ -51,7 +51,7 @@ function FestivalCard({ festival }: { festival: Festival }) {
         <img
           src={festival.coverImage}
           alt={festival.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
@@ -102,7 +102,7 @@ function FestivalCard({ festival }: { festival: Festival }) {
                   title={artist.name}
                 >
                   {artist.image ? (
-                    <img src={artist.image} alt={artist.name} className="w-full h-full object-cover" />
+                    <img src={artist.image} alt={artist.name} className="w-full h-full object-cover object-top" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[8px] font-bold">{artist.name[0]}</div>
                   )}

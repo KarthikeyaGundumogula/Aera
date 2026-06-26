@@ -102,7 +102,7 @@ export const SearchDropdown = memo(function SearchDropdown({
                   >
                     <div className="w-10 h-14 bg-white/5 rounded-md overflow-hidden shrink-0 border border-white/5">
                        {film.image ? (
-                         <img src={film.image} alt="" className="w-full h-full object-cover" />
+                         <img src={film.image} alt="" className="w-full h-full object-cover object-top" />
                        ) : (
                          <div className="w-full h-full flex items-center justify-center text-white/10">
                            <Film size={14} />
@@ -144,7 +144,7 @@ export const SearchDropdown = memo(function SearchDropdown({
                   >
                     <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden shrink-0 border border-white/5">
                        {artist.profilePicture ? (
-                         <img src={artist.profilePicture} alt="" className="w-full h-full object-cover" />
+                         <img src={artist.profilePicture} alt="" className="w-full h-full object-cover object-top" />
                        ) : (
                          <div className="w-full h-full flex items-center justify-center text-white/10">
                            <User size={16} />

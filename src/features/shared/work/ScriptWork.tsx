@@ -49,7 +49,7 @@ export function ScriptWork({
             alt={item.title}
             loading={priority === "eager" ? "eager" : "lazy"}
             decoding="async"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover object-top"
           />
         ) : (
           /* ── Text screenplay fallback ── */
