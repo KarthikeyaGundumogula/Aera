@@ -273,19 +273,9 @@ export const ArtistProfile = memo(
                         </span>
                       </div>
                     </div>
+
                     <div className="w-px h-6 bg-white/10" />
-                    <div className="flex flex-col items-center">
-                      <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">
-                        Works
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <WorksIcon className="w-3 h-3 text-white/80" />
-                        <span className="text-sm font-black text-white">
-                          {artist.works}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-px h-6 bg-white/10" />
+
                     <div className="flex flex-col items-center justify-center">
                       <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -322,6 +312,20 @@ export const ArtistProfile = memo(
                           />
                         </motion.div>
                       </motion.button>
+                    </div>
+
+                    <div className="w-px h-6 bg-white/10" />
+
+                    <div className="flex flex-col items-center">
+                      <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">
+                        Works
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <WorksIcon className="w-3 h-3 text-white/80" />
+                        <span className="text-sm font-black text-white">
+                          {artist.works}
+                        </span>
+                      </div>
                     </div>
                   </div>
 

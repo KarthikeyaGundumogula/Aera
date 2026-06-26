@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Heart, Instagram, Twitter, Youtube } from "lucide-react";
+import { Users, Heart, Share2, Instagram, Twitter, Youtube } from "lucide-react";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 
 interface ProfileHeroProps {
@@ -218,47 +218,52 @@ export function ProfileHero({
                 </>
               )}
 
-              {/* Favorites Action & Count */}
-              <div className="flex items-center gap-4">
+              {/* Favorite Action Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onFavorite}
+                className="relative p-2 transition-all duration-300 flex items-center justify-center overflow-visible"
+              >
+                {/* Subtle expansion ripple on favorite */}
+                <AnimatePresence>
+                  {isFavorited && (
+                    <motion.div
+                      key="favorite-ripple"
+                      initial={{ scale: 0.5, opacity: 0.8 }}
+                      animate={{ scale: 3, opacity: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.7, ease: "easeOut" }}
+                      className="absolute inset-0 bg-[#B45309]/40 rounded-full pointer-events-none blur-sm"
+                    />
+                  )}
+                </AnimatePresence>
+
+                <motion.div
+                  initial={false}
+                  animate={{
+                    scale: isFavorited ? [1, 1.5, 1.1] : [1, 0.8, 1],
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                >
+                  <Heart 
+                    className={`relative z-10 w-8 h-8 transition-colors duration-500 ${
+                      isFavorited 
+                        ? "fill-[#B45309] text-[#B45309] drop-shadow-[0_0_20px_rgba(180,83,9,0.8)]" 
+                        : "text-white/60 hover:text-white"
+                    }`} 
+                  />
+                </motion.div>
+              </motion.button>
+
+              <div className="w-px h-8 bg-white/20" />
+
+              {/* Favorites Metric */}
+              <div className="flex items-center gap-3">
+                <Users className="w-7 h-7 text-white/80" />
                 <span className="font-mono text-2xl font-bold tracking-tighter text-white">
                   {favoritesCount}
                 </span>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={onFavorite}
-                  className="relative p-2 transition-all duration-300 flex items-center justify-center overflow-visible"
-                >
-                  {/* Subtle expansion ripple on favorite */}
-                  <AnimatePresence>
-                    {isFavorited && (
-                      <motion.div
-                        key="favorite-ripple"
-                        initial={{ scale: 0.5, opacity: 0.8 }}
-                        animate={{ scale: 3, opacity: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.7, ease: "easeOut" }}
-                        className="absolute inset-0 bg-[#B45309]/40 rounded-full pointer-events-none blur-sm"
-                      />
-                    )}
-                  </AnimatePresence>
-
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      scale: isFavorited ? [1, 1.5, 1.1] : [1, 0.8, 1],
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                  >
-                    <Heart 
-                      className={`relative z-10 w-8 h-8 transition-colors duration-500 ${
-                        isFavorited 
-                          ? "fill-[#B45309] text-[#B45309] drop-shadow-[0_0_20px_rgba(180,83,9,0.8)]" 
-                          : "text-white/60 hover:text-white"
-                      }`} 
-                    />
-                  </motion.div>
-                </motion.button>
               </div>
 
             </div>
