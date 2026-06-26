@@ -69,6 +69,8 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (variant === "modal") return;
+    
     const theatreItem: TheatreItem = {
       id: `rec-${rec.id}`,
       category: "Recommendation",
@@ -118,10 +120,11 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
 
       {/* ── The Card ── */}
       <div
+        onClick={handleCardClick}
         className={
           variant === "default"
-            ? "relative h-[310px] w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
-            : "relative w-full overflow-hidden"
+            ? "relative h-[310px] w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden cursor-pointer bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
+            : `relative w-full overflow-hidden ${variant !== "modal" ? "cursor-pointer" : ""}`
         }
         style={
           variant === "default"
@@ -203,7 +206,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
 
             {/* TOP: Film Title */}
             <div
-              className="px-3 pt-3 pb-2 cursor-pointer border-b border-white/[0.04] flex items-start justify-between gap-2"
+              className={`px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2 ${variant !== "modal" ? "cursor-pointer" : ""}`}
               onClick={handleCardClick}
             >
               <h3
