@@ -22,6 +22,7 @@ import {
   // Originals
   OriginalPage,
   OriginalCreatePage,
+  OriginalsListPage,
   // Profile
   ArtistSetupPage,
   LoginPage,
@@ -112,15 +113,7 @@ function AppRoutes() {
             <Route path="/theatre" element={<TheatrePage />} />
 
             {/* ── Originals ───────────────────────────────── */}
-            <Route
-              path="/originals"
-              element={
-                <ComingSoon
-                  label="Originals"
-                  description="We're shaping the dedicated originals experience next."
-                />
-              }
-            />
+            <Route path="/originals" element={<OriginalsListPage />} />
             <Route path="/originals/:id" element={<OriginalPage />} />
             <Route path="/originals/:id/theatre" element={<ContextualTheatrePage type="original" />} />
             <Route

@@ -39,10 +39,23 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
   }, [rec.notes, notesExpanded]);
 
   useEffect(() => {
-    if (notesExpanded && scrollContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const checkScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // If content is fully visible (no scroll needed) OR scrolled to bottom
       setIsScrolledToBottom(scrollHeight - scrollTop <= clientHeight + 5);
-    }
+    };
+
+    // Check immediately
+    checkScroll();
+
+    // Check during and after layout animations
+    const observer = new ResizeObserver(checkScroll);
+    observer.observe(container);
+    
+    return () => observer.disconnect();
   }, [notesExpanded]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -223,10 +236,12 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                 </motion.div>
               )}
               
-              {/* Scroll down hint gradient overlay */}
+              {/* Scroll down hint overlay (zero height so it doesn't add to scrollHeight) */}
               {notesExpanded && !isScrolledToBottom && (
-                <div className="sticky bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#080604] via-[#080604]/90 to-transparent pointer-events-none flex items-end justify-center -mx-3 -mb-2 pb-1.5 z-10">
-                  <ChevronDown className="w-3 h-3 text-amber-500/50 animate-bounce" />
+                <div className="sticky bottom-0 left-0 right-0 h-0 pointer-events-none z-10 overflow-visible">
+                  <div className="absolute bottom-[-8px] -left-3 -right-3 h-10 bg-gradient-to-t from-[#080604] via-[#080604]/90 to-transparent flex items-end justify-center pb-1.5">
+                    <ChevronDown className="w-3 h-3 text-amber-500/50 animate-bounce" />
+                  </div>
                 </div>
               )}
             </motion.div>

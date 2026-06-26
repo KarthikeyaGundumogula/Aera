@@ -31,6 +31,10 @@ export const ContextualTheatrePage = lazy(() =>
 );
 
 // ─── Originals ────────────────────────────────────────────────────────────────
+export const OriginalsListPage = lazy(() =>
+  import("@/features/originals/OriginalsListPage").then((m) => ({ default: m.OriginalsListPage }))
+);
+
 export const OriginalPage = lazy(() =>
   import("@/features/originals/OriginalPage").then((m) => ({ default: m.OriginalPage }))
 );
