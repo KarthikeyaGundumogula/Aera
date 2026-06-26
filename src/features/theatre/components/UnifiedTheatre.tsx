@@ -19,6 +19,7 @@ interface UnifiedTheatreProps {
   isLoading?: boolean;
   onLoadMore?: () => void;
   hasMore?: boolean;
+  disablePadding?: boolean;
 }
 
 /**
@@ -35,6 +36,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
   isLoading = false,
   onLoadMore,
   hasMore = false,
+  disablePadding = false,
 }) => {
   const isMobile = useMediaQuery();
   const bottomObserverTarget = useRef<HTMLDivElement>(null);
@@ -122,7 +124,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
       )}
 
       {/* THEATRE CANVAS */}
-      <main className={isFull ? "pt-24 pb-20" : ""}>
+      <main className={isFull && !disablePadding ? "pt-24 pb-20" : ""}>
         <div className="flex flex-col" style={{ gap: "0px" }}>
           {isMobile ? (
             <FeedContext.Provider value={mobileFlatItems}>

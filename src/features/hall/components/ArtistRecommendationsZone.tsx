@@ -5,12 +5,28 @@ import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { RecommendationCard } from "../../../components/RecommendationCard";
+import { FeedContext } from "../../../context/FeedContext";
+import { TheatreItem } from "../../../types";
 
 export function ArtistRecommendationsZone() {
   const navigate = useNavigate();
   if (!MOCK_RECOMMENDATIONS || MOCK_RECOMMENDATIONS.length === 0) return null;
 
   const displayRecs = MOCK_RECOMMENDATIONS.slice(0, 5);
+
+  const feedContextItems = React.useMemo(() => {
+    return displayRecs.map((rec) => ({
+      id: `rec-${rec.id}`,
+      category: "Recommendation",
+      recId: rec.id,
+      image: rec.original.coverImage,
+      title: rec.original.title,
+      artist: rec.artist.name,
+      artistId: rec.artist.id,
+      artistAvatar: rec.artist.profilePicture,
+      originalIds: [rec.original.id],
+    } as TheatreItem));
+  }, [displayRecs]);
 
   return (
     <div className="relative">
@@ -30,13 +46,14 @@ export function ArtistRecommendationsZone() {
 
       {/* Horizontal Carousel */}
       <div className="overflow-x-auto no-scrollbar pb-6">
-        <motion.div
-          layout
-          className="flex gap-4 w-max px-6 md:px-12 items-start"
-        >
-          {displayRecs.map((rec) => (
-            <RecommendationCard key={rec.id} rec={rec} />
-          ))}
+        <FeedContext.Provider value={feedContextItems}>
+          <motion.div
+            layout
+            className="flex gap-4 w-max px-6 md:px-12 items-start"
+          >
+            {displayRecs.map((rec) => (
+              <RecommendationCard key={rec.id} rec={rec} />
+            ))}
 
           {/* Aesthetic View All Card */}
           {MOCK_RECOMMENDATIONS.length >= 5 && (
@@ -53,7 +70,8 @@ export function ArtistRecommendationsZone() {
             </button>
           )}
         </motion.div>
-      </div>
+      </FeedContext.Provider>
+    </div>
     </div>
   );
 }

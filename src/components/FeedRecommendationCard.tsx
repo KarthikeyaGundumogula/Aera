@@ -7,6 +7,8 @@ import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { SurgeBars } from "./SurgeBars";
 import { PosterImage } from "./PosterImage";
 import { formatRelativeTime } from "../utils/time";
+import { useWorkNavigation } from "../hooks/useWorkNavigation";
+import { TheatreItem } from "../types";
 
 interface Props {
   rec: Recommendation;
@@ -20,6 +22,24 @@ export function FeedRecommendationCard({ rec }: Props) {
   const [favorited, setFavorited] = useState(rec.favorited ?? false);
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const { openWork } = useWorkNavigation();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const theatreItem: TheatreItem = {
+      id: `rec-${rec.id}`,
+      category: "Recommendation",
+      recId: rec.id,
+      image: rec.original.coverImage,
+      title: rec.original.title,
+      artist: rec.artist.name,
+      artistId: rec.artist.id,
+      artistAvatar: rec.artist.profilePicture,
+      originalIds: [rec.original.id],
+    };
+    openWork(theatreItem);
+  };
+
   const navigate = useNavigate();
 
   const textRef = useRef<HTMLParagraphElement>(null);
@@ -121,7 +141,7 @@ export function FeedRecommendationCard({ rec }: Props) {
             {/* TOP: Film Title */}
             <div
               className="px-3 pt-3 pb-2 cursor-pointer border-b border-white/[0.04] flex items-start justify-between gap-2"
-              onClick={(e) => { e.stopPropagation(); navigate(`/originals/${rec.original.id}`); }}
+              onClick={handleCardClick}
             >
               <h3
                 className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2"

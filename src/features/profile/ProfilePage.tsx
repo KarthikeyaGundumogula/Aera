@@ -6,7 +6,10 @@ import React, {
   useDeferredValue,
 } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK, GRID_ITEMS } from "../../mock";
+import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK, GRID_ITEMS, ORIGINALS } from "../../mock";
+import { MOCK_RECOMMENDATIONS, Recommendation } from "../../mock/recommendations";
+import { OriginalPosterCard } from "../originals/components/OriginalPosterCard";
+import { FeedRecommendationCard } from "../../components/FeedRecommendationCard";
 import { buildClusters } from "../theatre/engine/clusterBuilder";
 import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
 import { UnifiedTheatre } from "../theatre/components/UnifiedTheatre";
@@ -77,6 +80,7 @@ const loadedProfiles = new Set<string>();
 const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const [isFavorited, setIsFavorited] = useState(false);
+  const [activeTab, setActiveTab] = useState<"THEATRE" | "COLLECTIONS" | "RECOMMENDATIONS">("THEATRE");
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -243,33 +247,66 @@ const ProfilePage: React.FC = () => {
         className="pt-16 md:pt-32 pb-8"
       />
 
-      {/* ─── THEATRE SECTION ─── */}
-      <div className="relative z-20 w-full bg-surface-deep min-h-screen pt-2 pb-20 text-white">
-        <section className="px-8 md:px-12">
-          {/* Header with Enter Theatre button - Matching OriginalTheatreSection */}
-          <div className="mb-12 flex items-center justify-between">
-            <SectionHeader 
-              iconNode={<div className="w-4 h-px bg-white" />} 
-              title="Theatre" 
-            />
-
-            <button
-              onClick={() => navigate(`/theatre?artist=${profile.id}`)}
-              className="group inline-flex items-center gap-2 text-white/40 transition-all hover:text-white active:scale-95"
-            >
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                Enter
-              </span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </button>
+      {/* ─── TABS & CONTENT (Native Background) ─── */}
+      <div className="relative z-20 w-full bg-surface-deep min-h-screen text-white">
+        
+        {/* ─── TABS NAVIGATION ─── */}
+        <div className="w-full flex justify-center mt-2 mb-2">
+          <div className="flex items-center gap-8 md:gap-16">
+            {(["THEATRE", "COLLECTIONS", "RECOMMENDATIONS"] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-2 text-[10px] md:text-[11px] font-black tracking-[0.2em] uppercase transition-all ${
+                  activeTab === tab
+                    ? "text-white"
+                    : "text-white/40 hover:text-white/80"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <UnifiedTheatre 
-            works={userWorks}
-            variant="preview"
-            maxClusters={2}
-          />
-        </section>
+        {/* ─── TAB CONTENT ─── */}
+        <div className="w-full pt-0 pb-20">
+        <section className="px-8 md:px-12">
+          
+          {activeTab === "THEATRE" && (
+            <>
+              <UnifiedTheatre 
+                works={userWorks}
+                variant="full"
+                disablePadding={true}
+              />
+            </>
+          )}
+
+          {activeTab === "COLLECTIONS" && (
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1.5 sm:gap-4 md:gap-5 items-stretch mt-2">
+              {ORIGINALS.map((original, index) => (
+                <OriginalPosterCard
+                  key={original.id}
+                  original={original}
+                  makers={MAKERS_MOCK}
+                  stars={STARS_MOCK}
+                  index={index}
+                />
+              ))}
+            </div>
+          )}
+
+          {activeTab === "RECOMMENDATIONS" && (
+            <div className="flex flex-col gap-12 max-w-2xl mx-auto mt-2">
+              {MOCK_RECOMMENDATIONS.map((rec: Recommendation) => (
+                <FeedRecommendationCard key={rec.id} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          </section>
+        </div>
       </div>
     </div>
   );
