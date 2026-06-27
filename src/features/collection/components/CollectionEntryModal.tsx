@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
 import { X, Search, Infinity, Film, Eye, Clock, BookmarkPlus, ChevronLeft } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
-import { mockLedger, LedgerItem } from "../../../mock/ledger";
+import { mockCollection, CollectionItem } from "../../../mock/collection";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
 
@@ -11,7 +11,7 @@ const AMBER     = "#D97706";
 const AMBER_DIM  = "rgba(217,119,6,0.10)";
 const AMBER_GLOW = "rgba(217,119,6,0.28)";
 
-interface LedgerEntryModalProps {
+interface CollectionEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -193,8 +193,8 @@ function CinematicTextarea({
 
 // ─── Main modal ───────────────────────────────────────────────────────────────
 
-export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
-  const [existingIds] = useState<string[]>(() => mockLedger.map((l) => l.originalId));
+export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalProps) {
+  const [existingIds] = useState<string[]>(() => mockCollection.map((l) => l.originalId));
   const [selectedOriginal, setSelectedOriginal] = useState<Original | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [status, setStatus] = useState<EntryStatus>("want_to_watch");
@@ -264,7 +264,7 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
 
   const handleConfirm = useCallback(() => {
     if (!selectedOriginal) return;
-    const newEntry: LedgerItem = {
+    const newEntry: CollectionItem = {
       id: `wl_${Date.now()}`,
       originalId:       selectedOriginal.id,
       originalName:     selectedOriginal.title,
@@ -279,13 +279,13 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
       addedAt: new Date().toISOString(),
     };
     setIsAdded(true);
-    mockLedger.unshift(newEntry);
-    window.dispatchEvent(new CustomEvent("ledgerUpdated"));
+    mockCollection.unshift(newEntry);
+    window.dispatchEvent(new CustomEvent("collectionUpdated"));
     setTimeout(() => onClose(), 1300);
   }, [selectedOriginal, status, expectations, afterThoughts, onClose]);
 
   const canSubmit  = selectedOriginal !== null;
-  const submitLabel = status === "watched" ? "Seal the Verdict" : "Log to Ledger";
+  const submitLabel = status === "watched" ? "Seal the Verdict" : "Log to Collection";
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -328,7 +328,7 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
             key="lem-modal"
             role="dialog"
             aria-modal="true"
-            aria-label="New Ledger Entry"
+            aria-label="Add to Collection"
             className="fixed inset-0 z-[210] flex items-center justify-center px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -388,7 +388,7 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                       className="text-[9px] font-black uppercase tracking-[0.35em]"
                       style={{ color: `${AMBER}99` }}
                     >
-                      Ledger
+                      Collection
                     </span>
                   </div>
                   <h2 className="text-white text-lg font-light tracking-wide leading-tight">
@@ -397,7 +397,7 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                   <p className="mt-1 text-[11px] text-white/30 leading-relaxed font-light">
                     Mark what you've seen or what you intend to.
                     <br />
-                    Your ledger is your theatre history.
+                    Your collection is your theatre history.
                   </p>
                 </div>
                 <button

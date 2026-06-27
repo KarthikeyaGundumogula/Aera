@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
-import { mockLedger, LedgerItem } from "../../mock/ledger";
-import { LedgerItemCard } from "./components/LedgerItemCard";
+import { mockCollection, CollectionItem } from "../../mock/collection";
+import { CollectionItemCard } from "./components/CollectionItemCard";
 import { ArrowLeft, Plus } from "lucide-react";
 
-export function LedgerPage() {
-  const [ledger, setLedger] = useState<LedgerItem[]>(mockLedger);
+export function CollectionPage() {
+  const [collection, setCollection] = useState<CollectionItem[]>(mockCollection);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const filter = searchParams.get("filter") || "all";
 
-  // Listen for global ledger updates from the LedgerEntryModal
+  // Listen for global collection updates from the CollectionEntryModal
   useEffect(() => {
     const handleUpdate = () => {
-      setLedger([...mockLedger]);
+      setCollection([...mockCollection]);
     };
-    window.addEventListener("ledgerUpdated", handleUpdate);
-    return () => window.removeEventListener("ledgerUpdated", handleUpdate);
+    window.addEventListener("collectionUpdated", handleUpdate);
+    return () => window.removeEventListener("collectionUpdated", handleUpdate);
   }, []);
 
-  const handleUpdateItem = (updatedItem: LedgerItem) => {
-    setLedger(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+  const handleUpdateItem = (updatedItem: CollectionItem) => {
+    setCollection(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
   };
 
-  const filteredLedger = ledger.filter((item) => {
+  const filteredCollection = collection.filter((item) => {
     if (filter === "all") return true;
     return item.status === filter;
   });
@@ -42,10 +42,10 @@ export function LedgerPage() {
           </button>
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
-              Ledger
+              Collection
             </h1>
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('openLedgerModal'))}
+              onClick={() => window.dispatchEvent(new CustomEvent('openCollectionModal'))}
               className={`group flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex-shrink-0 bg-white/5 text-white/60 border-white/10 hover:border-white/30 hover:text-white`}
             >
               <Plus className={`w-4 h-4 transition-transform duration-300 group-hover:rotate-90`} />
@@ -53,7 +53,7 @@ export function LedgerPage() {
             </button>
           </div>
           <p className="text-white/40 text-sm sm:text-base max-w-xl mt-4">
-            Your cinematic ledger. Track originals, document your expectations, and log your thoughts.
+            Your cinematic collection. Track originals, document your expectations, and log your thoughts.
           </p>
         </header>
 
@@ -88,17 +88,17 @@ export function LedgerPage() {
 
         {/* Grid (Vertical Stack) */}
         <div className="flex flex-col space-y-4 max-w-4xl mx-auto">
-          {filteredLedger.map((item) => (
-            <LedgerItemCard key={item.id} item={item} onUpdate={handleUpdateItem} />
+          {filteredCollection.map((item) => (
+            <CollectionItemCard key={item.id} item={item} onUpdate={handleUpdateItem} />
           ))}
 
-          {filteredLedger.length === 0 && (
+          {filteredCollection.length === 0 && (
             <div className="py-20 flex flex-col items-center justify-center text-center">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/15 mb-4">
                 No entries yet
               </p>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('openLedgerModal'))}
+                onClick={() => window.dispatchEvent(new CustomEvent('openCollectionModal'))}
                 className="text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-colors"
               >
                 + Add your first entry

@@ -26,6 +26,7 @@ interface RecommendationWorkProps extends Pick<BaseWorkProps, "variant" | "prior
  */
 export const RecommendationWork = memo(function RecommendationWork({
   item,
+  variant = "theatre-desktop",
   priority = "lazy",
 }: RecommendationWorkProps) {
   const [isLoaded, setIsLoaded] = useState(false);

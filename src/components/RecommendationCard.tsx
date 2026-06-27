@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from "lucide-react";
@@ -15,10 +15,10 @@ interface Props {
   variant?: "default" | "modal";
 }
 
-export function RecommendationCard({ rec, variant = "default" }: Props) {
+export const RecommendationCard = memo(function RecommendationCard({ rec, variant = "default" }: Props) {
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [boosted, setBoosted] = useState(false);
-  const [inLedger, setInLedger] = useState(false);
+  const [inCollection, setInCollection] = useState(false);
   const [saved, setSaved] = useState(false);
   const [favorited, setFavorited] = useState(rec.favorited ?? false);
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
@@ -120,11 +120,10 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
 
       {/* ── The Card ── */}
       <div
-        onClick={handleCardClick}
         className={
           variant === "default"
-            ? "relative h-[310px] w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden cursor-pointer bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
-            : `relative w-full overflow-hidden ${variant !== "modal" ? "cursor-pointer" : ""}`
+            ? "relative h-[310px] w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
+            : "relative w-full overflow-hidden"
         }
         style={
           variant === "default"
@@ -206,8 +205,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
 
             {/* TOP: Film Title */}
             <div
-              className={`px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2 ${variant !== "modal" ? "cursor-pointer" : ""}`}
-              onClick={handleCardClick}
+              className="px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2"
             >
               <h3
                 className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2"
@@ -229,7 +227,8 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
               ref={scrollContainerRef}
               onScroll={handleScroll}
               layout 
-              className="flex-1 min-h-0 px-3 py-2 w-full relative z-20 overflow-y-auto no-scrollbar"
+              className={`flex-1 min-h-0 px-3 py-2 w-full relative z-20 overflow-y-auto no-scrollbar ${variant !== "modal" ? "cursor-pointer" : ""}`}
+              onClick={handleCardClick}
             >
               <motion.p
                 ref={textRef}
@@ -270,14 +269,17 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
             </motion.div>
 
             {/* FOOTER: Artist + Separator + Score — shrink-0, no gap above */}
-            <motion.div
-              layout
+            <div
               className={`px-3 flex flex-col shrink-0 border-t border-white/[0.04] w-full relative z-10 ${hideScoreRow ? "pt-2 pb-0.5 gap-0" : "py-2 gap-2"}`}
             >
                     {/* Artist row: avatar + name + stats + artistLiked heart */}
                     <motion.div
-                      layout
-                      animate={{ opacity: hideArtistRow ? 0 : 1, filter: hideArtistRow ? "blur(4px)" : "blur(0px)", height: hideArtistRow ? 0 : "28px", overflow: "hidden" }}
+                      style={{ transformOrigin: "top", overflow: "hidden" }}
+                      animate={{ 
+                        scaleY: hideArtistRow ? 0 : 1,
+                        opacity: hideArtistRow ? 0 : 1,
+                        filter: hideArtistRow ? "blur(4px)" : "blur(0px)"
+                      }}
                       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                       className="flex items-center gap-2.5"
                     >
@@ -329,15 +331,22 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
 
               {/* Partition between artist info and score+user-favorite */}
               <motion.div
-                layout
-                animate={{ opacity: hideScoreRow ? 0 : 1, height: hideScoreRow ? 0 : "1px", marginTop: hideScoreRow ? 0 : undefined, marginBottom: hideScoreRow ? 0 : undefined }}
-                className="w-full bg-white/[0.05]"
+                style={{ transformOrigin: "top", overflow: "hidden" }}
+                animate={{ 
+                  scaleY: hideScoreRow ? 0 : 1,
+                  opacity: hideScoreRow ? 0 : 1,
+                }}
+                className="h-px w-full bg-white/[0.05]"
               />
 
               {/* Score + Favorite Row — matched to 28px artist row height */}
               <motion.div
-                layout
-                animate={{ opacity: hideScoreRow ? 0 : 1, filter: hideScoreRow ? "blur(4px)" : "blur(0px)", height: hideScoreRow ? 0 : "28px", overflow: hideScoreRow ? "hidden" : "visible" }}
+                style={{ transformOrigin: "top", overflow: "hidden" }}
+                animate={{ 
+                  scaleY: hideScoreRow ? 0 : 1,
+                  opacity: hideScoreRow ? 0 : 1,
+                  filter: hideScoreRow ? "blur(4px)" : "blur(0px)"
+                }}
                 transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                 className="flex items-center gap-2.5"
               >
@@ -360,11 +369,12 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                   {/* Score numbers */}
                   <div className="flex items-baseline gap-0.5 whitespace-nowrap">
                     <span className="text-[14px] font-black text-white leading-none tracking-tighter">
-                      {rec.score.toString()}
+                      {Math.round(((rec.score || 0) / highestScore) * 100)}%
                     </span>
-                    <span className="text-[7px] font-black tracking-widest">
-                      <span className="text-white/25">/ </span>
-                      <span className="text-amber-500/80">{highestScore.toString()}</span>
+                    <span className="text-[7px] font-black tracking-widest uppercase ml-1">
+                      <span className="text-white/30">
+                        {(rec.score || 0).toString()} / {highestScore.toString()}
+                      </span>
                     </span>
 
                   </div>
@@ -413,7 +423,7 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                 </button>
 
               </motion.div>
-            </motion.div>
+            </div>
 
             {/* ACTION ROW (At the very bottom, fixed in flow) */}
             <div className="shrink-0 px-3 pb-2 bg-transparent relative z-20">
@@ -434,15 +444,15 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
                 </button>
 
                 <button
-                  onPointerDown={(e) => { e.preventDefault(); setInLedger(!inLedger); }}
+                  onPointerDown={(e) => { e.preventDefault(); setInCollection(!inCollection); }}
                   className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
-                    inLedger
+                    inCollection
                       ? "text-white bg-white/[0.12]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
                   }`}
                 >
-                  <BookOpen className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" fill={inLedger ? "currentColor" : "none"} />
-                  <span className="hidden sm:inline truncate">{inLedger ? "Added" : "Add"}</span>
+                  <BookOpen className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" fill={inCollection ? "currentColor" : "none"} />
+                  <span className="hidden sm:inline truncate">{inCollection ? "Added" : "Add"}</span>
                 </button>
 
                 <button
@@ -480,4 +490,4 @@ export function RecommendationCard({ rec, variant = "default" }: Props) {
       )}
     </div>
   );
-}
+});

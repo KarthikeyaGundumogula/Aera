@@ -39,8 +39,8 @@ import {
   SetDetailPage,
   DiscussionPage,
   FestivalDetailPage,
-  // Ledger
-  LedgerPage,
+  // Collection
+  CollectionPage,
   // Center
   CenterPage,
   RecommendationsPage,
@@ -141,7 +141,7 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
-            <Route path="/ledger" element={<LedgerPage />} />
+            <Route path="/collection" element={<CollectionPage />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}
             <Route

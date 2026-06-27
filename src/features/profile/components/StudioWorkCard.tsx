@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, memo } from "react";
 import { Pencil, Check, X, Film, FileText, Image as ImageIcon, Sparkles } from "lucide-react";
 import { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
@@ -10,7 +10,7 @@ interface StudioWorkCardProps {
   onRename: (newTitle: string) => void;
 }
 
-export function StudioWorkCard({ item, onRename }: StudioWorkCardProps) {
+export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename }: StudioWorkCardProps) {
   const { openWork } = useWorkNavigation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(item.title || "");
@@ -202,4 +202,4 @@ export function StudioWorkCard({ item, onRename }: StudioWorkCardProps) {
       </div>
     </div>
   );
-}
+});

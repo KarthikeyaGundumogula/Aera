@@ -53,7 +53,7 @@ export function OriginalPage() {
           setTimeout(() => setShowToast(false), 3000);
         }
       },
-      description: "Log to Ledger",
+      description: "Add to Collection",
     },
     {
       label: "Update Original",
@@ -286,7 +286,7 @@ export function OriginalPage() {
           >
             <Bookmark size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
-              Added to Ledger
+              Added to Collection
             </span>
           </motion.div>
         )}

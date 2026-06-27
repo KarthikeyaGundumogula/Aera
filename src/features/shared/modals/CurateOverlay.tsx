@@ -19,7 +19,7 @@ export function CurateOverlay({
   onShowToast,
 }: CurateOverlayProps) {
   const navigate = useNavigate();
-  const [ledgerOriginals, setLedgerOriginals] = useState<string[]>([]);
+  const [collectionOriginals, setCollectionOriginals] = useState<string[]>([]);
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
   // Only show the originals that this fragment is related to
@@ -28,24 +28,24 @@ export function CurateOverlay({
     ...ORIGINALS.filter((item) => originalIds.includes(item.id))
   ];
 
-  const handleAddToLedger = (id: string) => {
-    if (ledgerOriginals.includes(id)) {
-      onShowToast("Already Saved to Ledger");
+  const handleAddToCollection = (id: string) => {
+    if (collectionOriginals.includes(id)) {
+      onShowToast("Already Saved to Collection");
     } else {
-      setLedgerOriginals((prev) => [...prev, id]);
-      onShowToast("Original Added to Ledger");
+      setCollectionOriginals((prev) => [...prev, id]);
+      onShowToast("Original Added to Collection");
     }
   };
 
-  const handleTagToLedger = (id: string) => {
+  const handleTagToCollection = (id: string) => {
     if (taggedOriginals.includes(id)) {
       onShowToast("Already Tagged to Original");
       return;
     }
 
     setTaggedOriginals((prev) => [...prev, id]);
-    if (!ledgerOriginals.includes(id)) {
-      setLedgerOriginals((prev) => [...prev, id]);
+    if (!collectionOriginals.includes(id)) {
+      setCollectionOriginals((prev) => [...prev, id]);
       onShowToast("Original Added & Work Tagged");
     } else {
       onShowToast("Work Tagged to Original");
@@ -87,7 +87,7 @@ export function CurateOverlay({
               </div>
             ) : (
               relatedOriginals.map((item) => {
-                const inLedger = ledgerOriginals.includes(item.id);
+                const inCollection = collectionOriginals.includes(item.id);
                 const isTagged = taggedOriginals.includes(item.id);
 
                 return (
@@ -111,18 +111,18 @@ export function CurateOverlay({
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2 pr-1 sm:pr-2">
                       <button
-                        onClick={() => handleAddToLedger(item.id)}
-                        className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${inLedger ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"}`}
-                        title="Add to Ledger"
+                        onClick={() => handleAddToCollection(item.id)}
+                        className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${inCollection ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"}`}
+                        title="Add to Collection"
                       >
                         <Bookmark
-                          className={`w-3 h-3 sm:w-4 sm:h-4 ${inLedger ? "fill-current" : ""}`}
+                          className={`w-3 h-3 sm:w-4 sm:h-4 ${inCollection ? "fill-current" : ""}`}
                         />
                       </button>
                       <button
-                        onClick={() => handleTagToLedger(item.id)}
+                        onClick={() => handleTagToCollection(item.id)}
                         className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${isTagged ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10"}`}
-                        title="Tag work to Ledger"
+                        title="Tag work to Collection"
                       >
                         <Tag
                           className={`w-3 h-3 sm:w-4 sm:h-4 ${isTagged ? "fill-current" : ""}`}

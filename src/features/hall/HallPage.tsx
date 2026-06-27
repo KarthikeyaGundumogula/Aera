@@ -10,7 +10,7 @@ import {
   THOUGHTS_MOCK,
   CURRENT_USER_MOCK,
 } from "../../mock";
-import { mockLedger } from "../../mock/ledger";
+import { mockCollection } from "../../mock/collection";
 import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
@@ -20,7 +20,7 @@ import { HorizontalClusterSection } from "./components/HorizontalClusterSection"
 import { FestivalsZone } from "./components/FestivalsZone";
 import { DiscussionsZone } from "./components/DiscussionsZone";
 import { RecommendationsZone } from "./components/RecommendationsZone";
-import { LedgerTabsZone } from "./components/LedgerTabsZone";
+import { CollectionTabsZone } from "./components/CollectionTabsZone";
 import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
 import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZone";
@@ -39,7 +39,7 @@ export default function HallPage() {
   const originalsRef = useRef<HTMLElement>(null);
   const festivalsRef = useRef<HTMLElement>(null);
   const recommendationsRef = useRef<HTMLElement>(null);
-  const ledgerRef = useRef<HTMLElement>(null);
+  const collectionRef = useRef<HTMLElement>(null);
 
   // ── Works from Favorited Originals ────────────────────────────────────────
   const favIds = useMemo(
@@ -57,8 +57,8 @@ export default function HallPage() {
     [favIds]
   );
 
-  // ── Ledger ────────────────────────────────────────────────────────────────
-  const ledgerItems = useMemo(() => mockLedger, []);
+  // ── Collection ────────────────────────────────────────────────────────────────
+  const collectionItems = useMemo(() => mockCollection, []);
 
   // ── Festivals from member Sets ────────────────────────────────────────────
   const memberSetIds = useMemo(
@@ -169,17 +169,17 @@ export default function HallPage() {
         )}
 
         {/* ══════════════════════════════════════════════════════
-            SCENE 4 — YOUR LEDGER
+            SCENE 4 — YOUR COLLECTION
         ══════════════════════════════════════════════════════ */}
         <motion.section
-          ref={ledgerRef}
-          id="section-ledger"
+          ref={collectionRef}
+          id="section-collection"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6 scroll-mt-24"
         >
-          <LedgerTabsZone />
+          <CollectionTabsZone />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
@@ -216,7 +216,7 @@ export default function HallPage() {
 
         {/* Empty state */}
         {!favoritedWorks.length &&
-          !ledgerItems.length &&
+          !collectionItems.length &&
           !memberFestivals.length &&
           !memberDiscussions.length && (
             <div className="flex flex-col items-center justify-center py-40 px-6 text-center">
@@ -224,7 +224,7 @@ export default function HallPage() {
                 Your hall is empty
               </p>
               <p className="text-[11px] text-white/15 font-mono max-w-xs leading-relaxed">
-                Favorite Originals, join Sets, and fill your Ledger to unlock
+                Favorite Originals, join Sets, and fill your Collection to unlock
                 your curation.
               </p>
             </div>

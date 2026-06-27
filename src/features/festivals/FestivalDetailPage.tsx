@@ -111,6 +111,8 @@ export function FestivalDetailPage() {
           <img 
             src={localFestival.coverImage} 
             alt=""
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover object-top opacity-60 mix-blend-screen"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />

@@ -32,8 +32,13 @@ interface SurgeScoreProps {
 export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScoreProps) {
   const [isHolding, setIsHolding] = useState(false);
   const [showScoreTooltip, setShowScoreTooltip] = useState(false);
+  const [atPeakBoundary, setAtPeakBoundary] = useState(false);
 
   const holdStartRef = useRef<number>(0);
+  const lastTickRef  = useRef<number>(0);
+  const peakPauseStartRef = useRef<number | null>(null);
+  const canExceedPeakRef = useRef<boolean>(false);
+  const atPeakBoundaryRef = useRef<boolean>(false);
   const rafRef       = useRef<number | null>(null);
   const scoreRef     = useRef<number>(score);
 
@@ -74,26 +79,55 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
 
   const startHold = useCallback(() => {
     setIsHolding(true);
-    holdStartRef.current = performance.now();
+    const initialTime = performance.now();
+    holdStartRef.current = initialTime;
+    lastTickRef.current = initialTime;
+    peakPauseStartRef.current = null;
+    canExceedPeakRef.current = scoreRef.current >= (peak ?? VISUAL_MAX);
+    atPeakBoundaryRef.current = false;
+    setAtPeakBoundary(false);
 
     const tick = () => {
       const now = performance.now();
+      const dt = now - lastTickRef.current;
+      lastTickRef.current = now;
+      
       const holdDuration = (now - holdStartRef.current) / 1000; // in seconds
       
       const effectiveMax = peak ?? VISUAL_MAX;
       
-      // Dynamic acceleration based on peak so it always takes ~2.0 seconds to fill
-      const baseRate = 0.1 * effectiveMax;
-      const accel = 0.4 * effectiveMax;
-      let rate = baseRate + (accel * holdDuration);
+      // Dynamic deceleration (ease-out) based on peak so it always takes ~3.0 seconds to fill
+      // Starts fast, ends slow.
+      const initialRate = 0.6466 * effectiveMax;
+      const decel = 0.2088 * effectiveMax;
+      let rate = Math.max(0, initialRate - (decel * holdDuration));
       
       // Drastically slow down the rate to give the feeling of pushing past the peak
       if (scoreRef.current >= effectiveMax) {
-        // Slow crawl: 3% of peak per second, with a minimum of 15 pts/sec
-        rate = Math.max(15, 0.03 * effectiveMax);
+        if (!canExceedPeakRef.current) {
+          scoreRef.current = effectiveMax;
+          rate = 0;
+          if (!atPeakBoundaryRef.current) {
+            atPeakBoundaryRef.current = true;
+            setAtPeakBoundary(true);
+          }
+        } else {
+          if (peakPauseStartRef.current === null) {
+            peakPauseStartRef.current = now;
+          }
+
+          const timeSincePeak = now - peakPauseStartRef.current;
+          if (timeSincePeak < 800) {
+            // Pause for 800ms to signify the decision boundary
+            rate = 0;
+          } else {
+            // Slow crawl: 3% of peak per second, with a minimum of 15 pts/sec
+            rate = Math.max(15, 0.03 * effectiveMax);
+          }
+        }
       }
       
-      const increment = (rate * TICK_MS) / 1000;
+      const increment = (rate * dt) / 1000;
       scoreRef.current += increment;
       const rounded = Math.round(scoreRef.current);
       onChange(rounded);
@@ -204,7 +238,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
                 textShadow: glowShadow,
               }}
             >
-              {score === 0 ? "—" : score.toString()}
+              {score === 0 ? "—" : `${Math.round((score / (peak ?? VISUAL_MAX)) * 100)}%`}
             </motion.span>
           </motion.div>
           
@@ -215,11 +249,13 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
               className="flex items-center gap-1.5 mt-1"
             >
               <span className="text-[8px] font-black uppercase tracking-widest text-white/30">
-                Peak: {peak}
+                {score.toString()} / {peak}
               </span>
-              <span className={`text-[8px] font-black uppercase tracking-widest ${score >= peak ? 'text-[#EF4444]' : 'text-white/15'}`}>
-                {score >= peak ? 'New Peak!' : `-${peak - score}`}
-              </span>
+              {score >= peak && (
+                <span className="text-[8px] font-black uppercase tracking-widest text-[#EF4444]">
+                  New Peak!
+                </span>
+              )}
             </motion.div>
           )}
         </div>
@@ -304,6 +340,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
           {score > 0 && (
             <motion.span
               key={
+                atPeakBoundary ? "boundary" :
                 score > (peak ?? VISUAL_MAX) ? "peak" :
                 (score / (peak ?? VISUAL_MAX)) > 0.8 ? "five" :
                 (score / (peak ?? VISUAL_MAX)) > 0.6 ? "four" :
@@ -316,7 +353,8 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
               transition={{ duration: 0.15 }}
               className="text-[10px] text-white/50 tracking-widest uppercase font-semibold"
             >
-              {score > (peak ?? VISUAL_MAX) ? "Peak Cinema" :
+              {atPeakBoundary ? "Hold again to record new peak" :
+               score > (peak ?? VISUAL_MAX) ? "Peak Cinema" :
                (score / (peak ?? VISUAL_MAX)) > 0.8 ? "Absolute cinema" :
                (score / (peak ?? VISUAL_MAX)) > 0.6 ? "Remarkable Cinematic Experience" :
                (score / (peak ?? VISUAL_MAX)) > 0.4 ? "It had its moments" :
@@ -334,9 +372,13 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onPointerLeave={handlePointerUp}
+        onContextMenu={(e) => { e.preventDefault(); return false; }}
         whileTap={{ scale: 0.97 }}
         className="relative w-full h-16 rounded-xl overflow-hidden focus-visible:outline-none touch-none select-none"
         style={{
+          WebkitTouchCallout: "none",
+          WebkitUserSelect: "none",
+          userSelect: "none",
           WebkitTapHighlightColor: "transparent",
           boxShadow: isHolding
             ? `0 0 0 1px ${AMBER}55, inset 0 0 32px ${AMBER_DIM}`

@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
-import { LedgerItem } from "../../../mock/ledger";
+import { CollectionItem } from "../../../mock/collection";
 
-interface LedgerZoneProps {
-  items: LedgerItem[];
+interface CollectionZoneProps {
+  items: CollectionItem[];
 }
 
 const STATUS_MAP = {
@@ -22,14 +22,14 @@ const STATUS_MAP = {
   },
 };
 
-function LedgerCard({ item }: { item: LedgerItem }) {
+function CollectionCard({ item }: { item: CollectionItem }) {
   const navigate = useNavigate();
   const statusCfg = STATUS_MAP[item.status];
   const StatusIcon = statusCfg.icon;
 
   return (
     <motion.button
-      onClick={() => navigate("/ledger")}
+      onClick={() => navigate("/collection")}
       whileHover={{ scale: 1.015 }}
       whileTap={{ scale: 0.98 }}
       className="
@@ -81,14 +81,14 @@ function LedgerCard({ item }: { item: LedgerItem }) {
   );
 }
 
-export function LedgerZone({ items }: LedgerZoneProps) {
+export function CollectionZone({ items }: CollectionZoneProps) {
   if (!items.length) return null;
 
   return (
     <div className="overflow-x-auto no-scrollbar pb-4">
       <div className="flex gap-4 w-max px-6 md:px-12">
         {items.map((item) => (
-          <LedgerCard key={item.id} item={item} />
+          <CollectionCard key={item.id} item={item} />
         ))}
       </div>
     </div>

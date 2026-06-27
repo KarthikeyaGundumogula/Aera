@@ -42,10 +42,10 @@ export function ProfileNav({
       description: "Manage your stage"
     },
     {
-      label: "Ledger",
+      label: "Collection",
       icon: <Bookmark className="w-4 h-4" />,
-      path: "/ledger",
-      description: "Your cinematic ledger"
+      path: "/collection",
+      description: "Your cinematic collection"
     },
     {
       label: "Contact Founder",

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clapperboard, X, BookPlus, Sparkles } from "lucide-react";
 import { RecommendationModal } from "./RecommendationModal";
 import { CreateRecommendationModal } from "./CreateRecommendationModal";
-import { LedgerEntryModal } from "@/features/ledger/components/LedgerEntryModal";
+import { CollectionEntryModal } from "@/features/collection/components/CollectionEntryModal";
 import { ActionNode, ARC_RADIUS } from "./fab/ActionNode";
 import { useRecommendationContext } from "../context/RecommendationContext";
 
@@ -35,7 +35,7 @@ export function GlobalActionFAB() {
     closeRecommendation
   } = useRecommendationContext();
 
-  const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [isCreateRecOpen, setIsCreateRecOpen] = useState(false);
   const [isSnapping, setIsSnapping] = useState(false);
   const [flashVisible, setFlashVisible] = useState(false);
@@ -167,13 +167,13 @@ export function GlobalActionFAB() {
       window.removeEventListener("keydown", handleInteraction);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
-  }, [isMenuOpen, isModalOpen, isLedgerModalOpen, isCreateRecOpen]);
+  }, [isMenuOpen, isModalOpen, isCollectionModalOpen, isCreateRecOpen]);
 
-  // Listen for global event to open Ledger Modal
+  // Listen for global event to open Collection Modal
   useEffect(() => {
-    const handleOpenLedger = () => setIsLedgerModalOpen(true);
-    window.addEventListener("openLedgerModal", handleOpenLedger);
-    return () => window.removeEventListener("openLedgerModal", handleOpenLedger);
+    const handleOpenCollection = () => setIsCollectionModalOpen(true);
+    window.addEventListener("openCollectionModal", handleOpenCollection);
+    return () => window.removeEventListener("openCollectionModal", handleOpenCollection);
   }, []);
 
   function handleOpen() {
@@ -352,12 +352,12 @@ export function GlobalActionFAB() {
               />
               <ActionNode
                 icon={<BookPlus className="w-5 h-5" strokeWidth={2.5} />}
-                label="New Ledger Entry"
+                label="Add to Collection"
                 angleDeg={-165} 
                 delay={0.05}
                 onClick={() => {
                   setIsMenuOpen(false);
-                  setIsLedgerModalOpen(true);
+                  setIsCollectionModalOpen(true);
                 }}
               />
             </>
@@ -474,9 +474,9 @@ export function GlobalActionFAB() {
         onClose={() => setIsCreateRecOpen(false)}
       />
 
-      <LedgerEntryModal 
-        isOpen={isLedgerModalOpen}
-        onClose={() => setIsLedgerModalOpen(false)}
+      <CollectionEntryModal 
+        isOpen={isCollectionModalOpen}
+        onClose={() => setIsCollectionModalOpen(false)}
       />
     </>
   );

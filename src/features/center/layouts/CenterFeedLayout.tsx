@@ -148,6 +148,11 @@ export function CenterFeedLayout() {
     setHeroIndex(idx);
   };
 
+  // Cap DOM items to prevent memory blowout during long scroll sessions.
+  // When the user scrolls deep, old items at the head are evicted so the DOM
+  // stays roughly fixed in size. (Proper windowing can be added with react-virtuoso later.)
+  const MAX_DOM_ITEMS = 300;
+
   const loadMoreDown = useCallback(() => {
     if (isLoadingDown) return;
     setIsLoadingDown(true);
@@ -157,7 +162,13 @@ export function CenterFeedLayout() {
         ...item,
         id: `down-${Math.random()}`,
       }));
-      setItems((prev) => prev ? [...prev, ...nextItems] : nextItems);
+      setItems((prev) => {
+        const combined = prev ? [...prev, ...nextItems] : nextItems;
+        // Trim from the head if we exceed the DOM cap
+        return combined.length > MAX_DOM_ITEMS
+          ? combined.slice(combined.length - MAX_DOM_ITEMS)
+          : combined;
+      });
       setIsLoadingDown(false);
     }, 800);
   }, [isLoadingDown]);

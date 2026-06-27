@@ -143,7 +143,7 @@ export function SetDetailPage() {
           >
             <Bookmark size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
-              Added to Ledger
+              Added to Collection
             </span>
           </motion.div>
         )}

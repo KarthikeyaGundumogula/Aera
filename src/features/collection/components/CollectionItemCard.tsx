@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, Edit3, Check, X, Eye, Clock, MessageSquare } from "lucide-react";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
-import type { LedgerItem } from "../../../mock/ledger";
-import { LedgerTaggedWorksStack } from "./LedgerTaggedWorksStack";
+import type { CollectionItem } from "../../../mock/collection";
+import { CollectionTaggedWorksStack } from "./CollectionTaggedWorksStack";
 
-export function LedgerItemCard({ item, onUpdate }: { item: LedgerItem, onUpdate: (item: LedgerItem) => void }) {
+export const CollectionItemCard = memo(function CollectionItemCard({ item, onUpdate }: { item: CollectionItem, onUpdate: (item: CollectionItem) => void }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [hypeText, setHypeText] = useState(item.hypeText);
@@ -247,7 +247,7 @@ export function LedgerItemCard({ item, onUpdate }: { item: LedgerItem, onUpdate:
                   <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-4">
                     Works Collection
                   </div>
-                  <LedgerTaggedWorksStack works={item.taggedWorks} />
+                  <CollectionTaggedWorksStack works={item.taggedWorks} />
                 </div>
               )}
             </div>
@@ -256,4 +256,4 @@ export function LedgerItemCard({ item, onUpdate }: { item: LedgerItem, onUpdate:
       </AnimatePresence>
     </motion.div>
   );
-}
+});

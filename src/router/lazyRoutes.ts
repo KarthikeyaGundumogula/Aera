@@ -96,9 +96,9 @@ export const FestivalDetailPage = lazy(() =>
   import("@/features/festivals").then((m) => ({ default: m.FestivalDetailPage }))
 );
 
-// ─── Ledger ───────────────────────────────────────────────────────────────────
-export const LedgerPage = lazy(() =>
-  import("@/features/ledger").then((m) => ({ default: m.LedgerPage }))
+// ─── Collection ───────────────────────────────────────────────────────────────────
+export const CollectionPage = lazy(() =>
+  import("@/features/collection").then((m) => ({ default: m.CollectionPage }))
 );
 
 // ─── Center ───────────────────────────────────────────────────────────────────

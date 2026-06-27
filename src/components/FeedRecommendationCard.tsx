@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Zap, BookOpen, Bookmark, Info, ChevronDown, Heart, ArrowUpRight } from "lucide-react";
@@ -12,12 +12,13 @@ import { TheatreItem } from "../types";
 
 interface Props {
   rec: Recommendation;
+  variant?: "default" | "modal";
 }
 
-export function FeedRecommendationCard({ rec }: Props) {
+export const FeedRecommendationCard = memo(function FeedRecommendationCard({ rec, variant = "default" }: Props) {
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [boosted, setBoosted] = useState(false);
-  const [inLedger, setInLedger] = useState(false);
+  const [inCollection, setInCollection] = useState(false);
   const [saved, setSaved] = useState(false);
   const [favorited, setFavorited] = useState(rec.favorited ?? false);
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
@@ -65,10 +66,7 @@ export function FeedRecommendationCard({ rec }: Props) {
     <div className="flex flex-col gap-1.5 shrink-0 w-full">
 
       {/* ── The Card ── */}
-      <div 
-        className="relative w-full h-auto cursor-pointer"
-        onClick={handleCardClick}
-      >
+      <div className="relative w-full h-auto">
         {/* ── Horizontal Layout: Poster (Left) + Content (Right) ── */}
         <div className="flex h-full">
 
@@ -143,8 +141,7 @@ export function FeedRecommendationCard({ rec }: Props) {
 
             {/* TOP: Film Title */}
             <div
-              className="px-3 pt-3 pb-2 cursor-pointer border-b border-white/[0.04] flex items-start justify-between gap-2"
-              onClick={handleCardClick}
+              className="px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2"
             >
               <h3
                 className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2"
@@ -163,7 +160,11 @@ export function FeedRecommendationCard({ rec }: Props) {
             <div className="flex flex-col">
               
               {/* Notes */}
-              <motion.div layout className="px-3 py-2 shrink-0 w-full relative z-20">
+              <motion.div 
+                layout 
+                className={`px-3 py-2 shrink-0 w-full relative z-20 ${variant !== "modal" ? "cursor-pointer" : ""}`}
+                onClick={handleCardClick}
+              >
                 <motion.p
                   ref={textRef}
                   layout
@@ -271,11 +272,12 @@ export function FeedRecommendationCard({ rec }: Props) {
                 {/* Score numbers */}
                 <div className="flex items-baseline gap-0.5 whitespace-nowrap">
                   <span className="text-[14px] font-black text-white leading-none tracking-tighter">
-                    {rec.score.toString()}
+                    {Math.round(((rec.score || 0) / highestScore) * 100)}%
                   </span>
-                  <span className="text-[7px] font-black tracking-widest">
-                    <span className="text-white/25">/ </span>
-                    <span className="text-amber-500/80">{highestScore.toString()}</span>
+                  <span className="text-[7px] font-black tracking-widest uppercase ml-1">
+                    <span className="text-white/30">
+                      {(rec.score || 0).toString()} / {highestScore.toString()}
+                    </span>
                   </span>
 
                 </div>
@@ -346,15 +348,15 @@ export function FeedRecommendationCard({ rec }: Props) {
                 </button>
 
                 <button
-                  onPointerDown={(e) => { e.preventDefault(); setInLedger(!inLedger); }}
+                  onPointerDown={(e) => { e.preventDefault(); setInCollection(!inCollection); }}
                   className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
-                    inLedger
+                    inCollection
                       ? "text-white bg-white/[0.12]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
                   }`}
                 >
-                  <BookOpen className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" fill={inLedger ? "currentColor" : "none"} />
-                  <span className="hidden sm:inline">{inLedger ? "Added" : "Add"}</span>
+                  <BookOpen className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" fill={inCollection ? "currentColor" : "none"} />
+                  <span className="hidden sm:inline">{inCollection ? "Added" : "Add"}</span>
                 </button>
 
                 <button
@@ -392,4 +394,4 @@ export function FeedRecommendationCard({ rec }: Props) {
       )}
     </div>
   );
-}
+});
