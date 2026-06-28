@@ -59,6 +59,7 @@ export function HorizontalClusterSection({ items, compact = false }: HorizontalC
       >
         <FeedContext.Provider value={mobileFlat}>
           <div
+            className="px-6 md:px-12"
             style={{
               display: "flex",
               flexDirection: "row",
@@ -95,6 +96,7 @@ export function HorizontalClusterSection({ items, compact = false }: HorizontalC
     >
       <FeedContext.Provider value={desktopFlat}>
         <div
+          className="px-6 md:px-12"
           style={{
             display: "flex",
             flexDirection: "row",

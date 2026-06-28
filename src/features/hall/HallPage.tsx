@@ -25,6 +25,7 @@ import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
 import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZone";
 import { HallHero } from "./components/HallHero";
+import { TopOriginalsZone } from "./components/TopOriginalsZone";
 
 /**
  * Hall — The app's personalized curation for the user.
@@ -97,6 +98,18 @@ export default function HallPage() {
             HERO — Identity + Live stats
         ══════════════════════════════════════════════════════ */}
         <HallHero />
+
+        {/* ══════════════════════════════════════════════════════
+            NEW SCENE — TALK OF THE WEEK ORIGINALS
+        ══════════════════════════════════════════════════════ */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-6"
+        >
+          <TopOriginalsZone />
+        </motion.section>
 
         {/* ══════════════════════════════════════════════════════
             NEW SCENE — ARTIST RECOMMENDATIONS

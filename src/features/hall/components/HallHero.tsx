@@ -17,7 +17,7 @@ export function HallHero() {
   const randomQuote = CINEMATIC_QUOTES[quoteIdx];
 
   return (
-    <section className="relative overflow-hidden px-6 md:px-12 pt-6 pb-6">
+    <section className="relative overflow-hidden px-6 md:px-12 pt-6 pb-2">
       {/* Ambient background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-40 bg-white/[0.012] rounded-full blur-[80px]" />
