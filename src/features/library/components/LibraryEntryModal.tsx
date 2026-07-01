@@ -1,17 +1,32 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
-import { X, Search, Infinity, Film, Eye, Clock, BookmarkPlus, ChevronLeft } from "lucide-react";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "motion/react";
+import {
+  X,
+  Search,
+  Infinity,
+  Film,
+  Eye,
+  Clock,
+  BookmarkPlus,
+  ChevronLeft,
+} from "lucide-react";
 import { ORIGINALS } from "../../../mock";
-import { mockCollection, CollectionItem } from "../../../mock/collection";
+import { mockLibrary, CollectionItem } from "../../../mock/library";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
-const AMBER     = "#D97706";
-const AMBER_DIM  = "rgba(217,119,6,0.10)";
+const AMBER = "#D97706";
+const AMBER_DIM = "rgba(217,119,6,0.10)";
 const AMBER_GLOW = "rgba(217,119,6,0.28)";
 
-interface CollectionEntryModalProps {
+interface LibraryEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -22,20 +37,26 @@ type Original = (typeof ORIGINALS)[0];
 // ─── Resonance colour helpers (module-level, not recreated on render) ─────────
 
 function lerpRGB(
-  r1: number, g1: number, b1: number,
-  r2: number, g2: number, b2: number,
-  t: number
+  r1: number,
+  g1: number,
+  b1: number,
+  r2: number,
+  g2: number,
+  b2: number,
+  t: number,
 ): string {
   const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
-  return `rgb(${clamp(r1+(r2-r1)*t)},${clamp(g1+(g2-g1)*t)},${clamp(b1+(b2-b1)*t)})`;
+  return `rgb(${clamp(r1 + (r2 - r1) * t)},${clamp(g1 + (g2 - g1) * t)},${clamp(b1 + (b2 - b1) * t)})`;
 }
 
 function scoreRatioToColor(ratio: number): string {
-  if (ratio <= 0)   return "rgba(255,255,255,0.30)";
-  if (ratio <= 0.3) return lerpRGB(200,200,200, 255,255,255, ratio/0.3);
-  if (ratio <= 0.6) return lerpRGB(255,255,255, 255,220,140, (ratio-0.3)/0.3);
-  if (ratio <= 1.0) return lerpRGB(255,220,140, 217,119,  6, (ratio-0.6)/0.4);
-  return lerpRGB(217,119,6, 245,158,11, Math.min((ratio-1)*2, 1));
+  if (ratio <= 0) return "rgba(255,255,255,0.30)";
+  if (ratio <= 0.3) return lerpRGB(200, 200, 200, 255, 255, 255, ratio / 0.3);
+  if (ratio <= 0.6)
+    return lerpRGB(255, 255, 255, 255, 220, 140, (ratio - 0.3) / 0.3);
+  if (ratio <= 1.0)
+    return lerpRGB(255, 220, 140, 217, 119, 6, (ratio - 0.6) / 0.4);
+  return lerpRGB(217, 119, 6, 245, 158, 11, Math.min((ratio - 1) * 2, 1));
 }
 
 // ─── Grain overlay ────────────────────────────────────────────────────────────
@@ -189,13 +210,15 @@ function CinematicTextarea({
   );
 }
 
-
-
 // ─── Main modal ───────────────────────────────────────────────────────────────
 
-export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalProps) {
-  const [existingIds] = useState<string[]>(() => mockCollection.map((l) => l.originalId));
-  const [selectedOriginal, setSelectedOriginal] = useState<Original | null>(null);
+export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
+  const [existingIds] = useState<string[]>(() =>
+    mockLibrary.map((l) => l.originalId),
+  );
+  const [selectedOriginal, setSelectedOriginal] = useState<Original | null>(
+    null,
+  );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [status, setStatus] = useState<EntryStatus>("want_to_watch");
   const [expectations, setExpectations] = useState("");
@@ -204,7 +227,7 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
 
   // ── Surge score (only used in "watched" mode) ──────────────────────────
   const [surgeScore, setSurgeScore] = useState(0);
-  const [peakFlash, setPeakFlash]           = useState(false); // kept for global flash overlay above modal
+  const [peakFlash, setPeakFlash] = useState(false); // kept for global flash overlay above modal
 
   // Reset everything on open
   useEffect(() => {
@@ -228,19 +251,17 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
     }
   }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-
-
   // iOS scroll lock
   useEffect(() => {
     if (!isOpen) return;
     const saved = window.scrollY;
     document.body.style.position = "fixed";
-    document.body.style.top      = `-${saved}px`;
-    document.body.style.width    = "100%";
+    document.body.style.top = `-${saved}px`;
+    document.body.style.width = "100%";
     return () => {
       document.body.style.position = "";
-      document.body.style.top      = "";
-      document.body.style.width    = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
       window.scrollTo(0, saved);
     };
   }, [isOpen]);
@@ -258,34 +279,34 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, isSearchOpen, onClose]);
 
-
-
   // ── Submit ──────────────────────────────────────────────────────────────────
 
   const handleConfirm = useCallback(() => {
     if (!selectedOriginal) return;
     const newEntry: CollectionItem = {
       id: `wl_${Date.now()}`,
-      originalId:       selectedOriginal.id,
-      originalName:     selectedOriginal.title,
+      originalId: selectedOriginal.id,
+      originalName: selectedOriginal.title,
       originalPosterUrl: selectedOriginal.coverImage,
       status,
       hypeText:
         status === "want_to_watch"
           ? expectations || "On the radar."
           : expectations || "Experienced.",
-      afterThoughts: status === "watched" ? afterThoughts || undefined : undefined,
+      afterThoughts:
+        status === "watched" ? afterThoughts || undefined : undefined,
       taggedWorks: [],
       addedAt: new Date().toISOString(),
     };
     setIsAdded(true);
-    mockCollection.unshift(newEntry);
-    window.dispatchEvent(new CustomEvent("collectionUpdated"));
+    mockLibrary.unshift(newEntry);
+    window.dispatchEvent(new CustomEvent("libraryUpdated"));
     setTimeout(() => onClose(), 1300);
   }, [selectedOriginal, status, expectations, afterThoughts, onClose]);
 
-  const canSubmit  = selectedOriginal !== null;
-  const submitLabel = status === "watched" ? "Seal the Verdict" : "Log to Collection";
+  const canSubmit = selectedOriginal !== null;
+  const submitLabel =
+    status === "watched" ? "Seal the Verdict" : "Log to Library";
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -328,7 +349,7 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
             key="lem-modal"
             role="dialog"
             aria-modal="true"
-            aria-label="Add to Collection"
+            aria-label="Add to Library"
             className="fixed inset-0 z-[210] flex items-center justify-center px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -337,9 +358,22 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
           >
             <motion.div
               className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-[#060504] border border-white/[0.06] shadow-[0_40px_100px_rgba(0,0,0,0.9)]"
-              initial={{ scale: 0.96, y: 20, clipPath: "inset(6% 0% 6% 0% round 16px)" }}
-              animate={{ scale: 1, y: 0, clipPath: "inset(0% 0% 0% 0% round 16px)" }}
-              exit={{ scale: 0.95, y: 12, opacity: 0, clipPath: "inset(5% 0% 5% 0% round 16px)" }}
+              initial={{
+                scale: 0.96,
+                y: 20,
+                clipPath: "inset(6% 0% 6% 0% round 16px)",
+              }}
+              animate={{
+                scale: 1,
+                y: 0,
+                clipPath: "inset(0% 0% 0% 0% round 16px)",
+              }}
+              exit={{
+                scale: 0.95,
+                y: 12,
+                opacity: 0,
+                clipPath: "inset(5% 0% 5% 0% round 16px)",
+              }}
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
             >
               <GrainOverlay />
@@ -348,7 +382,9 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
               <div
                 aria-hidden
                 className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full opacity-[0.07]"
-                style={{ background: `radial-gradient(circle, ${AMBER} 0%, transparent 70%)` }}
+                style={{
+                  background: `radial-gradient(circle, ${AMBER} 0%, transparent 70%)`,
+                }}
               />
 
               {/* ── Search overlay ──────────────────────────────────── */}
@@ -388,16 +424,17 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
                       className="text-[9px] font-black uppercase tracking-[0.35em]"
                       style={{ color: `${AMBER}99` }}
                     >
-                      Collection
+                      Library
                     </span>
                   </div>
                   <h2 className="text-white text-lg font-light tracking-wide leading-tight">
-                    Chronicle&nbsp;<span className="font-semibold italic">the watch.</span>
+                    Chronicle&nbsp;
+                    <span className="font-semibold italic">the watch.</span>
                   </h2>
                   <p className="mt-1 text-[11px] text-white/30 leading-relaxed font-light">
                     Mark what you've seen or what you intend to.
                     <br />
-                    Your collection is your theatre history.
+                    Your library is your theatre history.
                   </p>
                 </div>
                 <button
@@ -415,7 +452,6 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
                 style={{ maxHeight: "calc(100dvh - 200px)" }}
               >
                 <div className="px-6 pt-6 pb-2 flex flex-col gap-5">
-
                   {/* Original selector */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
@@ -458,8 +494,12 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       {(
                         [
-                          { val: "want_to_watch", icon: Clock, label: "Want to Watch" },
-                          { val: "watched",        icon: Eye,   label: "Watched"       },
+                          {
+                            val: "want_to_watch",
+                            icon: Clock,
+                            label: "Want to Watch",
+                          },
+                          { val: "watched", icon: Eye, label: "Watched" },
                         ] as const
                       ).map(({ val, icon: Icon, label }) => {
                         const active = status === val;
@@ -469,9 +509,13 @@ export function CollectionEntryModal({ isOpen, onClose }: CollectionEntryModalPr
                             onClick={() => setStatus(val)}
                             className="flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.1em] transition-all focus:outline-none"
                             style={{
-                              borderColor:     active ? `${AMBER}44` : "rgba(255,255,255,0.05)",
-                              backgroundColor: active ? AMBER_DIM   : "transparent",
-                              color:           active ? AMBER       : "rgba(255,255,255,0.2)",
+                              borderColor: active
+                                ? `${AMBER}44`
+                                : "rgba(255,255,255,0.05)",
+                              backgroundColor: active
+                                ? AMBER_DIM
+                                : "transparent",
+                              color: active ? AMBER : "rgba(255,255,255,0.2)",
                             }}
                           >
                             <Icon className="w-3.5 h-3.5" />

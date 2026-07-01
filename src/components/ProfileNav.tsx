@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { User, Plus, Film, ChevronDown, UserCircle, MessageSquare, Bookmark, LogOut } from "lucide-react";
+import {
+  User,
+  Plus,
+  Film,
+  ChevronDown,
+  UserCircle,
+  MessageSquare,
+  Bookmark,
+  LogOut,
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../context/AuthContext";
 
@@ -8,10 +17,10 @@ import { useAuth } from "../context/AuthContext";
  * ProfileNav component — A sleek, premium dropdown menu
  * that handles artist-focused navigation.
  */
-export function ProfileNav({ 
+export function ProfileNav({
   className = "",
-  beforeNavigate 
-}: { 
+  beforeNavigate,
+}: {
   className?: string;
   beforeNavigate?: (path: string) => boolean;
 }) {
@@ -26,7 +35,10 @@ export function ProfileNav({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -39,19 +51,19 @@ export function ProfileNav({
       label: "Studio",
       icon: <Film className="w-4 h-4" />,
       path: "/studio",
-      description: "Manage your stage"
+      description: "Manage your stage",
     },
     {
-      label: "Collection",
+      label: "Library",
       icon: <Bookmark className="w-4 h-4" />,
-      path: "/collection",
-      description: "Your cinematic collection"
+      path: "/library",
+      description: "Your cinematic library",
     },
     {
       label: "Contact Founder",
       icon: <MessageSquare className="w-4 h-4" />,
       path: "/contact",
-      description: "Slap your thoughts"
+      description: "Slap your thoughts",
     },
   ];
 
@@ -72,17 +84,22 @@ export function ProfileNav({
         className="relative group flex items-center gap-2 transition-all"
         aria-label="Command Center"
       >
-        <div className={`
+        <div
+          className={`
           relative p-2 rounded-xl border transition-all duration-300 flex items-center gap-2
-          ${isOpen || menuItems.some(item => isActive(item.path))
-            ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-            : "bg-white/5 text-white/60 border-white/5 hover:border-white/20 hover:text-white"
+          ${
+            isOpen || menuItems.some((item) => isActive(item.path))
+              ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+              : "bg-white/5 text-white/60 border-white/5 hover:border-white/20 hover:text-white"
           }
-        `}>
+        `}
+        >
           <User className="w-5 h-5 transition-transform group-hover:scale-110" />
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDown
+            className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+          />
 
-          {(isOpen || menuItems.some(item => isActive(item.path))) && (
+          {(isOpen || menuItems.some((item) => isActive(item.path))) && (
             <motion.div
               layoutId="profile-active-glow"
               className="absolute -inset-[2px] rounded-[13px] border border-white/20 -z-10"
@@ -102,9 +119,11 @@ export function ProfileNav({
             className="absolute right-0 mt-3 w-64 origin-top-right rounded-2xl border border-white/10 bg-black/80 backdrop-blur-2xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden"
           >
             <div className="px-3 py-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Command Center</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">
+                Command Center
+              </span>
             </div>
-            
+
             <div className="space-y-1">
               {menuItems.map((item) => (
                 <button
@@ -115,28 +134,34 @@ export function ProfileNav({
                     ${isActive(item.path) ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}
                   `}
                 >
-                  <div className={`
+                  <div
+                    className={`
                     p-2 rounded-lg transition-colors
                     ${isActive(item.path) ? "bg-white text-black" : "bg-white/5 group-hover/item:bg-white/10"}
-                  `}>
+                  `}
+                  >
                     {item.icon}
                   </div>
                   <div className="flex flex-col items-start min-w-0">
-                    <span className="text-xs font-black uppercase tracking-widest">{item.label}</span>
-                    <span className="text-[9px] font-medium text-white/30 uppercase tracking-widest truncate">{item.description}</span>
+                    <span className="text-xs font-black uppercase tracking-widest">
+                      {item.label}
+                    </span>
+                    <span className="text-[9px] font-medium text-white/30 uppercase tracking-widest truncate">
+                      {item.description}
+                    </span>
                   </div>
                 </button>
               ))}
             </div>
 
             <div className="mt-2 pt-2 border-t border-white/5 px-2 pb-2 space-y-1">
-              <button 
+              <button
                 onClick={() => handleNav("/")}
                 className="w-full text-center py-2 text-[9px] font-bold uppercase tracking-[0.25em] text-white/20 hover:text-white/60 transition-colors"
               >
                 Return to Theatre
               </button>
-              <button 
+              <button
                 onClick={() => {
                   if (beforeNavigate && !beforeNavigate("/")) return;
                   logout();

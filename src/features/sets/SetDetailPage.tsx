@@ -1,17 +1,34 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { Users, Film, Sparkles, Settings, Plus, Heart, Bookmark, Upload, LogOut, MessageSquare } from 'lucide-react';
-import { SETS, FESTIVALS, GRID_ITEMS, PROFILES_DIRECTORY, THOUGHTS_MOCK } from '../../mock';
-import { ThoughtCard } from '../shared/thoughts/ThoughtCard';
-import { ActiveFestivalSpotlight } from './components/ActiveFestivalSpotlight';
-import { FestivalArchive } from './components/FestivalArchive';
-import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSection';
-import { CinematicPageHeader } from '../../components/CinematicPageHeader';
-import { CommandCenter, CommandItem } from '../../components/CommandCenter';
-import { SectionHeader } from '../../components/SectionHeader';
-import { UpdateSetModal } from './components/UpdateSetModal';
-import { CreateFestivalModal } from './components/CreateFestivalModal';
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Users,
+  Film,
+  Sparkles,
+  Settings,
+  Plus,
+  Heart,
+  Bookmark,
+  Upload,
+  LogOut,
+  MessageSquare,
+} from "lucide-react";
+import {
+  SETS,
+  FESTIVALS,
+  GRID_ITEMS,
+  PROFILES_DIRECTORY,
+  THOUGHTS_MOCK,
+} from "../../mock";
+import { ThoughtCard } from "../shared/thoughts/ThoughtCard";
+import { ActiveFestivalSpotlight } from "./components/ActiveFestivalSpotlight";
+import { FestivalArchive } from "./components/FestivalArchive";
+import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
+import { CinematicPageHeader } from "../../components/CinematicPageHeader";
+import { CommandCenter, CommandItem } from "../../components/CommandCenter";
+import { SectionHeader } from "../../components/SectionHeader";
+import { UpdateSetModal } from "./components/UpdateSetModal";
+import { CreateFestivalModal } from "./components/CreateFestivalModal";
 
 /**
  * SetDetailPage — /sets/:id
@@ -31,34 +48,41 @@ export function SetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const set = useMemo(() => SETS.find(s => s.id === id), [id]);
-  const allFestivals = useMemo(() => FESTIVALS.filter(f => f.setId === id), [id]);
+  const set = useMemo(() => SETS.find((s) => s.id === id), [id]);
+  const allFestivals = useMemo(
+    () => FESTIVALS.filter((f) => f.setId === id),
+    [id],
+  );
   const activeFestival = useMemo(
-    () => allFestivals.find(f => f.status === 'LIVE' || f.status === 'UPCOMING') ?? null,
-    [allFestivals]
+    () =>
+      allFestivals.find(
+        (f) => f.status === "LIVE" || f.status === "UPCOMING",
+      ) ?? null,
+    [allFestivals],
   );
   const captain = useMemo(
-    () => set ? PROFILES_DIRECTORY.find(p => p.id === set.captainId) : null,
-    [set]
+    () => (set ? PROFILES_DIRECTORY.find((p) => p.id === set.captainId) : null),
+    [set],
   );
   // Works filtered for this set — using all works as proxy since mock works don't have setId yet
   // In production this will be a real backend filter
   const setWorks = useMemo(() => GRID_ITEMS.slice(0, 18), []);
 
   const setThoughts = useMemo(
-    () => THOUGHTS_MOCK.filter(t => t.setId === id),
-    [id]
+    () => THOUGHTS_MOCK.filter((t) => t.setId === id),
+    [id],
   );
 
   const [isJoined, setIsJoined] = useState(false);
   const memberCount = (set?.members.length ?? 0) + (isJoined ? 1 : 0);
   const festivalCount = allFestivals.length;
-  const worksCount = ((id?.length ?? 0) * 31 + memberCount * 7) % 150 + 12;
+  const worksCount = (((id?.length ?? 0) * 31 + memberCount * 7) % 150) + 12;
 
   const [showToast, setShowToast] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isCreateFestivalModalOpen, setIsCreateFestivalModalOpen] = useState(false);
-  
+  const [isCreateFestivalModalOpen, setIsCreateFestivalModalOpen] =
+    useState(false);
+
   // Local state for immediate updates
   const [localSet, setLocalSet] = useState(set);
 
@@ -66,47 +90,52 @@ export function SetDetailPage() {
     setLocalSet(set);
   }, [set]);
 
-  const setCommandItems: CommandItem[] = useMemo(() => [
-    {
-      label: "Update Set",
-      icon: <Settings className="w-4 h-4" />,
-      action: () => setIsUpdateModalOpen(true),
-      description: "Curation & Rules",
-      visible: true, // In real app, check if user is curator
-    },
-    {
-      label: "Upload Work",
-      icon: <Upload className="w-4 h-4" />,
-      action: () => navigate(`/works/new?setId=${id}`),
-      description: "Contribute to Set",
-      visible: true,
-    },
-    {
-      label: "Leave Set",
-      icon: <LogOut className="w-4 h-4 text-red-500" />,
-      action: () => {
-        if (window.confirm("Are you sure you want to leave this set?")) {
-          setIsJoined(false);
-        }
+  const setCommandItems: CommandItem[] = useMemo(
+    () => [
+      {
+        label: "Update Set",
+        icon: <Settings className="w-4 h-4" />,
+        action: () => setIsUpdateModalOpen(true),
+        description: "Curation & Rules",
+        visible: true, // In real app, check if user is curator
       },
-      description: "Exit Collective",
-      visible: isJoined,
-    },
-    {
-      label: "Create Festival",
-      icon: <Plus className="w-4 h-4" />,
-      action: () => setIsCreateFestivalModalOpen(true),
-      description: "Start New Festival (Curator)",
-      visible: true, // In real app, check if user is curator
-    },
-  ], [isJoined, id, navigate]);
+      {
+        label: "Upload Work",
+        icon: <Upload className="w-4 h-4" />,
+        action: () => navigate(`/works/new?setId=${id}`),
+        description: "Contribute to Set",
+        visible: true,
+      },
+      {
+        label: "Leave Set",
+        icon: <LogOut className="w-4 h-4 text-red-500" />,
+        action: () => {
+          if (window.confirm("Are you sure you want to leave this set?")) {
+            setIsJoined(false);
+          }
+        },
+        description: "Exit Collective",
+        visible: isJoined,
+      },
+      {
+        label: "Create Festival",
+        icon: <Plus className="w-4 h-4" />,
+        action: () => setIsCreateFestivalModalOpen(true),
+        description: "Start New Festival (Curator)",
+        visible: true, // In real app, check if user is curator
+      },
+    ],
+    [isJoined, id, navigate],
+  );
 
   if (!localSet) {
     return (
       <div className="min-h-screen bg-surface-deep flex flex-col items-center justify-center gap-4 text-white">
-        <p className="text-[11px] uppercase tracking-[0.4em] text-white/30">Set Not Found</p>
+        <p className="text-[11px] uppercase tracking-[0.4em] text-white/30">
+          Set Not Found
+        </p>
         <button
-          onClick={() => navigate('/sets')}
+          onClick={() => navigate("/sets")}
           className="text-[10px] uppercase tracking-[0.3em] text-white/20 hover:text-white transition-colors"
         >
           ← Back to Sets
@@ -117,18 +146,14 @@ export function SetDetailPage() {
 
   return (
     <div className="min-h-screen bg-surface-deep text-white overflow-x-hidden pt-[68px] md:pt-[72px]">
-
       {/* ─── Sticky Header ───────────────────────────────────────────────────── */}
       <CinematicPageHeader
         title={localSet.title}
-        onBack={() => navigate('/sets')}
+        onBack={() => navigate("/sets")}
         backLabel="Sets"
-        onTitleClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onTitleClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         rightActions={
-          <CommandCenter
-            contextTitle="Set Control"
-            items={setCommandItems}
-          />
+          <CommandCenter contextTitle="Set Control" items={setCommandItems} />
         }
       />
 
@@ -143,7 +168,7 @@ export function SetDetailPage() {
           >
             <Bookmark size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
-              Added to Collection
+              Added to Library
             </span>
           </motion.div>
         )}
@@ -151,10 +176,9 @@ export function SetDetailPage() {
 
       {/* ─── Layer I: Atmos Header ────────────────────────────────────────────── */}
       <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-8 md:pt-10 md:pb-6 bg-[#030303] border-b border-white/[0.02]">
-        
         {/* Cinematic Background Design */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" />
-        
+
         {/* Massive SVG Typography Container */}
         <div className="w-full max-w-[1400px] flex items-center justify-center px-4 md:px-8 relative z-10 pointer-events-none mt-8">
           <svg
@@ -168,7 +192,7 @@ export function SetDetailPage() {
               fontFamily='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
               fontSize="160"
               fontWeight="900"
-              fill={localSet.accentColor || '#ffffff'}
+              fill={localSet.accentColor || "#ffffff"}
               textAnchor="middle"
               textLength="900"
               lengthAdjust="spacingAndGlyphs"
@@ -192,8 +216,6 @@ export function SetDetailPage() {
               "{localSet.themeLine}"
             </p>
           )}
-
-
 
           {/* Captain Pill */}
           {captain && (
@@ -231,9 +253,21 @@ export function SetDetailPage() {
           {/* Stats Row */}
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 pt-4">
             {[
-              { icon: <Users className="w-3.5 h-3.5" />, value: memberCount, label: memberCount === 1 ? 'Member' : 'Members' },
-              { icon: <Sparkles className="w-3.5 h-3.5" />, value: festivalCount, label: festivalCount === 1 ? 'Festival' : 'Festivals' },
-              { icon: <Film className="w-3.5 h-3.5" />, value: worksCount, label: 'Works' },
+              {
+                icon: <Users className="w-3.5 h-3.5" />,
+                value: memberCount,
+                label: memberCount === 1 ? "Member" : "Members",
+              },
+              {
+                icon: <Sparkles className="w-3.5 h-3.5" />,
+                value: festivalCount,
+                label: festivalCount === 1 ? "Festival" : "Festivals",
+              },
+              {
+                icon: <Film className="w-3.5 h-3.5" />,
+                value: worksCount,
+                label: "Works",
+              },
             ].map(({ icon, value, label }, idx) => (
               <div key={label} className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 text-white/20">
@@ -243,7 +277,9 @@ export function SetDetailPage() {
                     {label}
                   </span>
                 </div>
-                {idx < 2 && <div className="h-3 w-px bg-white/10 hidden md:block ml-4" />}
+                {idx < 2 && (
+                  <div className="h-3 w-px bg-white/10 hidden md:block ml-4" />
+                )}
               </div>
             ))}
           </div>
@@ -251,7 +287,6 @@ export function SetDetailPage() {
       </div>
 
       {/* Divider */}
-
 
       {/* ─── Layer I.V: Open Discussions ───────────────────────────────────────── */}
       {setThoughts.length > 0 && (
@@ -267,7 +302,9 @@ export function SetDetailPage() {
                 <ThoughtCard
                   key={thought.id}
                   thought={thought}
-                  onCardClick={() => navigate(`/sets/${id}/discussions/${thought.id}`)}
+                  onCardClick={() =>
+                    navigate(`/sets/${id}/discussions/${thought.id}`)
+                  }
                 />
               ))}
             </div>
@@ -280,16 +317,12 @@ export function SetDetailPage() {
         <ActiveFestivalSpotlight festival={activeFestival} set={localSet} />
       ) : (
         <section className="px-4 md:px-8 py-6" aria-label="No Active Festival">
-          <SectionHeader
-            title="No Active Festival"
-            containerClassName="mb-6"
-          />
+          <SectionHeader title="No Active Festival" containerClassName="mb-6" />
           <p className="text-[11px] text-white/20 leading-relaxed">
             The stage is quiet. Next festival is being prepared by the Captains.
           </p>
         </section>
       )}
-
 
       {/* ─── Layer III: Festival Archive ─────────────────────────────────────── */}
 
@@ -308,7 +341,9 @@ export function SetDetailPage() {
           isOpen={isUpdateModalOpen}
           set={localSet}
           onClose={() => setIsUpdateModalOpen(false)}
-          onSave={(updates) => setLocalSet(prev => prev ? { ...prev, ...updates } : prev)}
+          onSave={(updates) =>
+            setLocalSet((prev) => (prev ? { ...prev, ...updates } : prev))
+          }
         />
       )}
 

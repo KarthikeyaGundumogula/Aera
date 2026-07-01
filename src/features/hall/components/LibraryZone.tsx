@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
-import { CollectionItem } from "../../../mock/collection";
+import { CollectionItem } from "../../../mock/library";
 
-interface CollectionZoneProps {
+interface LibraryZoneProps {
   items: CollectionItem[];
 }
 
@@ -22,14 +22,14 @@ const STATUS_MAP = {
   },
 };
 
-function CollectionCard({ item }: { item: CollectionItem }) {
+function LibraryCard({ item }: { item: CollectionItem }) {
   const navigate = useNavigate();
   const statusCfg = STATUS_MAP[item.status];
   const StatusIcon = statusCfg.icon;
 
   return (
     <motion.button
-      onClick={() => navigate("/collection")}
+      onClick={() => navigate("/library")}
       whileHover={{ scale: 1.015 }}
       whileTap={{ scale: 0.98 }}
       className="
@@ -61,7 +61,9 @@ function CollectionCard({ item }: { item: CollectionItem }) {
         {/* Tagged works count bubble */}
         {item.taggedWorks.length > 0 && (
           <div className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-black/70 border border-white/15 flex items-center justify-center">
-            <span className="text-[10px] font-black text-white/80">{item.taggedWorks.length}</span>
+            <span className="text-[10px] font-black text-white/80">
+              {item.taggedWorks.length}
+            </span>
           </div>
         )}
       </div>
@@ -81,14 +83,14 @@ function CollectionCard({ item }: { item: CollectionItem }) {
   );
 }
 
-export function CollectionZone({ items }: CollectionZoneProps) {
+export function LibraryZone({ items }: LibraryZoneProps) {
   if (!items.length) return null;
 
   return (
     <div className="overflow-x-auto no-scrollbar pb-4">
       <div className="flex gap-4 w-max px-6 md:px-12">
         {items.map((item) => (
-          <CollectionCard key={item.id} item={item} />
+          <LibraryCard key={item.id} item={item} />
         ))}
       </div>
     </div>

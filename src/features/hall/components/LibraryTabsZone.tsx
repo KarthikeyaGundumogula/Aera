@@ -5,21 +5,23 @@ import { BookOpen, ChevronRight } from "lucide-react";
 
 import { FHLoader } from "../../../components/FHLoader";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { mockCollection } from "../../../mock/collection";
+import { mockLibrary } from "../../../mock/library";
 import { GRID_ITEMS } from "../../../mock";
-import { CollectionZone } from "./CollectionZone";
+import { LibraryZone } from "./LibraryZone";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
 
-// Grab some works to simulate chronological collection works
-const COLLECTION_WORKS = GRID_ITEMS.filter((w) =>
-  mockCollection.some((l) => w.originalIds?.includes(l.originalId))
+// Grab some works to simulate chronological library works
+const LIBRARY_WORKS = GRID_ITEMS.filter((w) =>
+  mockLibrary.some((l) => w.originalIds?.includes(l.originalId)),
 )
   .slice(0, 15)
   .reverse(); // Reverse for mock "chronological"
 
-export function CollectionTabsZone() {
+export function LibraryTabsZone() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"originals" | "works">("originals");
+  const [activeTab, setActiveTab] = useState<"originals" | "works">(
+    "originals",
+  );
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
@@ -31,7 +33,11 @@ export function CollectionTabsZone() {
   return (
     <div className="relative">
       <div className="px-6 md:px-12 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <SectionHeader icon={BookOpen} title="Your Collection" containerClassName="opacity-100" />
+        <SectionHeader
+          icon={BookOpen}
+          title="Your Library"
+          containerClassName="opacity-100"
+        />
 
         <div className="flex items-center gap-4">
           {/* Tab Switcher */}
@@ -47,7 +53,7 @@ export function CollectionTabsZone() {
               Originals
               {activeTab === "originals" && (
                 <motion.div
-                  layoutId="collectionTabIndicator"
+                  layoutId="libraryTabIndicator"
                   className="absolute left-0 right-0 bottom-0 h-[2px] bg-amber-400"
                 />
               )}
@@ -63,7 +69,7 @@ export function CollectionTabsZone() {
               Stage
               {activeTab === "works" && (
                 <motion.div
-                  layoutId="collectionTabIndicator"
+                  layoutId="libraryTabIndicator"
                   className="absolute left-0 right-0 bottom-0 h-[2px] bg-amber-400"
                 />
               )}
@@ -71,10 +77,10 @@ export function CollectionTabsZone() {
           </div>
 
           <button
-            onClick={() => navigate("/collection")}
+            onClick={() => navigate("/library")}
             className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors hidden sm:flex"
           >
-            Full Collection <ChevronRight className="w-3 h-3" />
+            Full Library <ChevronRight className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -89,7 +95,7 @@ export function CollectionTabsZone() {
               exit={{ opacity: 0 }}
               className="flex items-center justify-center h-[250px] w-full"
             >
-              <FHLoader label="Loading Collection..." />
+              <FHLoader label="Loading Library..." />
             </motion.div>
           ) : (
             <motion.div
@@ -100,9 +106,9 @@ export function CollectionTabsZone() {
               transition={{ duration: 0.3 }}
             >
               {activeTab === "originals" ? (
-                <CollectionZone items={mockCollection} />
+                <LibraryZone items={mockLibrary} />
               ) : (
-                <HorizontalClusterSection items={COLLECTION_WORKS} compact />
+                <HorizontalClusterSection items={LIBRARY_WORKS} compact />
               )}
             </motion.div>
           )}

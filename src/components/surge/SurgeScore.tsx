@@ -40,6 +40,8 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
   const dragStartXRef    = useRef<number | null>(null);
   const isDraggingRef    = useRef<boolean>(false);
   const swipeLastMoveRef = useRef<number>(0);
+  const tapZoneRef       = useRef<'left' | 'middle' | 'right'>('middle');
+
 
   const shakeX = useMotionValue(0);
   const springX = useSpring(shakeX, { stiffness: 600, damping: 8 });

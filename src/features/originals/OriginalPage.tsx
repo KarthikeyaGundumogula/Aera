@@ -20,7 +20,6 @@ interface OriginalClaims {
   canCreateRelease: boolean;
 }
 
-
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -43,33 +42,42 @@ export function OriginalPage() {
 
   const original = localOriginal;
 
-  const commandItems: CommandItem[] = useMemo(() => [
-    {
-      label: "Save to Watchlist",
-      icon: <Bookmark className="w-4 h-4" />,
-      action: () => {
-        if (!showToast) {
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 3000);
-        }
+  const commandItems: CommandItem[] = useMemo(
+    () => [
+      {
+        label: "Save to Watchlist",
+        icon: <Bookmark className="w-4 h-4" />,
+        action: () => {
+          if (!showToast) {
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+          }
+        },
+        description: "Add to Library",
       },
-      description: "Add to Collection",
-    },
-    {
-      label: "Update Original",
-      icon: <Settings className="w-4 h-4" />,
-      action: () => setShowManagement(true),
-      description: "Curation & Metadata",
-      visible: userClaims.canUpdateMeta,
-    },
-    {
-      label: "New Release",
-      icon: <Plus className="w-4 h-4" />,
-      action: () => navigate(`/originals/${original?.id}/releases/new`),
-      description: "Drop an Update",
-      visible: userClaims.canCreateRelease,
-    },
-  ], [navigate, original?.id, showToast, userClaims.canCreateRelease, userClaims.canUpdateMeta]);
+      {
+        label: "Update Original",
+        icon: <Settings className="w-4 h-4" />,
+        action: () => setShowManagement(true),
+        description: "Curation & Metadata",
+        visible: userClaims.canUpdateMeta,
+      },
+      {
+        label: "New Release",
+        icon: <Plus className="w-4 h-4" />,
+        action: () => navigate(`/originals/${original?.id}/releases/new`),
+        description: "Drop an Update",
+        visible: userClaims.canCreateRelease,
+      },
+    ],
+    [
+      navigate,
+      original?.id,
+      showToast,
+      userClaims.canCreateRelease,
+      userClaims.canUpdateMeta,
+    ],
+  );
 
   // Defer expensive secondary data so the page paints immediately on navigation
   const deferredOriginal = useDeferredValue(original);
@@ -78,19 +86,18 @@ export function OriginalPage() {
     if (!deferredOriginal) return [];
     return Array.from(
       { length: Math.max(15, deferredOriginal.topArtists.length) },
-      (_, index) => deferredOriginal.topArtists[index % deferredOriginal.topArtists.length]
+      (_, index) =>
+        deferredOriginal.topArtists[index % deferredOriginal.topArtists.length],
     );
   }, [deferredOriginal]);
-
-
 
   if (!original) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Original not found</h1>
-          <button 
-            onClick={() => navigate('/')}
+          <button
+            onClick={() => navigate("/")}
             className="px-6 py-2 bg-white text-black rounded-full font-bold"
           >
             Hall
@@ -103,20 +110,21 @@ export function OriginalPage() {
   return (
     <div className="min-h-screen bg-surface-deep overflow-y-auto no-scrollbar transition-all duration-300 pt-[68px] md:pt-[72px]">
       {/* Hero Header Transformation */}
-      <motion.div 
-        animate={{ 
-          height: isMobile ? "65vh" : "75vh"
+      <motion.div
+        animate={{
+          height: isMobile ? "65vh" : "75vh",
         }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className="relative w-full overflow-hidden"
       >
         <div className="absolute inset-0">
-          <img loading="lazy"
+          <img
+            loading="lazy"
             src={original.coverImage}
             className="w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
-          
+
           {/* Initial Info Overlay */}
           <div className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full max-w-[95vw]">
             <motion.div
@@ -125,18 +133,18 @@ export function OriginalPage() {
             >
               <div className="flex items-center gap-2 mb-4">
                 <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
-                    Original Spotlight
+                  Original Spotlight
                 </span>
                 <div className="h-px w-8 bg-white/20" />
               </div>
               <h1
                 className="font-black tracking-tighter mb-2 uppercase leading-[0.82] whitespace-pre-wrap drop-shadow-2xl"
                 style={{
-                  fontSize: !original.title.includes(" ") 
+                  fontSize: !original.title.includes(" ")
                     ? `clamp(2.5rem, ${Math.min(14, 90 / (original.title.length * 0.8))}vw, 7rem)`
                     : `clamp(2.5rem, ${Math.max(5, 15 - original.title.length * 0.3)}vw, 7rem)`,
                   wordBreak: "normal",
-                  overflowWrap: "normal"
+                  overflowWrap: "normal",
                 }}
               >
                 {original.title}
@@ -150,10 +158,14 @@ export function OriginalPage() {
 
         {/* Sticky Header */}
         <CinematicPageHeader
-          title={isMobile && original.title.length > 6 ? `${original.title.substring(0, 6)}..` : original.title}
-          onBack={() => navigate('/')}
+          title={
+            isMobile && original.title.length > 6
+              ? `${original.title.substring(0, 6)}..`
+              : original.title
+          }
+          onBack={() => navigate("/")}
           onTitleClick={() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           rightActions={
             <>
@@ -166,7 +178,9 @@ export function OriginalPage() {
                 onClick={() => navigate(`/originals/${original.id}/releases`)}
                 className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
               >
-                <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">Releases</span>
+                <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">
+                  Releases
+                </span>
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </button>
             </>
@@ -181,17 +195,14 @@ export function OriginalPage() {
 
       {/* Star Spotlight */}
       <section className="px-8 pt-10 pb-4">
-        <SectionHeader 
-           title="Stars" 
-           containerClassName="mb-6" 
-        />
+        <SectionHeader title="Stars" containerClassName="mb-6" />
 
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
             {STARS_MOCK.map((star, index) => (
-              <PersonProfile 
-                key={star.actorName} 
-                person={star} 
+              <PersonProfile
+                key={star.actorName}
+                person={star}
                 delay={index * 0.15}
                 type="Star"
               />
@@ -202,17 +213,14 @@ export function OriginalPage() {
 
       {/* Makers Spotlight */}
       <section className="px-8 pt-6 pb-4">
-        <SectionHeader 
-           title="Makers" 
-           containerClassName="mb-6" 
-        />
+        <SectionHeader title="Makers" containerClassName="mb-6" />
 
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
           <div className="flex gap-4 sm:gap-6 w-max">
             {MAKERS_MOCK.map((maker, index) => (
-              <MakerProfile 
-                key={maker.actorName} 
-                person={maker} 
+              <MakerProfile
+                key={maker.actorName}
+                person={maker}
                 delay={index * 0.15}
               />
             ))}
@@ -230,19 +238,18 @@ export function OriginalPage() {
       />
 
       {/* Originals Theatre Section */}
-      <TheatrePreviewSection 
+      <TheatrePreviewSection
         title="Theatre"
-        works={original.works} 
-        enterUrl={`/originals/${original.id}/theatre`} 
+        works={original.works}
+        enterUrl={`/originals/${original.id}/theatre`}
       />
-
 
       {/* Detailed Information */}
       <div className="p-8 pt-0">
-        <SectionHeader 
-           iconNode={<div className="w-4 h-px bg-white" />} 
-           title="Detailed Information"
-           containerClassName="mb-8" 
+        <SectionHeader
+          iconNode={<div className="w-4 h-px bg-white" />}
+          title="Detailed Information"
+          containerClassName="mb-8"
         />
 
         <div className="space-y-8">
@@ -251,9 +258,9 @@ export function OriginalPage() {
               Full Description
             </h4>
             <p className="text-sm text-white/80 leading-relaxed">
-              {original.description} This curated original represents a pinnacle of
-              cinematic achievement, bringing together the most impactful visual
-              and narrative elements from the {original.title} universe.
+              {original.description} This curated original represents a pinnacle
+              of cinematic achievement, bringing together the most impactful
+              visual and narrative elements from the {original.title} universe.
             </p>
           </div>
 
@@ -270,8 +277,6 @@ export function OriginalPage() {
         </div>
       </div>
 
-
-
       {/* Footer Space */}
       <div className="h-24" />
 
@@ -286,7 +291,7 @@ export function OriginalPage() {
           >
             <Bookmark size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
-              Added to Collection
+              Added to Library
             </span>
           </motion.div>
         )}
@@ -299,7 +304,9 @@ export function OriginalPage() {
             original={original}
             onClose={() => setShowManagement(false)}
             onSave={(updated) =>
-              setLocalOriginal((prev) => (prev ? { ...prev, ...updated } : prev))
+              setLocalOriginal((prev) =>
+                prev ? { ...prev, ...updated } : prev,
+              )
             }
           />
         )}

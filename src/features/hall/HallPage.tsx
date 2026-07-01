@@ -1,6 +1,14 @@
 import { useMemo, useRef } from "react";
 import { motion } from "motion/react";
-import { Film, BookOpen, Trophy, MessageSquare, Clapperboard, ChevronRight, Sparkles } from "lucide-react";
+import {
+  Film,
+  BookOpen,
+  Trophy,
+  MessageSquare,
+  Clapperboard,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -10,7 +18,7 @@ import {
   THOUGHTS_MOCK,
   CURRENT_USER_MOCK,
 } from "../../mock";
-import { mockCollection } from "../../mock/collection";
+import { mockLibrary } from "../../mock/library";
 import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
@@ -20,7 +28,7 @@ import { HorizontalClusterSection } from "./components/HorizontalClusterSection"
 import { FestivalsZone } from "./components/FestivalsZone";
 import { DiscussionsZone } from "./components/DiscussionsZone";
 import { RecommendationsZone } from "./components/RecommendationsZone";
-import { CollectionTabsZone } from "./components/CollectionTabsZone";
+import { LibraryTabsZone } from "./components/LibraryTabsZone";
 import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
 import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZone";
@@ -40,31 +48,34 @@ export default function HallPage() {
   const originalsRef = useRef<HTMLElement>(null);
   const festivalsRef = useRef<HTMLElement>(null);
   const recommendationsRef = useRef<HTMLElement>(null);
-  const collectionRef = useRef<HTMLElement>(null);
+  const libraryRef = useRef<HTMLElement>(null);
 
   // ── Works from Favorited Originals ────────────────────────────────────────
   const favIds = useMemo(
     () => new Set(CURRENT_USER_MOCK.favoritedOriginalIds),
-    []
+    [],
   );
 
   const favoritedWorks = useMemo(
-    () => GRID_ITEMS.filter((item) => item.originalIds?.some((id) => favIds.has(id))),
-    [favIds]
+    () =>
+      GRID_ITEMS.filter((item) =>
+        item.originalIds?.some((id) => favIds.has(id)),
+      ),
+    [favIds],
   );
 
   const favoritedOriginals = useMemo(
     () => ORIGINALS.filter((o) => favIds.has(o.id)),
-    [favIds]
+    [favIds],
   );
 
-  // ── Collection ────────────────────────────────────────────────────────────────
-  const collectionItems = useMemo(() => mockCollection, []);
+  // ── Library ────────────────────────────────────────────────────────────────
+  const libraryItems = useMemo(() => mockLibrary, []);
 
   // ── Festivals from member Sets ────────────────────────────────────────────
   const memberSetIds = useMemo(
     () => new Set(CURRENT_USER_MOCK.memberSetIds),
-    []
+    [],
   );
 
   const memberFestivals = useMemo(
@@ -76,7 +87,7 @@ export default function HallPage() {
           (order[b.status as keyof typeof order] ?? 2)
         );
       }),
-    [memberSetIds]
+    [memberSetIds],
   );
 
   const liveFestivals = memberFestivals.filter((f) => f.status === "LIVE");
@@ -84,7 +95,7 @@ export default function HallPage() {
   // ── Discussions from member Sets ──────────────────────────────────────────
   const memberDiscussions = useMemo(
     () => THOUGHTS_MOCK.filter((t) => t.setId && memberSetIds.has(t.setId)),
-    [memberSetIds]
+    [memberSetIds],
   );
 
   return (
@@ -93,7 +104,6 @@ export default function HallPage() {
       <DesktopHeader />
 
       <main className="pt-[61px]">
-
         {/* ══════════════════════════════════════════════════════
             HERO — Identity + Live stats
         ══════════════════════════════════════════════════════ */}
@@ -138,7 +148,11 @@ export default function HallPage() {
             className="mb-6 scroll-mt-24"
           >
             <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
-              <SectionHeader icon={Trophy} title="Festivals" containerClassName="opacity-100" />
+              <SectionHeader
+                icon={Trophy}
+                title="Festivals"
+                containerClassName="opacity-100"
+              />
               <button
                 onClick={() => navigate("/sets")}
                 className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors"
@@ -182,17 +196,17 @@ export default function HallPage() {
         )}
 
         {/* ══════════════════════════════════════════════════════
-            SCENE 4 — YOUR COLLECTION
+            SCENE 4 — YOUR LIBRARY
         ══════════════════════════════════════════════════════ */}
         <motion.section
-          ref={collectionRef}
-          id="section-collection"
+          ref={libraryRef}
+          id="section-library"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6 scroll-mt-24"
         >
-          <CollectionTabsZone />
+          <LibraryTabsZone />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
@@ -217,19 +231,26 @@ export default function HallPage() {
             key={`spotlight-${original.id}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 + (idx * 0.05), duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              delay: 0.3 + idx * 0.05,
+              duration: 0.6,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             className={`mb-6 ${idx === 0 ? "scroll-mt-24" : ""}`}
           >
-            <OriginalSpotlightZone 
-              original={original} 
-              works={GRID_ITEMS.filter(w => w.category === "Edit").slice(0, 10)} 
+            <OriginalSpotlightZone
+              original={original}
+              works={GRID_ITEMS.filter((w) => w.category === "Edit").slice(
+                0,
+                10,
+              )}
             />
           </motion.section>
         ))}
 
         {/* Empty state */}
         {!favoritedWorks.length &&
-          !collectionItems.length &&
+          !libraryItems.length &&
           !memberFestivals.length &&
           !memberDiscussions.length && (
             <div className="flex flex-col items-center justify-center py-40 px-6 text-center">
@@ -237,7 +258,7 @@ export default function HallPage() {
                 Your hall is empty
               </p>
               <p className="text-[11px] text-white/15 font-mono max-w-xs leading-relaxed">
-                Favorite Originals, join Sets, and fill your Collection to unlock
+                Favorite Originals, join Sets, and fill your Library to unlock
                 your curation.
               </p>
             </div>

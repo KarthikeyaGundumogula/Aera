@@ -1,21 +1,34 @@
-# Entities
+# FrameHouse Entities & Relations
 
-## Profiles
-there are multiple types of profiles on FrameHouse, each with its own unique features and purposes. These profiles are designed to cater to the diverse needs of our users, allowing them to express themselves and connect with others in meaningful ways.
+This document maps out the core entities within FrameHouse, how they interact, and who controls them.
 
-1. **Artist Profiles**: These are people who publish their works on FrameHouse. They can create and share their edits, posters, theories.
-3. **Regular Profiles**: These are fans who engage with the content created by artists. They can credit works, follow artists, and participate in discussions.
-4. **Originals**: Every Original works has its own original, which has a verified admin (usually the makers of the original work).
-5. **Sets**: A set is a micro community created by one or more artists who has some presence.
+## 1. Profiles
 
-## Works
+1. **Artist Profiles**: Creators who publish Works (Edits, Posters, Scripts). Artists own their personal **Wall** and curate their cinematic identity.
+2. **Regular Profiles**: Fans who engage with content. They can favorite Artists, Star works, and participate in Set Walls. They do not publish Works.
+3. **Originals (Admin/Verified)**: Every Original (movie/series) acts as its own entity and has a verified admin (usually the studio/makers of the original work).
 
-Works are the creative outputs of artists on FrameHouse. They can take various forms, including edits, posters, and theories. Each work is associated with its creator's profile and can be credited by other users.
+## 2. Core Content Entities
 
-## Origins
+### A. Works
+The creative outputs of Artists. 
+- **Types**: Edits (video), Posters (images), Scripts (visual storyboards).
+- **Distribution**: Works are pushed to the global social feed (The Hall) and the respective Original theatres.
+- **Metrics**: Works receive **Stars** and **Recommendation Scores** (via Resonance Hold).
 
-Origins refer to the source material that inspires the works created by artists on FrameHouse. This can include movies, series, animes, music, and original creators. Every work references its origins, allowing users to trace the inspiration behind each creation and giving credit to the original sources. these will list the originals that are used in the works.
+### B. Origins
+The source material (movies, series, music) that inspires Works. Every Work must reference an Origin (Attribution).
 
-## Credits
+## 3. The Interaction Spaces (Walls & Cards)
 
-Credits are awareded by Artists and regular users to works of artists.
+### A. The Artist Wall (Personal Profile)
+A highly curated, persistent "moodboard" or exhibition space on an Artist's profile.
+- **Control**: Only the Artist can post to their personal Wall.
+- **Format**: Artists can post raw text, or **Pin** Works/Originals with a "Director's Note".
+- **Distribution**: Wall posts are **NOT** pushed to the global Hall feed. They are only broadcasted to the users who have explicitly *Favorited* the Artist. This creates a high-trust, intimate loop (bragging privilege).
+
+### B. The Set Wall (Communal Space)
+A micro-community space created around themes or movies.
+- **Control**: Any member of the Set can post to the Set Wall.
+- **Format Constraint**: **Raw text is strictly banned** to prevent toxicity, hate reviews, and mob mentality.
+- **Cards (Visual Reactions)**: All engagement on the Set Wall must happen via **Cards**. These are high-fidelity, cinematic visual templates (using GIFs or beautifully typography-driven stills). This enforces a visual-first dialogue while maintaining the Dark-Luxury aesthetic.

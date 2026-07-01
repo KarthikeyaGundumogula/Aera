@@ -1,9 +1,13 @@
 import { motion } from "motion/react";
-import type { CollectionTaggedWork } from "../../../mock/collection";
+import type { CollectionTaggedWork } from "../../../mock/library";
 import type { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
-export function CollectionTaggedWorksStack({ works }: { works: CollectionTaggedWork[] }) {
+export function LibraryTaggedWorksStack({
+  works,
+}: {
+  works: CollectionTaggedWork[];
+}) {
   const { openWork } = useWorkNavigation();
 
   if (!works || works.length === 0) return null;
@@ -14,23 +18,26 @@ export function CollectionTaggedWorksStack({ works }: { works: CollectionTaggedW
         {works.map((work) => (
           <motion.button
             key={work.id}
-            onClick={() => openWork({
-              id: work.id,
-              title: `Inspired by ${work.authorName}`,
-              category: work.type === 'poster' ? 'Poster' : 'Edit',
-              image: work.thumbnailUrl,
-              platform: (work.platform ?? 'youtube') as 'youtube' | 'twitter',
-              srcId: work.srcId || "dQw4w9WgXcQ",
-              originalIds: [],
-            } as TheatreItem)}
+            onClick={() =>
+              openWork({
+                id: work.id,
+                title: `Inspired by ${work.authorName}`,
+                category: work.type === "poster" ? "Poster" : "Edit",
+                image: work.thumbnailUrl,
+                platform: (work.platform ?? "youtube") as "youtube" | "twitter",
+                srcId: work.srcId || "dQw4w9WgXcQ",
+                originalIds: [],
+              } as TheatreItem)
+            }
             className="relative rounded-lg overflow-hidden border border-white/20 shadow-xl w-32 h-20 sm:w-40 sm:h-24 flex-shrink-0 cursor-pointer outline-none focus:ring-2 focus:ring-brand-accent/50 bg-black group"
             whileHover={{ scale: 1.05, y: -2 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <img loading="lazy" 
-              src={work.thumbnailUrl} 
-              alt={`Inspired by ${work.authorName}`} 
-              className="w-full h-full object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-300" 
+            <img
+              loading="lazy"
+              src={work.thumbnailUrl}
+              alt={`Inspired by ${work.authorName}`}
+              className="w-full h-full object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-300"
             />
             <div className="absolute inset-0 flex flex-col justify-end p-2 bg-gradient-to-t from-black/90 via-black/20 to-transparent">
               <span className="text-[9px] font-black uppercase tracking-widest text-white/90 truncate drop-shadow-md">

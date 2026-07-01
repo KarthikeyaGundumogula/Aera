@@ -5,7 +5,13 @@
  * All page components are imported via src/router/lazyRoutes.ts.
  */
 import { Suspense } from "react";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { MobileNavBar } from "@/features/navigation/MobileNavBar";
 import { AuthProvider } from "@/context/AuthContext";
@@ -39,8 +45,8 @@ import {
   SetDetailPage,
   DiscussionPage,
   FestivalDetailPage,
-  // Collection
-  CollectionPage,
+  // Library
+  LibraryPage,
   // Center
   CenterPage,
   RecommendationsPage,
@@ -103,7 +109,6 @@ function AppRoutes() {
       <Suspense fallback={<RouteFallback />}>
         <ErrorBoundary>
           <Routes location={backgroundLocation ?? location}>
-
             {/* ── Hall (Home) ─────────────────────────────── */}
             <Route path="/" element={<HallPage />} />
 
@@ -115,20 +120,35 @@ function AppRoutes() {
             {/* ── Originals ───────────────────────────────── */}
             <Route path="/originals" element={<OriginalsListPage />} />
             <Route path="/originals/:id" element={<OriginalPage />} />
-            <Route path="/originals/:id/theatre" element={<ContextualTheatrePage type="original" />} />
+            <Route
+              path="/originals/:id/theatre"
+              element={<ContextualTheatrePage type="original" />}
+            />
             <Route
               path="/originals/:id/releases"
               element={<ComingSoon label="Official Releases" />}
             />
-            <Route path="/originals/:id/releases/new" element={<OriginalReleaseUploadPage />} />
+            <Route
+              path="/originals/:id/releases/new"
+              element={<OriginalReleaseUploadPage />}
+            />
 
             {/* ── Sets & Festivals ────────────────────────── */}
             <Route path="/sets" element={<SetsPage />} />
             <Route path="/sets/:id" element={<SetDetailPage />} />
-            <Route path="/sets/:id/theatre" element={<ContextualTheatrePage type="set" />} />
-            <Route path="/sets/:setId/discussions/:discussionId" element={<DiscussionPage />} />
+            <Route
+              path="/sets/:id/theatre"
+              element={<ContextualTheatrePage type="set" />}
+            />
+            <Route
+              path="/sets/:setId/discussions/:discussionId"
+              element={<DiscussionPage />}
+            />
             <Route path="/festivals/:id" element={<FestivalDetailPage />} />
-            <Route path="/festivals/:id/theatre" element={<ContextualTheatrePage type="festival" />} />
+            <Route
+              path="/festivals/:id/theatre"
+              element={<ContextualTheatrePage type="festival" />}
+            />
 
             {/* ── Profile ─────────────────────────────────── */}
             <Route path="/profile/new" element={<ArtistSetupPage />} />
@@ -141,7 +161,7 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
-            <Route path="/collection" element={<CollectionPage />} />
+            <Route path="/library" element={<LibraryPage />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}
             <Route
@@ -151,7 +171,10 @@ function AppRoutes() {
 
             {/* ── Admin ───────────────────────────────────── */}
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="/admin/originals/new" element={<OriginalCreatePage />} />
+            <Route
+              path="/admin/originals/new"
+              element={<OriginalCreatePage />}
+            />
             <Route path="/admin/profile/new" element={<ArtistSetupPage />} />
 
             {/* ── Misc ────────────────────────────────────── */}
@@ -159,7 +182,6 @@ function AppRoutes() {
 
             {/* ── 404 Fallback ─────────────────────────────── */}
             <Route path="*" element={<NotFoundPage />} />
-
           </Routes>
         </ErrorBoundary>
 

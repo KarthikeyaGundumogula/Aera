@@ -3,11 +3,23 @@ import React, {
   memo,
   useState,
   useEffect,
+  useLayoutEffect,
+  useRef,
   useDeferredValue,
 } from "react";
+import { motion } from "motion/react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK, GRID_ITEMS, ORIGINALS } from "../../mock";
-import { MOCK_RECOMMENDATIONS, Recommendation } from "../../mock/recommendations";
+import {
+  ARTISTS_MOCK,
+  STARS_MOCK,
+  MAKERS_MOCK,
+  GRID_ITEMS,
+  ORIGINALS,
+} from "../../mock";
+import {
+  MOCK_RECOMMENDATIONS,
+  Recommendation,
+} from "../../mock/recommendations";
 import { OriginalPosterCard } from "../originals/components/OriginalPosterCard";
 import { FeedRecommendationCard } from "../../components/FeedRecommendationCard";
 import { buildClusters } from "../theatre/engine/clusterBuilder";
@@ -80,14 +92,21 @@ const loadedProfiles = new Set<string>();
 const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const [isFavorited, setIsFavorited] = useState(false);
-  const [activeTab, setActiveTab] = useState<"THEATRE" | "COLLECTIONS" | "RECOMMENDATIONS">("THEATRE");
+  const [activeTab, setActiveTab] = useState<
+    "THEATRE" | "LIBRARY" | "RECOMMENDATIONS"
+  >("THEATRE");
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
-  
+
+  // Tab orb tracking
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const tabsRowRef = useRef<HTMLDivElement>(null);
+  const [orbX, setOrbX] = useState<number | null>(null);
+
   // Skip skeleton if we already loaded this profile in the current session
   const [isInitialLoading, setIsInitialLoading] = useState(
-    () => !(profileId && loadedProfiles.has(profileId))
+    () => !(profileId && loadedProfiles.has(profileId)),
   );
 
   useEffect(() => {
@@ -98,14 +117,41 @@ const ProfilePage: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Measure active tab center and update orb position.
+  // Deps include isInitialLoading so it fires when the skeleton clears and
+  // the actual tabs mount for the first time — not just on tab switches.
+  useLayoutEffect(() => {
+    if (isInitialLoading) return;
+    const activeEl = tabRefs.current[activeTab];
+    const row = tabsRowRef.current;
+    if (!activeEl || !row) return;
+    const rowRect = row.getBoundingClientRect();
+    const elRect = activeEl.getBoundingClientRect();
+    setOrbX(elRect.left + elRect.width / 2 - rowRect.left);
+  }, [activeTab, isInitialLoading]);
+
+  // Re-measure on resize so the orb never drifts
+  useEffect(() => {
+    const onResize = () => {
+      const activeEl = tabRefs.current[activeTab];
+      const row = tabsRowRef.current;
+      if (!activeEl || !row) return;
+      const rowRect = row.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      setOrbX(elRect.left + elRect.width / 2 - rowRect.left);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [activeTab]);
+
   useEffect(() => {
     if (!profileId) return;
-    
+
     if (loadedProfiles.has(profileId)) {
       setIsInitialLoading(false);
       return;
     }
-    
+
     setIsInitialLoading(true);
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
@@ -147,7 +193,10 @@ const ProfilePage: React.FC = () => {
         spirit: "2,480",
         favoritesCount: "142K",
         type: "STAR" as const,
-        socials: { instagram: star.actorName.toLowerCase().replace(/ /g, ""), twitter: star.actorName.toLowerCase().replace(/ /g, "") },
+        socials: {
+          instagram: star.actorName.toLowerCase().replace(/ /g, ""),
+          twitter: star.actorName.toLowerCase().replace(/ /g, ""),
+        },
       };
     }
 
@@ -167,7 +216,10 @@ const ProfilePage: React.FC = () => {
         spirit: "1,840",
         favoritesCount: "82K",
         type: "MAKER" as const,
-        socials: { instagram: maker.actorName.toLowerCase().replace(/ /g, ""), twitter: maker.actorName.toLowerCase().replace(/ /g, "") },
+        socials: {
+          instagram: maker.actorName.toLowerCase().replace(/ /g, ""),
+          twitter: maker.actorName.toLowerCase().replace(/ /g, ""),
+        },
       };
     }
 
@@ -249,62 +301,127 @@ const ProfilePage: React.FC = () => {
 
       {/* ─── TABS & CONTENT (Native Background) ─── */}
       <div className="relative z-20 w-full bg-surface-deep min-h-screen text-white">
-        
-        {/* ─── TABS NAVIGATION ─── */}
-        <div className="w-full flex justify-center mt-2 mb-2">
-          <div className="flex items-center gap-8 md:gap-16">
-            {(["THEATRE", "COLLECTIONS", "RECOMMENDATIONS"] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-2 text-[10px] md:text-[11px] font-black tracking-[0.2em] uppercase transition-all ${
-                  activeTab === tab
-                    ? "text-white"
-                    : "text-white/40 hover:text-white/80"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+        {/* ─── CINEMATIC PARTITION + TAB INDICATOR ─── */}
+        {/*
+          Tabs first, then the partition line at the bottom.
+          The orb sits ON the bottom line like a stage footlight at floor level,
+          shooting its glow UPWARD to illuminate the active tab from below.
+          Colour: Theatre Amber (#D97706) — brand accent.
+          Motion: spring physics so the orb feels weighted, not mechanical.
+        */}
+        <div ref={tabsRowRef} className="relative w-full">
+          {/* Tab buttons row — rendered FIRST so they sit above the line */}
+          <div className="w-full flex justify-center pt-4 pb-3">
+            <div className="flex items-center gap-8 md:gap-16">
+              {(["THEATRE", "LIBRARY", "RECOMMENDATIONS"] as const).map(
+                (tab) => (
+                  <button
+                    key={tab}
+                    ref={(el) => {
+                      tabRefs.current[tab] = el;
+                    }}
+                    onClick={() => setActiveTab(tab)}
+                    className={`text-[10px] md:text-[11px] font-black tracking-[0.2em] uppercase transition-colors duration-300 ${
+                      activeTab === tab
+                        ? "text-white"
+                        : "text-white/40 hover:text-white/70"
+                    }`}
+                    style={{
+                      // Footlight illumination — subtle amber heat bleeds upward
+                      textShadow:
+                        activeTab === tab
+                          ? "0 0 8px rgba(245,158,11,0.6), 0 0 16px rgba(217,119,6,0.3)"
+                          : "none",
+                      transition: "text-shadow 0.4s ease",
+                    }}
+                  >
+                    {tab}
+                  </button>
+                ),
+              )}
+            </div>
           </div>
+
+          {/* ── LINE at the bottom of the tab zone ── */}
+          <div
+            className="w-full h-px"
+            style={{
+              background: `linear-gradient(to right, transparent 0%, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.13) 50%, rgba(255,255,255,0.08) 80%, transparent 100%)`,
+            }}
+          />
+
+          {/* Amber footlight bloom — originates at the bottom line, shoots UPWARD (subtle) */}
+          {orbX !== null && (
+            <motion.div
+              className="absolute pointer-events-none"
+              animate={{ x: orbX - 80 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              style={{
+                bottom: "0px", // anchored to the line at the floor
+                width: "160px",
+                height: "56px",
+                background: `radial-gradient(ellipse at 50% 100%, rgba(217,119,6,0.25) 0%, rgba(217,119,6,0.10) 40%, transparent 72%)`,
+                filter: "blur(10px)",
+              }}
+            />
+          )}
+
+          {/* Amber semi-sphere — footlight housing embedded in the stage floor.
+              Only the dome sits above the line; the flat base is flush with it.
+              border-radius top-only = half-circle; box-shadow glows upward naturally. */}
+          {orbX !== null && (
+            <motion.div
+              className="absolute pointer-events-none"
+              animate={{ x: orbX - 5 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              style={{
+                bottom: "0px", // flat base sits flush on the line
+                width: "10px",
+                height: "5px", // half the width → perfect semi-circle
+                borderRadius: "5px 5px 0 0", // dome on top, flat on bottom
+                backgroundColor: "#F59E0B",
+                boxShadow:
+                  // tight hotspot at the dome, then wide soft spill upward
+                  "0 0 5px 2px rgba(245,158,11,0.95), 0 0 16px 6px rgba(217,119,6,0.75), 0 0 36px 14px rgba(217,119,6,0.25)",
+              }}
+            />
+          )}
         </div>
 
         {/* ─── TAB CONTENT ─── */}
         <div className="w-full pt-0 pb-20">
-        <section className="px-8 md:px-12">
-          
-          {activeTab === "THEATRE" && (
-            <>
-              <UnifiedTheatre 
-                works={userWorks}
-                variant="full"
-                disablePadding={true}
-              />
-            </>
-          )}
-
-          {activeTab === "COLLECTIONS" && (
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1.5 sm:gap-4 md:gap-5 items-stretch mt-2">
-              {ORIGINALS.map((original, index) => (
-                <OriginalPosterCard
-                  key={original.id}
-                  original={original}
-                  makers={MAKERS_MOCK}
-                  stars={STARS_MOCK}
-                  index={index}
+          <section className="px-8 md:px-12">
+            {activeTab === "THEATRE" && (
+              <div className="mt-3">
+                <UnifiedTheatre
+                  works={userWorks}
+                  variant="full"
+                  disablePadding={true}
                 />
-              ))}
-            </div>
-          )}
+              </div>
+            )}
 
-          {activeTab === "RECOMMENDATIONS" && (
-            <div className="flex flex-col gap-12 max-w-2xl mx-auto mt-2">
-              {MOCK_RECOMMENDATIONS.map((rec: Recommendation) => (
-                <FeedRecommendationCard key={rec.id} rec={rec} />
-              ))}
-            </div>
-          )}
+            {activeTab === "LIBRARY" && (
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1.5 sm:gap-4 md:gap-5 items-stretch mt-2">
+                {ORIGINALS.map((original, index) => (
+                  <OriginalPosterCard
+                    key={original.id}
+                    original={original}
+                    makers={MAKERS_MOCK}
+                    stars={STARS_MOCK}
+                    index={index}
+                  />
+                ))}
+              </div>
+            )}
 
+            {activeTab === "RECOMMENDATIONS" && (
+              <div className="flex flex-col gap-12 max-w-2xl mx-auto mt-2">
+                {MOCK_RECOMMENDATIONS.map((rec: Recommendation) => (
+                  <FeedRecommendationCard key={rec.id} rec={rec} />
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </div>

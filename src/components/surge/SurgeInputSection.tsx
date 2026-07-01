@@ -7,7 +7,7 @@ interface SurgeInputSectionProps {
   score: number;
   peak?: number;
   onChange: (v: number) => void;
-  /** Optional divider rendered above the score section (for use in Collection) */
+  /** Optional divider rendered above the score section (for use in Library) */
   withDivider?: boolean;
 }
 
@@ -15,7 +15,7 @@ interface SurgeInputSectionProps {
  * SurgeInputSection
  *
  * Single source of truth for the score-input UI used in both
- * CreateRecommendationModal and CollectionEntryModal.
+ * CreateRecommendationModal and LibraryEntryModal.
  *
  * Owns the peakFlash state so callers don't have to duplicate it.
  */
@@ -29,7 +29,7 @@ export function SurgeInputSection({
 
   return (
     <>
-      {/* Optional divider (Collection uses it) */}
+      {/* Optional divider (Library uses it) */}
       {withDivider && <div className="h-px bg-white/[0.04]" aria-hidden />}
 
       {/* Peak crossed flash overlay — rendered at the section level */}
@@ -42,7 +42,10 @@ export function SurgeInputSection({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.7 }}
             className="pointer-events-none absolute inset-0 z-50 rounded-2xl"
-            style={{ background: "radial-gradient(circle at 70% 80%, rgba(239,68,68,0.18) 0%, transparent 70%)" }}
+            style={{
+              background:
+                "radial-gradient(circle at 70% 80%, rgba(239,68,68,0.18) 0%, transparent 70%)",
+            }}
           />
         )}
       </AnimatePresence>

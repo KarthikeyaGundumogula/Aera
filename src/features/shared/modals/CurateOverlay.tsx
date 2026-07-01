@@ -19,33 +19,33 @@ export function CurateOverlay({
   onShowToast,
 }: CurateOverlayProps) {
   const navigate = useNavigate();
-  const [collectionOriginals, setCollectionOriginals] = useState<string[]>([]);
+  const [libraryOriginals, setLibraryOriginals] = useState<string[]>([]);
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
   // Only show the originals that this fragment is related to
   const relatedOriginals = [
     ...(originalIds.includes("own-release") ? [OWN_RELEASE_ORIGINAL] : []),
-    ...ORIGINALS.filter((item) => originalIds.includes(item.id))
+    ...ORIGINALS.filter((item) => originalIds.includes(item.id)),
   ];
 
-  const handleAddToCollection = (id: string) => {
-    if (collectionOriginals.includes(id)) {
-      onShowToast("Already Saved to Collection");
+  const handleAddToLibrary = (id: string) => {
+    if (libraryOriginals.includes(id)) {
+      onShowToast("Already Saved to Library");
     } else {
-      setCollectionOriginals((prev) => [...prev, id]);
-      onShowToast("Original Added to Collection");
+      setLibraryOriginals((prev) => [...prev, id]);
+      onShowToast("Original Added to Library");
     }
   };
 
-  const handleTagToCollection = (id: string) => {
+  const handleTagToLibrary = (id: string) => {
     if (taggedOriginals.includes(id)) {
       onShowToast("Already Tagged to Original");
       return;
     }
 
     setTaggedOriginals((prev) => [...prev, id]);
-    if (!collectionOriginals.includes(id)) {
-      setCollectionOriginals((prev) => [...prev, id]);
+    if (!libraryOriginals.includes(id)) {
+      setLibraryOriginals((prev) => [...prev, id]);
       onShowToast("Original Added & Work Tagged");
     } else {
       onShowToast("Work Tagged to Original");
@@ -87,7 +87,7 @@ export function CurateOverlay({
               </div>
             ) : (
               relatedOriginals.map((item) => {
-                const inCollection = collectionOriginals.includes(item.id);
+                const inLibrary = libraryOriginals.includes(item.id);
                 const isTagged = taggedOriginals.includes(item.id);
 
                 return (
@@ -95,7 +95,8 @@ export function CurateOverlay({
                     key={item.id}
                     className="flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-black border border-white/10 hover:border-white/20 transition-all shadow-xl"
                   >
-                    <img loading="lazy"
+                    <img
+                      loading="lazy"
                       src={item.coverImage}
                       alt={item.title}
                       onClick={() => handleNavigation(item.id)}
@@ -111,18 +112,18 @@ export function CurateOverlay({
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2 pr-1 sm:pr-2">
                       <button
-                        onClick={() => handleAddToCollection(item.id)}
-                        className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${inCollection ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"}`}
-                        title="Add to Collection"
+                        onClick={() => handleAddToLibrary(item.id)}
+                        className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${inLibrary ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"}`}
+                        title="Add to Library"
                       >
                         <Bookmark
-                          className={`w-3 h-3 sm:w-4 sm:h-4 ${inCollection ? "fill-current" : ""}`}
+                          className={`w-3 h-3 sm:w-4 sm:h-4 ${inLibrary ? "fill-current" : ""}`}
                         />
                       </button>
                       <button
-                        onClick={() => handleTagToCollection(item.id)}
+                        onClick={() => handleTagToLibrary(item.id)}
                         className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${isTagged ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10"}`}
-                        title="Tag work to Collection"
+                        title="Tag work to Library"
                       >
                         <Tag
                           className={`w-3 h-3 sm:w-4 sm:h-4 ${isTagged ? "fill-current" : ""}`}
