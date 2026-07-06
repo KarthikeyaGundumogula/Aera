@@ -42,7 +42,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
 
         {/* Top-right CTA */}
         <button
-          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white group-hover:text-black transition-all duration-300 active:scale-95"
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white group-hover:text-black transition-all duration-300 active:scale-95"
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/sets/${set.id}`);
@@ -55,7 +55,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
         {/* Top-left Indicator for Live Festival */}
         {hasFestival && (
           <div className="absolute top-5 left-5 z-20 flex items-center gap-2">
-             <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
+             <div className="w-1.5 h-1.5 rounded-xl bg-red-600 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/70">
                {festival.title}
              </span>

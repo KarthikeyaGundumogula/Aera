@@ -68,7 +68,7 @@ function FestivalCard({ festival }: { festival: Festival }) {
         {/* Status badge */}
         <div className="absolute bottom-3 left-4">
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${cfg.badge}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border ${cfg.badge}`}
           >
             {festival.status === "LIVE" && <Zap className="w-2.5 h-2.5" />}
             {festival.status === "CONCLUDED" && <Clock className="w-2.5 h-2.5" />}
@@ -97,7 +97,7 @@ function FestivalCard({ festival }: { festival: Festival }) {
               ).map((artist, i) => (
                 <div 
                   key={i} 
-                  className="relative w-5 h-5 rounded-full border border-[#111] bg-[#222] overflow-hidden shadow-sm" 
+                  className="relative w-5 h-5 rounded-xl border border-[#111] bg-[#222] overflow-hidden shadow-sm" 
                   style={{ zIndex: 10 - i }}
                   title={artist.name}
                 >

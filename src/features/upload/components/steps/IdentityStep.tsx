@@ -130,7 +130,7 @@ export function IdentityStep({
           <button
             disabled={!title}
             onClick={onNext}
-            className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2"
+            className="px-10 py-4 bg-white text-black rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2"
           >
             NEXT <ChevronRight className="w-4 h-4" />
           </button>

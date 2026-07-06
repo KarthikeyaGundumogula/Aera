@@ -69,7 +69,7 @@ export function ProfileHero({
             animate={{ opacity: [0, 0.6, 0], scale: [0.8, 1.1, 1] }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5, ease: "easeOut", opacity: { times: [0, 0.2, 1] } }}
-            className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#B45309]/30 blur-[150px] rounded-full pointer-events-none z-0"
+            className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#B45309]/30 blur-[150px] rounded-xl pointer-events-none z-0"
           />
         )}
       </AnimatePresence>
@@ -234,7 +234,7 @@ export function ProfileHero({
                       animate={{ scale: 3, opacity: 0 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.7, ease: "easeOut" }}
-                      className="absolute inset-0 bg-[#B45309]/40 rounded-full pointer-events-none blur-sm"
+                      className="absolute inset-0 bg-[#B45309]/40 rounded-xl pointer-events-none blur-sm"
                     />
                   )}
                 </AnimatePresence>

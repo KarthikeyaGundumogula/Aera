@@ -144,7 +144,7 @@ export function SourceStep({
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full aspect-[16/6] rounded-2xl border-2 border-dashed border-white/10 bg-white/[0.02] flex flex-col items-center justify-center gap-4 hover:bg-white/[0.04] hover:border-white/20 transition-all group"
               >
-                <div className="p-4 rounded-full bg-white/5 text-white/40 group-hover:text-white transition-colors">
+                <div className="p-4 rounded-xl bg-white/5 text-white/40 group-hover:text-white transition-colors">
                   <Upload className="w-6 h-6" />
                 </div>
                 <div className="text-center">
@@ -156,13 +156,13 @@ export function SourceStep({
               <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-black aspect-[16/6]">
                 <img loading="lazy" src={contentUrl} className="w-full h-full object-cover opacity-60" alt="Poster preview" />
                 <div className="absolute inset-0 flex items-center justify-center gap-4">
-                   <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-3">
+                   <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3">
                       <ImageIcon className="w-4 h-4 text-white/40" />
                       <span className="text-[10px] font-bold uppercase tracking-widest">Master Artifact Ready</span>
                    </div>
                    <button 
                     onClick={removeFile}
-                    className="p-2 bg-red-500/20 text-red-500 border border-red-500/30 rounded-full hover:bg-red-500 hover:text-white transition-all"
+                    className="p-2 bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl hover:bg-red-500 hover:text-white transition-all"
                    >
                      <X className="w-4 h-4" />
                    </button>
@@ -247,7 +247,7 @@ export function SourceStep({
           <button 
             disabled={!canProceed}
             onClick={onNext} 
-            className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+            className="px-10 py-4 bg-white text-black rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
           >
              NEXT <ChevronRight className="w-4 h-4" />
           </button>

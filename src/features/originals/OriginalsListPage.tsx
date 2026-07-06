@@ -28,7 +28,7 @@ export function OriginalsListPage() {
         <button
           onClick={() => navigate("/")}
           aria-label="Return to Hall"
-          className="group p-2 -ml-2 rounded-full hover:bg-white/5 transition-colors active:scale-90 transition-transform duration-150"
+          className="group p-2 -ml-2 rounded-xl hover:bg-white/5 transition-colors active:scale-90 transition-transform duration-150"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

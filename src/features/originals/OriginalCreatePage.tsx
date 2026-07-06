@@ -39,8 +39,8 @@ export default function OriginalCreatePage() {
     <div className="relative min-h-screen bg-surface-deep text-white overflow-y-auto font-sans selection:bg-white selection:text-black pb-32">
       {/* ─── Cinematic Background Layer ─────────────────────────────── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-white/[0.02] blur-[140px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[45%] h-[45%] bg-white/[0.015] blur-[140px] rounded-full" />
+        <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-white/[0.02] blur-[140px] rounded-xl animate-pulse" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[45%] h-[45%] bg-white/[0.015] blur-[140px] rounded-xl" />
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 pt-12 flex flex-col min-h-screen">
@@ -131,7 +131,7 @@ export default function OriginalCreatePage() {
                 <div className="relative">
                     <CheckCircle2 className="w-5 h-5 text-white shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
                     <motion.div 
-                        className="absolute inset-0 bg-white/20 blur-md rounded-full"
+                        className="absolute inset-0 bg-white/20 blur-md rounded-xl"
                         animate={{ scale: [1, 2, 1], opacity: [0.5, 0, 0.5] }}
                         transition={{ duration: 2, repeat: Infinity }}
                     />

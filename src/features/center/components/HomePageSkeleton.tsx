@@ -19,8 +19,8 @@ export function HomePageSkeleton() {
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-surface-deep/95 border-b border-white/5 md:px-8 md:py-6">
         <SkeletonBlock className="h-5 w-20 rounded-md" />
         <div className="flex items-center gap-4">
-          <SkeletonBlock className="h-5 w-5 rounded-full" />
-          <SkeletonBlock className="h-8 w-8 rounded-full" />
+          <SkeletonBlock className="h-5 w-5 rounded-xl" />
+          <SkeletonBlock className="h-8 w-8 rounded-xl" />
         </div>
       </header>
 
@@ -42,7 +42,7 @@ export function HomePageSkeleton() {
             {/* Indicator dots */}
             <div className="absolute top-1/2 -translate-y-1/2 right-6 flex flex-col gap-3">
               {[0, 1, 2].map((i) => (
-                <SkeletonBlock key={i} className="w-1 h-10 rounded-full" />
+                <SkeletonBlock key={i} className="w-1 h-10 rounded-xl" />
               ))}
             </div>
           </div>
@@ -50,7 +50,7 @@ export function HomePageSkeleton() {
 
         {/* Ticker skeleton */}
         <div className="my-4 px-6 md:px-12">
-          <SkeletonBlock className="h-4 w-full rounded-full" />
+          <SkeletonBlock className="h-4 w-full rounded-xl" />
         </div>
 
         {/* Artists section skeleton */}

@@ -17,7 +17,7 @@ export const FestivalStage = memo(function FestivalStage() {
       aria-label="Live Festival Stage"
     >
       <div className="px-6 flex items-center gap-3 mb-6">
-        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
+        <div className="w-2 h-2 rounded-xl bg-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/90 drop-shadow-md">
           Festivals
         </span>
@@ -62,7 +62,7 @@ export const FestivalStage = memo(function FestivalStage() {
                     </p>
                   </div>
 
-                  <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shrink-0 group-hover:bg-white group-hover:text-black transition-all duration-300 pointer-events-auto">
+                  <button className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shrink-0 group-hover:bg-white group-hover:text-black transition-all duration-300 pointer-events-auto">
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

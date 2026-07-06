@@ -98,7 +98,7 @@ export function OriginalPage() {
           <h1 className="text-2xl font-bold mb-4">Original not found</h1>
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-2 bg-white text-black rounded-full font-bold"
+            className="px-6 py-2 bg-white text-black rounded-xl font-bold"
           >
             Hall
           </button>
@@ -287,7 +287,7 @@ export function OriginalPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full z-[200] flex items-center gap-2 pointer-events-none"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-xl z-[200] flex items-center gap-2 pointer-events-none"
           >
             <Bookmark size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">

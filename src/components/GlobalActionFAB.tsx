@@ -45,7 +45,7 @@ export function GlobalActionFAB() {
     closeRecommendation,
   } = useRecommendationContext();
 
-  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [isCreateRecOpen, setIsCreateRecOpen] = useState(false);
   const [isSnapping, setIsSnapping] = useState(false);
   const [flashVisible, setFlashVisible] = useState(false);
@@ -185,11 +185,11 @@ export function GlobalActionFAB() {
       window.removeEventListener("keydown", handleInteraction);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
-  }, [isMenuOpen, isModalOpen, isCollectionModalOpen, isCreateRecOpen]);
+  }, [isMenuOpen, isModalOpen, isLibraryModalOpen, isCreateRecOpen]);
 
   // Listen for global event to open Library Modal
   useEffect(() => {
-    const handleOpenLibrary = () => setIsCollectionModalOpen(true);
+    const handleOpenLibrary = () => setIsLibraryModalOpen(true);
     window.addEventListener("openLibraryModal", handleOpenLibrary);
     return () =>
       window.removeEventListener("openLibraryModal", handleOpenLibrary);
@@ -415,7 +415,7 @@ export function GlobalActionFAB() {
                 delay={0.05}
                 onClick={() => {
                   setIsMenuOpen(false);
-                  setIsCollectionModalOpen(true);
+                  setIsLibraryModalOpen(true);
                 }}
               />
             </>
@@ -555,8 +555,8 @@ export function GlobalActionFAB() {
       />
 
       <LibraryEntryModal
-        isOpen={isCollectionModalOpen}
-        onClose={() => setIsCollectionModalOpen(false)}
+        isOpen={isLibraryModalOpen}
+        onClose={() => setIsLibraryModalOpen(false)}
       />
     </>
   );

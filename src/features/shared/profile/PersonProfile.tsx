@@ -203,7 +203,7 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                             .replace(/\./g, "")}`;
                           navigate(`/profile/${profileId}`);
                         }}
-                        className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
+                        className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
                       >
                         Visit
                       </button>
@@ -212,7 +212,7 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                     {/* Bottom Footer Overlay */}
                     <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 z-30 px-4 sm:px-6 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <button className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-md">
+                        <button className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-md">
                           Follow +
                         </button>
                       </div>

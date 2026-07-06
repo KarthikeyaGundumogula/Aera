@@ -9,8 +9,6 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  useLocation,
-  Navigate,
 } from "react-router-dom";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { MobileNavBar } from "@/features/navigation/MobileNavBar";
@@ -81,7 +79,7 @@ function NotFoundPage() {
       </p>
       <a
         href="/"
-        className="mt-4 text-[9px] font-black uppercase tracking-widest text-white/30 border border-white/10 px-4 py-2 rounded-full hover:border-white/25 hover:text-white/60 transition-colors"
+        className="mt-4 text-[9px] font-black uppercase tracking-widest text-white/30 border border-white/10 px-4 py-2 rounded-xl hover:border-white/25 hover:text-white/60 transition-colors"
       >
         Return to Hall
       </a>
@@ -97,10 +95,13 @@ function NotFoundPage() {
  * The backgroundLocation pattern renders the previous page behind a modal-style
  * WorkPage overlay when navigating from within the app (/works/:id).
  */
+/**
+ * AppRoutes — separated so it can use useLocation inside BrowserRouter.
+ *
+ * Works (/works/:id) are now full-page Exhibition Screens, not overlays.
+ * The backgroundLocation dual-rendering pattern has been removed.
+ */
 function AppRoutes() {
-  const location = useLocation();
-  const backgroundLocation = location.state?.backgroundLocation;
-
   return (
     <>
       <ScrollToTop />
@@ -108,7 +109,7 @@ function AppRoutes() {
 
       <Suspense fallback={<RouteFallback />}>
         <ErrorBoundary>
-          <Routes location={backgroundLocation ?? location}>
+          <Routes>
             {/* ── Hall (Home) ─────────────────────────────── */}
             <Route path="/" element={<HallPage />} />
 
@@ -184,13 +185,6 @@ function AppRoutes() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </ErrorBoundary>
-
-        {/* Modal overlay: WorkPage floating above the background route */}
-        {backgroundLocation && (
-          <Routes>
-            <Route path="/works/:id" element={<WorkPage />} />
-          </Routes>
-        )}
       </Suspense>
     </>
   );

@@ -35,7 +35,7 @@ export const SetsGrid = memo(function SetsGrid({ onCreateSetClick }: SetsGridPro
         {onCreateSetClick && (
           <button 
             onClick={onCreateSetClick}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-white rounded-full text-[9px] font-black uppercase tracking-[0.2em] text-black hover:bg-transparent hover:text-white transition-all active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] text-black hover:bg-transparent hover:text-white transition-all active:scale-95"
           >
             <Plus className="w-3 h-3" />
             <span>Create Set</span>

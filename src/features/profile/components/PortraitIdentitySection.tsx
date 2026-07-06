@@ -78,7 +78,7 @@ export function PortraitIdentitySection({
           {portraitPreview && (
             <button
               onClick={onPortraitClear}
-              className="absolute -top-3 -right-3 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 hover:bg-red-600 hover:scale-105"
+              className="absolute -top-3 -right-3 p-2 bg-red-500 text-white rounded-xl opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 hover:bg-red-600 hover:scale-105"
             >
               <X className="w-4 h-4" />
             </button>

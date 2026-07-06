@@ -164,7 +164,7 @@ export function SetDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full z-[200] flex items-center gap-2 pointer-events-none"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-xl z-[200] flex items-center gap-2 pointer-events-none"
           >
             <Bookmark size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
@@ -221,7 +221,7 @@ export function SetDetailPage() {
           {captain && (
             <button
               onClick={() => navigate(`/profile/${captain.id}`)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.04] hover:border-white/10 rounded-full transition-all duration-300 group"
+              className="flex items-center gap-2 px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.04] hover:border-white/10 rounded-xl transition-all duration-300 group"
             >
               {captain.profilePicture && (
                 <img
@@ -240,7 +240,7 @@ export function SetDetailPage() {
           <div className="flex items-center pt-2">
             <button
               onClick={() => setIsJoined(!isJoined)}
-              className={`px-8 py-3.5 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
+              className={`px-8 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
                 isJoined
                   ? "bg-white/5 text-white/40 border border-white/5"
                   : "bg-white text-black hover:bg-white/90 hover:scale-105"

@@ -14,7 +14,7 @@ export function ContactCTA() {
     >
       <div className="relative group p-10 md:p-16 rounded-[40px] bg-white/[0.02] border border-white/5 overflow-hidden text-center flex flex-col items-center">
         {/* Abstract Background Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-brand-accent/5 blur-[80px] rounded-full pointer-events-none group-hover:bg-brand-accent/10 transition-all duration-700" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-brand-accent/5 blur-[80px] rounded-xl pointer-events-none group-hover:bg-brand-accent/10 transition-all duration-700" />
 
         <div className="relative z-10 space-y-6">
           <div className="flex items-center justify-center gap-3 mb-8 opacity-40">

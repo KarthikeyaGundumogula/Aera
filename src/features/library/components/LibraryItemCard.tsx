@@ -10,15 +10,15 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
-import type { CollectionItem } from "../../../mock/library";
+import type { LibraryItem } from "../../../mock/library";
 import { LibraryTaggedWorksStack } from "./LibraryTaggedWorksStack";
 
 export const LibraryItemCard = memo(function LibraryItemCard({
   item,
   onUpdate,
 }: {
-  item: CollectionItem;
-  onUpdate: (item: CollectionItem) => void;
+  item: LibraryItem;
+  onUpdate: (item: LibraryItem) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);

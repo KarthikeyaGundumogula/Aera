@@ -368,7 +368,7 @@ export default function StudioPage() {
 
             <button
               onClick={() => handleNavigation("/works/new")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
               New Release
@@ -396,7 +396,7 @@ export default function StudioPage() {
               </p>
               <button
                 onClick={() => handleNavigation("/works/new")}
-                className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-widest transition-all active:scale-95"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-widest transition-all active:scale-95"
               >
                 <Plus className="w-4 h-4" /> Release First Work
               </button>

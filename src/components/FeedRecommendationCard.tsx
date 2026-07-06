@@ -183,7 +183,10 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
           <div className="w-[1px] bg-white/[0.05] shrink-0" />
 
           {/* RIGHT: Content Column */}
-          <div className="flex-1 min-w-0 flex flex-col relative z-10">
+          <div 
+            className={`flex-1 min-w-0 flex flex-col relative z-10 ${variant !== "modal" ? "cursor-pointer" : ""}`}
+            onClick={variant !== "modal" ? handleCardClick : undefined}
+          >
             {/* TOP: Film Title */}
             <div className="px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2">
               <h3
@@ -204,8 +207,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
               {/* Notes */}
               <motion.div
                 layout
-                className={`px-3 py-2 shrink-0 w-full relative z-20 ${variant !== "modal" ? "cursor-pointer" : ""}`}
-                onClick={handleCardClick}
+                className="px-3 py-2 shrink-0 w-full relative z-20"
               >
                 <motion.p
                   ref={textRef}
@@ -308,7 +310,10 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                 <div className="h-px bg-white/[0.05]" />
 
                 {/* Score + Favorite Row — matched to 28px artist row height */}
-                <div className="flex items-center gap-2.5 h-[28px]">
+                <div 
+                  className="flex items-center gap-2.5 h-[28px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {/* Bars block */}
                   <div
                     className="relative flex items-center gap-2 flex-1 cursor-help min-w-0 h-full"
@@ -414,7 +419,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     e.preventDefault();
                     setBoosted(!boosted);
                   }}
-                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
                     boosted
                       ? "bg-[#B45309]/10 text-[#B45309] shadow-[0_0_14px_rgba(180,83,9,0.16)]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
@@ -434,7 +439,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     e.preventDefault();
                     setInLibrary(!inLibrary);
                   }}
-                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
                     inLibrary
                       ? "text-white bg-white/[0.12]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
@@ -454,7 +459,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     e.preventDefault();
                     setSaved(!saved);
                   }}
-                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest active:scale-[0.97] transition-all duration-200 ${
                     saved
                       ? "text-white bg-white/[0.12]"
                       : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"

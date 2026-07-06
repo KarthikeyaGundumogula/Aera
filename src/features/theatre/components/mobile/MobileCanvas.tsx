@@ -98,7 +98,7 @@ export function MobileCanvas() {
             className="h-16 w-full flex items-center justify-center mt-2"
             aria-hidden="true"
           >
-            <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-xl animate-spin" />
           </div>
         </div>
       </div>

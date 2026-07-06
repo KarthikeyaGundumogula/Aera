@@ -62,7 +62,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
                     <Key className="w-4 h-4 text-white/60" />
                   </div>
                   <div>
@@ -76,7 +76,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                  className="p-2 rounded-xl hover:bg-white/10 transition-colors text-white/50 hover:text-white"
                 >
                   <X className="w-5 h-5" />
                 </button>

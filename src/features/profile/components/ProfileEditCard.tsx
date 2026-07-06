@@ -160,7 +160,7 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               onClick={handlePortraitClear}
-              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/30 transition-all"
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/30 transition-all"
               aria-label="Reset portrait"
             >
               <X className="w-2.5 h-2.5" />

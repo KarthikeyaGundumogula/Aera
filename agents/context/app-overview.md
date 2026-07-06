@@ -77,7 +77,11 @@ A dedicated interaction layer for curating Works and Originals.
 
 ### 🏛️ The Wall (Artist Profile)
 A highly curated, persistent "moodboard" or exhibition space on an Artist's profile.
-- Artists can post raw text, or **Pin** Works/Originals with a "Director's Note".
+- **Post Types**:
+  1. `LINE` - Pure text updates. Spans full-width in the masonry layout for breathing room.
+  2. `PIN_WORK` - A pinned TheatreItem (Edit/Poster/Script) with an optional attached Line.
+  3. `PIN_ORIGINAL` - A pinned Original movie/series with an optional attached Line.
+- **Visual Mechanics**: Pinned posts feature a deterministic physical tilt (`getTiltDegrees`) to feel tangibly pinned to a board. Tapping any post opens a full-screen `WallSwiper` to view the feed immersively.
 - **Distribution**: Wall posts are **NOT** broadcasted globally. They only go to the "Foyer" of users who have explicitly *Favorited* the Artist, creating an intimate, high-trust loop.
 
 ---
@@ -87,7 +91,7 @@ A highly curated, persistent "moodboard" or exhibition space on an Artist's prof
 ### 🔹 Sets
 - micro-communities centered around themes, movies, or ideas.
 - **The Set Wall**: A communal space where members can post. 
-- **Cards (Visual Reactions)**: To combat toxicity and maintain a Dark-Luxury aesthetic, **raw text is strictly banned** on the Set Wall. Users communicate via high-fidelity, cinematic visual templates (using GIFs or beautifully typography-driven stills) called **Cards**.
+- **Cards (Visual Reactions)**: To combat toxicity and maintain a Dark-Luxury aesthetic, **Lines (pure text) are strictly banned** on the Set Wall. Users communicate via high-fidelity, cinematic visual templates (using GIFs or beautifully typography-driven stills) called **Cards**.
 
 ### 🔹 Captains
 - curators and moderators who maintain quality and direction

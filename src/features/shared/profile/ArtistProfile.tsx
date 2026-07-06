@@ -201,7 +201,7 @@ export const ArtistProfile = memo(
                         setIsOpen(false);
                         navigate(`/profile/${artist.id}`);
                       }}
-                      className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
+                      className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
                     >
                       Visit
                     </button>
@@ -291,7 +291,7 @@ export const ArtistProfile = memo(
                               animate={{ scale: 3, opacity: 0 }}
                               exit={{ opacity: 0 }}
                               transition={{ duration: 0.7, ease: "easeOut" }}
-                              className="absolute inset-0 bg-[#B45309]/40 rounded-full pointer-events-none blur-[2px]"
+                              className="absolute inset-0 bg-[#B45309]/40 rounded-xl pointer-events-none blur-[2px]"
                             />
                           )}
                         </AnimatePresence>

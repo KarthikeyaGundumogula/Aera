@@ -61,7 +61,7 @@ export function ArtistRecommendationsZone() {
               onClick={() => navigate("/recommendations")}
               className="flex-shrink-0 h-[310px] w-[140px] sm:w-[160px] flex flex-col items-center justify-center gap-4 transition-all hover:opacity-80 active:scale-[0.98] group"
             >
-              <div className="w-12 h-12 rounded-full border border-white/15 flex items-center justify-center bg-transparent group-hover:border-amber-500/50 group-hover:bg-amber-500/10 transition-colors">
+              <div className="w-12 h-12 rounded-xl border border-white/15 flex items-center justify-center bg-transparent group-hover:border-amber-500/50 group-hover:bg-amber-500/10 transition-colors">
                 <ArrowRight className="w-5 h-5 text-white/50 group-hover:text-amber-500 transition-colors" />
               </div>
               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 text-center leading-relaxed max-w-[120px] group-hover:text-white/80 transition-colors">

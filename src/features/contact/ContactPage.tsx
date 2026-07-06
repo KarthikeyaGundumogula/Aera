@@ -48,8 +48,8 @@ export default function ContactPage() {
     <div className="min-h-screen bg-surface-deep text-white selection:bg-white selection:text-black font-sans">
       {/* Background Ambience */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-white/[0.015] blur-[150px] rounded-full" />
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] blur-[150px] rounded-xl" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-white/[0.015] blur-[150px] rounded-xl" />
       </div>
 
       {/* Header */}

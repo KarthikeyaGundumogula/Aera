@@ -23,12 +23,12 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
          >
             <div className="relative w-40 h-40 mx-auto">
                 <motion.div 
-                    className="absolute inset-0 border-2 border-white/10 rounded-full"
+                    className="absolute inset-0 border-2 border-white/10 rounded-xl"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                 />
                 <motion.div 
-                    className="absolute inset-4 border border-white/20 rounded-full border-t-white"
+                    className="absolute inset-4 border border-white/20 rounded-xl border-t-white"
                     animate={{ rotate: -360 }}
                     transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                 />
@@ -37,7 +37,7 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
                 </div>
                 
                 <motion.div 
-                    className="absolute top-0 left-1/2 w-2 h-2 bg-white rounded-full -ml-1"
+                    className="absolute top-0 left-1/2 w-2 h-2 bg-white rounded-xl -ml-1"
                     animate={{ rotate: 360 }}
                     style={{ transformOrigin: "center 80px" }}
                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -64,7 +64,7 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
     >
       <div className="text-center space-y-10">
            <div className="flex flex-col items-center gap-6">
-              <div className="w-20 h-20 rounded-full border border-white/10 flex items-center justify-center bg-white/[0.02] shadow-[0_0_50px_rgba(255,255,255,0.05)]">
+              <div className="w-20 h-20 rounded-xl border border-white/10 flex items-center justify-center bg-white/[0.02] shadow-[0_0_50px_rgba(255,255,255,0.05)]">
                   <Sparkles className="w-8 h-8 text-white/50 animate-pulse" />
               </div>
               <div>

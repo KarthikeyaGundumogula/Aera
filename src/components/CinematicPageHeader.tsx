@@ -50,7 +50,7 @@ export function CinematicPageHeader({
       <div className="flex-1 flex items-center gap-3 z-10">
         <button
           onClick={onBack}
-          className="group p-2 -ml-2 rounded-full hover:bg-white/5 transition-all active:scale-90"
+          className="group p-2 -ml-2 rounded-xl hover:bg-white/5 transition-all active:scale-90"
           aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5 text-white/60 group-hover:text-white transition-colors group-hover:-translate-x-0.5" />

@@ -103,7 +103,7 @@ export function FormatStep({ formData, currentOriginal, setFormData, onNext, onB
           </button>
           <button 
             onClick={onNext} 
-            className="px-8 py-3 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 transition-all flex items-center gap-2"
+            className="px-8 py-3 bg-white text-black rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/90 transition-all flex items-center gap-2"
           >
             NEXT <ChevronRight className="w-4 h-4" />
           </button>

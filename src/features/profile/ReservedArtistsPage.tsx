@@ -79,14 +79,14 @@ export default function ReservedArtistsPage() {
               </div>
 
               {isClaimed ? (
-                <div className="px-5 py-2 bg-white/10 text-white/40 rounded-full flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em]">
+                <div className="px-5 py-2 bg-white/10 text-white/40 rounded-xl flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em]">
                   <Check className="w-3 h-3" />
                   Claimed
                 </div>
               ) : (
                 <button
                   onClick={() => handleClaimClick(artist)}
-                  className="px-6 py-2.5 bg-white text-black hover:bg-white/90 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-[0_10px_20px_rgba(255,255,255,0.1)]"
+                  className="px-6 py-2.5 bg-white text-black hover:bg-white/90 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-[0_10px_20px_rgba(255,255,255,0.1)]"
                 >
                   Claim
                 </button>

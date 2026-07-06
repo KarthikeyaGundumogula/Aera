@@ -83,7 +83,7 @@ export function CreateFestivalModal({
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all z-10"
+          className="absolute top-6 right-6 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all z-10"
         >
           <X size={16} />
         </button>
@@ -234,7 +234,7 @@ export function CreateFestivalModal({
             {panelists.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {panelists.map((p) => (
-                  <div key={p} className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/5">
+                  <div key={p} className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-xl border border-white/5">
                     <span className="text-xs font-medium text-white">{p}</span>
                     <button type="button" onClick={() => removePanelist(p)} className="text-white/40 hover:text-white">
                       <X size={12} />

@@ -51,7 +51,7 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
         <button
           onClick={onClose}
           aria-label="Close search"
-          className="p-1.5 rounded-full text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors focus:outline-none"
+          className="p-1.5 rounded-xl text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors focus:outline-none"
         >
           <X className="w-3.5 h-3.5" />
         </button>

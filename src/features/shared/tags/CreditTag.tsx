@@ -24,7 +24,7 @@ export const CreditTag: React.FC<CreditTagProps> = ({ id, title, onClick, index 
         navigate(`/originals/${id}`);
         if (onClick) onClick(id);
       }}
-      className="relative w-fit px-3 py-1.5 bg-white/5 border rounded-full group overflow-hidden transition-all duration-300"
+      className="relative w-fit px-3 py-1.5 bg-white/5 border rounded-xl group overflow-hidden transition-all duration-300"
       style={{ 
         borderColor: `${color}44`,
         boxShadow: `0 0 10px ${color}10`
@@ -32,7 +32,7 @@ export const CreditTag: React.FC<CreditTagProps> = ({ id, title, onClick, index 
     >
       {/* Neon Hover Border */}
       <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity blur-[2px] rounded-full"
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity blur-[2px] rounded-xl"
         style={{ border: `1px solid ${color}` }}
       />
       

@@ -32,7 +32,7 @@ export function AddPanelistModal({ isOpen, onClose, onAdd }: AddPanelistModalPro
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all z-10"
+          className="absolute top-6 right-6 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all z-10"
         >
           <X size={16} />
         </button>

@@ -107,7 +107,7 @@ export function RecommendationModal({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed top-8 right-8 z-[210] p-2.5 rounded-full bg-black/60 border border-white/[0.08] text-white/50 hover:text-white hover:bg-black/80 hover:border-white/30 backdrop-blur-md transition-all duration-200"
+            className="fixed top-8 right-8 z-[210] p-2.5 rounded-xl bg-black/60 border border-white/[0.08] text-white/50 hover:text-white hover:bg-black/80 hover:border-white/30 backdrop-blur-md transition-all duration-200"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -167,7 +167,7 @@ export function RecommendationModal({
                     {rec.original.genres.slice(0, 2).map((genre) => (
                       <span
                         key={genre}
-                        className="text-[7px] font-black uppercase tracking-[0.25em] px-2 py-0.5 rounded-full border border-white/[0.08] text-white/28 bg-white/[0.02]"
+                        className="text-[7px] font-black uppercase tracking-[0.25em] px-2 py-0.5 rounded-xl border border-white/[0.08] text-white/28 bg-white/[0.02]"
                       >
                         {genre}
                       </span>
@@ -324,7 +324,7 @@ export function RecommendationModal({
                             duration: 0.25,
                             ease: [0.23, 1, 0.32, 1],
                           }}
-                          className="block h-[4px] rounded-full"
+                          className="block h-[4px] rounded-xl"
                           style={{ minWidth: 5 }}
                         />
                       </button>

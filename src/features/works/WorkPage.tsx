@@ -1,25 +1,30 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { GRID_ITEMS } from "../../mock";
-import { WorkModal } from "../shared/modals/WorkModal";
-import { WorkSwiper } from "./components/WorkSwiper";
-import { motion } from "motion/react";
 import { useAuth } from "../../context/AuthContext";
+import { EditExhibition } from "./layouts/EditExhibition";
+import { PosterExhibition } from "./layouts/PosterExhibition";
+import { ScriptExhibition } from "./layouts/ScriptExhibition";
+import { RecommendationExhibition } from "./layouts/RecommendationExhibition";
 
 /**
- * WorkPage — The shareable work route at /works/:id
+ * WorkPage — The Exhibition Screen at /works/:id
  *
- * Two rendering modes:
+ * Rendering modes:
  *
- * 1. MODAL MODE (backgroundLocation in router state):
- *    - App.tsx renders the background page normally at backgroundLocation
- *    - This component renders on top as a floating overlay
- *    - Uses WorkSwiper if feedContext is provided
- *    - Closing navigates(-1) back to the background page
+ * 1. IN-APP NAVIGATION (state.item present):
+ *    - The item is passed directly from useWorkNavigation for instant render.
+ *    - No data fetch needed.
  *
- * 2. STANDALONE MODE (direct link / refresh / shared URL):
- *    - No backgroundLocation in state — user arrived via a direct share link
- *    - Renders the modal UI centered on a dark cinematic full-page backdrop
- *    - Closing navigates to Home (/) as a sensible fallback
+ * 2. DIRECT LINK / REFRESH / SHARED URL:
+ *    - No state.item — look up by id in userWorks then GRID_ITEMS.
+ *    - Shows a not-found screen if the id doesn't match anything.
+ *
+ * The format-specific layout is determined by item.category:
+ *   Edit         → EditExhibition (cinematic video)
+ *   Poster       → PosterExhibition (gallery split-screen)
+ *   Script       → ScriptExhibition (filmstrip/magazine)
+ *   Recommendation → RecommendationExhibition (resonance card)
+ *   default      → EditExhibition
  */
 export default function WorkPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,31 +32,24 @@ export default function WorkPage() {
   const location = useLocation();
   const { userWorks } = useAuth();
 
-  // Try to find the item in:
-  // 1. Navigation state (contains mockItem during upload preview)
-  // 2. User-created works (supports dynamic works after full page refresh)
-  // 3. Static mock works list
+  // Resolve item: state (instant) → userWorks → GRID_ITEMS
   const stateItem = location.state?.item;
-  const feedContext = location.state?.feedContext;
-  const item = stateItem || userWorks.find((w) => w.id === id) || GRID_ITEMS.find((w) => w.id === id) || null;
+  const item =
+    stateItem ||
+    userWorks.find((w) => w.id === id) ||
+    GRID_ITEMS.find((w) => String(w.id) === id) ||
+    null;
 
-  const handleClose = () => {
-    // If we came from within the app, go back. Otherwise, go to home.
-    if (window.history.state?.usr?.backgroundLocation) {
-      navigate(-1);
-    } else {
-      navigate("/");
-    }
-  };
-
-  // If the item is not found, return a minimal not-found overlay
+  // Not found
   if (!item) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl">
-        <p className="text-white/40 text-sm font-mono uppercase tracking-widest">Work not found</p>
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#080807]">
+        <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.4em]">
+          Work not found
+        </p>
         <button
           onClick={() => navigate("/")}
-          className="mt-6 px-6 py-2 rounded-full border border-white/20 text-white/60 text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+          className="mt-6 px-6 py-2.5 rounded-xl border border-white/15 text-white/50 text-[9px] font-black uppercase tracking-[0.25em] hover:bg-white hover:text-black transition-all"
         >
           Return to Theatre
         </button>
@@ -59,9 +57,18 @@ export default function WorkPage() {
     );
   }
 
-  if (feedContext && feedContext.length > 0) {
-    return <WorkSwiper initialItem={item} feedContext={feedContext} onClose={handleClose} />;
-  }
+  const category = item.category ?? "Edit";
 
-  return <WorkModal item={item} onClose={handleClose} />;
+  switch (category) {
+    case "Poster":
+      return <PosterExhibition item={item} />;
+    case "Script":
+      return <ScriptExhibition item={item} />;
+    case "Recommendation":
+      return <RecommendationExhibition item={item} />;
+    case "Edit":
+    case "Call":
+    default:
+      return <EditExhibition item={item} />;
+  }
 }

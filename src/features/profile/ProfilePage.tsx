@@ -30,6 +30,8 @@ import { Film, ArrowRight } from "lucide-react";
 import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
 import { ProfileHero } from "../shared/profile/ProfileHero";
+import { WallFeed } from "./components/WallFeed";
+import { getWallPostsByArtist } from "../../mock/wall";
 
 const THEMES: Record<
   string,
@@ -69,8 +71,8 @@ const ProfileSkeleton: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
       </div>
       <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-surface-deep/95 border-b border-white/5">
-        <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
-        <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
+        <div className="w-10 h-10 rounded-xl bg-white/5 animate-pulse" />
+        <div className="w-10 h-10 rounded-xl bg-white/5 animate-pulse" />
       </header>
       <main className="flex-1 flex flex-col items-center justify-center pt-24 pb-20">
         <div className="w-[80vw] h-64 bg-white/5 rounded-3xl animate-pulse mb-12" />
@@ -93,7 +95,7 @@ const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const [isFavorited, setIsFavorited] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "THEATRE" | "LIBRARY" | "RECOMMENDATIONS"
+    "THEATRE" | "WALL" | "LIBRARY" | "RECOMMENDATIONS"
   >("THEATRE");
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
@@ -246,7 +248,7 @@ const ProfilePage: React.FC = () => {
           </h1>
           <button
             onClick={() => navigate("/")}
-            className="px-8 py-3 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
+            className="px-8 py-3 bg-white text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
           >
             Return to Theatre
           </button>
@@ -313,32 +315,36 @@ const ProfilePage: React.FC = () => {
           {/* Tab buttons row — rendered FIRST so they sit above the line */}
           <div className="w-full flex justify-center pt-4 pb-3">
             <div className="flex items-center gap-8 md:gap-16">
-              {(["THEATRE", "LIBRARY", "RECOMMENDATIONS"] as const).map(
-                (tab) => (
-                  <button
-                    key={tab}
-                    ref={(el) => {
-                      tabRefs.current[tab] = el;
-                    }}
-                    onClick={() => setActiveTab(tab)}
-                    className={`text-[10px] md:text-[11px] font-black tracking-[0.2em] uppercase transition-colors duration-300 ${
+              {(
+                [
+                  "THEATRE",
+                  ...(profile?.type === "ARTIST" ? (["WALL"] as const) : []),
+                  "LIBRARY",
+                  "RECOMMENDATIONS",
+                ] as ("THEATRE" | "WALL" | "LIBRARY" | "RECOMMENDATIONS")[]
+              ).map((tab) => (
+                <button
+                  key={tab}
+                  ref={(el) => {
+                    tabRefs.current[tab] = el;
+                  }}
+                  onClick={() => setActiveTab(tab)}
+                  className={`text-[10px] md:text-[11px] font-black tracking-[0.2em] uppercase transition-colors duration-300 ${
+                    activeTab === tab
+                      ? "text-white"
+                      : "text-white/40 hover:text-white/70"
+                  }`}
+                  style={{
+                    textShadow:
                       activeTab === tab
-                        ? "text-white"
-                        : "text-white/40 hover:text-white/70"
-                    }`}
-                    style={{
-                      // Footlight illumination — subtle amber heat bleeds upward
-                      textShadow:
-                        activeTab === tab
-                          ? "0 0 8px rgba(245,158,11,0.6), 0 0 16px rgba(217,119,6,0.3)"
-                          : "none",
-                      transition: "text-shadow 0.4s ease",
-                    }}
-                  >
-                    {tab}
-                  </button>
-                ),
-              )}
+                        ? "0 0 8px rgba(245,158,11,0.6), 0 0 16px rgba(217,119,6,0.3)"
+                        : "none",
+                    transition: "text-shadow 0.4s ease",
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -397,6 +403,14 @@ const ProfilePage: React.FC = () => {
                   works={userWorks}
                   variant="full"
                   disablePadding={true}
+                />
+              </div>
+            )}
+
+            {activeTab === "WALL" && (
+              <div className="mt-4 -mx-8 md:mx-0">
+                <WallFeed
+                  posts={getWallPostsByArtist(profileId ?? "")}
                 />
               </div>
             )}

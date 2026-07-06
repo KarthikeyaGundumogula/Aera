@@ -21,7 +21,7 @@ export function RollingTicker() {
               {text}
             </span>
             {/* Visual Separator */}
-            <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+            <div className="w-1.5 h-1.5 rounded-xl bg-white/10" />
           </div>
         ))}
       </div>

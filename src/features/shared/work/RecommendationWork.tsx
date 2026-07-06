@@ -37,12 +37,8 @@ export const RecommendationWork = memo(function RecommendationWork({
 
   return (
     <div
-      className={`group relative h-full w-full overflow-hidden bg-zinc-900 ${variant !== "theatre-mobile" ? "cursor-pointer" : ""}`}
-      onClick={() => {
-        if (variant !== "theatre-mobile") {
-          openWork(item);
-        }
-      }}
+      className="group relative h-full w-full overflow-hidden bg-zinc-900 cursor-pointer"
+      onClick={() => openWork(item)}
     >
       {/* Layer 1: Movie poster */}
       <img

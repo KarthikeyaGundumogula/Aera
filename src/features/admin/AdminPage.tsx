@@ -37,8 +37,8 @@ export function AdminPage() {
         className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
         aria-hidden="true"
       >
-        <div className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-white/[0.02] blur-[140px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[45%] h-[45%] bg-white/[0.015] blur-[140px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-white/[0.02] blur-[140px] rounded-xl animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[45%] h-[45%] bg-white/[0.015] blur-[140px] rounded-xl" />
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">
@@ -100,7 +100,7 @@ export function AdminPage() {
               className="group relative text-left p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 transition-all overflow-hidden"
             >
               {/* Subtle Ambient Glow */}
-              <div className="absolute -top-12 -right-12 w-24 h-24 bg-white/[0.02] blur-3xl rounded-full group-hover:bg-white/[0.05] transition-colors" />
+              <div className="absolute -top-12 -right-12 w-24 h-24 bg-white/[0.02] blur-3xl rounded-xl group-hover:bg-white/[0.05] transition-colors" />
 
               <div className="relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-10 group-hover:bg-white/10 transition-colors">

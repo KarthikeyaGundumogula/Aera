@@ -200,13 +200,13 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
             camX.set(0);
             camY.set(0);
           }}
-          className="bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition-all cursor-pointer group active:scale-95"
+          className="bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl hover:bg-white/10 transition-all cursor-pointer group active:scale-95"
         >
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 group-hover:text-white/80 transition-colors flex items-center gap-2">
             <span>
               location: {Math.floor(cullingViewport.x)}, {Math.floor(cullingViewport.y)}
             </span>
-            <span className="w-1 h-1 rounded-full bg-white/20 group-hover:bg-white/60 transition-colors" />
+            <span className="w-1 h-1 rounded-xl bg-white/20 group-hover:bg-white/60 transition-colors" />
             <span className="text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">
               Return to Origin
             </span>

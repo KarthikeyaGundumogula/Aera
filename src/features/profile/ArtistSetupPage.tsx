@@ -104,8 +104,8 @@ export default function ArtistSetupPage() {
         className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
         aria-hidden="true"
       >
-        <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-white/[0.025] blur-[140px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-15%] right-[-10%] w-[40%] h-[40%] bg-white/[0.015] blur-[140px] rounded-full" />
+        <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-white/[0.025] blur-[140px] rounded-xl animate-pulse" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[40%] h-[40%] bg-white/[0.015] blur-[140px] rounded-xl" />
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 pt-12 flex flex-col min-h-screen">
@@ -129,7 +129,7 @@ export default function ArtistSetupPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
             onClick={() => navigate("/profile/login")}
-            className="px-6 py-2 border border-white/10 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+            className="px-6 py-2 border border-white/10 rounded-xl bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white hover:bg-white/10 transition-all active:scale-95"
           >
             Sign In
           </motion.button>
@@ -206,7 +206,7 @@ export default function ArtistSetupPage() {
                   disabled={!isStep1Ready}
                   onClick={() => setStep(2)}
                   className="
-                    self-center px-12 py-4 bg-white text-black rounded-full
+                    self-center px-12 py-4 bg-white text-black rounded-xl
                     text-xs font-black uppercase tracking-widest
                     hover:bg-white/90 disabled:opacity-25 disabled:cursor-not-allowed
                     transition-all duration-200 shadow-[0_0_40px_rgba(255,255,255,0.08)]
@@ -252,7 +252,7 @@ export default function ArtistSetupPage() {
                         initial={{ opacity: 0, scale: 0.92 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0 }}
-                        className="flex items-center gap-3 px-10 py-4 rounded-full bg-white/10 border border-white/20 text-white"
+                        className="flex items-center gap-3 px-10 py-4 rounded-xl bg-white/10 border border-white/20 text-white"
                       >
                         <CheckCircle2 className="w-4 h-4 text-white/60" />
                         <span className="text-xs font-black uppercase tracking-widest">
@@ -271,7 +271,7 @@ export default function ArtistSetupPage() {
                         disabled={!isReadyToSave}
                         id="claim-identity-btn"
                         className="
-                          px-12 py-4 bg-white text-black rounded-full
+                          px-12 py-4 bg-white text-black rounded-xl
                           text-xs font-black uppercase tracking-widest
                           hover:bg-white/90 disabled:opacity-25 disabled:cursor-not-allowed
                           transition-all duration-200 shadow-[0_0_40px_rgba(255,255,255,0.08)]

@@ -283,14 +283,14 @@ export function StaticFrame({
                     onClick={handleShare}
                     title="Copy link"
                     aria-label="Share"
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
                   >
                     <Share2 size={14} strokeWidth={2} />
                   </button>
                   <button
                     onClick={onClose}
                     aria-label="Close"
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
                   >
                     <X size={14} strokeWidth={2.5} />
                   </button>
@@ -310,7 +310,7 @@ export function StaticFrame({
               {showDetails && (
                 <button
                   onClick={() => setIsFlipped((f) => !f)}
-                  className={`flex items-center gap-1.5 px-3 h-6 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${
+                  className={`flex items-center gap-1.5 px-3 h-6 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${
                     isFlipped
                       ? "bg-white text-black border-white"
                       : "bg-transparent text-white/35 border-white/10 hover:border-white/25"
@@ -323,7 +323,7 @@ export function StaticFrame({
               {showClutterFreeToggle && (
                 <button
                   onClick={() => setIsClutterFree(true)}
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-white/25 hover:text-white/60 transition-colors"
+                  className="flex h-6 w-6 items-center justify-center rounded-xl text-white/25 hover:text-white/60 transition-colors"
                   aria-label="Focus mode"
                 >
                   <Eye size={11} />
@@ -406,7 +406,7 @@ export function StaticFrame({
               {showClutterFreeToggle && isClutterFree && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setIsClutterFree(false); }}
-                  className="absolute bottom-3 right-3 z-50 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white/60 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
+                  className="absolute bottom-3 right-3 z-50 flex h-7 w-7 items-center justify-center rounded-xl bg-black/60 text-white/60 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
                 >
                   <EyeOff size={12} />
                 </button>
@@ -456,7 +456,7 @@ export function StaticFrame({
                   {showClutterFreeToggle && (
                     <button
                       onClick={(e) => { e.stopPropagation(); setIsClutterFree((v) => !v); }}
-                      className="absolute bottom-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white/40 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
+                      className="absolute bottom-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-xl bg-black/50 text-white/40 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
                       aria-label={isClutterFree ? "Show frame" : "Focus mode"}
                     >
                       {isClutterFree ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -472,7 +472,7 @@ export function StaticFrame({
             <div className="flex items-center justify-between gap-2">
               <button
                 onClick={prev}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black transition-all active:scale-90 shrink-0"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black transition-all active:scale-90 shrink-0"
               >
                 <ChevronLeft size={13} />
               </button>
@@ -482,7 +482,7 @@ export function StaticFrame({
                   <button
                     key={i}
                     onClick={() => goTo(i)}
-                    className={`rounded-full transition-all duration-300 ${
+                    className={`rounded-xl transition-all duration-300 ${
                       i === pageIndex
                         ? "w-5 h-1.5 bg-white/60"
                         : "w-1.5 h-1.5 bg-white/15 hover:bg-white/35"
@@ -493,7 +493,7 @@ export function StaticFrame({
 
               <button
                 onClick={next}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black transition-all active:scale-90 shrink-0"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black transition-all active:scale-90 shrink-0"
               >
                 <ChevronRight size={13} />
               </button>
@@ -516,7 +516,7 @@ export function StaticFrame({
                 <button
                   onClick={handleHonour}
                   aria-label={isHonoured ? "Remove honour" : "Honour this work"}
-                  className={`flex items-center gap-2 rounded-full px-3.5 h-8 border transition-all duration-250 select-none active:scale-[0.96] ${
+                  className={`flex items-center gap-2 rounded-xl px-3.5 h-8 border transition-all duration-250 select-none active:scale-[0.96] ${
                     isHonoured
                       ? "border-[#E11D48]/25 bg-[#E11D48]/8 text-[#E11D48]"
                       : "border-white/8 bg-white/3 text-white/35 hover:text-white/60 hover:border-white/15"
@@ -543,7 +543,7 @@ export function StaticFrame({
                 {/* Originals — right */}
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowCurate(true); }}
-                  className="flex items-center gap-1.5 rounded-full px-3.5 h-8 border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black hover:border-white transition-all duration-200 active:scale-[0.96]"
+                  className="flex items-center gap-1.5 rounded-xl px-3.5 h-8 border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black hover:border-white transition-all duration-200 active:scale-[0.96]"
                 >
                   <Layers size={12} strokeWidth={2} />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em]">Originals</span>
@@ -558,7 +558,7 @@ export function StaticFrame({
           <div className="absolute top-2.5 right-2.5 z-20">
             <button
               onClick={onClose}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white/40 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
+              className="flex h-7 w-7 items-center justify-center rounded-xl bg-black/50 text-white/40 hover:bg-white hover:text-black backdrop-blur-sm transition-all active:scale-90"
               aria-label="Close"
             >
               <X size={12} strokeWidth={2.5} />

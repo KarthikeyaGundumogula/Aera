@@ -141,7 +141,7 @@ export function CreateRecommendationModal({
             <button
               onClick={onClose}
               aria-label="Close"
-              className="absolute top-6 right-6 sm:top-8 sm:right-8 z-50 p-2 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors focus-visible:outline-none"
+              className="absolute top-6 right-6 sm:top-8 sm:right-8 z-50 p-2 rounded-xl bg-black/20 backdrop-blur-md border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors focus-visible:outline-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -158,7 +158,7 @@ export function CreateRecommendationModal({
               {/* Ambient glow orb */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full opacity-[0.08]"
+                className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-xl opacity-[0.08]"
                 style={{ background: `radial-gradient(circle, ${AMBER} 0%, transparent 70%)` }}
               />
 
@@ -221,7 +221,7 @@ export function CreateRecommendationModal({
                       </>
                     ) : (
                       <div className="absolute inset-0 border border-dashed border-white/20 bg-white/[0.02] group-hover:bg-white/[0.04] group-hover:border-white/30 transition-colors flex flex-col items-center justify-center gap-3">
-                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-black/20 group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center bg-black/20 group-hover:scale-110 transition-transform duration-300">
                           <Film className="w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors" />
                         </div>
                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 text-center px-3 group-hover:text-white/60 transition-colors">

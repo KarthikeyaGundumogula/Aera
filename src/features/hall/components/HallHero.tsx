@@ -20,8 +20,8 @@ export function HallHero() {
     <section className="relative overflow-hidden px-6 md:px-12 pt-6 pb-2">
       {/* Ambient background glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-40 bg-white/[0.012] rounded-full blur-[80px]" />
-        <div className="absolute top-4 right-1/3 w-64 h-28 bg-white/[0.008] rounded-full blur-[60px]" />
+        <div className="absolute top-0 left-1/4 w-96 h-40 bg-white/[0.012] rounded-xl blur-[80px]" />
+        <div className="absolute top-4 right-1/3 w-64 h-28 bg-white/[0.008] rounded-xl blur-[60px]" />
       </div>
 
       <motion.div
@@ -33,10 +33,10 @@ export function HallHero() {
         <div className="flex items-center gap-3 mb-4">
           <button
             onClick={handleNewQuote}
-            className="flex items-center justify-center w-5 h-5 rounded-full bg-white/[0.03] border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] cursor-pointer hover:bg-white/[0.08] hover:scale-110 active:scale-95 transition-all focus:outline-none"
+            className="flex items-center justify-center w-5 h-5 rounded-xl bg-white/[0.03] border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] cursor-pointer hover:bg-white/[0.08] hover:scale-110 active:scale-95 transition-all focus:outline-none"
             title="Get another quote"
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500/90 animate-pulse pointer-events-none" />
+            <div className="w-1.5 h-1.5 rounded-xl bg-amber-500/90 animate-pulse pointer-events-none" />
           </button>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50 border-b border-white/10 pb-0.5">
             ✧ {CURRENT_USER_MOCK.name.toUpperCase()}!! The Matter is ... ✧

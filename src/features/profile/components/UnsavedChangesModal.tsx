@@ -26,10 +26,10 @@ export function UnsavedChangesModal({ isOpen, onConfirm, onCancel }: UnsavedChan
             className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden"
           >
             {/* Cinematic Gradient Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-red-500/20 blur-[50px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-red-500/20 blur-[50px] rounded-xl pointer-events-none" />
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
+              <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-6">
                 <AlertTriangle className="w-6 h-6 text-red-500" />
               </div>
               

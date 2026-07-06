@@ -1,12 +1,12 @@
 import { motion } from "motion/react";
-import type { CollectionTaggedWork } from "../../../mock/library";
+import type { LibraryTaggedWork } from "../../../mock/library";
 import type { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
 export function LibraryTaggedWorksStack({
   works,
 }: {
-  works: CollectionTaggedWork[];
+  works: LibraryTaggedWork[];
 }) {
   const { openWork } = useWorkNavigation();
 

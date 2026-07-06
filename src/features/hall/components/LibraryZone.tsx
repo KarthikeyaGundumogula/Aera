@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
-import { CollectionItem } from "../../../mock/library";
+import { LibraryItem } from "../../../mock/library";
 
 interface LibraryZoneProps {
-  items: CollectionItem[];
+  items: LibraryItem[];
 }
 
 const STATUS_MAP = {
@@ -22,7 +22,7 @@ const STATUS_MAP = {
   },
 };
 
-function LibraryCard({ item }: { item: CollectionItem }) {
+function LibraryCard({ item }: { item: LibraryItem }) {
   const navigate = useNavigate();
   const statusCfg = STATUS_MAP[item.status];
   const StatusIcon = statusCfg.icon;
@@ -51,7 +51,7 @@ function LibraryCard({ item }: { item: CollectionItem }) {
         {/* Status badge */}
         <div className="absolute top-3 left-3">
           <span
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusCfg.bg} ${statusCfg.color}`}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border ${statusCfg.bg} ${statusCfg.color}`}
           >
             <StatusIcon className="w-2.5 h-2.5" />
             {statusCfg.label}
@@ -60,7 +60,7 @@ function LibraryCard({ item }: { item: CollectionItem }) {
 
         {/* Tagged works count bubble */}
         {item.taggedWorks.length > 0 && (
-          <div className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-black/70 border border-white/15 flex items-center justify-center">
+          <div className="absolute bottom-3 right-3 w-7 h-7 rounded-xl bg-black/70 border border-white/15 flex items-center justify-center">
             <span className="text-[10px] font-black text-white/80">
               {item.taggedWorks.length}
             </span>

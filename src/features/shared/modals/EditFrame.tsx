@@ -218,14 +218,14 @@ export function EditFrame({
               onClick={handleShare}
               title="Copy link"
               aria-label="Share"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
             >
               <Share2 size={14} strokeWidth={2} />
             </button>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-white/40 hover:bg-white hover:text-black transition-all duration-150 active:scale-95"
             >
               <X size={14} strokeWidth={2.5} />
             </button>
@@ -269,7 +269,7 @@ export function EditFrame({
           <button
             onClick={handleHonour}
             aria-label={isHonoured ? "Remove honour" : "Honour this work"}
-            className={`flex items-center gap-2 rounded-full px-3.5 h-8 border transition-all duration-250 select-none active:scale-[0.96] ${
+            className={`flex items-center gap-2 rounded-xl px-3.5 h-8 border transition-all duration-250 select-none active:scale-[0.96] ${
               isHonoured
                 ? "border-[#E11D48]/25 bg-[#E11D48]/8 text-[#E11D48]"
                 : "border-white/8 bg-white/3 text-white/35 hover:text-white/60 hover:border-white/15"
@@ -305,7 +305,7 @@ export function EditFrame({
           {/* Originals — right */}
           <button
             onClick={(e) => { e.stopPropagation(); setShowCurate(true); }}
-            className="flex items-center gap-1.5 rounded-full px-3.5 h-8 border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black hover:border-white transition-all duration-200 active:scale-[0.96]"
+            className="flex items-center gap-1.5 rounded-xl px-3.5 h-8 border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black hover:border-white transition-all duration-200 active:scale-[0.96]"
           >
             <Layers size={12} strokeWidth={2} />
             <span className="text-[9px] font-black uppercase tracking-[0.2em]">

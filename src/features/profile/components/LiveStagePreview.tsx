@@ -73,7 +73,7 @@ export function LiveStagePreview({
           <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/40 drop-shadow-md">
             Hero Preview
           </span>
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-xl bg-red-500 animate-pulse" />
         </div>
 
         {/* Viewfinder corner lines */}
@@ -111,7 +111,7 @@ export function LiveStagePreview({
                   onChange={(e) => {
                     onImagePositionChange(`${panX} ${e.target.value}%`);
                   }}
-                  className="w-4 h-20 md:h-28 appearance-none bg-white/10 rounded-full outline-none cursor-ns-resize [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md touch-none"
+                  className="w-4 h-20 md:h-28 appearance-none bg-white/10 rounded-xl outline-none cursor-ns-resize [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-xl [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md touch-none"
                   style={{ WebkitAppearance: "slider-vertical" as any, accentColor: "rgba(255, 255, 255, 0.2)" }}
                 />
               </div>
@@ -122,7 +122,7 @@ export function LiveStagePreview({
               <div className="flex flex-col items-center gap-1 group/upload">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white/50 hover:text-white hover:scale-105 active:scale-95 transition-all shadow-xl pointer-events-auto"
+                  className="flex items-center justify-center w-10 h-10 rounded-xl bg-black/60 border border-white/20 text-white/50 hover:text-white hover:scale-105 active:scale-95 transition-all shadow-xl pointer-events-auto"
                   title="Upload Photo"
                 >
                   <Upload className="w-4 h-4" />
@@ -149,7 +149,7 @@ export function LiveStagePreview({
               onChange={(e) => {
                 onImagePositionChange(`${e.target.value}% ${panY}`);
               }}
-              className="w-20 md:w-40 h-4 appearance-none bg-white/10 rounded-full outline-none cursor-ew-resize [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md touch-none"
+              className="w-20 md:w-40 h-4 appearance-none bg-white/10 rounded-xl outline-none cursor-ew-resize [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-xl [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md touch-none"
             />
           </div>
         )}
@@ -165,11 +165,11 @@ export function LiveStagePreview({
                   onClick={() =>
                     setActivePicker(activePicker === "bg" ? null : "bg")
                   }
-                  className="flex items-center justify-center w-6 h-6 rounded-full border border-white/20 group-hover:border-white/60 transition-all active:scale-95"
+                  className="flex items-center justify-center w-6 h-6 rounded-xl border border-white/20 group-hover:border-white/60 transition-all active:scale-95"
                   title="Aura Backdrop Color"
                 >
                   <div
-                    className="w-5 h-5 rounded-full border border-white/30 animate-pulse"
+                    className="w-5 h-5 rounded-xl border border-white/30 animate-pulse"
                     style={{ backgroundColor: themeBgColor }}
                   />
                 </button>
@@ -194,11 +194,11 @@ export function LiveStagePreview({
                   onClick={() =>
                     setActivePicker(activePicker === "text" ? null : "text")
                   }
-                  className="flex items-center justify-center w-6 h-6 rounded-full border border-white/20 group-hover:border-white/60 transition-all active:scale-95"
+                  className="flex items-center justify-center w-6 h-6 rounded-xl border border-white/20 group-hover:border-white/60 transition-all active:scale-95"
                   title="Accent Text Aura"
                 >
                   <div
-                    className="w-5 h-5 rounded-full border border-white/30 animate-pulse"
+                    className="w-5 h-5 rounded-xl border border-white/30 animate-pulse"
                     style={{ backgroundColor: themeTextColor }}
                   />
                 </button>

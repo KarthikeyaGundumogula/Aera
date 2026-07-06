@@ -59,7 +59,7 @@ export function ThoughtCard({
                     return (
                       <div 
                         key={i} 
-                        className={`w-4 h-4 rounded-full bg-black/40 border border-white/10 backdrop-blur-md flex items-center justify-center relative shadow-sm`}
+                        className={`w-4 h-4 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md flex items-center justify-center relative shadow-sm`}
                         style={{ zIndex: 10 - i }}
                       >
                         <Icon className={`w-2.5 h-2.5 ${color}`} />

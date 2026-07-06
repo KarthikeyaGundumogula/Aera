@@ -323,7 +323,7 @@ export function CenterFeedLayout() {
                     e.stopPropagation();
                     handleIndicatorClick(idx);
                   }}
-                  className="group relative w-1 h-10 rounded-full bg-white/10 overflow-hidden transition-all duration-300 hover:w-1.5"
+                  className="group relative w-1 h-10 rounded-xl bg-white/10 overflow-hidden transition-all duration-300 hover:w-1.5"
                 >
                   <div className="relative w-full h-full">
                     {/* Previous bars: faded white */}

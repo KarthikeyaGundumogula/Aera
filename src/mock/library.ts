@@ -1,4 +1,4 @@
-export type CollectionTaggedWork = {
+export type LibraryTaggedWork = {
   id: string;
   type: "poster" | "hype_cut";
   thumbnailUrl: string;
@@ -7,7 +7,7 @@ export type CollectionTaggedWork = {
   srcId?: string;
 };
 
-export type CollectionItem = {
+export type LibraryItem = {
   id: string;
   originalId: string;
   originalName: string;
@@ -15,11 +15,11 @@ export type CollectionItem = {
   status: "want_to_watch" | "watched";
   hypeText: string;
   afterThoughts?: string;
-  taggedWorks: CollectionTaggedWork[];
+  taggedWorks: LibraryTaggedWork[];
   addedAt: string;
 };
 
-export const mockLibrary: CollectionItem[] = [
+export const mockLibrary: LibraryItem[] = [
   {
     id: "wl_01",
     originalId: "og-original",

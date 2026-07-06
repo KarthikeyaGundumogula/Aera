@@ -24,11 +24,11 @@ The source material (movies, series, music) that inspires Works. Every Work must
 ### A. The Artist Wall (Personal Profile)
 A highly curated, persistent "moodboard" or exhibition space on an Artist's profile.
 - **Control**: Only the Artist can post to their personal Wall.
-- **Format**: Artists can post raw text, or **Pin** Works/Originals with a "Director's Note".
+- **Format**: Artists can post **Lines** (text sentences/notes), or **Pin** Works/Originals with an attached **Line**.
 - **Distribution**: Wall posts are **NOT** pushed to the global Hall feed. They are only broadcasted to the users who have explicitly *Favorited* the Artist. This creates a high-trust, intimate loop (bragging privilege).
 
 ### B. The Set Wall (Communal Space)
 A micro-community space created around themes or movies.
 - **Control**: Any member of the Set can post to the Set Wall.
-- **Format Constraint**: **Raw text is strictly banned** to prevent toxicity, hate reviews, and mob mentality.
+- **Format Constraint**: **Lines (pure text) are strictly banned** to prevent toxicity, hate reviews, and mob mentality.
 - **Cards (Visual Reactions)**: All engagement on the Set Wall must happen via **Cards**. These are high-fidelity, cinematic visual templates (using GIFs or beautifully typography-driven stills). This enforces a visual-first dialogue while maintaining the Dark-Luxury aesthetic.

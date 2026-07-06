@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
-import { mockLibrary, CollectionItem } from "../../mock/library";
+import { mockLibrary, LibraryItem } from "../../mock/library";
 import { LibraryItemCard } from "./components/LibraryItemCard";
 import { ArrowLeft, Plus } from "lucide-react";
 
 export function LibraryPage() {
-  const [collection, setCollection] = useState<CollectionItem[]>(mockLibrary);
+  const [library, setLibrary] = useState<LibraryItem[]>(mockLibrary);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const filter = searchParams.get("filter") || "all";
@@ -14,19 +14,19 @@ export function LibraryPage() {
   // Listen for global library updates from the LibraryEntryModal
   useEffect(() => {
     const handleUpdate = () => {
-      setCollection([...mockLibrary]);
+      setLibrary([...mockLibrary]);
     };
     window.addEventListener("libraryUpdated", handleUpdate);
     return () => window.removeEventListener("libraryUpdated", handleUpdate);
   }, []);
 
-  const handleUpdateItem = (updatedItem: CollectionItem) => {
-    setCollection((prev) =>
+  const handleUpdateItem = (updatedItem: LibraryItem) => {
+    setLibrary((prev) =>
       prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
     );
   };
 
-  const filteredCollection = collection.filter((item) => {
+  const filteredLibrary = library.filter((item) => {
     if (filter === "all") return true;
     return item.status === filter;
   });
@@ -100,7 +100,7 @@ export function LibraryPage() {
 
         {/* Grid (Vertical Stack) */}
         <div className="flex flex-col space-y-4 max-w-4xl mx-auto">
-          {filteredCollection.map((item) => (
+          {filteredLibrary.map((item) => (
             <LibraryItemCard
               key={item.id}
               item={item}
@@ -108,7 +108,7 @@ export function LibraryPage() {
             />
           ))}
 
-          {filteredCollection.length === 0 && (
+          {filteredLibrary.length === 0 && (
             <div className="py-20 flex flex-col items-center justify-center text-center">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/15 mb-4">
                 No entries yet

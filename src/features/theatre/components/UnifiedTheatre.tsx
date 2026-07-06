@@ -117,7 +117,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
           </button>
 
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-xl bg-brand-accent animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">{title || "Theatre"}</span>
           </div>
         </header>
@@ -151,7 +151,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
           <div ref={bottomObserverTarget} className="py-20 flex flex-col items-center justify-center gap-4 opacity-30">
             {isLoading ? (
               <>
-                <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-xl animate-spin" />
                 <p className="text-[8px] font-bold uppercase tracking-[0.2em]">loading</p>
               </>
             ) : hasMore ? (

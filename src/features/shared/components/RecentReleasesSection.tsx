@@ -112,7 +112,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
                 <button 
                   onClick={handlePrev}
                   disabled={currentIndex === 0}
-                  className={`w-14 h-14 rounded-full bg-surface-deep flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] transition-all duration-300 ${
+                  className={`w-14 h-14 rounded-xl bg-surface-deep flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] transition-all duration-300 ${
                     currentIndex === 0 
                       ? 'opacity-20 cursor-not-allowed text-white/50' 
                       : 'hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] active:scale-95 text-white/50 hover:text-white'
@@ -126,7 +126,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
                 <button 
                   onClick={handleNext}
                   disabled={currentIndex === recentReleases.length - 1}
-                  className={`w-14 h-14 rounded-full bg-surface-deep flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] transition-all duration-300 ${
+                  className={`w-14 h-14 rounded-xl bg-surface-deep flex items-center justify-center border border-white/5 shadow-[6px_6px_12px_#030303,-6px_-6px_12px_rgba(255,255,255,0.03)] transition-all duration-300 ${
                     currentIndex === recentReleases.length - 1 
                       ? 'opacity-20 cursor-not-allowed text-white/50' 
                       : 'hover:shadow-[inset_4px_4px_8px_#030303,inset_-4px_-4px_8px_rgba(255,255,255,0.03)] active:scale-95 text-white/50 hover:text-white'
@@ -167,7 +167,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className={`w-10 h-10 shrink-0 rounded-full bg-surface-deep flex items-center justify-center border border-white/10 shadow-lg transition-all duration-300 ${
+              className={`w-10 h-10 shrink-0 rounded-xl bg-surface-deep flex items-center justify-center border border-white/10 shadow-lg transition-all duration-300 ${
                 currentIndex === 0 
                   ? 'opacity-20 cursor-not-allowed text-white/50' 
                   : 'text-white/80 hover:text-white active:scale-95'
@@ -199,7 +199,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
             <button
               onClick={handleNext}
               disabled={currentIndex === recentReleases.length - 1}
-              className={`w-10 h-10 shrink-0 rounded-full bg-surface-deep flex items-center justify-center border border-white/10 shadow-lg transition-all duration-300 ${
+              className={`w-10 h-10 shrink-0 rounded-xl bg-surface-deep flex items-center justify-center border border-white/10 shadow-lg transition-all duration-300 ${
                 currentIndex === recentReleases.length - 1 
                   ? 'opacity-20 cursor-not-allowed text-white/50' 
                   : 'text-white/80 hover:text-white active:scale-95'

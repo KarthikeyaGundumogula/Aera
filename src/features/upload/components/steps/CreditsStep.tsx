@@ -73,7 +73,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
           {searchQuery && (
             <button 
               onClick={() => setSearchQuery("")}
-              className="absolute right-6 top-1/2 -translate-y-1/2 p-1 rounded-full bg-white/5 hover:bg-white/10 text-white/40 transition-all"
+              className="absolute right-6 top-1/2 -translate-y-1/2 p-1 rounded-xl bg-white/5 hover:bg-white/10 text-white/40 transition-all"
             >
               <X className="w-4 h-4" />
             </button>
@@ -142,7 +142,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
                     className={`w-full h-full object-cover object-top transition-opacity ${isSelected ? "opacity-40" : "opacity-60 group-hover:opacity-100"}`}
                   />
                   {isOwnRelease && (
-                    <div className="absolute top-3 left-3 bg-white text-black text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter z-10 shadow-xl">
+                    <div className="absolute top-3 left-3 bg-white text-black text-[8px] font-black px-2 py-0.5 rounded-xl uppercase tracking-tighter z-10 shadow-xl">
                       Independent
                     </div>
                   )}
@@ -175,7 +175,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
           <button 
             disabled={selectedIds.length === 0}
             onClick={onNext} 
-            className="px-10 py-4 bg-white text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2 shadow-[0_20px_40px_rgba(255,255,255,0.05)]"
+            className="px-10 py-4 bg-white text-black rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2 shadow-[0_20px_40px_rgba(255,255,255,0.05)]"
           >
             NEXT <ChevronRight className="w-4 h-4" />
           </button>

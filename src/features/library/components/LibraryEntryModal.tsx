@@ -17,7 +17,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
-import { mockLibrary, CollectionItem } from "../../../mock/library";
+import { mockLibrary, LibraryItem } from "../../../mock/library";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
 
@@ -121,7 +121,7 @@ function OriginalsSearch({
         <button
           onClick={onClose}
           aria-label="Close search"
-          className="p-1.5 rounded-full text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors focus:outline-none"
+          className="p-1.5 rounded-xl text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors focus:outline-none"
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -283,7 +283,7 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
 
   const handleConfirm = useCallback(() => {
     if (!selectedOriginal) return;
-    const newEntry: CollectionItem = {
+    const newEntry: LibraryItem = {
       id: `wl_${Date.now()}`,
       originalId: selectedOriginal.id,
       originalName: selectedOriginal.title,
@@ -381,7 +381,7 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
               {/* Ambient glow */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full opacity-[0.07]"
+                className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-xl opacity-[0.07]"
                 style={{
                   background: `radial-gradient(circle, ${AMBER} 0%, transparent 70%)`,
                 }}
@@ -433,14 +433,12 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
                   </h2>
                   <p className="mt-1 text-[11px] text-white/30 leading-relaxed font-light">
                     Mark what you've seen or what you intend to.
-                    <br />
-                    Your library is your theatre history.
                   </p>
                 </div>
                 <button
                   onClick={onClose}
                   aria-label="Close"
-                  className="flex-shrink-0 mt-0.5 p-1.5 rounded-full text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors focus-visible:outline-none"
+                  className="flex-shrink-0 mt-0.5 p-1.5 rounded-xl text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors focus-visible:outline-none"
                 >
                   <X className="w-4 h-4" />
                 </button>

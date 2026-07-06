@@ -142,8 +142,8 @@ export function UploadStudioFlow({
   return (
     <div className="relative min-h-screen bg-surface-deep text-white overflow-y-auto font-sans selection:bg-white selection:text-black">
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/[0.03] blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/[0.02] blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/[0.03] blur-[120px] rounded-xl animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/[0.02] blur-[120px] rounded-xl" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">
@@ -187,7 +187,7 @@ export function UploadStudioFlow({
                 return (
                   <div
                     key={uploadStep}
-                    className={`h-1 w-8 rounded-full transition-all duration-500 ${
+                    className={`h-1 w-8 rounded-xl transition-all duration-500 ${
                       index <= UPLOAD_STEPS.indexOf(step)
                         ? "bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]"
                         : "bg-white/10"

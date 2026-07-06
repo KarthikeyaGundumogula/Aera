@@ -36,8 +36,8 @@ export default function LoginPage() {
         className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
         aria-hidden="true"
       >
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-white/[0.03] blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-white/[0.02] blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-white/[0.03] blur-[120px] rounded-xl animate-pulse" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-white/[0.02] blur-[120px] rounded-xl" />
       </div>
 
       <div className="relative z-10 max-w-lg mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">

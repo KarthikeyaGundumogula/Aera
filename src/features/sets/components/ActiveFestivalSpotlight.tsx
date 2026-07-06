@@ -74,7 +74,7 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
           {/* LIVE Badge */}
           {isLive && (
             <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-1 bg-red-600 rounded-[3px]">
-              <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+              <span className="w-1 h-1 rounded-xl bg-white animate-pulse" />
               <span className="text-[8px] font-black uppercase tracking-[0.25em] text-white">Live Now</span>
             </div>
           )}

@@ -115,7 +115,7 @@ export function GlobalSearch() {
                 </div>
                 <button 
                 onClick={handleClose}
-                className="text-white/60 hover:text-white shrink-0 p-2 ml-2 rounded-full hover:bg-white/5 transition-colors"
+                className="text-white/60 hover:text-white shrink-0 p-2 ml-2 rounded-xl hover:bg-white/5 transition-colors"
               >
                 <X className="w-6 h-6" strokeWidth={1.5} />
               </button>

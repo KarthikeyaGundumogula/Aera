@@ -74,7 +74,7 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
 
             <div className="flex items-center gap-4">
                <div className="flex items-center gap-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
+                 <div className="w-1.5 h-1.5 rounded-xl bg-brand-accent animate-pulse" />
                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Artist Theatre</span>
                </div>
             </div>

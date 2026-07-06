@@ -125,7 +125,7 @@ export function FestivalDetailPage() {
             <div className="flex items-center gap-3 mb-6">
                {isLive ? (
                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-600 rounded-[3px]">
-                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                   <span className="w-1.5 h-1.5 rounded-xl bg-white animate-pulse" />
                    <span className="text-[8px] font-black uppercase tracking-[0.25em] text-white">Live</span>
                  </div>
                ) : (
@@ -150,7 +150,7 @@ export function FestivalDetailPage() {
             </p>
 
             <div className="flex items-center gap-6">
-               <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-full backdrop-blur-md shadow-2xl">
+               <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-xl backdrop-blur-md shadow-2xl">
                  <Clock className="w-4 h-4 text-white/40" />
                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
                    {new Date(localFestival.endDate).toLocaleDateString()}
