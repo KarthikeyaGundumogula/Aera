@@ -7,6 +7,21 @@ import { ArtistContextPanel } from "../components/ArtistContextPanel";
 import { HonourIcon } from "../../../components/icons/HonourIcon";
 import { Star, Pin, Bookmark, Heart } from "lucide-react";
 import { ARTISTS_MOCK } from "../../../mock";
+import { CinematicToast } from "../../shared/modals/CinematicToast";
+
+// Simple deterministic stat generator based on ID
+function generateStat(id: string | number, multiplier: number, offset: number = 0): number {
+  let hash = 0;
+  const str = String(id);
+  for (let i = 0; i < str.length; i++) hash = (hash << 5) - hash + str.charCodeAt(i);
+  return (Math.abs(hash) % multiplier) + offset;
+}
+
+function formatStat(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + 'K';
+  return num.toString();
+}
 
 interface ExhibitionFrameProps {
   item: TheatreItem;
@@ -60,8 +75,8 @@ export function ExhibitionFrame({
   const [saved, setSaved] = useState(false);
   const [doubleTapFlash, setDoubleTapFlash] = useState(false);
   const lastTapRef = useRef(0);
-  const honourTimeout = useRef<ReturnType<typeof setTimeout>>();
-  const flashTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const honourTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const flashTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -103,6 +118,11 @@ export function ExhibitionFrame({
     }
     lastTapRef.current = now;
   };
+
+  const followersCount = generateStat(item.artist || item.id, 50000, 1000);
+  const honoursCount = generateStat(item.id, 10000, 500);
+  const pinsCount = generateStat(item.id, 5000, 50);
+  const savesCount = generateStat(item.id, 20000, 200);
 
   // ── Media slot context ─────────────────────────────────────────────────────
   const mediaCtx: MediaSlotContext = {
@@ -183,7 +203,7 @@ export function ExhibitionFrame({
                     {/* Favourite heart */}
                     <button
                       onClick={() => setFavorited((f) => !f)}
-                      className="p-1.5 active:scale-90 transition-transform shrink-0"
+                      className="flex items-center gap-1.5 p-1 active:scale-95 transition-transform shrink-0"
                       aria-label="Favourite Artist"
                     >
                       <motion.div
@@ -199,6 +219,9 @@ export function ExhibitionFrame({
                           }}
                         />
                       </motion.div>
+                      <span className="text-[11px] font-bold text-white/40">
+                        {formatStat(favorited ? followersCount + 1 : followersCount)}
+                      </span>
                     </button>
                   </div>
 
@@ -207,7 +230,7 @@ export function ExhibitionFrame({
                     <button
                       onClick={handleHonourBtn}
                       aria-label={isHonoured ? "Remove honour" : "Honour this work"}
-                      className={`flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-xl border transition-all active:scale-95 ${
+                      className={`flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border transition-all active:scale-95 ${
                         isHonoured ? "border-[#E11D48]/30 bg-[#E11D48]/10 text-[#E11D48]" : "border-white/8 bg-white/3 text-white/40 hover:text-white/80 hover:bg-white/10"
                       }`}
                       style={isHonoured ? { boxShadow: "0 0 16px rgba(225,29,72,0.15)" } : undefined}
@@ -222,24 +245,35 @@ export function ExhibitionFrame({
                             : "transform 320ms cubic-bezier(0.23,1,0.32,1)",
                         }}
                       />
+                      <span className="text-[11px] font-bold">
+                        {formatStat(isHonoured ? honoursCount + 1 : honoursCount)}
+                      </span>
                     </button>
+                    
                     <button
                       onClick={() => setPinned(p => !p)}
                       aria-label="Pin to Wall"
-                      className={`flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-xl border transition-all active:scale-95 ${
+                      className={`flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border transition-all active:scale-95 ${
                         pinned ? "border-blue-500/30 bg-blue-500/10 text-blue-500" : "border-white/8 bg-white/3 text-white/40 hover:text-white/80 hover:bg-white/10"
                       }`}
                     >
                       <Pin size={13} fill={pinned ? "currentColor" : "none"} />
+                      <span className="text-[11px] font-bold">
+                        {formatStat(pinned ? pinsCount + 1 : pinsCount)}
+                      </span>
                     </button>
+                    
                     <button
                       onClick={() => setSaved(s => !s)}
                       aria-label="Save"
-                      className={`flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-xl border transition-all active:scale-95 ${
+                      className={`flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border transition-all active:scale-95 ${
                         saved ? "border-white/30 bg-white/10 text-white" : "border-white/8 bg-white/3 text-white/40 hover:text-white/80 hover:bg-white/10"
                       }`}
                     >
                       <Bookmark size={13} fill={saved ? "currentColor" : "none"} />
+                      <span className="text-[11px] font-bold hidden sm:inline-block">
+                        {formatStat(saved ? savesCount + 1 : savesCount)}
+                      </span>
                     </button>
                   </div>
                 </div>

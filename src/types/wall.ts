@@ -10,7 +10,7 @@
  *   PIN_ORIGINAL — a pinned Original with an optional artist Line
  */
 
-export type WallPostType = "LINE" | "PIN_WORK" | "PIN_ORIGINAL";
+type WallPostType = "LINE" | "PIN_WORK" | "PIN_ORIGINAL";
 
 export interface WallPost {
   /** Unique post identifier */

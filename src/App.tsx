@@ -87,19 +87,10 @@ function NotFoundPage() {
   );
 }
 
-// ─── Route tree ───────────────────────────────────────────────────────────────
-
 /**
  * AppRoutes — separated so it can use useLocation inside BrowserRouter.
  *
- * The backgroundLocation pattern renders the previous page behind a modal-style
- * WorkPage overlay when navigating from within the app (/works/:id).
- */
-/**
- * AppRoutes — separated so it can use useLocation inside BrowserRouter.
- *
- * Works (/works/:id) are now full-page Exhibition Screens, not overlays.
- * The backgroundLocation dual-rendering pattern has been removed.
+ * Works (/works/:id) are full-page Exhibition Screens, not overlays.
  */
 function AppRoutes() {
   return (
