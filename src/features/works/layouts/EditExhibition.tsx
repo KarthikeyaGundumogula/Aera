@@ -5,7 +5,7 @@ import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
-import { HonourIcon } from "../../../components/icons/HonourIcon";
+import { Star } from "lucide-react";
 
 interface EditExhibitionProps {
   item: TheatreItem;
@@ -110,7 +110,7 @@ export function EditExhibition({ item }: EditExhibitionProps) {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
               >
-                <HonourIcon size={72} filled={true} />
+                <Star size={72} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_24px_rgba(251,191,36,0.6)]" />
               </motion.div>
             )}
           </AnimatePresence>

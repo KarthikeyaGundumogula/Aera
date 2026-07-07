@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CINEMATIC_QUOTES } from "../../../constants/quotes";
 import { CURRENT_USER_MOCK } from "../../../mock";
 
-export function HallHero() {
+export function CenterQuotes() {
   const [quoteIdx, setQuoteIdx] = useState(() => Math.floor(Math.random() * CINEMATIC_QUOTES.length));
 
   const handleNewQuote = useCallback(() => {

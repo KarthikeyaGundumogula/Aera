@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { TheatreItem } from "../../../types";
 import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
-import { HonourIcon } from "../../../components/icons/HonourIcon";
+import { Star } from "lucide-react";
 
 interface PosterExhibitionProps {
   item: TheatreItem;
@@ -43,14 +43,16 @@ export function PosterExhibition({ item }: PosterExhibitionProps) {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="relative flex justify-center w-full"
             onPointerDown={triggerDoubleTap}
+            style={{ touchAction: "manipulation" }}
           >
             {imageSrc ? (
               <div className="relative inline-block max-w-full">
                 <img
                   src={imageSrc}
                   alt={item.title || "Poster"}
-                  className="w-auto h-auto max-w-full max-h-[75vh] object-contain rounded-sm select-none border border-white/5 shadow-[0_8px_48px_rgba(0,0,0,0.6)]"
+                  className="w-auto h-auto max-w-full max-h-[75vh] object-contain rounded-none select-none border-[1.5px] border-white/20 shadow-[0_8px_48px_rgba(0,0,0,0.6)]"
                   loading="eager"
+                  style={{ backfaceVisibility: "hidden" }}
                   fetchPriority="high"
                   decoding="async"
                   draggable={false}
@@ -67,16 +69,16 @@ export function PosterExhibition({ item }: PosterExhibitionProps) {
                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       className="absolute inset-0 flex items-center justify-center pointer-events-none"
                     >
-                      <HonourIcon size={80} filled={true} />
+                      <Star size={80} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_24px_rgba(251,191,36,0.6)]" />
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="w-full aspect-[2/3] bg-white/[0.02] flex items-center justify-center border border-white/5 rounded-sm max-w-[300px]">
-                <span className="text-[8px] font-black uppercase tracking-widest text-white/12">
+              <div className="w-full aspect-[2/3] bg-white/[0.02] flex items-center justify-center border-[1.5px] border-white/20 rounded-none max-w-[300px]">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 text-center px-4">
                   No Image
-                </span>
+                </div>
               </div>
             )}
           </motion.div>

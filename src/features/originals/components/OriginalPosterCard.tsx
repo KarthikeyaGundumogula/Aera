@@ -65,7 +65,7 @@ export const OriginalPosterCard = memo(
             if (e.key === "Enter" || e.key === " ")
               navigate(`/originals/${original.id}`);
           }}
-          className="flex flex-col h-full cursor-pointer transition-all duration-300 ease-out group rounded-md overflow-hidden"
+          className="flex flex-col h-full cursor-pointer transition-all duration-300 ease-out group overflow-hidden"
           style={{
             backgroundColor: "#090909", // Deep dark background for the card
             border: "0.5px solid rgba(255, 255, 255, 0.24)", // Whiter tinted outer border

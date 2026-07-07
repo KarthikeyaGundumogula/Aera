@@ -43,6 +43,7 @@ import { CategoryBadge } from '../../theatre/components/CategoryBadge';
 import { ArtistSpotlightGrid } from '../../../components/ArtistSpotlightGrid';
 import { CinematicPageHeader } from '../../../components/CinematicPageHeader';
 import { ContactCTA } from "../components/ContactCTA";
+import { CenterQuotes } from "../components/CenterQuotes";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 import { TrendingDiscussions } from "../components/TrendingDiscussions";
@@ -229,6 +230,9 @@ export function CenterFeedLayout() {
       <DesktopHeader />
 
       <main className="pt-[61px] px-0 w-full max-w-full overflow-x-hidden">
+        {/* CENTER QUOTES */}
+        <CenterQuotes />
+
         {/* HERO - UPCOMING RELEASES */}
         <section className="px-0 mb-0">
           <div className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-black">

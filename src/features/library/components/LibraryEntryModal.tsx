@@ -357,7 +357,7 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
             transition={{ duration: 0.2 }}
           >
             <motion.div
-              className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-[#060504] border border-white/[0.06] shadow-[0_40px_100px_rgba(0,0,0,0.9)]"
+              className="relative w-full max-w-[540px] overflow-hidden rounded-2xl bg-[#060504] border border-white/[0.06] shadow-[0_40px_100px_rgba(0,0,0,0.9)]"
               initial={{
                 scale: 0.96,
                 y: 20,
@@ -449,133 +449,165 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
                 className="relative overflow-y-auto"
                 style={{ maxHeight: "calc(100dvh - 200px)" }}
               >
-                <div className="px-6 pt-6 pb-2 flex flex-col gap-5">
-                  {/* Original selector */}
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
-                      Original
-                    </span>
-                    {selectedOriginal ? (
-                      <button
-                        onClick={() => setIsSearchOpen(true)}
-                        className="flex items-center gap-3 py-2 border-b border-white/10 hover:border-white/20 transition-colors text-left focus:outline-none group"
-                      >
-                        <img
-                          src={selectedOriginal.coverImage}
-                          alt={selectedOriginal.title}
-                          loading="lazy"
-                          className="w-7 h-10 rounded object-cover object-top opacity-80 flex-shrink-0"
-                        />
-                        <span className="flex-1 text-sm text-white/85 font-light truncate">
-                          {selectedOriginal.title}
-                        </span>
-                        <ChevronLeft className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 rotate-180 transition-colors flex-shrink-0" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setIsSearchOpen(true)}
-                        className="flex items-center gap-2 py-2 border-b border-white/10 hover:border-white/20 transition-colors text-left focus:outline-none"
-                      >
-                        <Search className="w-3.5 h-3.5 text-white/15" />
-                        <span className="text-sm text-white/20 font-light">
-                          Search for a film or series…
-                        </span>
-                      </button>
-                    )}
+                <div className="px-4 sm:px-6 pt-6 pb-2 flex flex-row gap-4 sm:gap-6">
+                  {/* ── LEFT COLUMN: Poster Selector ────────────────────── */}
+                  <div className="w-[38%] sm:w-[35%] shrink-0 flex flex-col gap-3 mt-1">
+                    <button
+                      onClick={() => setIsSearchOpen(true)}
+                      className="relative w-full rounded-xl overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706]/50 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                      style={{ aspectRatio: "2/3" }}
+                    >
+                      {selectedOriginal ? (
+                        <>
+                          <img
+                            src={selectedOriginal.coverImage}
+                            alt={selectedOriginal.title}
+                            className="absolute inset-0 w-full h-full object-cover object-top transition-[filter] duration-500 group-hover:brightness-50"
+                          />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <Search className="w-5 h-5 text-white/80 mb-2" />
+                            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white">
+                              Change
+                            </span>
+                          </div>
+
+                          {surgeScore >= 4200 && (
+                            <div className="absolute top-2 left-2 z-20 -rotate-[8deg] pointer-events-none opacity-95 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]">
+                              <div className="inline-block text-[7px] font-mono font-black uppercase tracking-[0.2em] text-[#EF4444] bg-[#050302]/40 border-[1.5px] border-[#EF4444]/90 px-1.5 py-0.5 rounded-[2px] backdrop-blur-md whitespace-nowrap">
+                                PEAK EXP.
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 border border-dashed border-white/20 bg-white/[0.02] group-hover:bg-white/[0.04] group-hover:border-white/30 transition-colors flex flex-col items-center justify-center gap-3">
+                          <div className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center bg-black/20 group-hover:scale-110 transition-transform duration-300">
+                            <Film className="w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors" />
+                          </div>
+                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 text-center px-3 group-hover:text-white/60 transition-colors">
+                            Select
+                            <br />
+                            Original
+                          </span>
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Selected Original Info */}
+                    <AnimatePresence>
+                      {selectedOriginal && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="text-center px-1"
+                        >
+                          <h3 className="text-[12px] font-bold text-white/90 leading-tight line-clamp-2">
+                            {selectedOriginal.title}
+                          </h3>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-[#D97706]/70 mt-1">
+                            {selectedOriginal.genre?.[0] || "Film"}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
-                  {/* Status toggle */}
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
-                      Status
-                    </span>
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      {(
-                        [
-                          {
-                            val: "want_to_watch",
-                            icon: Clock,
-                            label: "Want to Watch",
-                          },
-                          { val: "watched", icon: Eye, label: "Watched" },
-                        ] as const
-                      ).map(({ val, icon: Icon, label }) => {
-                        const active = status === val;
-                        return (
-                          <button
-                            key={val}
-                            onClick={() => setStatus(val)}
-                            className="flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.1em] transition-all focus:outline-none"
-                            style={{
-                              borderColor: active
-                                ? `${AMBER}44`
-                                : "rgba(255,255,255,0.05)",
-                              backgroundColor: active
-                                ? AMBER_DIM
-                                : "transparent",
-                              color: active ? AMBER : "rgba(255,255,255,0.2)",
-                            }}
-                          >
-                            <Icon className="w-3.5 h-3.5" />
-                            {label}
-                          </button>
-                        );
-                      })}
+                  {/* ── RIGHT COLUMN: Form Fields ─────────────────────── */}
+                  <div className="flex-1 flex flex-col min-w-0 pr-2 sm:pr-0 gap-5">
+                    {/* Status toggle */}
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
+                        Status
+                      </span>
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        {(
+                          [
+                            {
+                              val: "want_to_watch",
+                              icon: Clock,
+                              label: "watchlist",
+                            },
+                            { val: "watched", icon: Eye, label: "Watched" },
+                          ] as const
+                        ).map(({ val, icon: Icon, label }) => {
+                          const active = status === val;
+                          return (
+                            <button
+                              key={val}
+                              onClick={() => setStatus(val)}
+                              className="flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.1em] transition-all focus:outline-none"
+                              style={{
+                                borderColor: active
+                                  ? `${AMBER}44`
+                                  : "rgba(255,255,255,0.05)",
+                                backgroundColor: active
+                                  ? AMBER_DIM
+                                  : "transparent",
+                                color: active ? AMBER : "rgba(255,255,255,0.2)",
+                              }}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
+
+                    {/* Dynamic text fields + surge (watched) */}
+                    <AnimatePresence mode="wait">
+                      {status === "want_to_watch" ? (
+                        <motion.div
+                          key="expectations"
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <CinematicTextarea
+                            id="lem-expectations"
+                            label="Expectations"
+                            placeholder="What draws you to this one?…"
+                            value={expectations}
+                            onChange={setExpectations}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="watched-fields"
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col gap-5"
+                        >
+                          <CinematicTextarea
+                            id="lem-expectations-watched"
+                            label="Expectations"
+                            placeholder="What were your expectations going in?…"
+                            value={expectations}
+                            onChange={setExpectations}
+                          />
+                          <CinematicTextarea
+                            id="lem-afterthoughts"
+                            label="After Thoughts"
+                            placeholder="How did it land? Document your verdict…"
+                            value={afterThoughts}
+                            onChange={setAfterThoughts}
+                          />
+
+                          {/* ── Surge Score (watched only) ─────────── */}
+                          <SurgeInputSection
+                            score={surgeScore}
+                            peak={4200}
+                            onChange={setSurgeScore}
+                            withDivider
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-
-                  {/* Dynamic text fields + surge (watched) */}
-                  <AnimatePresence mode="wait">
-                    {status === "want_to_watch" ? (
-                      <motion.div
-                        key="expectations"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <CinematicTextarea
-                          id="lem-expectations"
-                          label="Pre-Screening Expectations"
-                          placeholder="What draws you to this one?…"
-                          value={expectations}
-                          onChange={setExpectations}
-                        />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="watched-fields"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex flex-col gap-5"
-                      >
-                        <CinematicTextarea
-                          id="lem-expectations-watched"
-                          label="Pre-Screening Expectations"
-                          placeholder="What were your expectations going in?…"
-                          value={expectations}
-                          onChange={setExpectations}
-                        />
-                        <CinematicTextarea
-                          id="lem-afterthoughts"
-                          label="After Thoughts"
-                          placeholder="How did it land? Document your verdict…"
-                          value={afterThoughts}
-                          onChange={setAfterThoughts}
-                        />
-
-                        {/* ── Surge Score (watched only) ─────────── */}
-                        <SurgeInputSection
-                          score={surgeScore}
-                          peak={4200}
-                          onChange={setSurgeScore}
-                          withDivider
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
               </div>
 

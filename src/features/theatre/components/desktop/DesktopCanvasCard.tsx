@@ -23,10 +23,11 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
   slot,
   item,
 }: DesktopCanvasCardProps) {
-  const isPoster = getWorkKind(item) === "poster";
+  const kind = getWorkKind(item);
+  const isPosterOrScript = kind === "poster" || kind === "script";
 
   const renderWork = (work: TheatreItem) => {
-    switch (getWorkKind(work)) {
+    switch (kind) {
       case "recommendation":
         return (
           <RecommendationWork
@@ -69,7 +70,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
       whileHover={{
         zIndex: 20,
       }}
-      className={`relative group overflow-hidden bg-zinc-900/20 rounded-sm transition-all duration-500`}
+      className={`relative group overflow-hidden bg-zinc-900/20 ${isPosterOrScript ? 'rounded-none' : 'rounded-sm'} transition-all duration-500`}
       style={{
         gridColumn: `${slot.x + 1} / span ${slot.w}`,
         gridRow: `${slot.y + 1} / span ${slot.h}`,

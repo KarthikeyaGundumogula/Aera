@@ -84,7 +84,7 @@ export function LibraryPage() {
                 : "text-white/40 hover:text-white/80"
             }`}
           >
-            Want to Watch
+            watchlist
           </button>
           <button
             onClick={() => setSearchParams({ filter: "watched" })}

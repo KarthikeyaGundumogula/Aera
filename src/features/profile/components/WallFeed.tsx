@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { WallPost } from "../../../types/wall";
 import { WallPostCard } from "./WallPostCard";
-import { WallSwiper, WallSwiperEntry } from "./WallSwiper";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
+import { WallSwiper, WallSwiperArtistGroup } from "./WallSwiper";
 
 interface WallFeedProps {
   posts: WallPost[];
@@ -26,7 +26,7 @@ interface WallFeedProps {
  *     where the user can swipe through all wall posts.
  */
 export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, themeGradient }) => {
-  const [swiperIndex, setSwiperIndex] = useState<number | null>(null);
+  const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
 
   // O(1) lookup maps — resolved once, never re-computed unless posts change
   const worksById = useMemo(
@@ -38,21 +38,24 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
     []
   );
 
-  // Pre-build resolved entries for the swiper so it doesn't resolve on each render
-  const swiperEntries: WallSwiperEntry[] = useMemo(
-    () =>
-      posts.map((post) => ({
+  const swiperGroups = useMemo<WallSwiperArtistGroup[]>(() => {
+    if (posts.length === 0) return [];
+    
+    // In WallFeed, all posts usually belong to the same artist.
+    const firstPost = posts[0];
+    
+    return [{
+      artistId: firstPost.artistId,
+      artistName: firstPost.artistName,
+      artistImage: firstPost.artistImage,
+      hasMore: false, // For now, in profile page we just show all posts they have
+      entries: posts.map(post => ({
         post,
         resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
-        resolvedOriginal: post.pinnedOriginalId
-          ? originalsById[post.pinnedOriginalId]
-          : undefined,
-      })),
-    [posts, worksById, originalsById]
-  );
-
-  const openSwiper = useCallback((index: number) => setSwiperIndex(index), []);
-  const closeSwiper = useCallback(() => setSwiperIndex(null), []);
+        resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
+      }))
+    }];
+  }, [posts, worksById, originalsById]);
 
   if (posts.length === 0) {
     return (
@@ -99,26 +102,28 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
               >
                 <WallPostCard
                   post={post}
-                resolvedWork={resolvedWork}
-                resolvedOriginal={resolvedOriginal}
-                inFoyer={inFoyer}
-                themeGradient={themeGradient}
-                onClick={() => openSwiper(index)}
-              />
+                  resolvedWork={resolvedWork}
+                  resolvedOriginal={resolvedOriginal}
+                  inFoyer={inFoyer}
+                  themeGradient={themeGradient}
+                  onClick={() => setSelectedPostIndex(index)}
+                />
             </motion.div>
             </React.Fragment>
           );
         })}
       </div>
 
-      {/* ── WallSwiper modal — opens on card tap ── */}
-      {swiperIndex !== null && (
-        <WallSwiper
-          entries={swiperEntries}
-          initialIndex={swiperIndex}
-          onClose={closeSwiper}
-        />
-      )}
+      <AnimatePresence>
+        {selectedPostIndex !== null && swiperGroups.length > 0 && (
+          <WallSwiper 
+            groups={swiperGroups}
+            initialGroupIndex={0}
+            initialPostIndices={{ [swiperGroups[0].artistId]: selectedPostIndex }}
+            onClose={() => setSelectedPostIndex(null)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };

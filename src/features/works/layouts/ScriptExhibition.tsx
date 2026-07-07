@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { RotateCw, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { TheatreItem } from "../../../types";
-import { ExhibitionFrame } from "./ExhibitionFrame";
+import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
 
 interface ScriptExhibitionProps {
   item: TheatreItem;
@@ -59,13 +59,28 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
     <ExhibitionFrame
       item={item}
       mediaMaxWidth="min(600px,calc(100vw-2rem))"
-      mediaSlot={() => (
+      mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
         <div
-          className="flex flex-col gap-4 w-full"
+          className="flex flex-col gap-4 w-full relative"
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
-          style={{ overscrollBehavior: "contain" }}
+          onPointerDown={triggerDoubleTap}
+          style={{ overscrollBehavior: "contain", touchAction: "manipulation" }}
         >
+          {/* Double-tap honour flash */}
+          <AnimatePresence>
+            {doubleTapFlash && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.5 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-50"
+              >
+                <Star size={80} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_24px_rgba(251,191,36,0.6)]" />
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Controls row: page counter + Story/Visuals toggle (Hidden on mobile) */}
           <div className="hidden sm:flex items-center justify-between pb-0">
             <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/25">
@@ -99,7 +114,7 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
                   backfaceVisibility: "hidden",
                   ...(imgAspect ? { aspectRatio: String(imgAspect) } : {}),
                 }}
-                className="w-full overflow-hidden rounded-xl"
+                className="w-full overflow-hidden rounded-none border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
               >
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -129,14 +144,14 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
 
               {/* Back: caption card */}
               <div
-                className="absolute inset-0 rounded-xl overflow-hidden p-5 sm:p-7 flex flex-col gap-4"
+                className="absolute inset-0 rounded-none overflow-hidden p-5 sm:p-7 flex flex-col gap-4 border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
                 style={{
                   transform: "rotateY(180deg)",
                   backfaceVisibility: "hidden",
                   background: "#0d0d0b",
                 }}
               >
-                <div className="absolute inset-0 overflow-hidden rounded-xl">
+                <div className="absolute inset-0 overflow-hidden rounded-none border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
                   <img
                     src={displayPages[pageIndex]}
                     className="absolute inset-0 w-full h-full object-cover object-top blur-3xl scale-110 opacity-15"

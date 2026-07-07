@@ -32,7 +32,7 @@ import { LibraryTabsZone } from "./components/LibraryTabsZone";
 import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
 import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
 import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZone";
-import { HallHero } from "./components/HallHero";
+import { WallsOfArtistsZone } from "./components/WallsOfArtistsZone";
 import { TopOriginalsZone } from "./components/TopOriginalsZone";
 
 /**
@@ -105,9 +105,15 @@ export default function HallPage() {
 
       <main className="pt-[61px]">
         {/* ══════════════════════════════════════════════════════
-            HERO — Identity + Live stats
+            HERO — Walls of Artists
         ══════════════════════════════════════════════════════ */}
-        <HallHero />
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <WallsOfArtistsZone />
+        </motion.section>
 
         {/* ══════════════════════════════════════════════════════
             NEW SCENE — TALK OF THE WEEK ORIGINALS

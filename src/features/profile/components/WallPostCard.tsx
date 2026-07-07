@@ -19,15 +19,7 @@ function formatRelativeTime(iso: string): string {
   return `${Math.floor(hours / 24)}d`;
 }
 
-/**
- * Generates a deterministic tilt in degrees from a post ID string.
- * Same card → same tilt every time, so it feels physically pinned.
- */
-function getTiltDegrees(id: string): number {
-  const hash = id.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const raw = (hash % 29) / 10 - 1.4;
-  return raw < 0 ? raw - 0.4 : raw + 0.4;
-}
+
 
 // ─── Shared Twitter-style Layout ──────────────────────────────────────────────
 
@@ -262,7 +254,7 @@ const FoyerWrapper: React.FC<FoyerWrapperProps> = ({ artistName, children }) => 
 
 // ─── Root compound component ──────────────────────────────────────────────────
 
-export interface WallPostCardProps {
+interface WallPostCardProps {
   post: WallPost;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
@@ -274,9 +266,8 @@ export interface WallPostCardProps {
 }
 
 export const WallPostCard = memo<WallPostCardProps>(
-  ({ post, resolvedWork, resolvedOriginal, inFoyer = false, themeGradient, className, onClick }) => {
+  ({ post, resolvedWork, resolvedOriginal, inFoyer = false, className, onClick }) => {
     const isMobile = useMediaQuery();
-    const tilt = useMemo(() => getTiltDegrees(post.id), [post.id]);
 
     const pinnedImage: string | undefined =
       post.type === "PIN_WORK"
@@ -329,7 +320,6 @@ export const WallPostCard = memo<WallPostCardProps>(
           md:shadow-[0_4px_24px_rgba(0,0,0,0.5)]
           ${className ?? ""}
         `}
-        style={{ rotate: (inFoyer || isMobile) ? 0 : tilt }}
         onClick={onClick}
         whileHover={
           isMobile
