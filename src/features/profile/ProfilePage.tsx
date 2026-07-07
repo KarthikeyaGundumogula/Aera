@@ -337,7 +337,7 @@ const ProfilePage: React.FC = () => {
                   style={{
                     textShadow:
                       activeTab === tab
-                        ? "0 0 8px rgba(245,158,11,0.6), 0 0 16px rgba(217,119,6,0.3)"
+                        ? `0 0 8px ${theme.nameGradient[0]}99, 0 0 16px ${theme.nameGradient[1]}4D`
                         : "none",
                     transition: "text-shadow 0.4s ease",
                   }}
@@ -356,39 +356,36 @@ const ProfilePage: React.FC = () => {
             }}
           />
 
-          {/* Amber footlight bloom — originates at the bottom line, shoots UPWARD (subtle) */}
+          {/* Footlight bloom — uses the profile's primary gradient color */}
           {orbX !== null && (
             <motion.div
               className="absolute pointer-events-none"
               animate={{ x: orbX - 80 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               style={{
-                bottom: "0px", // anchored to the line at the floor
+                bottom: "0px",
                 width: "160px",
                 height: "56px",
-                background: `radial-gradient(ellipse at 50% 100%, rgba(217,119,6,0.25) 0%, rgba(217,119,6,0.10) 40%, transparent 72%)`,
+                background: `radial-gradient(ellipse at 50% 100%, ${theme.nameGradient[0]}40 0%, ${theme.nameGradient[0]}1A 40%, transparent 72%)`,
                 filter: "blur(10px)",
               }}
             />
           )}
 
-          {/* Amber semi-sphere — footlight housing embedded in the stage floor.
-              Only the dome sits above the line; the flat base is flush with it.
-              border-radius top-only = half-circle; box-shadow glows upward naturally. */}
+          {/* Semi-sphere orb — uses the profile's primary gradient color */}
           {orbX !== null && (
             <motion.div
               className="absolute pointer-events-none"
               animate={{ x: orbX - 5 }}
               transition={{ type: "spring", stiffness: 320, damping: 28 }}
               style={{
-                bottom: "0px", // flat base sits flush on the line
+                bottom: "0px",
                 width: "10px",
-                height: "5px", // half the width → perfect semi-circle
-                borderRadius: "5px 5px 0 0", // dome on top, flat on bottom
-                backgroundColor: "#F59E0B",
+                height: "5px",
+                borderRadius: "5px 5px 0 0",
+                background: `linear-gradient(to right, ${theme.nameGradient[0]}, ${theme.nameGradient[1]})`,
                 boxShadow:
-                  // tight hotspot at the dome, then wide soft spill upward
-                  "0 0 5px 2px rgba(245,158,11,0.95), 0 0 16px 6px rgba(217,119,6,0.75), 0 0 36px 14px rgba(217,119,6,0.25)",
+                  `0 0 5px 2px ${theme.nameGradient[0]}F2, 0 0 16px 6px ${theme.nameGradient[0]}BF, 0 0 36px 14px ${theme.nameGradient[0]}40`,
               }}
             />
           )}
@@ -411,6 +408,7 @@ const ProfilePage: React.FC = () => {
               <div className="mt-4 -mx-8 md:mx-0">
                 <WallFeed
                   posts={getWallPostsByArtist(profileId ?? "")}
+                  themeGradient={theme.nameGradient}
                 />
               </div>
             )}

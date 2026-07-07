@@ -1,5 +1,9 @@
 import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { FavoriteButton } from "../../../components/FavoriteButton";
+import { HonourAction } from "../../../components/actions/HonourAction";
+import { PinAction } from "../../../components/actions/PinAction";
+import { SaveAction } from "../../../components/actions/SaveAction";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ExhibitionNav } from "../components/ExhibitionNav";
 import { ArtistProfile } from "../../shared/profile";
@@ -141,7 +145,7 @@ export function ExhibitionFrame({
       <div className="relative z-10 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px] min-h-screen">
 
         {/* Left column ─────────────────────────────────────────────────────── */}
-        <div className="flex flex-col relative border-b lg:border-b-0 border-white/[0.04]">
+        <div className="flex flex-col relative">
           <ExhibitionNav item={item} />
 
           <div className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-20 pb-8 sm:pt-24 lg:justify-center">
@@ -173,10 +177,10 @@ export function ExhibitionFrame({
                 <div className="flex flex-row items-center justify-between gap-4 mt-2">
 
                   {/* Left: Avatar + Name + Favourite */}
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     <button
                       onClick={handleArtistClick}
-                      className="flex items-center gap-2 group active:scale-[0.97] transition-transform shrink-0"
+                      className="shrink-0 active:scale-95 transition-transform"
                       aria-label={`View ${item.artist || "artist"} profile`}
                       style={{ touchAction: "manipulation" }}
                     >
@@ -184,97 +188,66 @@ export function ExhibitionFrame({
                         <img
                           src={item.artistAvatar}
                           alt={item.artist || ""}
-                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover opacity-80 group-hover:opacity-100 transition-opacity border border-white/10"
+                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover opacity-80 hover:opacity-100 transition-opacity border border-white/10"
                           loading="eager"
                           decoding="async"
                         />
                       ) : (
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/6 border border-white/8 flex items-center justify-center">
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/6 border border-white/8 flex items-center justify-center">
                           <span className="text-sm font-black text-white/35">
                             {(item.artist || "?").charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
-                      <span className="text-[14px] sm:text-[15px] font-semibold text-white/70 group-hover:text-white transition-colors truncate max-w-[120px] sm:max-w-none">
-                        {item.artist || "Unknown Artist"}
-                      </span>
                     </button>
 
-                    {/* Favourite heart */}
-                    <button
-                      onClick={() => setFavorited((f) => !f)}
-                      className="flex items-center gap-1.5 p-1 active:scale-95 transition-transform shrink-0"
-                      aria-label="Favourite Artist"
-                    >
-                      <motion.div
-                        animate={{ scale: favorited ? [1, 1.3, 1] : 1 }}
-                        transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+                    <div className="flex flex-col items-start justify-center gap-1">
+                      <button
+                        onClick={handleArtistClick}
+                        className="text-[14px] sm:text-[15px] font-bold text-white/80 hover:text-white transition-colors truncate max-w-[140px] sm:max-w-[200px]"
                       >
-                        <Heart
-                          className="w-[16px] h-[16px] transition-all duration-200"
-                          style={{
-                            fill: favorited ? "#ef4444" : "transparent",
-                            color: favorited ? "#ef4444" : "rgba(255,255,255,0.18)",
-                            filter: favorited ? "drop-shadow(0 0 8px rgba(239,68,68,0.55))" : "none",
-                          }}
-                        />
-                      </motion.div>
-                      <span className="text-[11px] font-bold text-white/40">
-                        {formatStat(favorited ? followersCount + 1 : followersCount)}
-                      </span>
-                    </button>
+                        {item.artist || "Unknown Artist"}
+                      </button>
+
+                      {/* Favourite heart row */}
+                      <FavoriteButton
+                        isFavorited={favorited}
+                        onFavorite={() => setFavorited((f) => !f)}
+                        activeColor="#ef4444"
+                        iconSize={13}
+                        className="flex items-center gap-1.5 opacity-70 hover:opacity-100 active:scale-95 transition-all -ml-1.5 py-0.5 px-1.5 rounded-lg hover:bg-white/5"
+                        hideRipple
+                      >
+                        <span className="text-[10px] font-bold text-white/50 mt-px">
+                          {formatStat(favorited ? followersCount + 1 : followersCount)} favorites
+                        </span>
+                      </FavoriteButton>
+                    </div>
                   </div>
 
                   {/* Right: actions */}
                   <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                    <button
+                    <HonourAction
+                      isActive={isHonoured}
                       onClick={handleHonourBtn}
-                      aria-label={isHonoured ? "Remove honour" : "Honour this work"}
-                      className={`flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border transition-all active:scale-95 ${
-                        isHonoured ? "border-[#E11D48]/30 bg-[#E11D48]/10 text-[#E11D48]" : "border-white/8 bg-white/3 text-white/40 hover:text-white/80 hover:bg-white/10"
-                      }`}
-                      style={isHonoured ? { boxShadow: "0 0 16px rgba(225,29,72,0.15)" } : undefined}
-                    >
-                      <HonourIcon
-                        size={13}
-                        filled={isHonoured}
-                        style={{
-                          transform: honouring ? "scale(1.4)" : "scale(1)",
-                          transition: honouring
-                            ? "transform 90ms cubic-bezier(0.23,1,0.32,1)"
-                            : "transform 320ms cubic-bezier(0.23,1,0.32,1)",
-                        }}
-                      />
-                      <span className="text-[11px] font-bold">
-                        {formatStat(isHonoured ? honoursCount + 1 : honoursCount)}
-                      </span>
-                    </button>
+                      count={formatStat(isHonoured ? honoursCount + 1 : honoursCount)}
+                      variant="exhibition"
+                      isHonouring={honouring}
+                    />
                     
-                    <button
-                      onClick={() => setPinned(p => !p)}
-                      aria-label="Pin to Wall"
-                      className={`flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border transition-all active:scale-95 ${
-                        pinned ? "border-blue-500/30 bg-blue-500/10 text-blue-500" : "border-white/8 bg-white/3 text-white/40 hover:text-white/80 hover:bg-white/10"
-                      }`}
-                    >
-                      <Pin size={13} fill={pinned ? "currentColor" : "none"} />
-                      <span className="text-[11px] font-bold">
-                        {formatStat(pinned ? pinsCount + 1 : pinsCount)}
-                      </span>
-                    </button>
+                    <PinAction
+                      isActive={pinned}
+                      onClick={() => setPinned((p) => !p)}
+                      count={formatStat(pinned ? pinsCount + 1 : pinsCount)}
+                      variant="exhibition"
+                    />
                     
-                    <button
-                      onClick={() => setSaved(s => !s)}
-                      aria-label="Save"
-                      className={`flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border transition-all active:scale-95 ${
-                        saved ? "border-white/30 bg-white/10 text-white" : "border-white/8 bg-white/3 text-white/40 hover:text-white/80 hover:bg-white/10"
-                      }`}
-                    >
-                      <Bookmark size={13} fill={saved ? "currentColor" : "none"} />
-                      <span className="text-[11px] font-bold hidden sm:inline-block">
-                        {formatStat(saved ? savesCount + 1 : savesCount)}
-                      </span>
-                    </button>
+                    <SaveAction
+                      isActive={saved}
+                      onClick={() => setSaved((s) => !s)}
+                      count={formatStat(saved ? savesCount + 1 : savesCount)}
+                      variant="exhibition"
+                    />
                   </div>
                 </div>
               </motion.div>

@@ -29,27 +29,76 @@ function getTiltDegrees(id: string): number {
   return raw < 0 ? raw - 0.4 : raw + 0.4;
 }
 
-// ─── Shared header row ───────────────────────────────────────────────────────
+// ─── Shared Twitter-style Layout ──────────────────────────────────────────────
 
-interface PostHeaderProps {
+interface CardLayoutProps {
   artistName: string;
   artistImage: string;
   postedAt: string;
+  text?: string;
+  themeGradient?: [string, string];
+  children?: React.ReactNode;
 }
 
-const PostHeader: React.FC<PostHeaderProps> = ({ artistName, artistImage, postedAt }) => (
-  <div className="flex items-center gap-2.5 px-4 pt-4 pb-0">
-    <img
-      src={artistImage}
-      alt={artistName}
-      className="w-7 h-7 rounded-md object-cover object-top flex-shrink-0 border border-white/10"
-    />
-    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90 flex-1 truncate">
-      {artistName}
-    </span>
-    <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white/30 flex-shrink-0">
-      {formatRelativeTime(postedAt)}
-    </span>
+const CardLayout: React.FC<CardLayoutProps> = ({
+  artistName,
+  artistImage,
+  postedAt,
+  text,
+  themeGradient,
+  children,
+}) => (
+  <div className="flex gap-3 px-4 pt-4 pb-4">
+    {/* Left Column: Avatar */}
+    <div className="flex-shrink-0">
+      <img
+        src={artistImage}
+        alt={artistName}
+        // Framehouse Rule: No perfectly circular avatars. Use rounded-xl.
+        className="w-10 h-10 rounded-xl object-cover object-top border border-white/10 shadow-sm"
+      />
+    </div>
+
+    {/* Right Column: Content */}
+    <div className="flex flex-col flex-1 min-w-0 pt-0.5">
+      {/* Header Row */}
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-white/90 truncate">
+          {artistName}
+        </span>
+        <span className="text-[10px] font-bold text-white/20">·</span>
+        <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 flex-shrink-0">
+          {formatRelativeTime(postedAt)}
+        </span>
+      </div>
+
+      {/* Main Post Text / Quote */}
+      {text && (
+        <div
+          className={children ? "mb-3 relative pl-3.5 py-0.5" : ""}
+          style={
+            children
+              ? { borderLeft: `2px solid ${themeGradient ? themeGradient[0] : "#F59E0B"}` }
+              : {}
+          }
+        >
+          <p
+            className={`text-[15px] leading-[1.55] text-white/85 ${
+              children ? "italic" : "font-normal"
+            }`}
+          >
+            {children ? `"${text}"` : text}
+          </p>
+        </div>
+      )}
+
+      {/* Attached Media (if any) */}
+      {children && (
+        <div className="rounded-[10px] overflow-hidden border border-white/10 bg-white/[0.02] shadow-sm">
+          {children}
+        </div>
+      )}
+    </div>
   </div>
 );
 
@@ -60,6 +109,7 @@ interface LineVariantProps {
   artistName: string;
   artistImage: string;
   postedAt: string;
+  themeGradient?: [string, string];
 }
 
 const LineVariant: React.FC<LineVariantProps> = ({
@@ -67,14 +117,15 @@ const LineVariant: React.FC<LineVariantProps> = ({
   artistName,
   artistImage,
   postedAt,
+  themeGradient,
 }) => (
-  <div className="flex flex-col">
-    <PostHeader artistName={artistName} artistImage={artistImage} postedAt={postedAt} />
-    {/* Conversational line — no oversized quote marks, tweet-like */}
-    <p className="px-4 pt-3 pb-4 text-[15px] leading-[1.55] font-normal text-white/85">
-      {text}
-    </p>
-  </div>
+  <CardLayout
+    artistName={artistName}
+    artistImage={artistImage}
+    postedAt={postedAt}
+    text={text}
+    themeGradient={themeGradient}
+  />
 );
 
 // ─── 2. Pin Media Preview ────────────────────────────────────────────────────
@@ -85,6 +136,7 @@ interface PinMediaPreviewProps {
   /** The resolved TheatreItem — needed for CategoryBadge */
   resolvedWork?: TheatreItem;
   isOriginal?: boolean;
+  themeGradient?: [string, string];
 }
 
 const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
@@ -92,8 +144,9 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
   title,
   resolvedWork,
   isOriginal = false,
+  themeGradient,
 }) => (
-  <div className="relative w-full aspect-video overflow-hidden">
+  <div className="relative w-full aspect-video overflow-hidden bg-[#0a0a0a]">
     {image ? (
       <img
         src={image}
@@ -109,8 +162,8 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
       </div>
     )}
 
-    {/* Cinematic gradient — darkens bottom for text contrast */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+    {/* Cinematic gradient — stronger at bottom for title contrast */}
+    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
 
     {/* ── Category type badge from existing CategoryBadge system ── */}
     {resolvedWork && (
@@ -126,15 +179,15 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
       </div>
     )}
 
-    {/* Pin icon — top-left corner (amber) */}
-    <div className="absolute top-2.5 left-2.5 z-20">
-      <Pin size={11} className="text-amber-500 fill-amber-500 drop-shadow-sm" aria-hidden="true" />
+    {/* Pin icon — top-left corner, wrapped in a glass badge for high visibility */}
+    <div className="absolute top-2 left-2 z-20 w-[22px] h-[22px] rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.5)] flex items-center justify-center">
+      <Pin size={10} className="text-amber-500 fill-amber-500" aria-hidden="true" />
     </div>
 
-    {/* Work title overlay at bottom */}
+    {/* Work title overlay at bottom — highly visible */}
     {title && (
-      <div className="absolute bottom-2 left-8 right-8">
-        <span className="text-[10px] font-black uppercase tracking-[0.12em] text-white/60 truncate block">
+      <div className="absolute bottom-2.5 left-3 right-3 z-10">
+        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-white/95 truncate block drop-shadow-md">
           {title}
         </span>
       </div>
@@ -153,6 +206,7 @@ interface PinVariantProps {
   postedAt: string;
   resolvedWork?: TheatreItem;
   isOriginal?: boolean;
+  themeGradient?: [string, string];
 }
 
 const PinVariant: React.FC<PinVariantProps> = ({
@@ -164,52 +218,30 @@ const PinVariant: React.FC<PinVariantProps> = ({
   postedAt,
   resolvedWork,
   isOriginal = false,
+  themeGradient,
 }) => (
-  <div className="flex flex-col">
-    {/* Media fills the top — no padding, edge-to-edge */}
+  <CardLayout
+    artistName={artistName}
+    artistImage={artistImage}
+    postedAt={postedAt}
+    text={text}
+    themeGradient={themeGradient}
+  >
     <PinMediaPreview
       image={image}
       title={pinnedTitle}
       resolvedWork={resolvedWork}
       isOriginal={isOriginal}
+      themeGradient={themeGradient}
     />
-
-    {/* PINNED BY attribution */}
-    <div className="flex items-center gap-2 px-3 pt-3">
-      <span className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-500/70">
-        Pinned by
-      </span>
-      <img
-        src={artistImage}
-        alt={artistName}
-        className="w-5 h-5 rounded-[4px] object-cover object-top border border-white/10"
-      />
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 truncate flex-1">
-        {artistName}
-      </span>
-      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white/30 flex-shrink-0">
-        {formatRelativeTime(postedAt)}
-      </span>
-    </div>
-
-    {/* Optional artist Line */}
-    {text && (
-      <>
-        <div className="mx-3 mt-2.5 h-px bg-amber-500/20" />
-        <p className="px-3 pt-2.5 pb-4 text-[14px] leading-[1.55] font-normal text-white/75">
-          {text}
-        </p>
-      </>
-    )}
-
-    {!text && <div className="pb-3" />}
-  </div>
+  </CardLayout>
 );
 
 // ─── 4. Foyer Wrapper ─────────────────────────────────────────────────────────
 
 interface FoyerWrapperProps {
   artistName: string;
+  themeGradient?: [string, string];
   children: React.ReactNode;
 }
 
@@ -235,13 +267,14 @@ export interface WallPostCardProps {
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
   inFoyer?: boolean;
+  themeGradient?: [string, string];
   className?: string;
   /** Called when the card is tapped — parent opens the swiper */
   onClick?: () => void;
 }
 
 export const WallPostCard = memo<WallPostCardProps>(
-  ({ post, resolvedWork, resolvedOriginal, inFoyer = false, className, onClick }) => {
+  ({ post, resolvedWork, resolvedOriginal, inFoyer = false, themeGradient, className, onClick }) => {
     const isMobile = useMediaQuery();
     const tilt = useMemo(() => getTiltDegrees(post.id), [post.id]);
 
@@ -267,6 +300,7 @@ export const WallPostCard = memo<WallPostCardProps>(
             artistName={post.artistName}
             artistImage={post.artistImage}
             postedAt={post.postedAt}
+            themeGradient={themeGradient}
           />
         )}
         {(post.type === "PIN_WORK" || post.type === "PIN_ORIGINAL") && (
@@ -279,6 +313,7 @@ export const WallPostCard = memo<WallPostCardProps>(
             postedAt={post.postedAt}
             resolvedWork={resolvedWork}
             isOriginal={post.type === "PIN_ORIGINAL"}
+            themeGradient={themeGradient}
           />
         )}
       </>
@@ -319,7 +354,9 @@ export const WallPostCard = memo<WallPostCardProps>(
         }
       >
         {inFoyer ? (
-          <FoyerWrapper artistName={post.artistName}>{cardContent}</FoyerWrapper>
+          <FoyerWrapper artistName={post.artistName} themeGradient={themeGradient}>
+            {cardContent}
+          </FoyerWrapper>
         ) : (
           cardContent
         )}

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Bookmark, Tag } from "lucide-react";
+import { Tag } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
 import { OWN_RELEASE_ORIGINAL } from "../../../constants/originals";
+import { LibraryAction } from "../../../components/actions/LibraryAction";
 
 interface CurateOverlayProps {
   isOpen: boolean;
@@ -111,15 +112,11 @@ export function CurateOverlay({
                       </h4>
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2 pr-1 sm:pr-2">
-                      <button
+                      <LibraryAction 
+                        isActive={inLibrary}
                         onClick={() => handleAddToLibrary(item.id)}
-                        className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${inLibrary ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"}`}
-                        title="Add to Library"
-                      >
-                        <Bookmark
-                          className={`w-3 h-3 sm:w-4 sm:h-4 ${inLibrary ? "fill-current" : ""}`}
-                        />
-                      </button>
+                        variant="feed"
+                      />
                       <button
                         onClick={() => handleTagToLibrary(item.id)}
                         className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${isTagged ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10"}`}

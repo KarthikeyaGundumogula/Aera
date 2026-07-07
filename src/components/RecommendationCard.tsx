@@ -14,6 +14,12 @@ import {
 import { Recommendation } from "../mock/recommendations";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { PosterImage } from "./PosterImage";
+import { FHLoader } from "./FHLoader";
+import { FavoriteButton } from "./FavoriteButton";
+import { BoostAction } from "./actions/BoostAction";
+import { LibraryAction } from "./actions/LibraryAction";
+import { SaveAction } from "./actions/SaveAction";
+import { PinAction } from "./actions/PinAction";
 import { SurgeBars } from "./SurgeBars";
 import { formatRelativeTime } from "../utils/time";
 import { useWorkNavigation } from "../hooks/useWorkNavigation";
@@ -178,7 +184,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 {isHighestRated && (
                   <div className="absolute top-2 left-2 z-20 -rotate-[8deg] pointer-events-none opacity-95 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]">
                     <div className="inline-block text-[7px] font-mono font-black uppercase tracking-[0.2em] text-[#EF4444] bg-[#050302]/40 border-[1.5px] border-[#EF4444]/90 px-1.5 py-0.5 rounded-[2px] backdrop-blur-md whitespace-nowrap">
-                      ARTISTS PEAK
+                      PEAK EXP.
                     </div>
                   </div>
                 )}
@@ -484,30 +490,14 @@ export const RecommendationCard = memo(function RecommendationCard({
                 <div className="w-px self-stretch bg-white/[0.07] shrink-0 mx-0.5" />
 
                 {/* Original Favorite Heart */}
-                <button
-                  className="shrink-0 focus:outline-none p-1 rounded-lg hover:bg-white/[0.04] transition-all duration-150 ease-out active:scale-[0.97] flex items-center justify-center w-7 h-7 mr-3"
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setFavorited((f) => !f);
-                  }}
-                >
-                  <motion.div
-                    animate={{ scale: favorited ? [1, 1.3, 1] : 1 }}
-                    transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-                  >
-                    <Heart
-                      className="w-5 h-5 transition-all duration-200"
-                      style={{
-                        fill: favorited ? "#ef4444" : "transparent",
-                        color: favorited ? "#ef4444" : "rgba(255,255,255,0.18)",
-                        filter: favorited
-                          ? "drop-shadow(0 0 8px rgba(239,68,68,0.55))"
-                          : "none",
-                      }}
-                    />
-                  </motion.div>
-                </button>
+                <FavoriteButton
+                  isFavorited={favorited}
+                  onFavorite={() => setFavorited((f) => !f)}
+                  activeColor="#ef4444"
+                  iconSize={20}
+                  className="shrink-0 p-1 rounded-lg hover:bg-white/[0.04] w-7 h-7 mr-3"
+                  hideRipple
+                />
               </motion.div>
             </div>
 
@@ -517,85 +507,10 @@ export const RecommendationCard = memo(function RecommendationCard({
                 className={`flex items-center gap-0.5 sm:gap-1 pt-1 border-t transition-colors duration-300 ${!notesExpanded ? "border-white/[0.04]" : "border-transparent"}`}
                 onPointerDown={(e) => e.stopPropagation()}
               >
-                <button
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    setBoosted(!boosted);
-                  }}
-                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
-                    boosted
-                      ? "bg-[#B45309]/10 text-[#B45309] shadow-[0_0_14px_rgba(180,83,9,0.16)]"
-                      : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <Zap
-                    className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0"
-                    fill={boosted ? "currentColor" : "none"}
-                  />
-                  <span className="hidden sm:inline truncate">
-                    {boosted ? "Boosted" : "Boost"}
-                  </span>
-                </button>
-
-                <button
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    setInLibrary(!inLibrary);
-                  }}
-                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
-                    inLibrary
-                      ? "text-white bg-white/[0.12]"
-                      : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <BookOpen
-                    className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0"
-                    fill={inLibrary ? "currentColor" : "none"}
-                  />
-                  <span className="hidden sm:inline truncate">
-                    {inLibrary ? "Added" : "Add"}
-                  </span>
-                </button>
-
-                <button
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    setPinned(!pinned);
-                  }}
-                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
-                    pinned
-                      ? "text-white bg-white/[0.12]"
-                      : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <Pin
-                    className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0"
-                    fill={pinned ? "currentColor" : "none"}
-                  />
-                  <span className="hidden sm:inline truncate">
-                    {pinned ? "Pinned" : "Pin"}
-                  </span>
-                </button>
-
-                <button
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    setSaved(!saved);
-                  }}
-                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider active:scale-[0.97] transition-all duration-200 ${
-                    saved
-                      ? "text-white bg-white/[0.12]"
-                      : "text-white/30 hover:text-white/90 hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <Bookmark
-                    className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0"
-                    fill={saved ? "currentColor" : "none"}
-                  />
-                  <span className="hidden sm:inline truncate">
-                    {saved ? "Saved" : "Save"}
-                  </span>
-                </button>
+                <BoostAction isActive={boosted} onClick={() => setBoosted(!boosted)} />
+                <LibraryAction isActive={inLibrary} onClick={() => setInLibrary(!inLibrary)} />
+                <PinAction isActive={pinned} onClick={() => setPinned(!pinned)} variant="feed" />
+                <SaveAction isActive={saved} onClick={() => setSaved(!saved)} />
               </div>
             </div>
           </div>

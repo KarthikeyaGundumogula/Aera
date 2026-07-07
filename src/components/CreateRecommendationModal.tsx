@@ -218,6 +218,14 @@ export function CreateRecommendationModal({
                           <Search className="w-5 h-5 text-white/80 mb-2" />
                           <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white">Change</span>
                         </div>
+                        
+                        {score >= 4200 && (
+                          <div className="absolute top-2 left-2 z-20 -rotate-[8deg] pointer-events-none opacity-95 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]">
+                            <div className="inline-block text-[7px] font-mono font-black uppercase tracking-[0.2em] text-[#EF4444] bg-[#050302]/40 border-[1.5px] border-[#EF4444]/90 px-1.5 py-0.5 rounded-[2px] backdrop-blur-md whitespace-nowrap">
+                              PEAK EXP.
+                            </div>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="absolute inset-0 border border-dashed border-white/20 bg-white/[0.02] group-hover:bg-white/[0.04] group-hover:border-white/30 transition-colors flex flex-col items-center justify-center gap-3">
@@ -283,8 +291,8 @@ export function CreateRecommendationModal({
 
               {/* Submit row */}
               <div className="px-6 py-4 flex items-center justify-between gap-3">
-                <p className="text-[10px] text-white/15 leading-snug max-w-[55%]">
-                  Visible to your community. Permanent.
+                <p className="text-[10px] text-white/20 leading-snug max-w-[60%]">
+                  Surge scales from 0 to ∞, with 1000 as your starting peak. The % is relative to your peak.
                 </p>
 
                 <AnimatePresence mode="wait">

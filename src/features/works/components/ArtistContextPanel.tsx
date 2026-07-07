@@ -5,6 +5,7 @@ import { GRID_ITEMS, ARTISTS_MOCK } from "../../../mock";
 import { buildMobileClusters } from "../../theatre/engine/mobileClusterBuilder";
 import { MobileClusterView } from "../../theatre/components/mobile/MobileClusterView";
 import { FeedContext } from "../../../context/FeedContext";
+import { SectionHeader } from "../../../components/SectionHeader";
 
 interface ArtistContextPanelProps {
   item: TheatreItem;
@@ -39,19 +40,17 @@ export function ArtistContextPanel({ item }: ArtistContextPanelProps) {
     <div className="w-full h-full bg-[#070706] lg:border-l lg:border-white/[0.04]">
       <div className="flex flex-col h-full lg:h-screen lg:sticky lg:top-0 lg:overflow-y-auto no-scrollbar">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#070706]/90 backdrop-blur-md px-4 sm:px-6 py-5 border-b border-white/[0.04] flex items-center">
-          <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">
-            Works in Theatre
-          </h2>
+        <div className="sticky top-0 z-10 bg-[#070706]/90 backdrop-blur-md px-4 sm:px-6 py-3 flex items-center">
+          <SectionHeader title="More From Artist" />
         </div>
 
-        <div className="p-6 space-y-10 pb-20 lg:pb-10">
+        <div className="pt-2 pb-20 lg:pb-10">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="flex flex-col border border-white/10 rounded-[20px] overflow-hidden bg-black/20">
+            <div className="flex flex-col w-full">
               <FeedContext.Provider value={otherWorksFlat}>
                 {otherWorksClusters.map((cluster) => (
                   <div key={cluster.id} style={{ height: "40dvh" }}>

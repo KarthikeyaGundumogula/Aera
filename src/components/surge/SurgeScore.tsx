@@ -162,7 +162,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
       const ceiledPct = Math.ceil((scoreRef.current / eMax) * 100);
       const newPct = zone === 'left'
         ? Math.max(0, ceiledPct - 1)
-        : Math.min(150, ceiledPct + 1);
+        : ceiledPct + 1;
       const newScore = Math.round((newPct / 100) * eMax);
       scoreRef.current = newScore;
       onChange(newScore);
@@ -201,10 +201,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
     const direction = deltaX < 0 ? -1 : 1;
     const RATE_PER_S = 0.08; // 8% of effectiveMax per second
     const effectiveMax = peak ?? VISUAL_MAX;
-    const newScore = Math.min(
-      effectiveMax * 1.5,
-      Math.max(0, scoreRef.current + direction * RATE_PER_S * effectiveMax * (dt / 1000))
-    );
+    const newScore = Math.max(0, scoreRef.current + direction * RATE_PER_S * effectiveMax * (dt / 1000));
     scoreRef.current = newScore;
     const rounded = Math.round(newScore);
     onChange(rounded);

@@ -9,6 +9,7 @@ interface WallFeedProps {
   posts: WallPost[];
   /** When true, every card is flat (no tilt) with the Foyer amber strip */
   inFoyer?: boolean;
+  themeGradient?: [string, string];
 }
 
 /**
@@ -24,7 +25,7 @@ interface WallFeedProps {
  *   - Tapping any card opens WallSwiper — a full-screen feed-like viewer
  *     where the user can swipe through all wall posts.
  */
-export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false }) => {
+export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, themeGradient }) => {
   const [swiperIndex, setSwiperIndex] = useState<number | null>(null);
 
   // O(1) lookup maps — resolved once, never re-computed unless posts change
@@ -69,7 +70,7 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false }) =>
   return (
     <>
       {/* ── Responsive Layout: Twitter-like feed on mobile, Masonry on desktop ── */}
-      <div className="flex flex-col divide-y divide-white/[0.08] md:divide-none md:block md:columns-3 lg:columns-4 md:gap-4">
+      <div className="flex flex-col md:block md:columns-3 lg:columns-4 md:gap-4">
         {posts.map((post, index) => {
           const resolvedWork = post.pinnedWorkId
             ? worksById[post.pinnedWorkId]
@@ -82,27 +83,30 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false }) =>
           const isFullWidth = post.type === "LINE";
 
           return (
-            <motion.div
-              key={post.id}
-              className={`break-inside-avoid md:mb-4 ${
-                isFullWidth ? "md:column-span-all" : ""
-              }`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.22,
-                ease: [0.23, 1, 0.32, 1],
-                delay: index * 0.04,
-              }}
-            >
-              <WallPostCard
-                post={post}
+            <React.Fragment key={post.id}>
+              {index > 0 && <div className="mx-8 md:hidden h-px bg-white/[0.08]" />}
+              <motion.div
+                className={`break-inside-avoid md:mb-4 ${
+                  isFullWidth ? "md:column-span-all" : ""
+                }`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.22,
+                  ease: [0.23, 1, 0.32, 1],
+                  delay: index * 0.04,
+                }}
+              >
+                <WallPostCard
+                  post={post}
                 resolvedWork={resolvedWork}
                 resolvedOriginal={resolvedOriginal}
                 inFoyer={inFoyer}
+                themeGradient={themeGradient}
                 onClick={() => openSwiper(index)}
               />
             </motion.div>
+            </React.Fragment>
           );
         })}
       </div>
