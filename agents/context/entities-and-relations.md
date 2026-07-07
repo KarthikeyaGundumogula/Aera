@@ -14,7 +14,8 @@ This document maps out the core entities within FrameHouse, how they interact, a
 The creative outputs of Artists. 
 - **Types**: Edits (video), Posters (images), Scripts (visual storyboards).
 - **Distribution**: Works are pushed to the global social feed (The Hall) and the respective Original theatres.
-- **Metrics**: Works receive **Stars** and **Recommendation Scores** (via Resonance Hold).
+- **Metrics**: Works receive **Honours** (formerly Stars, via `HonourIcon`) and **Recommendation Scores** (via Resonance Hold).
+- **Exhibition**: Each Work has a dedicated full-page Exhibition view at `/works/:id`. Three Exhibition types: `EditExhibition`, `PosterExhibition`, `ScriptExhibition`, all built on `ExhibitionFrame`.
 
 ### B. Origins
 The source material (movies, series, music) that inspires Works. Every Work must reference an Origin (Attribution).
@@ -32,3 +33,27 @@ A micro-community space created around themes or movies.
 - **Control**: Any member of the Set can post to the Set Wall.
 - **Format Constraint**: **Lines (pure text) are strictly banned** to prevent toxicity, hate reviews, and mob mentality.
 - **Cards (Visual Reactions)**: All engagement on the Set Wall must happen via **Cards**. These are high-fidelity, cinematic visual templates (using GIFs or beautifully typography-driven stills). This enforces a visual-first dialogue while maintaining the Dark-Luxury aesthetic.
+
+## 4. The Exhibition System
+
+When a user opens a Work, they enter the **Exhibition** — a dedicated full-page cinematic view.
+
+### Layout
+- **Desktop**: Two-column grid. Left = media, Right = `ArtistContextPanel` (380px).
+- **Mobile**: Stacked. Media on top, identity block below, Artist Context Panel scrolls below that.
+
+### `ExhibitionFrame` (shared wrapper)
+All three work types (`EditExhibition`, `PosterExhibition`, `ScriptExhibition`) render inside `ExhibitionFrame`, which provides:
+- Floating `ExhibitionNav` (Back + Share + Originals).
+- YouTube-style identity block: title, artist avatar, artist name, favourite heart, action row (Honour, Pin, Wall, Save).
+- Double-tap Honour mechanic via native touch listener.
+
+### `ArtistContextPanel` (right column)
+A tabbed panel with two views:
+- **The Wall tab**: Artist's curated Lines and Pinned Works (rendered as full media cards).
+- **In Theatre tab**: Other works by the same artist, rendered using the `MobileClusterView` cluster engine (up to 2 clusters).
+
+### `ExhibitionNav` (floating chrome)
+- Back button (top-left).
+- Share button with `navigator.clipboard` + `execCommand` fallback.
+- Originals button (only appears if the work has `originalIds`).
