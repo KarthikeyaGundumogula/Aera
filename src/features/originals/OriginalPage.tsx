@@ -11,6 +11,7 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
 import { ArtistSpotlightGrid } from "../../components/ArtistSpotlightGrid";
 import { OriginalStats } from "./components/OriginalStats";
+import { HeroResonanceSignature } from "./components/HeroResonanceSignature";
 import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
 import { RecentReleasesSection } from "../shared/components/RecentReleasesSection";
@@ -126,17 +127,12 @@ export function OriginalPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
 
           {/* Initial Info Overlay */}
-          <div className="absolute bottom-20 md:bottom-24 left-0 px-8 py-6 w-full max-w-[95vw]">
+          <div className="absolute bottom-20 md:bottom-24 left-0 px-4 sm:px-6 py-6 w-full max-w-[95vw]">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
-                  Original Spotlight
-                </span>
-                <div className="h-px w-8 bg-white/20" />
-              </div>
+
               <h1
                 className="font-black tracking-tighter mb-2 uppercase leading-[0.82] whitespace-pre-wrap drop-shadow-2xl"
                 style={{
@@ -149,9 +145,7 @@ export function OriginalPage() {
               >
                 {original.title}
               </h1>
-              <p className="text-sm md:text-base text-white/80 font-medium leading-relaxed drop-shadow-md mt-4 max-w-2xl">
-                {original.description}
-              </p>
+              <HeroResonanceSignature signature={original.resonanceSignature} />
             </motion.div>
           </div>
         </div>
