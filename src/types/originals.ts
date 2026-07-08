@@ -43,4 +43,10 @@ export interface Original {
   heroHighlights?: TheatreItem[];
   releaseDate?: string;
   genre?: string[];
+  resonanceSignature?: {
+    peakMagnitude: number;
+    normalizedSurgeDensity: number;
+    surgeSpread: "UNIVERSAL" | "DISTINCT" | "POLARIZING";
+    totalSurges?: number;
+  };
 }

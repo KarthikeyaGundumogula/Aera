@@ -6,7 +6,13 @@
     "coverImage": "/posters/og.jpeg",
     "stats": { "presence": 2480, "members": 1620, "releases": 18 },
     "releaseDate": "27-09-2024",
-    "genre": ["Action", "Gangster", "Drama"]
+    "genre": ["Action", "Gangster", "Drama"],
+    "resonanceSignature": {
+      "peakMagnitude": 2100,
+      "normalizedSurgeDensity": 61,
+      "surgeSpread": "DISTINCT",
+      "totalSurges": 12450
+    }
   },
   {
     "id": "rrr-original",
@@ -15,7 +21,13 @@
     "coverImage": "/posters/rrr.jpeg",
     "stats": { "presence": 1500, "members": 2100, "releases": 8 },
     "releaseDate": "25-03-2022",
-    "genre": ["Epic", "Action", "Period Drama"]
+    "genre": ["Epic", "Action", "Period Drama"],
+    "resonanceSignature": {
+      "peakMagnitude": 8400,
+      "normalizedSurgeDensity": 91,
+      "surgeSpread": "POLARIZING",
+      "totalSurges": 89300
+    }
   },
   {
     "id": "kgf-original",
@@ -24,7 +36,13 @@
     "coverImage": "/posters/kgf.jpeg",
     "stats": { "presence": 3000, "members": 4500, "releases": 15 },
     "releaseDate": "14-04-2022",
-    "genre": ["Action", "Crime", "Mass"]
+    "genre": ["Action", "Crime", "Mass"],
+    "resonanceSignature": {
+      "peakMagnitude": 6200,
+      "normalizedSurgeDensity": 83,
+      "surgeSpread": "DISTINCT",
+      "totalSurges": 65400
+    }
   },
   {
     "id": "baahubali-original",
@@ -33,7 +51,13 @@
     "coverImage": "/posters/bahubali.jpeg",
     "stats": { "presence": 842, "members": 1200, "releases": 5 },
     "releaseDate": "10-07-2015",
-    "genre": ["Epic", "Mythology", "Action"]
+    "genre": ["Epic", "Mythology", "Action"],
+    "resonanceSignature": {
+      "peakMagnitude": 7500,
+      "normalizedSurgeDensity": 95,
+      "surgeSpread": "UNIVERSAL",
+      "totalSurges": 120000
+    }
   },
   {
     "id": "vikram-original",
@@ -42,6 +66,12 @@
     "coverImage": "/posters/vikram.jpeg",
     "stats": { "presence": 2100, "members": 2600, "releases": 10 },
     "releaseDate": "03-06-2022",
-    "genre": ["Action", "Thriller", "Crime"]
+    "genre": ["Action", "Thriller", "Crime"],
+    "resonanceSignature": {
+      "peakMagnitude": 4800,
+      "normalizedSurgeDensity": 88,
+      "surgeSpread": "UNIVERSAL",
+      "totalSurges": 45200
+    }
   }
 ]
