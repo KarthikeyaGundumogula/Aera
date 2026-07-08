@@ -8,7 +8,7 @@ import React from "react";
 import { motion } from "motion/react";
 
 /** Radius of the arc in px — must match the parent FAB constants. */
-export const ARC_RADIUS = 110;
+export const ARC_RADIUS = 135;
 
 interface ActionNodeProps {
   icon: React.ReactNode;

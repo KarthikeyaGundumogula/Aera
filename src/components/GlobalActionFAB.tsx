@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Clapperboard, X, BookPlus, Sparkles } from "lucide-react";
+import { Clapperboard, X, BookPlus, Sparkles, Quote } from "lucide-react";
 import { RecommendationModal } from "./RecommendationModal";
 import { CreateRecommendationModal } from "./CreateRecommendationModal";
 import { LibraryEntryModal } from "@/features/library/components/LibraryEntryModal";
+import { PostLineModal } from "./PostLineModal";
 import { ActionNode, ARC_RADIUS } from "./fab/ActionNode";
 import { useRecommendationContext } from "../context/RecommendationContext";
 
@@ -47,6 +48,7 @@ export function GlobalActionFAB() {
 
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [isCreateRecOpen, setIsCreateRecOpen] = useState(false);
+  const [isPostLineOpen, setIsPostLineOpen] = useState(false);
   const [isSnapping, setIsSnapping] = useState(false);
   const [flashVisible, setFlashVisible] = useState(false);
   const [showHint, setShowHint] = useState(true);
@@ -185,7 +187,13 @@ export function GlobalActionFAB() {
       window.removeEventListener("keydown", handleInteraction);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
-  }, [isMenuOpen, isModalOpen, isLibraryModalOpen, isCreateRecOpen]);
+  }, [
+    isMenuOpen,
+    isModalOpen,
+    isLibraryModalOpen,
+    isCreateRecOpen,
+    isPostLineOpen,
+  ]);
 
   // Listen for global event to open Library Modal
   useEffect(() => {
@@ -409,9 +417,19 @@ export function GlobalActionFAB() {
                 }}
               />
               <ActionNode
+                icon={<Quote className="w-5 h-5" strokeWidth={2.5} />}
+                label="Post a Line"
+                angleDeg={-150}
+                delay={0.025}
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsPostLineOpen(true);
+                }}
+              />
+              <ActionNode
                 icon={<BookPlus className="w-5 h-5" strokeWidth={2.5} />}
                 label="Add to Library"
-                angleDeg={-165}
+                angleDeg={-180}
                 delay={0.05}
                 onClick={() => {
                   setIsMenuOpen(false);
@@ -557,6 +575,11 @@ export function GlobalActionFAB() {
       <LibraryEntryModal
         isOpen={isLibraryModalOpen}
         onClose={() => setIsLibraryModalOpen(false)}
+      />
+
+      <PostLineModal
+        isOpen={isPostLineOpen}
+        onClose={() => setIsPostLineOpen(false)}
       />
     </>
   );

@@ -266,7 +266,7 @@ interface WallPostCardProps {
 }
 
 export const WallPostCard = memo<WallPostCardProps>(
-  ({ post, resolvedWork, resolvedOriginal, inFoyer = false, className, onClick }) => {
+  ({ post, resolvedWork, resolvedOriginal, inFoyer = false, themeGradient, className, onClick }) => {
     const isMobile = useMediaQuery();
 
     const pinnedImage: string | undefined =

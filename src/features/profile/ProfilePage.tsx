@@ -318,7 +318,7 @@ const ProfilePage: React.FC = () => {
               {(
                 [
                   "THEATRE",
-                  ...(profile?.type === "ARTIST" ? (["WALL"] as const) : []),
+                  "WALL",
                   "LIBRARY",
                   "RECOMMENDATIONS",
                 ] as ("THEATRE" | "WALL" | "LIBRARY" | "RECOMMENDATIONS")[]
