@@ -230,9 +230,6 @@ export function CenterFeedLayout() {
       <DesktopHeader />
 
       <main className="pt-[61px] px-0 w-full max-w-full overflow-x-hidden">
-        {/* CENTER QUOTES */}
-        <CenterQuotes />
-
         {/* HERO - UPCOMING RELEASES */}
         <section className="px-0 mb-0">
           <div className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-black">
@@ -350,6 +347,7 @@ export function CenterFeedLayout() {
           </div>
         </section>
 
+
         <RollingTicker />
 
         {/* RECENT RELEASES */}
@@ -362,8 +360,11 @@ export function CenterFeedLayout() {
           artists={globalArtistStripItems}
           rows={2}
           variant="featured"
-          containerClassName="mt-4 mb-12"
+          containerClassName="mt-4 mb-4"
         />
+
+        {/* CENTER QUOTES */}
+        <CenterQuotes />
 
         {/* FESTIVALS */}
         <section className="mb-12">

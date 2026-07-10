@@ -47,13 +47,15 @@ export const RecommendationCard = memo(function RecommendationCard({
   const textRef = useRef<HTMLParagraphElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canExpand, setCanExpand] = useState(false);
+  const [extraSpaceNeeded, setExtraSpaceNeeded] = useState(0);
 
   useEffect(() => {
     const checkOverflow = () => {
       if (textRef.current && !notesExpanded) {
-        setCanExpand(
-          textRef.current.scrollHeight > textRef.current.clientHeight,
-        );
+        const scrollHeight = textRef.current.scrollHeight;
+        const clientHeight = textRef.current.clientHeight;
+        setCanExpand(scrollHeight > clientHeight);
+        setExtraSpaceNeeded(scrollHeight - clientHeight);
       }
     };
     checkOverflow();
@@ -112,9 +114,10 @@ export const RecommendationCard = memo(function RecommendationCard({
   const isHighestRated = rec.score >= highestScore;
   const ratio = rec.score / highestScore;
 
-  const isLongText = rec.notes.length >= 280;
-  const hideScoreRow = notesExpanded && rec.notes.length >= 180;
-  const hideArtistRow = notesExpanded && isLongText;
+  // Hiding the score row frees up ~43px of space (row height + gap + padding adjustments).
+  // Hiding the artist row frees up an additional ~28px of space.
+  const hideScoreRow = notesExpanded && extraSpaceNeeded > 5;
+  const hideArtistRow = notesExpanded && extraSpaceNeeded > 43;
 
   return (
     <div
@@ -346,9 +349,9 @@ export const RecommendationCard = memo(function RecommendationCard({
             >
               {/* Artist row: avatar + name + stats + artistLiked heart */}
               <motion.div
-                style={{ transformOrigin: "top", overflow: "hidden" }}
+                style={{ overflow: "hidden" }}
                 animate={{
-                  scaleY: hideArtistRow ? 0 : 1,
+                  height: hideArtistRow ? 0 : "auto",
                   opacity: hideArtistRow ? 0 : 1,
                   filter: hideArtistRow ? "blur(4px)" : "blur(0px)",
                 }}
@@ -410,19 +413,19 @@ export const RecommendationCard = memo(function RecommendationCard({
 
               {/* Partition between artist info and score+user-favorite */}
               <motion.div
-                style={{ transformOrigin: "top", overflow: "hidden" }}
+                style={{ overflow: "hidden" }}
                 animate={{
-                  scaleY: hideScoreRow ? 0 : 1,
+                  height: hideScoreRow ? 0 : 1,
                   opacity: hideScoreRow ? 0 : 1,
                 }}
-                className="h-px w-full bg-white/[0.05]"
+                className="w-full bg-white/[0.05]"
               />
 
               {/* Score + Favorite Row — matched to 28px artist row height */}
               <motion.div
-                style={{ transformOrigin: "top", overflow: "hidden" }}
+                style={{ overflow: "hidden" }}
                 animate={{
-                  scaleY: hideScoreRow ? 0 : 1,
+                  height: hideScoreRow ? 0 : "auto",
                   opacity: hideScoreRow ? 0 : 1,
                   filter: hideScoreRow ? "blur(4px)" : "blur(0px)",
                 }}
