@@ -11,7 +11,6 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
 import { ArtistSpotlightGrid } from "../../components/ArtistSpotlightGrid";
 import { OriginalStats } from "./components/OriginalStats";
-import { HeroResonanceSignature } from "./components/HeroResonanceSignature";
 import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
 import { RecentReleasesSection } from "../shared/components/RecentReleasesSection";
@@ -145,7 +144,6 @@ export function OriginalPage() {
               >
                 {original.title}
               </h1>
-              <HeroResonanceSignature signature={original.resonanceSignature} />
             </motion.div>
           </div>
         </div>
@@ -181,7 +179,7 @@ export function OriginalPage() {
           }
         />
 
-        <OriginalStats stats={original.stats} />
+        <OriginalStats stats={original.stats} signature={original.resonanceSignature} />
       </motion.div>
 
       {/* RECENT RELEASES */}

@@ -53,6 +53,15 @@ export const HeroResonanceSignature = memo(
           </div>
           <div className="uppercase font-bold">{surgeSpread}</div>
         </div>
+
+        {/* Separating Line & Label */}
+        <div className="mt-3 pt-3 border-t border-white/10 max-w-sm">
+          <p className="text-[10px] sm:text-xs text-white/60 italic font-serif leading-relaxed">
+            {surgeSpread === "POLARIZING" && `This film has the power to move someone to extraordinary heights. It's not for everyone, but for those it's for, it's everything.`}
+            {surgeSpread === "DISTINCT" && `This film has a clear identity. Not for everyone, but deeply resonates with its specific audience.`}
+            {surgeSpread === "UNIVERSAL" && `A reliable masterpiece. Almost everyone who watches this has a deeply positive experience.`}
+          </p>
+        </div>
       </motion.div>
     );
   },

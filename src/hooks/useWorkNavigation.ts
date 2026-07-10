@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { TheatreItem } from "../types";
 
 /**
@@ -6,14 +6,19 @@ import { TheatreItem } from "../types";
  *
  * Navigates to /works/:id as a standard full-page push.
  * The item is passed in state for instant rendering before any data fetch.
- * No backgroundLocation — the Exhibition Screen is the destination, not an overlay.
+ * If already inside a work (a tunnel), it replaces the history entry so the back button
+ * escapes directly back to the original entry point (e.g. Home or Search).
  */
 export function useWorkNavigation() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const openWork = (item: TheatreItem) => {
+    const isAlreadyInTunnel = location.pathname.startsWith("/works/");
+    
     navigate(`/works/${item.id}`, {
       state: { item },
+      replace: isAlreadyInTunnel,
     });
   };
 

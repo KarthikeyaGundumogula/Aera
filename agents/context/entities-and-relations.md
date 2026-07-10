@@ -14,7 +14,7 @@ This document maps out the core entities within FrameHouse, how they interact, a
 The creative outputs of Artists. 
 - **Types**: Edits (video), Posters (images), Scripts (visual storyboards).
 - **Distribution**: Works are pushed to the global social feed (The Hall) and the respective Original theatres.
-- **Metrics**: Works receive **Honours** (formerly Stars, via `HonourIcon`) and **Recommendation Scores** (via Resonance Hold).
+- **Metrics**: Works receive **Stars** (via premium `gold-metal` gradient) and **Recommendation Scores** (via Resonance Hold).
 - **Exhibition**: Each Work has a dedicated full-page Exhibition view at `/works/:id`. Three Exhibition types: `EditExhibition`, `PosterExhibition`, `ScriptExhibition`, all built on `ExhibitionFrame`.
 
 ### B. Origins
@@ -45,8 +45,8 @@ When a user opens a Work, they enter the **Exhibition** — a dedicated full-pag
 ### `ExhibitionFrame` (shared wrapper)
 All three work types (`EditExhibition`, `PosterExhibition`, `ScriptExhibition`) render inside `ExhibitionFrame`, which provides:
 - Floating `ExhibitionNav` (Back + Share + Originals).
-- YouTube-style identity block: title, artist avatar, artist name, favourite heart, action row (Honour, Pin, Wall, Save).
-- Double-tap Honour mechanic via native touch listener.
+- YouTube-style identity block: title, artist avatar, artist name, favourite heart, action row (Star, Pin, Save).
+- Double-tap Star mechanic via native touch listener.
 
 ### `ArtistContextPanel` (right column)
 A tabbed panel with two views:

@@ -41,11 +41,11 @@ Artists create from existing media called **Works**:
 
 FrameHouse operates on meaningful, cinematic interactions rather than generic engagement metrics.
 
-### ⭐ Honour (formerly Stars)
-- The primary interaction metric for Works, renamed to **Honour** for brand alignment.
-- Rendered via the custom `HonourIcon` (a bespoke star-like glyph, **not** a standard star).
-- Double-tapping anywhere on the Exhibition frame triggers an Instagram-style Honour flash animation (`honour-flash` keyframe). This is implemented via a native `touchend` event listener on the outer `frameRef` to capture taps *above* iframes.
-- Tapping the Honour button directly in the identity block toggles the state (toggling is allowed, unlike Instagram).
+### ⭐ Star
+- The primary interaction metric for Works, changed to **Star** but elevated visually.
+- Rendered via a bespoke SVG `<linearGradient id="gold-metal">` which gives it a physical, premium metallic sheen.
+- Double-tapping anywhere on the Exhibition frame triggers a Star flash animation. This is implemented via a native `touchend` event listener.
+- Tapping the Star button directly in the identity block toggles the state.
 
 ### 📌 Pin to Wall
 - Users can pin any Work to their personal Wall directly from the Exhibition view.
@@ -173,9 +173,9 @@ When a user opens a Work, they enter the **Exhibition** — a full-page, two-col
 The **primary layout wrapper** for all work types. It provides:
 - **Two-column desktop grid**: `lg:grid-cols-[minmax(0,1fr)_380px]`. Left column = media, right column = `ArtistContextPanel`.
 - **`ExhibitionNav`** floating at top-left/right for Back, Share, and Originals.
-- **YouTube-style Identity Block** below the media: shows work `<h1>` title, Artist avatar (rounded-xl), Artist name, Favourite heart, and the action row (Honour, Pin, Save).
-- **Double-tap Honour**: Implemented via a native `touchend` event listener (`lastTapRef` for delta timing). Triggers `doubleTapFlash` state which renders the `HonourIcon` flash animation.
-- **`MediaSlotContext`**: Passes `isHonoured`, `honouring`, `doubleTapFlash`, `triggerDoubleTap` down to the media slot render prop.
+- **YouTube-style Identity Block** below the media: shows work `<h1>` title, Artist avatar (rounded-xl), Artist name, Favourite heart, and the action row (Star, Pin, Save).
+- **Double-tap Star**: Implemented via a native `touchend` event listener (`lastTapRef` for delta timing). Triggers `doubleTapFlash` state which renders the Star flash animation.
+- **`MediaSlotContext`**: Passes `isStarred`, `staring`, `doubleTapFlash`, `triggerDoubleTap` down to the media slot render prop.
 - **`showIdentityBlock`** prop (default `true`): allows child exhibitions to hide it if they manage it themselves.
 
 #### `ExhibitionNav` (`src/features/works/components/ExhibitionNav.tsx`)
@@ -211,10 +211,9 @@ The right-column panel (380px wide on desktop, full-width stacked below on mobil
 - **No Circle Containers**: Buttons, avatars, nav buttons, and tags use `rounded-xl` or `rounded-2xl`. `rounded-full` is ONLY used for the Floating Action Button (FAB).
 
 ### Modal & UX Mechanics:
-- **Exhibition is page-native, not modal-based**: Works open as full routes (`/works/:id`), not floating overlays, for direct linking and shareability.
-- **`EditFrame` (Legacy modal)**: `src/features/shared/modals/EditFrame.tsx` is still used in some contexts (e.g., Hall feed quick-view). It has its own double-tap honour and share logic.
+- **Exhibition is page-native (The Modal Architecture is Dead)**: Works open as full routes (`/works/:id`), providing an immersive edge-to-edge cinematic theatre.
 - **3D Flip Mechanic**: Script pages feature a physical CSS 3D card flip to reveal the caption/story on the back.
-- **Universal Scroll Resilience (iOS Fix)**: When modals open, the `body` is instantly set to `position: fixed` with its top offset to `-window.scrollY` to prevent momentum scrolling bleed-through on mobile Safari.
+- **Universal Scroll Resilience**: Legacy mobile iOS scroll hacks were phased out as the app embraced true native pages instead of floating overlays.
 
 ---
 
@@ -246,7 +245,7 @@ Each Original applies a specific background, color palette, and typography.
 - **Organized Inconsistency**: Deliberate variation in layout patterns and text labels that feels curated, not random. E.g., text labels on script controls remain on mobile for clarity despite space constraints.
 
 ### Interaction Philosophy:
-- **Double-tap Honour** mirrors Instagram's double-tap like but is branded as Honour — a more deliberate, respectful gesture.
+- **Double-tap Star** mirrors Instagram's double-tap like but utilizes the premium gold-metal gradient — a more deliberate, visually striking gesture.
 - **No Circle Containers**: All UI elements (buttons, avatars, tags, nav buttons) use squircle shapes (`rounded-xl`, `rounded-2xl`) instead of perfect circles. Only the FAB is exempt.
 
 ---

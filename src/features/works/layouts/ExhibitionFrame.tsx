@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { StarAction } from "../../../components/actions/StarAction";
-import { PinAction } from "../../../components/actions/PinAction";
+import { CameraAction } from "../../../components/actions/CameraAction";
 import { SaveAction } from "../../../components/actions/SaveAction";
+import { QuoteModal } from "../../../components/QuoteModal";
 import { TheatreItem, OriginalArtist } from "../../../types";
 import { ExhibitionNav } from "../components/ExhibitionNav";
 import { ArtistProfile } from "../../shared/profile";
@@ -75,6 +76,8 @@ export function ExhibitionFrame({
   const [pinned, setPinned] = useState(false);
   const [saved, setSaved] = useState(false);
   const [doubleTapFlash, setDoubleTapFlash] = useState(false);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const lastTapRef = useRef(0);
   const starTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const flashTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -120,6 +123,15 @@ export function ExhibitionFrame({
     lastTapRef.current = now;
   };
 
+  const handlePin = () => {
+    const next = !pinned;
+    setPinned(next);
+    if (next) {
+      setToastMsg("Pinned to Wall");
+      setTimeout(() => setToastMsg(null), 3000);
+    }
+  };
+
   const followersCount = generateStat(item.artist || item.id, 50000, 1000);
   const starsCount = generateStat(item.id, 10000, 500);
   const pinsCount = generateStat(item.id, 5000, 50);
@@ -139,7 +151,7 @@ export function ExhibitionFrame({
     <div className="min-h-screen bg-[#070706] text-white overflow-x-hidden">
 
       {/* ── Two-column grid: media left, artist context right ─────────────── */}
-      <div className="relative z-10 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px] min-h-screen">
+      <main className="relative z-10 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px] min-h-screen">
 
         {/* Left column ─────────────────────────────────────────────────────── */}
         <div className="flex flex-col relative">
@@ -163,9 +175,9 @@ export function ExhibitionFrame({
               >
                 {/* Title */}
                 <h1
-                  className={`text-xl sm:text-2xl font-bold leading-snug tracking-tight transition-colors duration-500 ${
-                    isStarred ? "text-amber-400/80" : "text-white/90"
-                  }`}
+                  className="text-xl sm:text-2xl font-bold leading-snug tracking-tight text-white/90"
+                  onPointerDown={triggerDoubleTap}
+                  style={{ touchAction: "manipulation", userSelect: "none" }}
                 >
                   {item.title || "Untitled"}
                 </h1>
@@ -222,9 +234,11 @@ export function ExhibitionFrame({
                       isStaring={staring}
                     />
                     
-                    <PinAction
+                    <CameraAction
                       isActive={pinned}
-                      onClick={() => setPinned((p) => !p)}
+                      isPinned={pinned}
+                      onPin={handlePin}
+                      onQuote={() => setIsQuoteModalOpen(true)}
                       count={formatStat(pinned ? pinsCount + 1 : pinsCount)}
                       variant="exhibition"
                     />
@@ -244,9 +258,21 @@ export function ExhibitionFrame({
 
         {/* Right column — Artist context ────────────────────────────────── */}
         <ArtistContextPanel item={item} />
-      </div>
+      </main>
 
-      <ArtistProfile artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
+      {selectedArtist && (
+        <ArtistProfile artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
+      )}
+
+      <QuoteModal 
+        isOpen={isQuoteModalOpen} 
+        onClose={() => setIsQuoteModalOpen(false)} 
+        item={item} 
+      />
+
+      <AnimatePresence>
+        {toastMsg && <CinematicToast message={toastMsg} />}
+      </AnimatePresence>
     </div>
   );
 }
