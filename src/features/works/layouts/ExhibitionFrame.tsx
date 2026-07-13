@@ -8,7 +8,8 @@ import { TheatreItem, OriginalArtist } from "../../../types";
 import { ExhibitionNav } from "../components/ExhibitionNav";
 import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
-import { Star, Pin, Bookmark, Heart } from "lucide-react";
+import { Pin, Bookmark, Heart } from "lucide-react";
+import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { ARTISTS_MOCK } from "../../../mock";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 
@@ -104,7 +105,7 @@ export function ExhibitionFrame({
     setStaring(true);
     setDoubleTapFlash(true);
     starTimeout.current = setTimeout(() => setStaring(false), 420);
-    flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 600);
+    flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 1000);
   };
 
   const handleStarBtn = () => {
@@ -160,8 +161,48 @@ export function ExhibitionFrame({
           <div className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-[60px] pb-8 sm:pt-[64px]">
 
             {/* Media container — max-width controlled per type */}
-            <div style={{ width: "100%", maxWidth: maxW }}>
+            <div style={{ width: "100%", maxWidth: maxW }} className="relative">
               {mediaSlot(mediaCtx)}
+
+              {/* Centralized Double-Tap Flash (5 Staggered Stars) */}
+              <AnimatePresence>
+                {doubleTapFlash && (
+                  <div className="absolute inset-x-0 bottom-12 flex items-center justify-center gap-3 sm:gap-4 pointer-events-none z-50">
+                    <svg width="0" height="0" className="absolute">
+                      <defs>
+                        <linearGradient id="gold-metal-flash" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#FFF7D6" />
+                          <stop offset="25%" stopColor="#FDE047" />
+                          <stop offset="50%" stopColor="#D97706" />
+                          <stop offset="75%" stopColor="#FBBF24" />
+                          <stop offset="100%" stopColor="#FFF7D6" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)", y: -10 }}
+                        transition={{ 
+                          duration: 0.4, 
+                          ease: [0.23, 1, 0.32, 1],
+                          delay: i * 0.05 
+                        }}
+                      >
+                        <Star 
+                          size={32} 
+                          strokeWidth={1.5} 
+                          stroke="url(#gold-metal-flash)"
+                          fill="url(#gold-metal-flash)"
+                          className="drop-shadow-[0_0_24px_rgba(255,215,0,0.5)] opacity-95" 
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* ── YouTube-style identity block ─────────────────────────────── */}

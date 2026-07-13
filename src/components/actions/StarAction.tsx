@@ -1,5 +1,5 @@
 import React from "react";
-import { Star } from "lucide-react";
+import { GroupStar as Star } from "../icons/GroupStar";
 import { ActionProps, getActionClasses, handleActionClick } from "./utils";
 
 export const StarAction: React.FC<ActionProps & { isStaring?: boolean }> = ({ 

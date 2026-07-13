@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { RotateCw, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { TheatreItem } from "../../../types";
 import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
 
@@ -67,37 +67,6 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
           onPointerDown={triggerDoubleTap}
           style={{ overscrollBehavior: "contain", touchAction: "manipulation" }}
         >
-          {/* Double-tap honour flash */}
-          <AnimatePresence>
-            {doubleTapFlash && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotate: -15 }}
-                animate={{ opacity: 1, scale: 1.1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 1.4, filter: "blur(10px)" }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 flex items-center justify-center pointer-events-none z-50"
-              >
-                <svg width="0" height="0" className="absolute">
-                  <defs>
-                    <linearGradient id="gold-metal-flash" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FFF7D6" />
-                      <stop offset="25%" stopColor="#FDE047" />
-                      <stop offset="50%" stopColor="#D97706" />
-                      <stop offset="75%" stopColor="#FBBF24" />
-                      <stop offset="100%" stopColor="#FFF7D6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <Star 
-                  size={80} 
-                  strokeWidth={1} 
-                  stroke="url(#gold-metal-flash)"
-                  fill="url(#gold-metal-flash)"
-                  className="drop-shadow-[0_0_32px_rgba(255,215,0,0.4)] opacity-90" 
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
           {/* Controls row: page counter + Story/Visuals toggle (Hidden on mobile) */}
           <div className="hidden sm:flex items-center justify-between pb-0">
             <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/25">

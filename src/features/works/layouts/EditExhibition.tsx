@@ -5,7 +5,6 @@ import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
-import { Star } from "lucide-react";
 
 interface EditExhibitionProps {
   item: TheatreItem;
@@ -99,38 +98,6 @@ export function EditExhibition({ item }: EditExhibitionProps) {
               <div ref={twitterRef} className="w-full max-w-[540px]" />
             </div>
           )}
-
-          {/* Double-tap honour flash */}
-          <AnimatePresence>
-            {doubleTapFlash && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotate: -15 }}
-                animate={{ opacity: 1, scale: 1.1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 1.4, filter: "blur(10px)" }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
-              >
-                <svg width="0" height="0" className="absolute">
-                  <defs>
-                    <linearGradient id="gold-metal-flash" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FFF7D6" />
-                      <stop offset="25%" stopColor="#FDE047" />
-                      <stop offset="50%" stopColor="#D97706" />
-                      <stop offset="75%" stopColor="#FBBF24" />
-                      <stop offset="100%" stopColor="#FFF7D6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <Star 
-                  size={72} 
-                  strokeWidth={1} 
-                  stroke="url(#gold-metal-flash)"
-                  fill="url(#gold-metal-flash)"
-                  className="drop-shadow-[0_0_32px_rgba(255,215,0,0.4)] opacity-90" 
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
       )}
     />
