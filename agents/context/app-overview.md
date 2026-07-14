@@ -23,7 +23,7 @@ Artists create from existing media called **Works**:
 - alternate perspectives
 - symbolic expressions
 
-### 📝 Theories / Scripts
+### 📝 Theories / Storyboards
 - visual explainers
 - narrative expansions
 - cinematic storyboard library (up to 10 images)
@@ -93,9 +93,10 @@ A dedicated interaction layer for curating Works and Originals.
 A highly curated, persistent "moodboard" or exhibition space on an Artist's profile.
 - **Post Types**:
   1. `LINE` - Pure text updates. Spans full-width in the masonry layout for breathing room.
-  2. `PIN_WORK` - A pinned TheatreItem (Edit/Poster/Script) with an optional attached Line.
+  2. `PIN_WORK` - A pinned TheatreItem (Edit/Poster/Storyboard) with an optional attached Line.
   3. `PIN_ORIGINAL` - A pinned Original movie/series with an optional attached Line.
-- **Visual Mechanics**: Pinned posts feature a deterministic physical tilt (`getTiltDegrees`) to feel tangibly pinned to a board. Tapping any post opens a full-screen `WallSwiper` to view the feed immersively.
+  4. `RECOMMENDATION` - An embedded recommendation card with an optional attached quote.
+- **Visual Mechanics**: Wall cards are highly responsive—flat and edge-to-edge on mobile for a Twitter-style feed, and physical rounded cards with shadows on desktop. Tapping any post opens a full-screen `WallSwiper`.
 - **Distribution**: Wall posts are **NOT** broadcasted globally. They only go to the "Foyer" of users who have explicitly *Favorited* the Artist, creating an intimate, high-trust loop.
 
 ---
@@ -147,14 +148,14 @@ The Theatre is a full-screen, immersive, dark-mode grid. Works are assembled int
 ### Cluster Engine (Desktop):
 - **`buildClusters(works, "flow")`** in `src/features/theatre/engine/clusterBuilder.ts`.
 - Clusters use a 16×8 grid template.
-- Rules: max 2 edits per cluster, at least 1 theory/script for breathing space.
+- Rules: max 2 edits per cluster, at least 1 theory/storyboard for breathing space.
 - Rendered by `StaticDesktopCluster` → `DesktopCanvasCard`.
 
 ### Cluster Engine (Mobile):
 - **`buildMobileClusters(works)`** in `src/features/theatre/engine/mobileClusterBuilder.ts`.
 - Each cluster is fixed at `40dvh` height. Templates A–E provide asymmetric, visually rhythmic layouts.
 - Rendered by `MobileClusterView` → `MobileCard`.
-- Each card renders the appropriate work component: `EditWork`, `PosterWork`, `ScriptWork`, or `RecommendationWork`.
+- Each card renders the appropriate work component: `EditWork`, `PosterWork`, `StoryboardWork`, or `RecommendationWork`.
 - The `FeedContext` provides the flat list of all items to child cards for sequential navigation.
 
 ### UnifiedTheatre (`src/features/theatre/components/UnifiedTheatre.tsx`):
@@ -188,7 +189,7 @@ The **primary layout wrapper** for all work types. It provides:
 #### Work-Specific Exhibitions:
 - **`EditExhibition`** (`src/features/works/layouts/EditExhibition.tsx`): Renders an iframe embed (YouTube/Twitter) as the media slot inside `ExhibitionFrame`.
 - **`PosterExhibition`** (`src/features/works/layouts/PosterExhibition.tsx`): Renders the full-res poster image as the media slot.
-- **`ScriptExhibition`** (`src/features/works/layouts/ScriptExhibition.tsx`): A 3D flip-card paginated viewer (up to 10 pages/images). The card flips to reveal captions. Page navigation via swipe (mobile) or chevron buttons (desktop). Mobile shows page counter + Story/Visuals toggle in the bottom identity row; desktop shows them above the card.
+- **`StoryboardExhibition`** (`src/features/works/layouts/StoryboardExhibition.tsx`): A cinematic paginated viewer (up to 10 images). Instead of a 3D card flip, it uses a premium frosted glass (`backdrop-blur-2xl`) overlay to display the story/caption text on top of the image when toggling between "Visuals" and "Story". Page navigation via swipe (mobile) or chevron buttons (desktop).
 
 ---
 
@@ -212,7 +213,7 @@ The right-column panel (380px wide on desktop, full-width stacked below on mobil
 
 ### Modal & UX Mechanics:
 - **Exhibition is page-native (The Modal Architecture is Dead)**: Works open as full routes (`/works/:id`), providing an immersive edge-to-edge cinematic theatre.
-- **3D Flip Mechanic**: Script pages feature a physical CSS 3D card flip to reveal the caption/story on the back.
+- **Storyboard Reading Mechanic**: Storyboards feature a frosted glass (`backdrop-blur-2xl`) overlay rather than a 3D flip, ensuring text remains readable while keeping the underlying cinematic frame visible.
 - **Universal Scroll Resilience**: Legacy mobile iOS scroll hacks were phased out as the app embraced true native pages instead of floating overlays.
 
 ---
@@ -242,7 +243,7 @@ Each Original applies a specific background, color palette, and typography.
 
 ### Visual Philosophy:
 - Structured chaos, cinematic rhythm, intentional silence
-- **Organized Inconsistency**: Deliberate variation in layout patterns and text labels that feels curated, not random. E.g., text labels on script controls remain on mobile for clarity despite space constraints.
+- **Organized Inconsistency**: Deliberate variation in layout patterns and text labels that feels curated, not random. E.g., text labels on storyboard controls remain on mobile for clarity despite space constraints.
 
 ### Interaction Philosophy:
 - **Double-tap Star** mirrors Instagram's double-tap like but utilizes the premium gold-metal gradient — a more deliberate, visually striking gesture.

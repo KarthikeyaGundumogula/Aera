@@ -4,7 +4,7 @@ import { RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { TheatreItem } from "../../../types";
 import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
 
-interface ScriptExhibitionProps {
+interface StoryboardExhibitionProps {
   item: TheatreItem;
 }
 
@@ -22,10 +22,10 @@ const FALLBACK_CAPTIONS = [
 ];
 
 /**
- * ScriptExhibition — wraps ExhibitionFrame with a 3D flip-card paginated
+ * StoryboardExhibition — wraps ExhibitionFrame with a 3D flip-card paginated
  * viewer as the media slot. All chrome lives in ExhibitionFrame.
  */
-export function ScriptExhibition({ item }: ScriptExhibitionProps) {
+export function StoryboardExhibition({ item }: StoryboardExhibitionProps) {
   const [pageIndex, setPageIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
@@ -58,7 +58,7 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
   return (
     <ExhibitionFrame
       item={item}
-      mediaMaxWidth="min(600px,calc(100vw-2rem))"
+      mediaMaxWidth="min(460px,calc(100vw-2rem))"
       mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
         <div
           className="flex flex-col gap-4 w-full relative"
@@ -82,25 +82,16 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
               style={{ touchAction: "manipulation" }}
             >
               <RotateCw size={8} strokeWidth={2.5} />
-              {isFlipped ? "Visuals" : "Story"}
+              {isFlipped ? "Story" : "Board"}
             </button>
           </div>
 
-          {/* 3D flip-card */}
-          <div className="relative w-full" style={{ perspective: "1100px" }}>
-            <motion.div
-              animate={{ rotateY: isFlipped ? 180 : 0 }}
-              transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="relative w-full"
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              {/* Front: image */}
+          {/* Image & Overlay Container */}
+          <div className="relative w-full flex justify-center">
+            <div className="relative inline-block max-w-full">
+              {/* Base Layer: Image */}
               <div
-                style={{
-                  backfaceVisibility: "hidden",
-                  ...(imgAspect ? { aspectRatio: String(imgAspect) } : {}),
-                }}
-                className="w-full overflow-hidden rounded-none border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+                className="overflow-hidden rounded-none border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] relative flex justify-center"
               >
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -111,7 +102,7 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
                     transition={{ duration: 0.2 }}
                     src={displayPages[pageIndex]}
                     alt={`Page ${pageIndex + 1}`}
-                    className="w-full h-auto block select-none"
+                    className="w-auto h-auto max-w-full max-h-[70vh] lg:max-h-[calc(100vh-320px)] block select-none object-contain"
                     loading="eager"
                     fetchPriority="high"
                     decoding="async"
@@ -128,45 +119,60 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
                 </AnimatePresence>
               </div>
 
-              {/* Back: caption card */}
-              <div
-                className="absolute inset-0 rounded-none overflow-hidden p-5 sm:p-7 flex flex-col gap-4 border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
-                style={{
-                  transform: "rotateY(180deg)",
-                  backfaceVisibility: "hidden",
-                  background: "#0d0d0b",
-                }}
-              >
-                <div className="absolute inset-0 overflow-hidden rounded-none border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
-                  <img
-                    src={displayPages[pageIndex]}
-                    className="absolute inset-0 w-full h-full object-cover object-top blur-3xl scale-110 opacity-15"
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0b]/80 to-[#0d0d0b]" />
-                </div>
+              {/* Overlay Layer: Story Text */}
+              <AnimatePresence>
+                {isFlipped && (
+                  <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="absolute inset-0 z-10 overflow-hidden border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+                  >
+                    {/* The frosted glass background animates its own opacity to fix browser bugs */}
+                    <motion.div 
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: { opacity: 1, transition: { duration: 1.2, ease: [0.25, 1, 0.5, 1] } },
+                        exit: { opacity: 0, transition: { duration: 0.3, ease: "easeIn" } }
+                      }}
+                      style={{ willChange: "transform, opacity" }}
+                      className="absolute inset-0 bg-black/40 backdrop-blur-md" 
+                    />
 
-                <div className="relative z-10 flex items-start justify-between">
-                  <p className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">
-                    Page {String(pageIndex + 1).padStart(2, "0")} /{" "}
-                    {String(total).padStart(2, "0")}
-                  </p>
-                  <RotateCw size={10} className="text-white/15 mt-0.5" />
-                </div>
-                <p className="relative z-10 text-sm sm:text-[15px] font-medium text-white/65 leading-relaxed italic flex-1">
-                  &ldquo;{caption}&rdquo;
-                </p>
-                <div className="relative z-10 flex items-center gap-2">
-                  <div className="h-px flex-1 bg-white/6" />
-                  <span className="text-[7px] font-black uppercase tracking-[0.5em] text-white/12">
-                    Script
-                  </span>
-                  <div className="h-px flex-1 bg-white/6" />
-                </div>
-              </div>
-            </motion.div>
+                    {/* The text container animates independently but perfectly synced */}
+                    <motion.div 
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: { opacity: 1, transition: { duration: 1.2, ease: [0.25, 1, 0.5, 1] } },
+                        exit: { opacity: 0, transition: { duration: 0.3, ease: "easeIn" } }
+                      }}
+                      className="relative z-20 flex flex-col h-full gap-4 p-5 sm:p-7"
+                    >
+                      <div className="flex items-start justify-between">
+                        <p className="text-[8px] font-black uppercase tracking-[0.4em] text-white/40">
+                          Page {String(pageIndex + 1).padStart(2, "0")} /{" "}
+                          {String(total).padStart(2, "0")}
+                        </p>
+                      </div>
+                      
+                      <div className="flex-1 flex flex-col justify-center text-center">
+                        <p className="text-sm sm:text-[15px] font-medium text-white leading-relaxed italic">
+                          &ldquo;{caption}&rdquo;
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 mt-auto">
+                        <div className="h-px flex-1 bg-white/20" />
+                        <span className="text-[7px] font-black uppercase tracking-[0.5em] text-white/40">
+                          Storyboard
+                        </span>
+                        <div className="h-px flex-1 bg-white/20" />
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Pagination */}
@@ -219,7 +225,7 @@ export function ScriptExhibition({ item }: ScriptExhibitionProps) {
                   style={{ touchAction: "manipulation" }}
                 >
                   <RotateCw size={10} strokeWidth={2.5} />
-                  {isFlipped ? "Visuals" : "Story"}
+                  {isFlipped ? "Story" : "board"}
                 </button>
               </div>
             </div>

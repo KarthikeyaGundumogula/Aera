@@ -2,7 +2,7 @@ import { TheatreItem } from "../../../types";
 import {
   isEditWork,
   isPosterWork,
-  isScriptWork,
+  isStoryboardWork,
   isRecommendationWork,
 } from "../../shared/work/types";
 
@@ -37,7 +37,7 @@ type Bucket = {
   vertical: TheatreItem[];
   square: TheatreItem[];
   poster: TheatreItem[];
-  script: TheatreItem[];
+  storyboard: TheatreItem[];
   recommendation: TheatreItem[];
 };
 
@@ -139,7 +139,7 @@ function classify(items: TheatreItem[]): Bucket {
     vertical: [],
     square: [],
     poster: [],
-    script: [],
+    storyboard: [],
     recommendation: [],
   };
 
@@ -151,8 +151,8 @@ function classify(items: TheatreItem[]): Bucket {
       continue;
     }
 
-    if (isScriptWork(item)) {
-      bucket.script.push(item);
+    if (isStoryboardWork(item)) {
+      bucket.storyboard.push(item);
       continue;
     }
 
@@ -199,7 +199,7 @@ function createFallback(id: string, w: number, h: number, rng: () => number): Th
       id: `fallback-script-${id}`,
       title: "THE VOID: A Cinematic Reflection",
       artist: "FRAMEHOUSE SYSTEM",
-      category: "Script" as const,
+      category: "Storyboard" as const,
       image: `https://picsum.photos/seed/${id}/800/1200`,
       aspectRatio: 0.75,
       credits: 1.0,
@@ -275,11 +275,11 @@ function fillCluster(
     }
   }
 
-  // PASS 3: Scripts
+  // PASS 3: Storyboards
   for (const slot of slots) {
     if (slot.item) continue;
     if (slot.w === 3 && slot.h === 3) {
-      const item = bucket.script.shift();
+      const item = bucket.storyboard.shift();
       if (item) {
         slot.item = item;
       }
@@ -307,7 +307,7 @@ function fillCluster(
   // PASS 4: Strategic Duplication
   // Pre-compute fallback pools once — avoids re-spreading large arrays on every empty slot.
   const fallbackEdits = [...masterBucket.imax, ...masterBucket.wide, ...masterBucket.vertical, ...masterBucket.square];
-  const fallbackAll   = [...fallbackEdits, ...masterBucket.poster, ...masterBucket.script];
+  const fallbackAll   = [...fallbackEdits, ...masterBucket.poster, ...masterBucket.storyboard];
 
   const getRandom = (arr: TheatreItem[]) => arr.length > 0 ? arr[Math.floor(rng() * arr.length)] : undefined;
 
@@ -352,7 +352,7 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
     vertical: [...masterBucket.vertical],
     square:   [...masterBucket.square],
     poster:   [...masterBucket.poster],
-    script:   [...masterBucket.script],
+    storyboard:   [...masterBucket.storyboard],
     recommendation: [...masterBucket.recommendation],
   };
 
@@ -372,11 +372,11 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
   shuffle(bucket.poster);
   shuffle(bucket.square);
   shuffle(bucket.vertical);
-  shuffle(bucket.script);
+  shuffle(bucket.storyboard);
 
   const hasContent = (b: Bucket) =>
     b.imax.length > 0 || b.wide.length > 0 || b.vertical.length > 0 ||
-    b.square.length > 0 || b.poster.length > 0 || b.script.length > 0 || 
+    b.square.length > 0 || b.poster.length > 0 || b.storyboard.length > 0 || 
     b.recommendation.length > 0;
 
   const clusterState: ClusterState = { sinceLastRec: 0 };

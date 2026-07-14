@@ -4,7 +4,7 @@ import { MobileSlot } from "../../engine/mobileClusterBuilder";
 import {
   EditWork,
   PosterWork,
-  ScriptWork,
+  StoryboardWork,
   RecommendationWork,
   getWorkKind,
 } from "../../../shared/work";
@@ -34,8 +34,8 @@ export const MobileCard = memo(function MobileCard({
     switch (kind) {
       case "recommendation":
         return <RecommendationWork item={work} variant="theatre-mobile" priority="lazy" />;
-      case "script":
-        return <ScriptWork item={work} variant="theatre-mobile" priority="lazy" />;
+      case "storyboard":
+        return <StoryboardWork item={work} variant="theatre-mobile" priority="lazy" />;
       case "poster":
         return <PosterWork item={work} variant="theatre-mobile" priority="lazy" />;
       default:
@@ -46,7 +46,7 @@ export const MobileCard = memo(function MobileCard({
   return (
     <div
       className={`relative w-full h-full overflow-hidden bg-zinc-900/40 active:scale-[0.98] transition-transform ${
-        kind === "script" ? "bg-[#f4f1ea]" : ""
+        kind === "storyboard" ? "bg-[#f4f1ea]" : ""
       } ${className}`}
     >
       {renderWork(item)}

@@ -4,7 +4,7 @@ import { TheatreItem } from "../../../../types";
 import { ClusterSlot } from "../../engine/clusterBuilder";
 import { EditWork } from "../../../shared/work/EditWork";
 import { PosterWork } from "../../../shared/work/PosterWork";
-import { ScriptWork } from "../../../shared/work/ScriptWork";
+import { StoryboardWork } from "../../../shared/work/StoryboardWork";
 import { RecommendationWork } from "../../../shared/work/RecommendationWork";
 import { getWorkKind } from "../../../shared/work/types";
 
@@ -24,7 +24,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
   item,
 }: DesktopCanvasCardProps) {
   const kind = getWorkKind(item);
-  const isPosterOrScript = kind === "poster" || kind === "script";
+  const isPosterOrScript = kind === "poster" || kind === "storyboard";
 
   const renderWork = (work: TheatreItem) => {
     switch (kind) {
@@ -36,9 +36,9 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
             priority="lazy"
           />
         );
-      case "script":
+      case "storyboard":
         return (
-          <ScriptWork
+          <StoryboardWork
             item={work}
             variant="theatre-desktop"
             priority="lazy"

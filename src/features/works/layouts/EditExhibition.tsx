@@ -36,7 +36,7 @@ export function EditExhibition({ item }: EditExhibitionProps) {
   return (
     <ExhibitionFrame
       item={item}
-      mediaMaxWidth="min(900px,calc(100vw-2rem))"
+      mediaMaxWidth={isTwitter ? "min(550px,calc(100vw-2rem))" : "min(680px,calc(100vw-2rem))"}
       mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
@@ -69,16 +69,22 @@ export function EditExhibition({ item }: EditExhibitionProps) {
           {/* YouTube embed */}
           {isYoutube && (
             <div
-              className={`w-full aspect-video rounded-xl overflow-hidden transition-opacity duration-500 ${
+              className={`relative mx-auto rounded-xl overflow-hidden transition-opacity duration-500 ${
                 isLoaded ? "opacity-100" : "opacity-0"
               }`}
-              style={{ boxShadow: "0 0 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)" }}
+              style={{ 
+                boxShadow: "0 0 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)",
+                aspectRatio: "16/9",
+                width: "100%",
+                maxHeight: "calc(100vh - 320px)",
+                maxWidth: "calc((100vh - 320px) * 16 / 9)"
+              }}
             >
               <iframe
                 ref={iframeRef}
                 id={`yt-${item.id}`}
                 src={youtubeEmbedUrl}
-                className="w-full h-full border-none"
+                className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 title={item.title}

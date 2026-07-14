@@ -67,9 +67,17 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
         <SectionHeader title={title} icon={icon} containerClassName={headerClassName} />
         
         {/* DESKTOP LAYOUT (hidden md:block) */}
-        <div className="hidden md:flex flex-col gap-8">
+        <div className="hidden md:flex flex-col gap-8 max-w-4xl mx-auto w-full">
           {/* Neumorphic Player Container */}
-          <div className="relative aspect-video rounded-3xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div 
+            className="relative mx-auto rounded-3xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            style={{ 
+              aspectRatio: "16/9",
+              width: "100%",
+              maxHeight: "calc(100vh - 280px)",
+              maxWidth: "calc((100vh - 280px) * 16 / 9)"
+            }}
+          >
              {(!isIntersecting || !isIframeLoaded) && (
                <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
                  <FHLoader label="Loading" />
@@ -91,7 +99,12 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
           {/* Controls & Metadata */}
           <div className="flex items-center justify-between px-2 gap-6">
              <div className="flex flex-col text-left">
-                <h3 className="text-xl font-black uppercase tracking-tight text-white">{currentWork.title}</h3>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); navigate(`/works/${currentWork.id}`); }}
+                  className="text-xl font-black uppercase tracking-tight text-white hover:underline text-left"
+                >
+                  {currentWork.title}
+                </button>
                 {currentOriginal ? (
                   <div className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1.5 flex items-center gap-1.5">
                     <span>From:</span>
@@ -178,9 +191,12 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
             </button>
 
             <div className="flex flex-col items-center text-center min-w-0 flex-1 px-1">
-              <h4 className="text-sm sm:text-base font-black uppercase tracking-tight text-white drop-shadow-md truncate w-full">
+              <button 
+                onClick={(e) => { e.stopPropagation(); navigate(`/works/${currentWork.id}`); }}
+                className="text-sm sm:text-base font-black uppercase tracking-tight text-white drop-shadow-md truncate w-full hover:underline text-center"
+              >
                 {currentWork.title}
-              </h4>
+              </button>
               {currentOriginal ? (
                 <div className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1 flex items-center gap-1.5 justify-center truncate w-full">
                   <span>From:</span>

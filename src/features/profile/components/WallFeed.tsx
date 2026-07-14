@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { WallPost } from "../../../types/wall";
 import { WallPostCard } from "./WallPostCard";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
+import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { WallSwiper, WallSwiperArtistGroup } from "./WallSwiper";
 
 interface WallFeedProps {
@@ -37,6 +38,10 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
     () => Object.fromEntries(ORIGINALS.map((o) => [o.id, o])),
     []
   );
+  const recommendationsById = useMemo(
+    () => Object.fromEntries(MOCK_RECOMMENDATIONS.map((r) => [r.id, r])),
+    []
+  );
 
   const swiperGroups = useMemo<WallSwiperArtistGroup[]>(() => {
     if (posts.length === 0) return [];
@@ -53,6 +58,7 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
         post,
         resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
         resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
+        resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
       }))
     }];
   }, [posts, worksById, originalsById]);
@@ -81,6 +87,9 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
           const resolvedOriginal = post.pinnedOriginalId
             ? originalsById[post.pinnedOriginalId]
             : undefined;
+          const resolvedRecommendation = post.pinnedRecommendationId
+            ? recommendationsById[post.pinnedRecommendationId]
+            : undefined;
 
           // Pure LINE posts always span both columns on desktop
           const isFullWidth = post.type === "LINE";
@@ -104,6 +113,7 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
                   post={post}
                   resolvedWork={resolvedWork}
                   resolvedOriginal={resolvedOriginal}
+                  resolvedRecommendation={resolvedRecommendation}
                   inFoyer={inFoyer}
                   themeGradient={themeGradient}
                   onClick={() => setSelectedPostIndex(index)}

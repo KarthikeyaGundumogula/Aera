@@ -1,22 +1,29 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  animate as motionAnimate,
+  type MotionValue,
+} from "motion/react";
 import {
   X,
-  ChevronLeft,
   ChevronRight,
-  Pin,
-  ArrowRight,
   Loader2,
+  ArrowUpRight,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
 import { Original } from "../../../types/originals";
+import { Recommendation } from "../../../mock/recommendations";
 import { ModalWrapper } from "../../shared/modals/ModalWrapper";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { StarAction } from "../../../components/actions/StarAction";
 import { SaveAction } from "../../../components/actions/SaveAction";
+import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
 
@@ -312,12 +319,7 @@ const PinFull: React.FC<PinFullProps> = ({
         )}
 
         {post.text && (
-          <div className="flex flex-col items-start gap-1.5 px-1 py-0.5 border-l-2 border-amber-500 pl-3 pointer-events-none mt-1">
-            <div className="flex items-center gap-1.5 opacity-80">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
-                Quoted by {post.artistName}
-              </span>
-            </div>
+          <div className="flex flex-col items-start gap-1.5 px-1 py-0.5 border-l-2 border-amber-500 pl-3 pointer-events-none mt-2">
             <p className="text-[14px] sm:text-[15px] leading-[1.6] text-white/80 italic">
               "{post.text}"
             </p>
@@ -349,8 +351,36 @@ const PinFull: React.FC<PinFullProps> = ({
         </div>
       )}
       {post.text && (
-        <div className="w-full flex flex-col items-start gap-1.5 px-1 py-0.5 border-l-2 border-amber-500 pl-3 pointer-events-none mt-1 text-left">
-          <div className="flex items-center gap-1.5 opacity-80">
+        <div className="w-full flex flex-col items-start gap-1.5 px-1 py-0.5 border-l-2 border-amber-500 pl-3 pointer-events-none mt-2 text-left">
+          <p className="text-[14px] sm:text-[15px] leading-[1.6] text-white/80 italic">
+            "{post.text}"
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Full-screen Recommendation viewer ────────────────────────────────────────
+
+const RecommendationFull: React.FC<{ post: WallPost; rec?: Recommendation }> = ({
+  post,
+  rec,
+}) => {
+  const navigate = useNavigate();
+
+  if (!rec) return null;
+
+  return (
+    <div className="w-full flex flex-col gap-6 px-4 max-w-[500px] mx-auto">
+      {/* Use the exact Feed recommendation card but visually isolate it */}
+      <div className="pointer-events-auto bg-[#0d0d0d] rounded-xl border border-white/5 shadow-2xl p-1 overflow-hidden">
+        <FeedRecommendationCard rec={rec} variant="wall-embed" />
+      </div>
+
+      {post.text && (
+        <div className="w-full flex flex-col items-start gap-1.5 px-1 py-0.5 border-l-2 border-amber-500 pl-3 mt-1 text-left pointer-events-none">
+          <div className="flex items-center gap-1.5 opacity-80 mb-1">
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
               Quoted by {post.artistName}
             </span>
@@ -360,6 +390,29 @@ const PinFull: React.FC<PinFullProps> = ({
           </p>
         </div>
       )}
+
+      {/* Subtle view option */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          const theatreItem: TheatreItem = {
+            id: `rec-${rec.id}`,
+            category: "Recommendation",
+            recId: rec.id,
+            image: rec.original.coverImage,
+            title: rec.original.title,
+            artist: rec.artist.name,
+            artistId: rec.artist.id,
+            artistAvatar: rec.artist.profilePicture,
+            originalIds: [rec.original.id],
+          };
+          navigate(`/works/rec-${rec.id}`, { state: { item: theatreItem } });
+        }}
+        className="mx-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-white/60 hover:text-white text-xs font-black uppercase tracking-widest transition-all pointer-events-auto"
+      >
+        <span>View Exhibition</span>
+        <ArrowUpRight className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 };
@@ -399,6 +452,7 @@ export interface WallSwiperEntry {
   post: WallPost;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
+  resolvedRecommendation?: Recommendation;
 }
 
 export interface WallSwiperArtistGroup {
@@ -420,8 +474,13 @@ interface WallSwiperProps {
 /**
  * WallSwiper — Full-screen story-like viewer for Wall posts.
  *
- * - Swipe left/right (drag) to move between artists.
- * - Tap left/right to move through an artist's posts.
+ * Swipe architecture: "treadmill" pattern.
+ * - Three slides are always in the DOM at fixed positions: -100%, 0%, +100%.
+ * - A shared `dragX` MotionValue tracks the live drag offset (always ~0 at rest).
+ * - On drag-end, if threshold is met we commit the group change and reset dragX
+ *   to 0 in the same tick — so the spring NEVER fights an accumulated offset.
+ * - This is how Instagram Stories, TikTok, and Reddit's image-viewer handle
+ *   infinite swipe without performance degradation.
  */
 export function WallSwiper({
   groups,
@@ -431,7 +490,11 @@ export function WallSwiper({
   onClose,
 }: WallSwiperProps) {
   const navigate = useNavigate();
-  const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
+
+  // Normalised index: always in [0, groups.length)
+  const [groupIndex, setGroupIndex] = useState(
+    ((initialGroupIndex % groups.length) + groups.length) % groups.length,
+  );
 
   // Track which post we are on for each artist group
   const [postIndices, setPostIndices] =
@@ -439,17 +502,76 @@ export function WallSwiper({
 
   const [isFetching, setIsFetching] = useState(false);
 
-  const activeGroup =
-    groups[((groupIndex % groups.length) + groups.length) % groups.length];
-  const activePostIndex = postIndices[activeGroup.artistId] || 0;
+  // Treadmill drag value — always resets to 0 after each committed swipe.
+  const dragX = useMotionValue(0);
 
-  // A group might have 3 entries. If activePostIndex === 3, we are showing the "See older" card.
+  // Whether a group-level transition is currently animating (lock-out guard).
+  const isTransitioning = useRef(false);
+
+  // Raw gesture tracking — owns pointer events directly so we can
+  // unambiguously distinguish a TAP (tiny movement, quick release)
+  // from a SWIPE (large movement or high velocity).
+  const gesture = useRef<{
+    startX: number;
+    startY: number;
+    startTime: number;
+    lastX: number;
+    lastDx: number;   // movement since last pointermove (for velocity)
+    lastTs: number;   // timestamp of last pointermove
+    active: boolean;
+    isDrag: boolean;  // true once pointer moves past 6px threshold
+  } | null>(null);
+
+  const W = typeof window !== "undefined" ? window.innerWidth : 390;
+  const SWIPE_THRESHOLD = W * 0.22; // 22% of screen width
+  const VELOCITY_THRESHOLD = 380;   // px/s
+
+  const wrap = (idx: number) =>
+    ((idx % groups.length) + groups.length) % groups.length;
+
+  const activeGroup = groups[groupIndex];
+  const prevGroup = groups[wrap(groupIndex - 1)];
+  const nextGroup = groups[wrap(groupIndex + 1)];
+
+  const activePostIndex = postIndices[activeGroup.artistId] || 0;
   const isShowingOlderCard = activePostIndex === activeGroup.entries.length;
 
-  const paginateGroup = useCallback(
-    (dir: number) => setGroupIndex((p) => p + dir),
-    [],
+  // Animate dragX to a target then commit the index change and snap back to 0.
+  const commitGroupChange = useCallback(
+    (dir: number) => {
+      if (isTransitioning.current) return;
+      isTransitioning.current = true;
+
+      const target = -dir * W;
+      motionAnimate(dragX, target, {
+        type: "spring",
+        stiffness: 380,
+        damping: 36,
+        mass: 0.9,
+        onComplete: () => {
+          // Snap x to 0 *before* React re-renders the new index so the
+          // incoming slide is already in position — no visible jump.
+          dragX.set(0);
+          setGroupIndex((prev) => wrap(prev + dir));
+          isTransitioning.current = false;
+        },
+      });
+    },
+    [dragX, W, wrap],
   );
+
+  const paginateGroup = useCallback(
+    (dir: number) => commitGroupChange(dir),
+    [commitGroupChange],
+  );
+
+  // Declared before handleTap so it can be referenced in the tap handler.
+  const fetchOlder = useCallback(async () => {
+    if (!onFetchOlder || isFetching) return;
+    setIsFetching(true);
+    await onFetchOlder(activeGroup.artistId);
+    setIsFetching(false);
+  }, [onFetchOlder, isFetching, activeGroup.artistId]);
 
   const handleTap = useCallback(
     (dir: number) => {
@@ -457,30 +579,40 @@ export function WallSwiper({
         const current = prev[activeGroup.artistId] || 0;
         const next = current + dir;
 
-        // If we go backwards from 0, go to previous artist
+        const isOnOlderCard = current === activeGroup.entries.length;
+
+        // ── Tapping RIGHT on the "older posts" card → fetch more posts
+        if (dir === 1 && isOnOlderCard) {
+          fetchOlder();
+          return prev; // postIndex stays at older-card position until posts load
+        }
+
+        // ── Tap LEFT at post 0 → go to previous artist, land on their last post
         if (next < 0) {
+          const target = groups[wrap(groupIndex - 1)];
+          const landingIdx = Math.max(0, target.entries.length - 1);
           paginateGroup(-1);
-          return prev;
+          return { ...prev, [target.artistId]: landingIdx };
         }
 
-        // If we go forwards past the last item
+        // ── Tap RIGHT past the "older" card → next artist, post 0
         if (next > activeGroup.entries.length) {
-          // If hasMore, they are tapping past the "See Older" card -> next artist
-          // If !hasMore, they are tapping past the last post -> next artist
-          paginateGroup(1); 
-          return prev;
+          const target = groups[wrap(groupIndex + 1)];
+          paginateGroup(1);
+          return { ...prev, [target.artistId]: 0 };
         }
 
-        // If we reach the end and there is no more, just go to next artist
+        // ── Tap RIGHT at the last post when no older → next artist, post 0
         if (next === activeGroup.entries.length && !activeGroup.hasMore) {
+          const target = groups[wrap(groupIndex + 1)];
           paginateGroup(1);
-          return prev;
+          return { ...prev, [target.artistId]: 0 };
         }
 
         return { ...prev, [activeGroup.artistId]: next };
       });
     },
-    [activeGroup, paginateGroup],
+    [activeGroup, groupIndex, groups, wrap, paginateGroup, fetchOlder],
   );
 
   useEffect(() => {
@@ -493,14 +625,111 @@ export function WallSwiper({
     return () => window.removeEventListener("keydown", handle);
   }, [handleTap, onClose]);
 
-  const fetchOlder = async () => {
-    if (!onFetchOlder || isFetching) return;
-    setIsFetching(true);
-    await onFetchOlder(activeGroup.artistId);
-    setIsFetching(false);
-  };
 
-  const isDraggable = true; // Always allow dragging for visual feedback
+
+  // Per-slide x MotionValues derived from the shared dragX.
+  // Prev is at -W + drag, Current is at 0 + drag, Next is at +W + drag.
+  const prevX = useTransform(dragX, (v) => -W + v);
+  const currX = useTransform(dragX, (v) => v);
+  const nextX = useTransform(dragX, (v) => W + v);
+
+  // Scale/opacity for adjacent slides — gives depth cue while dragging.
+  const prevScale = useTransform(dragX, [-W, 0], [1, 0.88]);
+  const nextScale = useTransform(dragX, [0, W], [0.88, 1]);
+  const prevOpacity = useTransform(dragX, [-W, -W * 0.3], [1, 0.3]);
+  const nextOpacity = useTransform(dragX, [W * 0.3, W], [0.3, 1]);
+  const currOpacity = useTransform(dragX, [-W * 0.4, 0, W * 0.4], [0.5, 1, 0.5]);
+
+  // Slide renderer — used for all three treadmill slots.
+  function SlideContent({
+    group,
+    xMotion,
+    scaleMotion,
+    opacityMotion,
+    isActive,
+  }: {
+    group: WallSwiperArtistGroup;
+    xMotion: MotionValue<number>;
+    scaleMotion?: MotionValue<number>;
+    opacityMotion?: MotionValue<number>;
+    isActive: boolean;
+  }) {
+    const postIdx = postIndices[group.artistId] || 0;
+    const isOlderCard = postIdx === group.entries.length;
+    const entry = group.entries[postIdx];
+
+    return (
+      <motion.div
+        className="absolute inset-0 w-full h-full will-change-transform"
+        style={{
+          x: xMotion,
+          scale: scaleMotion,
+          opacity: opacityMotion,
+          touchAction: "pan-y",
+        }}
+      >
+        <div
+          className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none"
+        >
+          <div className="w-full my-auto pointer-events-none shrink-0">
+            {isOlderCard ? (
+              <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-5 pointer-events-none my-8">
+                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                  {isFetching ? (
+                    <Loader2 className="w-5 h-5 text-white/50 animate-spin" />
+                  ) : (
+                    <ChevronRight className="w-7 h-7 text-white/50" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.15em] text-white/90 mb-1.5">
+                    Earlier posts
+                  </h3>
+                  <p className="text-xs text-white/40 leading-relaxed max-w-[220px] mx-auto">
+                    These posts stay on {group.artistName}'s wall until they remove them.
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchOlder();
+                  }}
+                  disabled={isFetching}
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 pointer-events-auto"
+                >
+                  {isFetching ? "Loading..." : "Load earlier posts"}
+                </button>
+              </div>
+            ) : (
+              entry &&
+              (entry.post.type === "LINE" ? (
+                <div className="w-full pointer-events-none">
+                  <LineFull post={entry.post} />
+                </div>
+              ) : entry.post.type === "RECOMMENDATION" ? (
+                <div className="w-full pointer-events-none">
+                  <RecommendationFull
+                    post={entry.post}
+                    rec={entry.resolvedRecommendation}
+                  />
+                </div>
+              ) : (
+                <div className="w-full pointer-events-none">
+                  <PinFull
+                    post={entry.post}
+                    resolvedWork={entry.resolvedWork}
+                    resolvedOriginal={entry.resolvedOriginal}
+                    isActive={isActive}
+                    onClose={onClose}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return createPortal(
     <ModalWrapper isOpen={true} onClose={onClose} isImmersive={true}>
@@ -554,108 +783,140 @@ export function WallSwiper({
         </AnimatePresence>
       </div>
 
-      {/* Swipeable track for Artist Groups */}
-      <div className="fixed inset-0 w-full h-[100dvh] flex items-center justify-center overflow-hidden">
-        <motion.div
-          className="absolute inset-0 w-full h-full"
-          animate={{ x: `-${groupIndex * 100}%` }}
-          transition={{ type: "spring", stiffness: 400, damping: 40, mass: 1 }}
-          drag="x"
-          dragElastic={0.2}
-          style={{ touchAction: "pan-y", willChange: "transform" }}
-          onDragEnd={(_, { offset, velocity }) => {
-            const swipePower = offset.x + velocity.x * 0.5;
-            if (swipePower < -50) paginateGroup(1);
-            else if (swipePower > 50) paginateGroup(-1);
-          }}
-        >
-          {[-1, 0, 1].map((offset) => {
-            const virtualPage = groupIndex + offset;
-            const idx =
-              ((virtualPage % groups.length) + groups.length) % groups.length;
-            const group = groups[idx];
-            if (!group) return null;
+      {/*
+       * Treadmill track — three fixed-position slots.
+       * The shared dragX MotionValue drives all three via useTransform.
+       * After each committed swipe, dragX snaps back to 0 and group content
+       * is swapped — the spring never accumulates offset.
+       *
+       * Gesture system: raw pointer events own all input.
+       * - onPointerDown: record start position + timestamp
+       * - onPointerMove: live-update dragX for visual feedback;
+       *                  mark as drag once movement exceeds 6px
+       * - onPointerUp:
+       *     • isDrag=false AND movement < 10px → TAP → handleTap
+       *     • isDrag=true AND (distance > threshold OR velocity > threshold) → SWIPE
+       *     • else → snap back to 0
+       *
+       * This pattern (used by Embla Carousel, Swiper.js, Reddit's viewer)
+       * gives 100% reliable tap detection because we never depend on
+       * Framer Motion's gesture recognizer to call onDragEnd for zero-movement events.
+       */}
+      <div
+        className="fixed inset-0 w-full h-[100dvh] overflow-hidden cursor-pointer select-none"
+        style={{ touchAction: "pan-y" }}
+        onPointerDown={(e) => {
+          // Don't intercept clicks on interactive elements (buttons, links, etc.).
+          // Those elements handle their own click events; we must not also
+          // treat the same pointer-down as a gesture start.
+          const target = e.target as HTMLElement;
+          if (target.closest('button, a, [role="button"], input, select, textarea')) return;
 
-            const postIdx = postIndices[group.artistId] || 0;
-            const isOlderCard = postIdx === group.entries.length;
-            const entry = group.entries[postIdx];
+          // Only track primary pointer (ignore secondary touches)
+          if (e.button !== 0 && e.pointerType === "mouse") return;
+          if (isTransitioning.current) return;
 
-            return (
-              <motion.div
-                key={`${group.artistId}-${virtualPage}`}
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{ left: `${virtualPage * 100}%` }}
-                animate={{
-                  scale: offset === 0 ? 1 : 0.85,
-                  opacity: offset === 0 ? 1 : 0.3,
-                  filter: offset === 0 ? "none" : "blur(8px)",
-                }}
-                transition={{ type: "spring", stiffness: 350, damping: 35 }}
-              >
-                <div
-                  className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-auto"
-                  onClick={(e) => {
-                    const isLeft = e.clientX < window.innerWidth / 2;
-                    handleTap(isLeft ? -1 : 1);
-                  }}
-                >
-                  <div className="w-full my-auto pointer-events-none shrink-0">
-                    {isOlderCard ? (
-                      <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-6 pointer-events-none my-8">
-                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2">
-                          {isFetching ? (
-                            <Loader2 className="w-6 h-6 text-white/50 animate-spin" />
-                          ) : (
-                            <ChevronRight className="w-8 h-8 text-white/50" />
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-black uppercase tracking-[0.15em] text-white/90 mb-2">
-                            You've caught up
-                          </h3>
-                          <p className="text-xs text-white/50 leading-relaxed max-w-[240px] mx-auto">
-                            You've seen all recent posts from {group.artistName}
-                            .
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            fetchOlder();
-                          }}
-                          disabled={isFetching}
-                          className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 pointer-events-auto"
-                        >
-                          {isFetching ? "Loading..." : "Load Older Posts"}
-                        </button>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest mt-4">
-                          Or swipe left for next artist
-                        </p>
-                      </div>
-                    ) : (
-                      entry &&
-                      (entry.post.type === "LINE" ? (
-                        <div className="w-full pointer-events-none">
-                          <LineFull post={entry.post} />
-                        </div>
-                      ) : (
-                        <div className="w-full pointer-events-none">
-                          <PinFull
-                            post={entry.post}
-                            resolvedWork={entry.resolvedWork}
-                            resolvedOriginal={entry.resolvedOriginal}
-                            isActive={offset === 0}
-                            onClose={onClose}
-                          />
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+          // Capture so pointermove/up fire even if pointer leaves the element
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+
+          gesture.current = {
+            startX: e.clientX,
+            startY: e.clientY,
+            startTime: e.timeStamp,
+            lastX: e.clientX,
+            lastDx: 0,
+            lastTs: e.timeStamp,
+            active: true,
+            isDrag: false,
+          };
+        }}
+        onPointerMove={(e) => {
+          const g = gesture.current;
+          if (!g || !g.active) return;
+
+          const dx = e.clientX - g.startX;
+          const dy = e.clientY - g.startY;
+
+          // Ignore if primarily vertical (let the page scroll)
+          if (!g.isDrag && Math.abs(dy) > Math.abs(dx) + 4) {
+            gesture.current = null;
+            return;
+          }
+
+          // Mark as a real drag once horizontal movement exceeds 6px
+          if (!g.isDrag && Math.abs(dx) > 6) {
+            g.isDrag = true;
+            e.preventDefault(); // prevent page scroll once we own the gesture
+          }
+
+          if (g.isDrag) {
+            // Track velocity: px moved since last event / time delta
+            g.lastDx = e.clientX - g.lastX;
+            g.lastTs = e.timeStamp;
+            g.lastX = e.clientX;
+
+            // Drive the slide position directly — feels 1:1 with finger
+            dragX.set(dx);
+          }
+        }}
+        onPointerUp={(e) => {
+          const g = gesture.current;
+          gesture.current = null;
+          if (!g || !g.active) return;
+
+          const totalDx = e.clientX - g.startX;
+          const dt = e.timeStamp - g.lastTs;
+          // Velocity in px/s from last few pointermove events
+          const velocity = dt > 0 ? (g.lastDx / dt) * 1000 : 0;
+
+          if (!g.isDrag) {
+            // Pure tap — zero drag movement → navigate post
+            handleTap(g.startX < window.innerWidth / 2 ? -1 : 1);
+            return;
+          }
+
+          // Was a drag — decide swipe or snap-back
+          const isSwipe =
+            Math.abs(totalDx) > SWIPE_THRESHOLD ||
+            Math.abs(velocity) > VELOCITY_THRESHOLD;
+
+          if (isSwipe) {
+            commitGroupChange(totalDx < 0 ? 1 : -1);
+          } else {
+            // Snap back to centre
+            motionAnimate(dragX, 0, {
+              type: "spring",
+              stiffness: 500,
+              damping: 40,
+            });
+          }
+        }}
+        onPointerCancel={() => {
+          gesture.current = null;
+          motionAnimate(dragX, 0, { type: "spring", stiffness: 500, damping: 40 });
+        }}
+      >
+        {/* Three treadmill slides */}
+        <SlideContent
+          group={prevGroup}
+          xMotion={prevX}
+          scaleMotion={prevScale}
+          opacityMotion={prevOpacity}
+          isActive={false}
+        />
+        <SlideContent
+          group={activeGroup}
+          xMotion={currX}
+          opacityMotion={currOpacity}
+          isActive={true}
+        />
+        <SlideContent
+          group={nextGroup}
+          xMotion={nextX}
+          scaleMotion={nextScale}
+          opacityMotion={nextOpacity}
+          isActive={false}
+        />
       </div>
 
       {/* Progress dots */}

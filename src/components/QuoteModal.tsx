@@ -7,11 +7,12 @@ interface QuoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   item: TheatreItem;
+  renderTop?: React.ReactNode;
 }
 
 const AMBER_GLOW = "rgba(217,119,6,0.30)";
 
-export function QuoteModal({ isOpen, onClose, item }: QuoteModalProps) {
+export function QuoteModal({ isOpen, onClose, item, renderTop }: QuoteModalProps) {
   const [quoteText, setQuoteText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [peakFlash, setPeakFlash] = useState(false);
@@ -120,9 +121,15 @@ export function QuoteModal({ isOpen, onClose, item }: QuoteModalProps) {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="flex-1 overflow-y-auto no-scrollbar">
-                {/* Media Preview (Top) */}
-                <div className="relative w-full aspect-video overflow-hidden bg-[#0a0a0a]">
-                  {item.image ? (
+                {renderTop ? (
+                  <div className="w-full bg-[#0a0a0a] border-b border-white/[0.04]">
+                    {renderTop}
+                  </div>
+                ) : (
+                  <>
+                    {/* Media Preview (Top) */}
+                    <div className="relative w-full aspect-video overflow-hidden bg-[#0a0a0a]">
+                      {item.image ? (
                     <img
                       src={item.image}
                       alt={item.title ?? "Quoted work"}
@@ -132,7 +139,7 @@ export function QuoteModal({ isOpen, onClose, item }: QuoteModalProps) {
                   ) : (
                     <div className="w-full h-full bg-white/5 flex items-center justify-center">
                       <span className="text-[10px] font-black uppercase tracking-widest text-white/20">
-                        Work
+                        {item.category === "Recommendation" ? "Recommendation" : "Work"}
                       </span>
                     </div>
                   )}
@@ -144,6 +151,11 @@ export function QuoteModal({ isOpen, onClose, item }: QuoteModalProps) {
                       <span className="text-xs font-black uppercase tracking-[0.15em] text-white truncate block drop-shadow-md">
                         {item.title}
                       </span>
+                      {item.category === "Recommendation" && (
+                        <span className="px-1.5 py-0.5 rounded bg-[#B45309]/20 border border-[#B45309]/30 text-[#B45309] text-[8px] font-black uppercase tracking-widest ml-2">
+                          REC
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -163,17 +175,23 @@ export function QuoteModal({ isOpen, onClose, item }: QuoteModalProps) {
                         {item.artist || "Unknown Artist"}
                       </span>
                       <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30">
-                        Original Creator
+                        {item.category === "Recommendation" ? "Recommender" : "Original Creator"}
                       </span>
                     </div>
                   </div>
                   
                   {/* Mock Action Buttons */}
                   <div className="flex items-center gap-1">
-                    <div className="px-2.5 py-1.5 rounded-lg border border-white/10 flex items-center gap-1.5 text-white/40 pointer-events-none">
-                      <Star size={12} />
-                      <span className="text-[9px] font-bold">Star</span>
-                    </div>
+                    {item.category === "Recommendation" ? (
+                      <div className="px-2.5 py-1.5 rounded-lg border border-[#B45309]/30 bg-[#B45309]/10 flex items-center gap-1.5 text-[#B45309] pointer-events-none">
+                        <span className="text-[9px] font-bold uppercase tracking-widest">Boost</span>
+                      </div>
+                    ) : (
+                      <div className="px-2.5 py-1.5 rounded-lg border border-white/10 flex items-center gap-1.5 text-white/40 pointer-events-none">
+                        <Star size={12} />
+                        <span className="text-[9px] font-bold">Star</span>
+                      </div>
+                    )}
                     <div className="px-2.5 py-1.5 rounded-lg border border-white/10 flex items-center justify-center text-white/40 pointer-events-none">
                       <Bookmark size={12} />
                     </div>
@@ -182,6 +200,8 @@ export function QuoteModal({ isOpen, onClose, item }: QuoteModalProps) {
                     </div>
                   </div>
                 </div>
+                </>
+                )}
 
                 {/* Quote Input (Bottom) */}
                 <div className="p-5 pb-6">

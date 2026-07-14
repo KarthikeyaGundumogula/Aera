@@ -86,13 +86,13 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
                 <div className="space-y-1">
                   <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Category</p>
                   <p className="text-sm font-bold text-white">
-                    {formData.category === "Edit" ? "Cinematic Edit" : formData.category === "Poster" ? "Cinematic Poster" : "Cinematic Script"}
+                    {formData.category === "Edit" ? "Cinematic Edit" : formData.category === "Poster" ? "Cinematic Poster" : "Cinematic Storyboard"}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source</p>
                   <p className="text-sm font-bold text-white capitalize">
-                    {(formData.category === "Poster" || formData.category === "Script") ? "Local Archive" : formData.platform}
+                    {(formData.category === "Poster" || formData.category === "Storyboard") ? "Local Archive" : formData.platform}
                   </p>
                 </div>
                <div className="space-y-1">
@@ -103,8 +103,8 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
               <div className="border-t border-white/5 pt-4 space-y-1">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Source Content</p>
                 <p className="text-xs font-mono text-white/60 break-all">
-                  {formData.category === "Script" 
-                    ? `${formData.scriptPages.length} Storyboard Pages`
+                  {formData.category === "Storyboard" 
+                    ? `${formData.storyboardPages.length} Storyboard Pages`
                     : (formData.contentUrl || "—")
                   }
                 </p>

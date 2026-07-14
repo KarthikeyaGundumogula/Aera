@@ -3,7 +3,7 @@ import { GRID_ITEMS } from "../../mock";
 import { useAuth } from "../../context/AuthContext";
 import { EditExhibition } from "./layouts/EditExhibition";
 import { PosterExhibition } from "./layouts/PosterExhibition";
-import { ScriptExhibition } from "./layouts/ScriptExhibition";
+import { StoryboardExhibition } from "./layouts/StoryboardExhibition";
 import { RecommendationExhibition } from "./layouts/RecommendationExhibition";
 
 /**
@@ -22,7 +22,7 @@ import { RecommendationExhibition } from "./layouts/RecommendationExhibition";
  * The format-specific layout is determined by item.category:
  *   Edit         → EditExhibition (cinematic video)
  *   Poster       → PosterExhibition (gallery split-screen)
- *   Script       → ScriptExhibition (filmstrip/magazine)
+ *   Storyboard       → StoryboardExhibition (filmstrip/magazine)
  *   Recommendation → RecommendationExhibition (resonance card)
  *   default      → EditExhibition
  */
@@ -62,8 +62,8 @@ export default function WorkPage() {
   switch (category) {
     case "Poster":
       return <PosterExhibition item={item} />;
-    case "Script":
-      return <ScriptExhibition item={item} />;
+    case "Storyboard":
+      return <StoryboardExhibition item={item} />;
     case "Recommendation":
       return <RecommendationExhibition item={item} />;
     case "Edit":

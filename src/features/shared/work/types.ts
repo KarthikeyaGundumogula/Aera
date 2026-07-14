@@ -11,7 +11,7 @@ export interface BaseWorkProps {
   priority?: "eager" | "lazy";
 }
 
-export type WorkKind = "edit" | "poster" | "script" | "recommendation";
+export type WorkKind = "edit" | "poster" | "storyboard" | "recommendation";
 
 export function isEditWork(item: TheatreItem): boolean {
   return item.category === "Edit" || item.category === undefined;
@@ -21,8 +21,8 @@ export function isPosterWork(item: TheatreItem): boolean {
   return item.category === "Poster";
 }
 
-export function isScriptWork(item: TheatreItem): boolean {
-  return item.category === "Script";
+export function isStoryboardWork(item: TheatreItem): boolean {
+  return item.category === "Storyboard";
 }
 
 export function isRecommendationWork(item: TheatreItem): boolean {
@@ -31,7 +31,7 @@ export function isRecommendationWork(item: TheatreItem): boolean {
 
 export function getWorkKind(item: TheatreItem): WorkKind {
   if (isRecommendationWork(item)) return "recommendation";
-  if (isScriptWork(item)) return "script";
+  if (isStoryboardWork(item)) return "storyboard";
   if (isPosterWork(item)) return "poster";
   return "edit";
 }

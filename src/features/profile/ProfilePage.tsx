@@ -368,6 +368,7 @@ const ProfilePage: React.FC = () => {
                 height: "56px",
                 background: `radial-gradient(ellipse at 50% 100%, ${theme.nameGradient[0]}40 0%, ${theme.nameGradient[0]}1A 40%, transparent 72%)`,
                 filter: "blur(10px)",
+                clipPath: "inset(-200px -200px 0px -200px)",
               }}
             />
           )}
@@ -386,6 +387,7 @@ const ProfilePage: React.FC = () => {
                 background: `linear-gradient(to right, ${theme.nameGradient[0]}, ${theme.nameGradient[1]})`,
                 boxShadow:
                   `0 0 5px 2px ${theme.nameGradient[0]}F2, 0 0 16px 6px ${theme.nameGradient[0]}BF, 0 0 36px 14px ${theme.nameGradient[0]}40`,
+                clipPath: "inset(-200px -200px 0px -200px)",
               }}
             />
           )}

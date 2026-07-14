@@ -5,14 +5,14 @@ import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
-function getScriptBody(title?: string, text?: string) {
+function getStoryboardBody(title?: string, text?: string) {
   if (title && title.split(":").length > 1) {
     return title.split(":")[1];
   }
   return text || "A moment of cinematic reflection.";
 }
 
-export function ScriptWork({
+export function StoryboardWork({
   item,
   variant,
   className = "",
@@ -20,7 +20,7 @@ export function ScriptWork({
   priority = "lazy",
 }: BaseWorkProps) {
   const body = useMemo(
-    () => getScriptBody(item.title, item.text),
+    () => getStoryboardBody(item.title, item.text),
     [item.text, item.title],
   );
   const { openWork } = useWorkNavigation();

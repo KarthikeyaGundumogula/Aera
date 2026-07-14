@@ -5,14 +5,14 @@ import type {
   UpdateUploadFormData,
   UploadCategory,
   UploadPlatform,
-  UploadScriptPage,
+  UploadStoryboardPage,
 } from "../../types";
 
 interface SourceStepProps {
   category: UploadCategory;
   platform: UploadPlatform;
   contentUrl: string;
-  scriptPages: UploadScriptPage[];
+  storyboardPages: UploadStoryboardPage[];
   originalIds: string[];
   setFormData: UpdateUploadFormData;
   onNext: () => void;
@@ -23,7 +23,7 @@ export function SourceStep({
   category,
   platform, 
   contentUrl, 
-  scriptPages,
+  storyboardPages,
   originalIds, 
   setFormData, 
   onNext, 
@@ -31,18 +31,18 @@ export function SourceStep({
 }: SourceStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isPoster = category === "Poster";
-  const isScript = category === "Script";
+  const isStoryboard = category === "Storyboard";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    if (isScript) {
+    if (isStoryboard) {
       const newPages = Array.from(files).map(file => ({
         url: URL.createObjectURL(file),
         text: ""
       }));
-      setFormData({ scriptPages: [...scriptPages, ...newPages].slice(0, 10) });
+      setFormData({ storyboardPages: [...storyboardPages, ...newPages].slice(0, 10) });
     } else {
       const file = files[0];
       if (file) {
@@ -58,18 +58,18 @@ export function SourceStep({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const removeScriptPage = (index: number) => {
-    const updated = scriptPages.filter((_, i) => i !== index);
-    setFormData({ scriptPages: updated });
+  const removeStoryboardPage = (index: number) => {
+    const updated = storyboardPages.filter((_, i) => i !== index);
+    setFormData({ storyboardPages: updated });
   };
 
   const updatePageText = (index: number, text: string) => {
-    const updated = [...scriptPages];
+    const updated = [...storyboardPages];
     updated[index] = { ...updated[index], text };
-    setFormData({ scriptPages: updated });
+    setFormData({ storyboardPages: updated });
   };
 
-  const canProceed = isScript ? scriptPages.length > 0 : !!contentUrl;
+  const canProceed = isStoryboard ? storyboardPages.length > 0 : !!contentUrl;
 
   return (
     <motion.div
@@ -87,7 +87,7 @@ export function SourceStep({
         <p className="text-white/40 text-xs text-balance">
           {isPoster 
             ? "Upload the high-resolution master of your poster"
-            : isScript
+            : isStoryboard
               ? "Upload storyboard pages and add their narrative (Max 10)"
               : `Link your work for the ${originalIds?.length || 0} selected film${(originalIds?.length !== 1) ? 's' : ''}`
           }
@@ -95,7 +95,7 @@ export function SourceStep({
       </div>
       
       <div className="space-y-8">
-        {(!isPoster && !isScript) ? (
+        {(!isPoster && !isStoryboard) ? (
           /* ── VIDEO SOURCE (EDIT) ── */
           <>
             <div className="flex gap-4">
@@ -171,7 +171,7 @@ export function SourceStep({
             )}
           </div>
         ) : (
-          /* ── SCRIPT SOURCE (MULTI-IMAGE + TEXT) ── */
+          /* ── STORYBOARD SOURCE (MULTI-IMAGE + TEXT) ── */
           <div className="space-y-6">
             <input 
               type="file" 
@@ -184,7 +184,7 @@ export function SourceStep({
 
             <div className="grid gap-4">
               <AnimatePresence mode="popLayout">
-                {scriptPages.map((page, idx) => (
+                {storyboardPages.map((page, idx) => (
                   <motion.div 
                     key={page.url}
                     initial={{ opacity: 0, x: -20 }}
@@ -208,7 +208,7 @@ export function SourceStep({
                       <div className="flex items-center justify-between">
                         <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Page Narrative</span>
                         <button 
-                          onClick={() => removeScriptPage(idx)}
+                          onClick={() => removeStoryboardPage(idx)}
                           className="p-1 text-white/20 hover:text-red-500 transition-colors"
                         >
                           <X className="w-3 h-3" />
@@ -225,14 +225,14 @@ export function SourceStep({
                 ))}
               </AnimatePresence>
 
-              {scriptPages.length < 10 && (
+              {storyboardPages.length < 10 && (
                 <button 
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full py-8 rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.01] flex flex-col items-center justify-center gap-2 hover:bg-white/[0.03] hover:border-white/10 transition-all group"
                 >
                   <Plus className="w-5 h-5 text-white/20 group-hover:text-white/50 transition-colors" />
                   <span className="text-[9px] font-black uppercase tracking-widest text-white/20 group-hover:text-white/40">
-                    Add {scriptPages.length > 0 ? "Another Page" : "First Page"}
+                    Add {storyboardPages.length > 0 ? "Another Page" : "First Page"}
                   </span>
                 </button>
               )}

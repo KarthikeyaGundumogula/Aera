@@ -91,12 +91,12 @@ export function IdentityStep({
           <button
             onClick={() =>
               setFormData({
-                category: "Script",
+                category: "Storyboard",
                 aspectRatio: THEATRE_FORMATS.SQUARE_POSTER.ratio,
               })
             }
             className={`flex flex-col p-3 md:p-6 rounded-xl md:rounded-2xl border transition-all duration-300 ${
-              category === "Script"
+              category === "Storyboard"
                 ? "bg-white text-black border-white"
                 : "bg-white/5 text-white border-white/10 hover:border-white/20"
             }`}
@@ -107,7 +107,7 @@ export function IdentityStep({
                 Story
               </div>
               <div
-                className={`text-[7px] md:text-[9px] font-bold uppercase tracking-widest ${category === "Script" ? "text-black/40" : "text-white/30"}`}
+                className={`text-[7px] md:text-[9px] font-bold uppercase tracking-widest ${category === "Storyboard" ? "text-black/40" : "text-white/30"}`}
               >
                 Narrative
               </div>

@@ -10,7 +10,7 @@
  *   PIN_ORIGINAL — a pinned Original with an optional artist Line
  */
 
-type WallPostType = "LINE" | "PIN_WORK" | "PIN_ORIGINAL";
+type WallPostType = "LINE" | "PIN_WORK" | "PIN_ORIGINAL" | "RECOMMENDATION";
 
 export interface WallPost {
   /** Unique post identifier */
@@ -31,7 +31,7 @@ export interface WallPost {
   /**
    * The Line.
    * - For LINE type: required — this is the entire post content.
-   * - For PIN_WORK / PIN_ORIGINAL: optional — the artist's commentary on what they pinned.
+   * - For PIN_WORK / PIN_ORIGINAL / RECOMMENDATION: optional — the artist's commentary on what they pinned.
    */
   text?: string;
 
@@ -46,6 +46,12 @@ export interface WallPost {
    * Only present when type === "PIN_ORIGINAL".
    */
   pinnedOriginalId?: string;
+
+  /**
+   * ID of the pinned Recommendation.
+   * Only present when type === "RECOMMENDATION".
+   */
+  pinnedRecommendationId?: string;
 
   /** ISO datetime string when this post was made */
   postedAt: string;

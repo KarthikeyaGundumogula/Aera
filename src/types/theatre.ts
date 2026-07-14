@@ -1,7 +1,7 @@
 export interface TheatreItem {
   id: string | number;
   title?: string;
-  category?: 'Edit' | 'Poster' | 'Script' | 'Call' | 'Original' | 'Recommendation';
+  category?: 'Edit' | 'Poster' | 'Storyboard' | 'Call' | 'Original' | 'Recommendation';
   credits?: number; 
   artist?: string;
   artistId?: string;

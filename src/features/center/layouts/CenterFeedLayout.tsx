@@ -35,7 +35,7 @@ import {
   OriginalLink,
   EditWork,
   PosterWork,
-  ScriptWork,
+  StoryboardWork,
 } from "../../shared/work";
 import { getWorkKind } from "../../shared/work/types";
 import { RollingTicker } from "../components/RollingTicker";
@@ -63,8 +63,8 @@ const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
         className="relative rounded-xl overflow-hidden border border-white/5 bg-white/5"
         style={{ aspectRatio: item.aspectRatio || 1 }}
       >
-        {kind === "script" ? (
-          <ScriptWork item={item} variant="theatre-mobile" />
+        {kind === "storyboard" ? (
+          <StoryboardWork item={item} variant="theatre-mobile" />
         ) : kind === "poster" ? (
           <PosterWork item={item} variant="theatre-mobile" />
         ) : (

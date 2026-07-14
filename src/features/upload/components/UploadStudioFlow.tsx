@@ -13,7 +13,7 @@ import type {
   UploadFlowConfig,
   UploadFormData,
   UploadStep,
-  UploadScriptPage,
+  UploadStoryboardPage,
 } from "../types";
 
 const UPLOAD_STEPS: UploadStep[] = ["IDENTITY", "CREDITS", "SOURCE", "FORMAT", "REVIEW"];
@@ -26,8 +26,8 @@ function revokeUrls(urls: string[]) {
   });
 }
 
-function getScriptPageUrls(scriptPages: UploadScriptPage[]) {
-  return scriptPages.map((page) => page.url).filter((url) => url.startsWith("blob:"));
+function getStoryboardPageUrls(storyboardPages: UploadStoryboardPage[]) {
+  return storyboardPages.map((page) => page.url).filter((url) => url.startsWith("blob:"));
 }
 
 export function UploadStudioFlow({
@@ -49,7 +49,7 @@ export function UploadStudioFlow({
     title: "",
     category: "Edit",
     contentUrl: "",
-    scriptPages: [],
+    storyboardPages: [],
     aspectRatio: THEATRE_FORMATS.IMAX.ratio,
     platform: "youtube",
   });
@@ -69,7 +69,7 @@ export function UploadStudioFlow({
     const currentIndex = UPLOAD_STEPS.indexOf(step);
     if (currentIndex < UPLOAD_STEPS.length - 1) {
       let nextStep = UPLOAD_STEPS[currentIndex + 1];
-      if (nextStep === "FORMAT" && formData.category === "Script") {
+      if (nextStep === "FORMAT" && formData.category === "Storyboard") {
         nextStep = "REVIEW";
       }
       setStep(nextStep);
@@ -80,7 +80,7 @@ export function UploadStudioFlow({
     const currentIndex = UPLOAD_STEPS.indexOf(step);
     if (currentIndex > 0) {
       let previousStep = UPLOAD_STEPS[currentIndex - 1];
-      if (previousStep === "FORMAT" && formData.category === "Script") {
+      if (previousStep === "FORMAT" && formData.category === "Storyboard") {
         previousStep = "SOURCE";
       }
       setStep(previousStep);
@@ -96,7 +96,7 @@ export function UploadStudioFlow({
       id: `work-custom-${Date.now()}`,
       title: formData.title,
       category: formData.category,
-      image: formData.category === "Script" ? (formData.scriptPages[0]?.url || "") : formData.contentUrl,
+      image: formData.category === "Storyboard" ? (formData.storyboardPages[0]?.url || "") : formData.contentUrl,
       platform: formData.platform,
       srcId: formData.platform === "youtube" ? (formData.contentUrl.split("v=")[1] || formData.contentUrl.split("/").pop() || "") : "",
       credits: 0,
@@ -116,7 +116,7 @@ export function UploadStudioFlow({
   useEffect(() => {
     const activeBlobUrls = [
       ...(formData.contentUrl.startsWith("blob:") ? [formData.contentUrl] : []),
-      ...getScriptPageUrls(formData.scriptPages),
+      ...getStoryboardPageUrls(formData.storyboardPages),
     ];
 
     const removedUrls = previousBlobUrlsRef.current.filter(
@@ -124,7 +124,7 @@ export function UploadStudioFlow({
     );
     revokeUrls(removedUrls);
     previousBlobUrlsRef.current = activeBlobUrls;
-  }, [formData.contentUrl, formData.scriptPages]);
+  }, [formData.contentUrl, formData.storyboardPages]);
 
   useEffect(() => {
     return () => {
@@ -183,7 +183,7 @@ export function UploadStudioFlow({
 
             <div className="flex gap-2">
               {UPLOAD_STEPS.map((uploadStep, index) => {
-                if (uploadStep === "FORMAT" && formData.category === "Script") return null;
+                if (uploadStep === "FORMAT" && formData.category === "Storyboard") return null;
                 return (
                   <div
                     key={uploadStep}
@@ -223,7 +223,7 @@ export function UploadStudioFlow({
                 category={formData.category}
                 platform={formData.platform}
                 contentUrl={formData.contentUrl}
-                scriptPages={formData.scriptPages}
+                storyboardPages={formData.storyboardPages}
                 originalIds={formData.originalIds}
                 setFormData={updateFormData}
                 onNext={handleNext}

@@ -9,17 +9,16 @@ import {
   ChevronDown,
   Heart,
   ArrowUpRight,
-  Pin,
 } from "lucide-react";
 import { Recommendation } from "../mock/recommendations";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { PosterImage } from "./PosterImage";
+import { SaveAction } from "./actions/SaveAction";
+import { QuoteModal } from "./QuoteModal";
 import { FHLoader } from "./FHLoader";
-import { FavoriteButton } from "./FavoriteButton";
 import { BoostAction } from "./actions/BoostAction";
 import { LibraryAction } from "./actions/LibraryAction";
-import { SaveAction } from "./actions/SaveAction";
-import { PinAction } from "./actions/PinAction";
+import { CameraAction } from "./actions/CameraAction";
 import { SurgeBars } from "./SurgeBars";
 import { formatRelativeTime } from "../utils/time";
 import { useWorkNavigation } from "../hooks/useWorkNavigation";
@@ -38,8 +37,8 @@ export const RecommendationCard = memo(function RecommendationCard({
   const [boosted, setBoosted] = useState(false);
   const [inLibrary, setInLibrary] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [favorited, setFavorited] = useState(rec.favorited ?? false);
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
@@ -90,10 +89,6 @@ export const RecommendationCard = memo(function RecommendationCard({
 
   const { openWork } = useWorkNavigation();
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (variant === "modal") return;
-
     const theatreItem: TheatreItem = {
       id: `rec-${rec.id}`,
       category: "Recommendation",
@@ -105,6 +100,11 @@ export const RecommendationCard = memo(function RecommendationCard({
       artistAvatar: rec.artist.profilePicture,
       originalIds: [rec.original.id],
     };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (variant === "modal") return;
+
     openWork(theatreItem);
   };
 
@@ -489,31 +489,50 @@ export const RecommendationCard = memo(function RecommendationCard({
                   </div>
                 </div>
 
-                {/* Vertical divider (Restored) */}
+                {/* Vertical divider */}
                 <div className="w-px self-stretch bg-white/[0.07] shrink-0 mx-0.5" />
 
-                {/* Original Favorite Heart */}
-                <FavoriteButton
-                  isFavorited={favorited}
-                  onFavorite={() => setFavorited((f) => !f)}
-                  activeColor="#ef4444"
-                  iconSize={20}
-                  className="shrink-0 p-1 rounded-lg hover:bg-white/[0.04] w-7 h-7 mr-3"
-                  hideRipple
-                />
+                {/* Save Action (Moved from bottom) */}
+                <button
+                  className="shrink-0 p-1 rounded-lg hover:bg-white/[0.04] w-7 h-7 mr-3 flex items-center justify-center transition-colors text-white/30 hover:text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSaved(!saved);
+                  }}
+                  aria-label={saved ? "Saved" : "Save"}
+                >
+                  <Bookmark
+                    className="w-[18px] h-[18px] sm:w-5 sm:h-5"
+                    fill={saved ? "currentColor" : "none"}
+                  />
+                </button>
               </motion.div>
             </div>
 
             {/* ACTION ROW (At the very bottom, fixed in flow) */}
             <div className="shrink-0 px-3 pb-2 bg-transparent relative z-20">
               <div
-                className={`flex items-center gap-0.5 sm:gap-1 pt-1 border-t transition-colors duration-300 ${!notesExpanded ? "border-white/[0.04]" : "border-transparent"}`}
+                className={`flex items-center justify-between gap-2 sm:gap-3 pt-1 border-t transition-colors duration-300 ${!notesExpanded ? "border-white/[0.04]" : "border-transparent"}`}
                 onPointerDown={(e) => e.stopPropagation()}
               >
-                <BoostAction isActive={boosted} onClick={() => setBoosted(!boosted)} />
-                <LibraryAction isActive={inLibrary} onClick={() => setInLibrary(!inLibrary)} />
-                <PinAction isActive={pinned} onClick={() => setPinned(!pinned)} variant="feed" />
-                <SaveAction isActive={saved} onClick={() => setSaved(!saved)} />
+                {/* Primary Actions */}
+                <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                  <BoostAction isActive={boosted} onClick={() => setBoosted(!boosted)} variant="exhibition" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
+                  <LibraryAction isActive={inLibrary} onClick={() => setInLibrary(!inLibrary)} variant="exhibition" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
+                </div>
+
+                {/* Secondary Action */}
+                <div className="mr-1 translate-y-[1px] shrink-0">
+                  <CameraAction 
+                    isActive={pinned} 
+                    isPinned={pinned}
+                    onPin={() => setPinned(!pinned)} 
+                    onQuote={() => setIsQuoteModalOpen(true)}
+                    variant="exhibition" 
+                    iconOnly
+                    className="!w-7 !h-7 sm:!w-[30px] sm:!h-[30px] flex items-center justify-center !px-0 rounded-lg" 
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -539,6 +558,22 @@ export const RecommendationCard = memo(function RecommendationCard({
           zIndex="z-[250]"
         />
       )}
+
+      <AnimatePresence>
+        {isQuoteModalOpen && (
+          <QuoteModal
+            isOpen={isQuoteModalOpen}
+            onClose={() => setIsQuoteModalOpen(false)}
+            item={theatreItem}
+            renderTop={
+              <div className="p-4 sm:p-5 pointer-events-none bg-[#111111]/40 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/40 to-[#0a0a0a] pointer-events-none z-10" />
+                <RecommendationCard rec={rec} variant="modal" />
+              </div>
+            }
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 });

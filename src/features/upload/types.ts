@@ -1,10 +1,10 @@
 import type { Original } from "../../types";
 
-export type UploadCategory = "Edit" | "Poster" | "Script";
+export type UploadCategory = "Edit" | "Poster" | "Storyboard";
 export type UploadPlatform = "youtube" | "twitter";
 export type UploadStep = "IDENTITY" | "CREDITS" | "SOURCE" | "FORMAT" | "REVIEW";
 
-export interface UploadScriptPage {
+export interface UploadStoryboardPage {
   url: string;
   text: string;
 }
@@ -14,7 +14,7 @@ export interface UploadFormData {
   title: string;
   category: UploadCategory;
   contentUrl: string;
-  scriptPages: UploadScriptPage[];
+  storyboardPages: UploadStoryboardPage[];
   aspectRatio: number;
   platform: UploadPlatform;
 }

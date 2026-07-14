@@ -183,8 +183,8 @@ export function ProfileHero({
       </div>
 
       {/* Dedicated Tagline & Metrics Block */}
-      <div className="relative z-20 w-full flex flex-col items-center px-8 mt-6 space-y-6">
-        <div className="w-full text-center flex flex-col items-center gap-6">
+      <div className="relative z-20 w-full flex flex-col items-center px-8 mt-6 space-y-3">
+        <div className="w-full text-center flex flex-col items-center gap-3">
           {/* Minimalist Handle Display */}
           <div className="flex items-center gap-4">
             <div className="w-8 h-[1px] bg-white/20" />
@@ -203,36 +203,31 @@ export function ProfileHero({
 
         {/* Bottom Half: Centered Metrics & Actions Row */}
         {(!hideActions) && (
-          <div className="w-full flex justify-center mt-2 z-20">
-            <div className="flex items-center gap-8">
+          <div className="w-full flex justify-center z-20">
+            <div className="flex items-center justify-center gap-6 px-7 py-3 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
               
               {/* Spirit Metric */}
               {!hideMetrics && spirit && (
-                <>
-                  <div className="flex items-center gap-3">
-                    <SpiritIcon className="w-8 h-8 text-white/80" />
-                    <span className="font-mono text-2xl font-bold tracking-tighter text-white">
-                      {spirit}
-                    </span>
-                  </div>
-                  <div className="w-px h-8 bg-white/20" />
-                </>
+                <div className="flex items-center gap-2.5" title="Spirit Points">
+                  <SpiritIcon className="w-6 h-6 text-white/80" />
+                  <span className="font-mono text-xl font-bold tracking-tighter text-white pt-0.5">
+                    {spirit}
+                  </span>
+                </div>
               )}
 
-              {/* Favorite Action Button */}
-              <FavoriteButton
-                isFavorited={isFavorited}
-                onFavorite={onFavorite}
-                activeColor={theme.nameGradient[0]}
-                iconSize={32}
-              />
+              {(!hideMetrics && spirit) && <div className="w-px h-6 bg-white/15" />}
 
-              <div className="w-px h-8 bg-white/20" />
-
-              {/* Favorites Metric */}
-              <div className="flex items-center gap-3">
-                <Users className="w-7 h-7 text-white/80" />
-                <span className="font-mono text-2xl font-bold tracking-tighter text-white">
+              {/* Favorite Action & Metric */}
+              <div className="flex items-center gap-2.5" title="Favorites">
+                <FavoriteButton
+                  isFavorited={isFavorited}
+                  onFavorite={onFavorite}
+                  activeColor={theme.nameGradient[0]}
+                  iconSize={24}
+                  className="p-0"
+                />
+                <span className="font-mono text-xl font-bold tracking-tighter text-white pt-0.5">
                   {favoritesCount}
                 </span>
               </div>

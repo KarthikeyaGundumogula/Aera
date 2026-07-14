@@ -70,7 +70,7 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename }: S
         return "16:9 HD";
       case "Poster":
         return "2:3 IMAX";
-      case "Script":
+      case "Storyboard":
         return "4:3 PDF";
       default:
         return "1:1 SQ";
@@ -81,7 +81,7 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename }: S
     switch (item.category) {
       case "Edit":
         return <Film className="w-3 h-3" />;
-      case "Script":
+      case "Storyboard":
         return <FileText className="w-3 h-3" />;
       case "Poster":
         return <ImageIcon className="w-3 h-3" />;

@@ -4,6 +4,7 @@ import { Pin, Quote, Film, Sparkles } from "lucide-react";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { WALL_POSTS } from "../../../mock/wall";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
+import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { WallSwiper, WallSwiperArtistGroup } from "../../profile/components/WallSwiper";
 
 function AvatarFallback({ className }: { className: string }) {
@@ -41,6 +42,11 @@ export function WallsOfArtistsZone() {
     []
   );
 
+  const recommendationsById = useMemo(
+    () => Object.fromEntries(MOCK_RECOMMENDATIONS.map((r) => [r.id, r])),
+    []
+  );
+
   useEffect(() => {
     // Initial load: group WALL_POSTS by artist and take first 3 entries for each
     const groupsMap = new Map<string, WallSwiperArtistGroup>();
@@ -61,6 +67,7 @@ export function WallsOfArtistsZone() {
           post,
           resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
           resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
+          resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
         });
       }
     }
@@ -72,7 +79,7 @@ export function WallsOfArtistsZone() {
     }
     
     setArtistGroups(Array.from(groupsMap.values()).slice(0, 10));
-  }, [worksById, originalsById]);
+  }, [worksById, originalsById, recommendationsById]);
 
   const handleFetchOlder = async (artistId: string) => {
     // Simulate network delay
@@ -90,6 +97,7 @@ export function WallsOfArtistsZone() {
         post,
         resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
         resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
+        resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
       }));
       
       return {

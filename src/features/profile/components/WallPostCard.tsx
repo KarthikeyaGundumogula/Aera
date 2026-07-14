@@ -1,10 +1,12 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useState } from "react";
 import { motion } from "motion/react";
-import { Pin } from "lucide-react";
+import { Camera, Star, Bookmark, Eye } from "lucide-react";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
-import { Original } from "../../../types/originals";
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
+import { Recommendation } from "../../../mock/recommendations";
+import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
+import { Original } from "../../../types/originals";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -28,6 +30,7 @@ interface CardLayoutProps {
   artistImage: string;
   postedAt: string;
   text?: string;
+  quoteHeader?: string;
   themeGradient?: [string, string];
   children?: React.ReactNode;
 }
@@ -37,9 +40,16 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   artistImage,
   postedAt,
   text,
+  quoteHeader,
   themeGradient,
   children,
-}) => (
+}) => {
+  const [starred, setStarred] = useState(false);
+  const [saved, setSaved] = useState(false);
+  // generate stable random views based on artistName length for mock purposes
+  const viewsCount = (artistName.length * 142) + 340;
+
+  return (
   <div className="flex gap-3 px-4 pt-4 pb-4">
     {/* Left Column: Avatar */}
     <div className="flex-shrink-0">
@@ -74,6 +84,13 @@ const CardLayout: React.FC<CardLayoutProps> = ({
               : {}
           }
         >
+          {quoteHeader && (
+            <div className="flex items-center gap-1.5 opacity-80 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
+                {quoteHeader}
+              </span>
+            </div>
+          )}
           <p
             className={`text-[15px] leading-[1.55] text-white/85 ${
               children ? "italic" : "font-normal"
@@ -86,13 +103,34 @@ const CardLayout: React.FC<CardLayoutProps> = ({
 
       {/* Attached Media (if any) */}
       {children && (
-        <div className="rounded-[10px] overflow-hidden border border-white/10 bg-white/[0.02] shadow-sm">
+        <div className="mt-3 w-full">
           {children}
         </div>
       )}
+
+      {/* Action Row */}
+      <div className="flex items-center gap-6 mt-1 mb-1">
+        <button 
+          onClick={(e) => { e.stopPropagation(); setStarred(!starred); }}
+          className={`flex items-center gap-1.5 transition-colors ${starred ? "text-amber-500" : "text-white/30 hover:text-white/60"}`}
+        >
+          <Star className="w-3.5 h-3.5" fill={starred ? "currentColor" : "none"} />
+        </button>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setSaved(!saved); }}
+          className={`flex items-center gap-1.5 transition-colors ${saved ? "text-white/90" : "text-white/30 hover:text-white/60"}`}
+        >
+          <Bookmark className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
+        </button>
+        <div className="flex items-center gap-1.5 text-white/20">
+          <Eye className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-medium">{viewsCount}</span>
+        </div>
+      </div>
     </div>
   </div>
-);
+  );
+};
 
 // ─── 1. Pure Line Variant ─────────────────────────────────────────────────────
 
@@ -173,7 +211,7 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
 
     {/* Pin icon — top-left corner, wrapped in a glass badge for high visibility */}
     <div className="absolute top-2 left-2 z-20 w-[22px] h-[22px] rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.5)] flex items-center justify-center">
-      <Pin size={10} className="text-amber-500 fill-amber-500" aria-hidden="true" />
+      <Camera size={10} className="text-amber-500 fill-amber-500 [&>circle]:fill-black" aria-hidden="true" />
     </div>
 
     {/* Work title overlay at bottom — highly visible */}
@@ -229,7 +267,56 @@ const PinVariant: React.FC<PinVariantProps> = ({
   </CardLayout>
 );
 
-// ─── 4. Foyer Wrapper ─────────────────────────────────────────────────────────
+// ─── 4. Recommendation Variant ────────────────────────────────────────────────
+
+interface RecommendationVariantProps {
+  rec: Recommendation;
+  text?: string;
+  artistName: string;
+  artistImage: string;
+  postedAt: string;
+  themeGradient?: [string, string];
+}
+
+const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
+  rec,
+  text,
+  artistName,
+  artistImage,
+  postedAt,
+  themeGradient,
+}) => {
+  return (
+    <CardLayout
+      artistName={artistName}
+      artistImage={artistImage}
+      postedAt={postedAt}
+      themeGradient={themeGradient}
+    >
+      <div className="pointer-events-auto bg-[#0d0d0d] rounded-xl border border-white/5 shadow-sm overflow-hidden mb-3">
+        <FeedRecommendationCard rec={rec} variant="wall-embed" />
+      </div>
+
+      {text && (
+        <div
+          className="relative pl-3.5 py-0.5 mt-2"
+          style={{ borderLeft: `2px solid ${themeGradient ? themeGradient[0] : "#F59E0B"}` }}
+        >
+          <div className="flex items-center gap-1.5 opacity-80 mb-1">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
+              Quoted by {artistName}
+            </span>
+          </div>
+          <p className="text-[15px] leading-[1.55] text-white/85 italic">
+            "{text}"
+          </p>
+        </div>
+      )}
+    </CardLayout>
+  );
+};
+
+// ─── 5. Foyer Wrapper ─────────────────────────────────────────────────────────
 
 interface FoyerWrapperProps {
   artistName: string;
@@ -243,7 +330,7 @@ const FoyerWrapper: React.FC<FoyerWrapperProps> = ({ artistName, children }) => 
       className="flex items-center gap-2 px-3 py-2 border-l-2 border-amber-500"
       style={{ backgroundColor: "rgba(245, 158, 11, 0.08)" }}
     >
-      <Pin size={10} className="text-amber-500 fill-amber-500 flex-shrink-0" aria-hidden="true" />
+      <Camera size={10} className="text-amber-500 fill-amber-500 flex-shrink-0 [&>circle]:fill-[#0d0d0d]" aria-hidden="true" />
       <span className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-400">
         From {artistName}'s Wall
       </span>
@@ -258,6 +345,7 @@ interface WallPostCardProps {
   post: WallPost;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
+  resolvedRecommendation?: Recommendation;
   inFoyer?: boolean;
   themeGradient?: [string, string];
   className?: string;
@@ -266,7 +354,7 @@ interface WallPostCardProps {
 }
 
 export const WallPostCard = memo<WallPostCardProps>(
-  ({ post, resolvedWork, resolvedOriginal, inFoyer = false, themeGradient, className, onClick }) => {
+  ({ post, resolvedWork, resolvedOriginal, resolvedRecommendation, inFoyer = false, themeGradient, className, onClick }) => {
     const isMobile = useMediaQuery();
 
     const pinnedImage: string | undefined =
@@ -304,6 +392,16 @@ export const WallPostCard = memo<WallPostCardProps>(
             postedAt={post.postedAt}
             resolvedWork={resolvedWork}
             isOriginal={post.type === "PIN_ORIGINAL"}
+            themeGradient={themeGradient}
+          />
+        )}
+        {post.type === "RECOMMENDATION" && resolvedRecommendation && (
+          <RecommendationVariant
+            rec={resolvedRecommendation}
+            text={post.text || resolvedRecommendation.notes}
+            artistName={post.artistName}
+            artistImage={post.artistImage}
+            postedAt={post.postedAt}
             themeGradient={themeGradient}
           />
         )}

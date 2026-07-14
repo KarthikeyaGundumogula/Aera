@@ -34,7 +34,7 @@ export function PosterExhibition({ item }: PosterExhibitionProps) {
 
       <ExhibitionFrame
         item={item}
-        mediaMaxWidth="min(680px,calc(100vw-2rem))"
+        mediaMaxWidth="min(440px,calc(100vw-2rem))"
         mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -49,7 +49,7 @@ export function PosterExhibition({ item }: PosterExhibitionProps) {
                 <img
                   src={imageSrc}
                   alt={item.title || "Poster"}
-                  className="w-auto h-auto max-w-full max-h-[75vh] object-contain rounded-none select-none border-[1.5px] border-white/20 shadow-[0_8px_48px_rgba(0,0,0,0.6)]"
+                  className="w-auto h-auto max-w-full max-h-[70vh] lg:max-h-[calc(100vh-320px)] object-contain rounded-none select-none border-[1.5px] border-white/20 shadow-[0_8px_48px_rgba(0,0,0,0.6)]"
                   loading="eager"
                   style={{ backfaceVisibility: "hidden" }}
                   fetchPriority="high"

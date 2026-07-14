@@ -2,7 +2,7 @@ import { TheatreItem } from "../../../types";
 import {
   isEditWork,
   isPosterWork,
-  isScriptWork,
+  isStoryboardWork,
   isRecommendationWork,
 } from "../../shared/work";
 
@@ -96,8 +96,8 @@ function buildMasterPools(items: TheatreItem[]): MasterPools {
   return {
     wide:     items.filter(i => isEditWork(i) && getAspect(i) >= 1.1),
     vertical: items.filter(i => isEditWork(i) && getAspect(i) < 0.9),
-    // Recommendations first, then scripts, posters, square-ratio edits
-    square:   items.filter(i => isRecommendationWork(i) || isScriptWork(i) || isPosterWork(i) || (isEditWork(i) && getAspect(i) >= 0.9 && getAspect(i) < 1.1)),
+    // Recommendations first, then storyboards, posters, square-ratio edits
+    square:   items.filter(i => isRecommendationWork(i) || isStoryboardWork(i) || isPosterWork(i) || (isEditWork(i) && getAspect(i) >= 0.9 && getAspect(i) < 1.1)),
     any:      items,
   };
 }
@@ -131,7 +131,7 @@ function pickBestItem(
       }
       
       // Standard priority
-      if (!found) found = findAndRemove(availableItems, isScriptWork);
+      if (!found) found = findAndRemove(availableItems, isStoryboardWork);
       if (!found) found = findAndRemove(availableItems, isPosterWork);
       
       // Fallback: low priority recommendation

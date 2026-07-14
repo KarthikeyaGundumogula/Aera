@@ -6,7 +6,7 @@ import { TheatreItem } from "../../../types";
 import {
   isEditWork,
   isPosterWork,
-  isScriptWork,
+  isStoryboardWork,
 } from "../../shared/work/types";
 
 // ─── Scanning-light animation shared by all badges ──────────────────────────
@@ -125,12 +125,12 @@ function PosterBadgeFeed() {
   );
 }
 
-// ─── Script Badge ───────────────────────────────────────────────────────────
+// ─── Storyboard Badge ───────────────────────────────────────────────────────────
 
-function ScriptBadgeDesktop() {
+function StoryboardBadgeDesktop() {
   return (
     <div className="absolute bottom-3 right-3 z-10">
-      <Tooltip content="Script Edit" position="top">
+      <Tooltip content="Storyboard Edit" position="top">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -147,7 +147,7 @@ function ScriptBadgeDesktop() {
   );
 }
 
-function ScriptBadgeMobile() {
+function StoryboardBadgeMobile() {
   return (
     <div className="absolute top-2 right-2 z-10 w-5 h-5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-sm">
       <ScriptsIcon className="h-2 w-2 text-white fill-white/10" />
@@ -155,7 +155,7 @@ function ScriptBadgeMobile() {
   );
 }
 
-function ScriptBadgeFeed() {
+function StoryboardBadgeFeed() {
   return (
     <div className="absolute top-4 right-4 z-10">
       <motion.div
@@ -195,10 +195,10 @@ export const CategoryBadge = memo(function CategoryBadge({
     if (variant === "feed") return <PosterBadgeFeed />;
     return <PosterBadgeMobile />;
   }
-  if (isScriptWork(item)) {
-    if (variant === "desktop") return <ScriptBadgeDesktop />;
-    if (variant === "feed") return <ScriptBadgeFeed />;
-    return <ScriptBadgeMobile />;
+  if (isStoryboardWork(item)) {
+    if (variant === "desktop") return <StoryboardBadgeDesktop />;
+    if (variant === "feed") return <StoryboardBadgeFeed />;
+    return <StoryboardBadgeMobile />;
   }
   return null;
 });

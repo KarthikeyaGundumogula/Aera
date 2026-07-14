@@ -10,6 +10,7 @@ import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
 import { Pin, Bookmark, Heart } from "lucide-react";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
+import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { ARTISTS_MOCK } from "../../../mock";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 
@@ -110,9 +111,14 @@ export function ExhibitionFrame({
 
   const handleStarBtn = () => {
     if (starTimeout.current) clearTimeout(starTimeout.current);
+    if (flashTimeout.current) clearTimeout(flashTimeout.current);
     const next = !isStarred;
     setIsStarred(next);
     setStaring(true);
+    if (next) {
+      setDoubleTapFlash(true);
+      flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 1000);
+    }
     starTimeout.current = setTimeout(() => setStaring(false), 420);
   };
 
@@ -134,6 +140,8 @@ export function ExhibitionFrame({
   };
 
   const followersCount = generateStat(item.artist || item.id, 50000, 1000);
+  const artistObj = ARTISTS_MOCK.find((a) => a.name === item.artist);
+  const spiritCount = artistObj?.spirit || generateStat(item.id, 2000, 100);
   const starsCount = generateStat(item.id, 10000, 500);
   const pinsCount = generateStat(item.id, 5000, 50);
   const savesCount = generateStat(item.id, 20000, 200);
@@ -259,9 +267,17 @@ export function ExhibitionFrame({
                         {item.artist || "Unknown Artist"}
                       </button>
 
-                      <span className="text-[10px] font-bold text-white/50">
-                        {formatStat(followersCount)} favorites
-                      </span>
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-white/50">
+                        <span className="flex items-center gap-1">
+                          <Heart className="w-3 h-3" />
+                          {formatStat(followersCount)}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <SpiritIcon className="w-3 h-3 text-white/80" />
+                          {spiritCount}
+                        </span>
+                      </div>
                     </div>
                   </div>
 

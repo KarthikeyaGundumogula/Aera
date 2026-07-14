@@ -25,6 +25,16 @@ export const WALL_POSTS: WallPost[] = [
     postedAt: "2026-07-05T20:30:00Z",
   },
   {
+    id: "wp-rec-001",
+    artistId: "fh-001",
+    artistName: "Karthik G",
+    artistImage: "/stars/pawan-kalyan.jpeg",
+    type: "RECOMMENDATION",
+    pinnedRecommendationId: "rec-001",
+    text: "i can't stop thinking about this sequence.",
+    postedAt: "2026-07-05T10:00:00Z",
+  },
+  {
     id: "wp-002",
     artistId: "fh-001",
     artistName: "Karthik G",
@@ -86,6 +96,15 @@ export const WALL_POSTS: WallPost[] = [
     postedAt: "2026-07-05T23:30:00Z",
   },
   {
+    id: "wp-rec-002",
+    artistId: "fh-002",
+    artistName: "Priya Nair",
+    artistImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
+    type: "RECOMMENDATION",
+    pinnedRecommendationId: "rec-002",
+    postedAt: "2026-07-05T12:00:00Z",
+  },
+  {
     id: "wp-008",
     artistId: "fh-002",
     artistName: "Priya Nair",
@@ -135,6 +154,15 @@ export const WALL_POSTS: WallPost[] = [
     type: "LINE",
     text: "dropped everything to re-watch KGF chapter 2 just for the BGM during the climax sequence. Ravi Basrur is not human.",
     postedAt: "2026-07-05T17:00:00Z",
+  },
+  {
+    id: "wp-rec-003",
+    artistId: "fh-003",
+    artistName: "Arjun Reddy",
+    artistImage: "/stars/yash.jpg",
+    type: "RECOMMENDATION",
+    pinnedRecommendationId: "rec-003",
+    postedAt: "2026-07-05T09:00:00Z",
   },
   {
     id: "wp-013",

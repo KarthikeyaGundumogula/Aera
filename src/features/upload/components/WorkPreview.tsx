@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { TheatreItem } from "../../../types";
 import { EditWork } from "../../shared/work/EditWork";
 import { PosterWork } from "../../shared/work/PosterWork";
-import { ScriptWork } from "../../shared/work/ScriptWork";
+import { StoryboardWork } from "../../shared/work/StoryboardWork";
 import { extractSrcId, buildThumbnail } from "../../../utils/embed";
 import type { UploadFormData } from "../types";
 
@@ -23,8 +23,8 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
     
     if (formData.category === "Poster" && formData.contentUrl) {
       image = formData.contentUrl;
-    } else if (formData.category === "Script" && formData.scriptPages.length > 0) {
-      image = formData.scriptPages[0].url;
+    } else if (formData.category === "Storyboard" && formData.storyboardPages.length > 0) {
+      image = formData.storyboardPages[0].url;
     } else if (srcId && formData.platform === "youtube") {
       image = buildThumbnail("youtube", srcId);
     }
@@ -34,8 +34,8 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
       title: formData.title || "Untitled Work",
       category: formData.category,
       image,
-      images: formData.scriptPages.map(p => p.url),
-      captions: formData.scriptPages.map(p => p.text),
+      images: formData.storyboardPages.map(p => p.url),
+      captions: formData.storyboardPages.map(p => p.text),
       aspectRatio: formData.aspectRatio,
       artist: "You", // Locked to current user
       originalIds: formData.originalIds,
@@ -69,7 +69,7 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
             showBadge={true}
           />
         ) : (
-          <ScriptWork
+          <StoryboardWork
             item={mockItem}
             variant="feed"
             showBadge={true}
