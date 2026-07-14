@@ -36,7 +36,7 @@ export const HeroResonanceSignature = memo(
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        className="mt-2 inline-block bg-black/20 backdrop-blur-md px-2 py-2 sm:px-3 sm:py-2.5 rounded-lg"
+        className="mt-2 inline-block bg-black/20 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-white/5"
       >
         <div className="font-mono text-[10px] sm:text-xs tracking-widest text-white/90 grid grid-cols-[max-content_max-content_max-content] gap-x-4 sm:gap-x-6 gap-y-1.5 sm:gap-y-2 items-center drop-shadow-md">
           {/* Surge Density */}

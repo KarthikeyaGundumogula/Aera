@@ -223,6 +223,11 @@ The right-column panel (380px wide on desktop, full-width stacked below on mobil
 Each movie/series is a **FrameHouse Original**
 Flow: Select a movie -> Curate top works -> Build themed theatre -> Feature artists.
 
+### Peak Presence (The Cultural Gravity Metric)
+Originals do not have a generic 5-star rating. Instead, they are measured by **Peak Presence**—a historical high-water mark of their influence on the platform.
+- **What it measures:** How much *art* (Edits, Posters, Storyboards) the movie inspired, the reach/views of those works, and its footprint in Festivals and Set discussions.
+- **Why Peak:** By displaying the historical peak rather than a daily active metric, it treats the Original like a legendary artifact rather than a fluctuating stock ticker.
+
 ---
 
 ## 🎯 11. Theme System

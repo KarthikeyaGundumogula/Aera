@@ -1,46 +1,92 @@
 [
   {
-    "id": "set-rebelwood",
-    "title": "RebelWood",
-    "description": "Find the Raw Intensity in his hands and hear the dinosaur's breath to experince grand cinema",
+    "id": "set-got",
+    "title": "Westeros Archive",
+    "description": "Ice, Fire, and Political Intrigue. The definitive collection for all things Game of Thrones.",
     "captainId": "profile-karthik-g",
-    "coverImage": "/posters/og.jpeg",
-    "accentColor": "#00FFC2",
-    "themeLine": "India's Biggest Superstar's arena",
+    "coverImage": "/posters/got.jpeg",
+    "accentColor": "#4B5320",
+    "themeLine": "Winter is Here",
     "members": [
-      { "profileId": "profile-karthik-g", "role": "Captain", "joinedAt": "2024-01-01T10:00:00Z" },
-      { "profileId": "profile-arjun-reddy", "role": "Organizer", "joinedAt": "2024-02-15T12:00:00Z" }
+      { "profileId": "profile-karthik-g", "role": "Captain", "joinedAt": "2024-01-01T10:00:00Z" }
     ],
-    "activeFestivalId": "fest-noir-ritual",
+    "activeFestivalId": "fest-fire-and-blood",
     "festivalStatus": "ONGOING",
-    "tickerText": "THE NOIR RITUAL IS LIVE — SUBMIT YOUR EDITS NOW"
+    "tickerText": "THE FIRE AND BLOOD FESTIVAL IS LIVE — SUBMIT YOUR EDITS"
   },
   {
-    "id": "set-pawanism",
-    "title": "Pawanism",
-    "description": "Here you can expereince this `Peelche gaalilo pawanism` ",
+    "id": "set-aot",
+    "title": "Titan Vanguard",
+    "description": "Tatakae! For the freedom of humanity and the art of Attack on Titan.",
     "captainId": "profile-arjun-reddy",
-    "coverImage": "/posters/rrr.jpeg",
-    "accentColor": "#FFD700",
-    "themeLine": "Ghambheera Comingback for his throne",
+    "coverImage": "/posters/aot.jpeg",
+    "accentColor": "#8B0000",
+    "themeLine": "Give up your dreams and die",
     "members": [
-      { "profileId": "profile-arjun-reddy", "role": "Captain", "joinedAt": "2024-01-10T09:00:00Z" },
-      { "profileId": "profile-karthik-g", "role": "Member", "joinedAt": "2024-03-01T14:30:00Z" }
-    ],
-    "activeFestivalId": "fest-mythos-2024",
-    "festivalStatus": "ONGOING",
-    "tickerText": "THE MYTHOS FESTIVAL IS LIVE — COME CREATE"
+      { "profileId": "profile-arjun-reddy", "role": "Captain", "joinedAt": "2024-01-10T09:00:00Z" }
+    ]
   },
   {
-    "id": "set-twod-in-action",
-    "title": "Tollywood In Action",
-    "description": "Unfiltered, intense, and uncompromising visuals.",
+    "id": "set-bb",
+    "title": "Blue Sky Chemists",
+    "description": "Treading lightly through the cinematic masterpiece of Breaking Bad.",
     "captainId": "profile-jr-ntr",
-    "coverImage": "/posters/kgf.jpeg",
-    "accentColor": "#FF4500",
-    "themeLine": "Stay raw. Stay real.",
+    "coverImage": "/posters/bb.jpeg",
+    "accentColor": "#0F5E24",
+    "themeLine": "Say My Name",
     "members": [
       { "profileId": "profile-jr-ntr", "role": "Captain", "joinedAt": "2024-01-20T11:00:00Z" }
+    ]
+  },
+  {
+    "id": "set-baahubali",
+    "title": "Mahishmati Lore",
+    "description": "Celebrating the epic scale, mythology, and grandeur of the Baahubali saga.",
+    "captainId": "profile-karthik-g",
+    "coverImage": "/posters/baahubali.jpeg",
+    "accentColor": "#FFD700",
+    "themeLine": "Dheevara",
+    "members": [
+      { "profileId": "profile-karthik-g", "role": "Captain", "joinedAt": "2024-02-01T10:00:00Z" }
+    ]
+  },
+  {
+    "id": "set-lcu",
+    "title": "LCU Syndicates",
+    "description": "Biriyani, guns, and interconnected chaos. The Lokesh Cinematic Universe collective.",
+    "captainId": "profile-arjun-reddy",
+    "coverImage": "/posters/lcu.jpeg",
+    "accentColor": "#B22222",
+    "themeLine": "Ghost is back",
+    "members": [
+      { "profileId": "profile-arjun-reddy", "role": "Captain", "joinedAt": "2024-02-15T10:00:00Z" }
+    ],
+    "activeFestivalId": "fest-bloody-sweet",
+    "festivalStatus": "ONGOING",
+    "tickerText": "BLOODY SWEET FESTIVAL — JOIN THE CARNAGE"
+  },
+  {
+    "id": "set-satyajit-ray",
+    "title": "The Ray Criterion",
+    "description": "A tribute to the pioneer of Indian parallel cinema, Satyajit Ray.",
+    "captainId": "profile-jr-ntr",
+    "coverImage": "/posters/ray.jpeg",
+    "accentColor": "#A9A9A9",
+    "themeLine": "Apu's World",
+    "members": [
+      { "profileId": "profile-jr-ntr", "role": "Captain", "joinedAt": "2024-03-01T10:00:00Z" }
+    ]
+  },
+  {
+    "id": "set-mani-ratnam",
+    "title": "Ratnam Aesthetics",
+    "description": "Frames painted with light and shadow. Celebrating the visual poetry of Mani Ratnam.",
+    "captainId": "profile-karthik-g",
+    "coverImage": "/posters/mani.jpeg",
+    "accentColor": "#483D8B",
+    "themeLine": "Visual Poetry",
+    "members": [
+      { "profileId": "profile-karthik-g", "role": "Captain", "joinedAt": "2024-03-15T10:00:00Z" }
     ]
   }
 ]

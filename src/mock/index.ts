@@ -153,6 +153,6 @@ export const CURRENT_USER_MOCK = {
   id: "user-current",
   name: "Karthikeya",
   favoritedOriginalIds: ["og-original", "rrr-original", "kgf-original", "vikram-original"],
-  memberSetIds: ["set-rebelwood", "set-pawanism", "set-twod-in-action"],
+  memberSetIds: ["set-lcu", "set-got", "set-baahubali"],
 };
 

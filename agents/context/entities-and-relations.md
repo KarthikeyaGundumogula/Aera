@@ -19,6 +19,7 @@ The creative outputs of Artists.
 
 ### B. Origins
 The source material (movies, series, music) that inspires Works. Every Work must reference an Origin (Attribution).
+- **Metric (Peak Presence)**: Origins are measured by their "Peak Presence", reflecting their historical high-water mark of influence on the platform (calculated via the volume/reach of Works crediting it and its gravity in Festivals/Discussions).
 
 ## 3. The Interaction Spaces (Walls & Cards)
 

@@ -1,8 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Sun, Users, Film } from "lucide-react";
 
-import { HeroResonanceSignature } from "./HeroResonanceSignature";
-
 interface OriginalStatsProps {
   stats: {
     presence: string | number;
@@ -25,9 +23,6 @@ export function OriginalStats({ stats, signature }: OriginalStatsProps) {
         exit={{ opacity: 0, y: 20 }}
         className="absolute bottom-0 left-0 w-full px-4 sm:px-8 pb-2 z-20 pointer-events-none"
       >
-        <div className="mb-4">
-          <HeroResonanceSignature signature={signature} />
-        </div>
         <div className="flex items-center gap-8 md:gap-12 py-4 border-t border-white/10">
           <div className="flex flex-col pointer-events-auto">
             <div className="flex items-center gap-2 mb-1">

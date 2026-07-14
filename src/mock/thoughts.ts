@@ -33,8 +33,8 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     reactionCount: 342,
     topReactions: ["heart", "flame", "zap"],
     timestamp: "2 hours ago",
-    setId: "set-neo-noir",
-    setName: "Neo-Noir",
+    setId: "set-lcu",
+    setName: "LCU Syndicates",
     tag: {
       type: "Original",
       id: "og-01",
@@ -53,8 +53,8 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     reactionCount: 892,
     topReactions: ["flame", "sparkles", "star"],
     timestamp: "5 hours ago",
-    setId: "set-epic-builders",
-    setName: "Epic Builders",
+    setId: "set-baahubali",
+    setName: "Mahishmati Lore",
     tag: {
       type: "Original",
       id: "rrr-01",
@@ -73,8 +73,8 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     reactionCount: 156,
     topReactions: ["zap", "heart"],
     timestamp: "1 day ago",
-    setId: "set-raw-grit",
-    setName: "Raw Grit",
+    setId: "set-aot",
+    setName: "Titan Vanguard",
     tag: {
       type: "Original",
       id: "kgf-01",
@@ -93,8 +93,8 @@ export const THOUGHTS_MOCK: ThoughtItem[] = [
     reactionCount: 430,
     topReactions: ["star", "flame", "sparkles"],
     timestamp: "2 days ago",
-    setId: "set-raw-grit",
-    setName: "Raw Grit",
+    setId: "set-bb",
+    setName: "Blue Sky Chemists",
     tag: {
       type: "Original",
       id: "pushpa-01",
