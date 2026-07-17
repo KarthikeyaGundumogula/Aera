@@ -12,6 +12,8 @@ import {
   ChevronRight,
   Loader2,
   ArrowUpRight,
+  Share2,
+  Check,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +28,8 @@ import { SaveAction } from "../../../components/actions/SaveAction";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
+import { ReactionAction } from "../../../components/actions/ReactionAction";
+import { ReactionId } from "../../../types/reactions";
 
 function AvatarFallback({ className }: { className: string }) {
   const baseClasses = className
@@ -363,10 +367,10 @@ const PinFull: React.FC<PinFullProps> = ({
 
 // ─── Full-screen Recommendation viewer ────────────────────────────────────────
 
-const RecommendationFull: React.FC<{ post: WallPost; rec?: Recommendation }> = ({
-  post,
-  rec,
-}) => {
+const RecommendationFull: React.FC<{
+  post: WallPost;
+  rec?: Recommendation;
+}> = ({ post, rec }) => {
   const navigate = useNavigate();
 
   if (!rec) return null;
@@ -410,8 +414,7 @@ const RecommendationFull: React.FC<{ post: WallPost; rec?: Recommendation }> = (
         }}
         className="mx-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-white/60 hover:text-white text-xs font-black uppercase tracking-widest transition-all pointer-events-auto"
       >
-        <span>View Exhibition</span>
-        <ArrowUpRight className="w-3.5 h-3.5" />
+        <span>View</span>
       </button>
     </div>
   );
@@ -501,6 +504,8 @@ export function WallSwiper({
     useState<Record<string, number>>(initialPostIndices);
 
   const [isFetching, setIsFetching] = useState(false);
+  const [copiedSwiper, setCopiedSwiper] = useState(false);
+  const [activeReaction, setActiveReaction] = useState<ReactionId | null>(null);
 
   // Treadmill drag value — always resets to 0 after each committed swipe.
   const dragX = useMotionValue(0);
@@ -516,15 +521,15 @@ export function WallSwiper({
     startY: number;
     startTime: number;
     lastX: number;
-    lastDx: number;   // movement since last pointermove (for velocity)
-    lastTs: number;   // timestamp of last pointermove
+    lastDx: number; // movement since last pointermove (for velocity)
+    lastTs: number; // timestamp of last pointermove
     active: boolean;
-    isDrag: boolean;  // true once pointer moves past 6px threshold
+    isDrag: boolean; // true once pointer moves past 6px threshold
   } | null>(null);
 
   const W = typeof window !== "undefined" ? window.innerWidth : 390;
   const SWIPE_THRESHOLD = W * 0.22; // 22% of screen width
-  const VELOCITY_THRESHOLD = 380;   // px/s
+  const VELOCITY_THRESHOLD = 380; // px/s
 
   const wrap = (idx: number) =>
     ((idx % groups.length) + groups.length) % groups.length;
@@ -535,6 +540,8 @@ export function WallSwiper({
 
   const activePostIndex = postIndices[activeGroup.artistId] || 0;
   const isShowingOlderCard = activePostIndex === activeGroup.entries.length;
+  
+  const reactionsCount = (activeGroup.artistName.length * 12) + (activePostIndex * 5) + 15;
 
   // Animate dragX to a target then commit the index change and snap back to 0.
   const commitGroupChange = useCallback(
@@ -572,6 +579,66 @@ export function WallSwiper({
     await onFetchOlder(activeGroup.artistId);
     setIsFetching(false);
   }, [onFetchOlder, isFetching, activeGroup.artistId]);
+
+  const handleSwiperShare = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const currentPost = !isShowingOlderCard
+        ? activeGroup.entries[activePostIndex]?.post
+        : null;
+      const postId = currentPost?.id ?? activeGroup.entries[0]?.post.id;
+      const shareUrl = `${window.location.origin}/wall/${activeGroup.artistId}/${postId}`;
+
+      // Try native share sheet first (mobile / supported desktop)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: `${activeGroup.artistName} on Aera`,
+            text: currentPost?.text
+              ? `"${currentPost.text.slice(0, 80)}..."`
+              : `A post by ${activeGroup.artistName}`,
+            url: shareUrl,
+          });
+          return; // share sheet opened — done
+        } catch (err: unknown) {
+          // AbortError = user dismissed — don't fall through to copy
+          if (err instanceof Error && err.name === "AbortError") return;
+        }
+      }
+
+      // Desktop / no share API: copy link to clipboard
+      let copied = false;
+      if (navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          copied = true;
+        } catch (_) {
+          /* fall through */
+        }
+      }
+      if (!copied) {
+        // Legacy execCommand fallback
+        try {
+          const el = document.createElement("textarea");
+          el.value = shareUrl;
+          el.style.cssText =
+            "position:fixed;top:-9999px;left:-9999px;opacity:0";
+          document.body.appendChild(el);
+          el.focus();
+          el.select();
+          copied = document.execCommand("copy");
+          document.body.removeChild(el);
+        } catch (_) {
+          /* silent */
+        }
+      }
+      if (copied) {
+        setCopiedSwiper(true);
+        setTimeout(() => setCopiedSwiper(false), 2000);
+      }
+    },
+    [activeGroup, activePostIndex, isShowingOlderCard],
+  );
 
   const handleTap = useCallback(
     (dir: number) => {
@@ -625,8 +692,6 @@ export function WallSwiper({
     return () => window.removeEventListener("keydown", handle);
   }, [handleTap, onClose]);
 
-
-
   // Per-slide x MotionValues derived from the shared dragX.
   // Prev is at -W + drag, Current is at 0 + drag, Next is at +W + drag.
   const prevX = useTransform(dragX, (v) => -W + v);
@@ -638,7 +703,11 @@ export function WallSwiper({
   const nextScale = useTransform(dragX, [0, W], [0.88, 1]);
   const prevOpacity = useTransform(dragX, [-W, -W * 0.3], [1, 0.3]);
   const nextOpacity = useTransform(dragX, [W * 0.3, W], [0.3, 1]);
-  const currOpacity = useTransform(dragX, [-W * 0.4, 0, W * 0.4], [0.5, 1, 0.5]);
+  const currOpacity = useTransform(
+    dragX,
+    [-W * 0.4, 0, W * 0.4],
+    [0.5, 1, 0.5],
+  );
 
   // Slide renderer — used for all three treadmill slots.
   function SlideContent({
@@ -668,9 +737,7 @@ export function WallSwiper({
           touchAction: "pan-y",
         }}
       >
-        <div
-          className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none"
-        >
+        <div className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none">
           <div className="w-full my-auto pointer-events-none shrink-0">
             {isOlderCard ? (
               <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-5 pointer-events-none my-8">
@@ -686,7 +753,8 @@ export function WallSwiper({
                     Earlier posts
                   </h3>
                   <p className="text-xs text-white/40 leading-relaxed max-w-[220px] mx-auto">
-                    These posts stay on {group.artistName}'s wall until they remove them.
+                    These posts stay on {group.artistName}'s wall until they
+                    remove them.
                   </p>
                 </div>
                 <button
@@ -733,14 +801,35 @@ export function WallSwiper({
 
   return createPortal(
     <ModalWrapper isOpen={true} onClose={onClose} isImmersive={true}>
-      {/* Close */}
-      <button
-        onClick={onClose}
-        className="fixed top-4 right-4 z-[300] w-9 h-9 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors duration-150"
-        aria-label="Close"
-      >
-        <X size={16} />
-      </button>
+      {/* Top-right controls: Share + Close */}
+      <div className="fixed top-4 right-4 z-[300] flex items-center gap-2">
+        {!isShowingOlderCard && (
+          <ReactionAction 
+            activeReaction={activeReaction}
+            onReact={setActiveReaction}
+            count={reactionsCount}
+            isFeed={false}
+          />
+        )}
+        <button
+          onClick={handleSwiperShare}
+          className={`w-9 h-9 rounded-xl backdrop-blur-md border flex items-center justify-center transition-all duration-200 ${
+            copiedSwiper
+              ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
+              : "bg-black/60 border-white/10 text-white/60 hover:text-white"
+          }`}
+          aria-label="Share this post"
+        >
+          {copiedSwiper ? <Check size={15} /> : <Share2 size={15} />}
+        </button>
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors duration-150"
+          aria-label="Close"
+        >
+          <X size={16} />
+        </button>
+      </div>
 
       {/* Artist header */}
       <div className="fixed top-5 left-4 z-[300]">
@@ -810,7 +899,12 @@ export function WallSwiper({
           // Those elements handle their own click events; we must not also
           // treat the same pointer-down as a gesture start.
           const target = e.target as HTMLElement;
-          if (target.closest('button, a, [role="button"], input, select, textarea')) return;
+          if (
+            target.closest(
+              'button, a, [role="button"], input, select, textarea',
+            )
+          )
+            return;
 
           // Only track primary pointer (ignore secondary touches)
           if (e.button !== 0 && e.pointerType === "mouse") return;
@@ -893,7 +987,11 @@ export function WallSwiper({
         }}
         onPointerCancel={() => {
           gesture.current = null;
-          motionAnimate(dragX, 0, { type: "spring", stiffness: 500, damping: 40 });
+          motionAnimate(dragX, 0, {
+            type: "spring",
+            stiffness: 500,
+            damping: 40,
+          });
         }}
       >
         {/* Three treadmill slides */}

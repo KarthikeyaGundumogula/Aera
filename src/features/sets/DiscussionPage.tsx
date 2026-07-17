@@ -4,7 +4,6 @@ import { X, MessageSquare, Minus, Plus } from "lucide-react";
 import { THOUGHTS_MOCK, MOCK_DISCUSSION_REPLIES, DiscussionReply, GRID_ITEMS, ARTISTS_MOCK } from "../../mock";
 import { DesktopHeader } from "../navigation/DesktopHeader";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
-import { Reactions, ReactionType } from "../shared/Reactions";
 import { ArtistProfile } from "../shared/profile";
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
@@ -25,14 +24,6 @@ function getAuthorAvatar(name: string): string {
   }
   return "";
 }
-
-const REACTION_GLOW: Record<ReactionType, string> = {
-  heart: "text-rose-200/90",
-  zap: "text-yellow-200/90",
-  flame: "text-orange-200/90",
-  star: "text-amber-200/90",
-  sparkles: "text-cyan-200/90",
-};
 
 /* ─── Clickable Artist Name ──────────────────────────────────── */
 
@@ -209,7 +200,6 @@ function ThreadNode({
   onSubmitReply: (parentId: string, text: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
-  const [textGlow, setTextGlow] = useState<string | null>(null);
   const [replyOpen, setReplyOpen] = useState(false);
   const hasChildren = reply.replies && reply.replies.length > 0;
 
@@ -223,11 +213,6 @@ function ThreadNode({
       </button>
     );
   }
-
-  const handleReaction = (type: ReactionType) => {
-    setTextGlow(REACTION_GLOW[type]);
-    setTimeout(() => setTextGlow(null), 600);
-  };
 
   return (
     <div className={`relative flex ${level === 0 ? "border-t border-white/[0.04] pt-4 mt-2" : ""}`}>
@@ -269,10 +254,9 @@ function ThreadNode({
 
         {!collapsed ? (
           <>
-            <RichText text={reply.text} glowClass={textGlow || undefined} />
+            <RichText text={reply.text} />
 
             <div className="flex items-center gap-3 mt-2">
-              <Reactions initialReactions={reply.reactions} onReact={handleReaction} />
               <button
                 onClick={() => setReplyOpen((v) => !v)}
                 className={`text-[9px] font-bold uppercase tracking-widest transition-colors cursor-pointer ${
@@ -322,7 +306,6 @@ function ThreadNode({
 export function DiscussionPage() {
   const { setId, discussionId } = useParams<{ setId: string; discussionId: string }>();
   const navigate = useNavigate();
-  const [opTextGlow, setOpTextGlow] = useState<string | null>(null);
 
   const thought = useMemo(
     () => THOUGHTS_MOCK.find((t) => t.id === discussionId),
@@ -336,11 +319,6 @@ export function DiscussionPage() {
 
   const [replies, setReplies] = useState<DiscussionReply[]>(initialReplies);
   const [rootText, setRootText] = useState("");
-
-  const handleOpReaction = (type: ReactionType) => {
-    setOpTextGlow(REACTION_GLOW[type]);
-    setTimeout(() => setOpTextGlow(null), 600);
-  };
 
   /** Called from any ThreadNode when user submits an inline reply */
   const handleSubmitReply = (parentId: string, text: string) => {
@@ -422,7 +400,7 @@ export function DiscussionPage() {
             </span>
           </div>
 
-          <p className={`font-mono text-base md:text-lg leading-relaxed whitespace-pre-wrap mb-4 transition-colors duration-500 ${opTextGlow || 'text-white/90'}`}>
+          <p className="font-mono text-base md:text-lg leading-relaxed whitespace-pre-wrap mb-4 transition-colors duration-500 text-white/90">
             {thought.text}
           </p>
 
@@ -441,8 +419,6 @@ export function DiscussionPage() {
               • {thought.timestamp}
             </span>
           </div>
-
-          <Reactions onReact={handleOpReaction} />
         </div>
 
         {/* ── Root input — start a new thread ── */}

@@ -23,11 +23,12 @@ The source material (movies, series, music) that inspires Works. Every Work must
 
 ## 3. The Interaction Spaces (Walls & Cards)
 
-### A. The Artist Wall (Personal Profile)
-A highly curated, persistent "moodboard" or exhibition space on an Artist's profile.
-- **Control**: Only the Artist can post to their personal Wall.
-- **Format**: Artists can post **Lines** (text sentences/notes), or **Pin** Works/Originals with an attached **Line**.
-- **Distribution**: Wall posts are **NOT** pushed to the global Hall feed. They are only broadcasted to the users who have explicitly *Favorited* the Artist. This creates a high-trust, intimate loop (bragging privilege).
+### A. The Wall (Personal Profile)
+A highly curated, persistent "moodboard" or exhibition space on a user's profile.
+- **Control**: Only the profile owner can post to their personal Wall.
+- **Format**: Users can post **Lines** (text sentences/notes), or **Pin** Works/Originals with an attached **Line**.
+- **Distribution**: Wall posts are **NOT** pushed to the global Hall feed. They are only broadcasted to the users who have explicitly *Favorited* the owner. This creates a high-trust, intimate loop.
+- **Artist Reactions (The Acknowledgment Seal)**: There are no comment sections on the Wall. Instead, if an audience member Pins an Artist's work to their Wall with a quote, the original Artist can leave a visual reaction (a curated seal or meme/GIF template). This provides a massive "Creator Liked" dopamine hit without the toxicity of open text comments.
 
 ### B. The Set Wall (Communal Space)
 A micro-community space created around themes or movies.

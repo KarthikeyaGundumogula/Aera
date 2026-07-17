@@ -93,11 +93,11 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
             {/* Poster — fixed height so tall images don't inflate card */}
             <div className="px-2.5 pt-2.5 pb-2 shrink-0">
               <div
-                className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
-                onClick={(e) => {
+                className={`relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 shadow-[0_8px_24px_rgba(0,0,0,0.6)] ${variant === "default" ? "cursor-pointer group/poster" : ""}`}
+                onClick={variant === "default" ? (e) => {
                   e.stopPropagation();
                   navigate(`/originals/${rec.original.id}`);
-                }}
+                } : undefined}
               >
                 <PosterImage
                   src={rec.original.coverImage}
@@ -190,9 +190,9 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
           <div className="w-[1px] bg-white/[0.05] shrink-0" />
 
           {/* RIGHT: Content Column */}
-          <div 
-            className={`flex-1 min-w-0 flex flex-col relative z-10 ${variant !== "modal" ? "cursor-pointer" : ""}`}
-            onClick={variant !== "modal" ? handleCardClick : undefined}
+          <div
+            className={`flex-1 min-w-0 flex flex-col relative z-10 ${variant === "default" ? "cursor-pointer" : ""}`}
+            onClick={variant === "default" ? handleCardClick : undefined}
           >
             {/* TOP: Film Title */}
             <div className="px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2">

@@ -1,6 +1,6 @@
-import React, { memo, useState } from "react";
+import React, { memo, useState, useCallback } from "react";
 import { motion } from "motion/react";
-import { Camera, Star, Bookmark, Eye } from "lucide-react";
+import { Camera, Star, Bookmark, Eye, Share2, Check } from "lucide-react";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
@@ -8,6 +8,8 @@ import { Recommendation } from "../../../mock/recommendations";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { Original } from "../../../types/originals";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { ReactionAction } from "../../../components/actions/ReactionAction";
+import { ReactionId } from "../../../types/reactions";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -29,6 +31,9 @@ interface CardLayoutProps {
   artistName: string;
   artistImage: string;
   postedAt: string;
+  /** Used to construct the shareable wall-post URL */
+  postId: string;
+  artistId: string;
   text?: string;
   quoteHeader?: string;
   themeGradient?: [string, string];
@@ -39,15 +44,72 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   artistName,
   artistImage,
   postedAt,
+  postId,
+  artistId,
   text,
   quoteHeader,
   themeGradient,
   children,
 }) => {
-  const [starred, setStarred] = useState(false);
+  const [activeReaction, setActiveReaction] = useState<ReactionId | null>(null);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
   // generate stable random views based on artistName length for mock purposes
   const viewsCount = (artistName.length * 142) + 340;
+  const reactionsCount = (artistName.length * 12) + 15;
+
+  /** Reliable cross-browser copy-to-clipboard with execCommand fallback. */
+  const copyToClipboard = useCallback(async (text: string): Promise<boolean> => {
+    // Modern Clipboard API (works on localhost + HTTPS)
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (_) {
+        // Fall through to legacy fallback
+      }
+    }
+    // Legacy fallback via a temporarily inserted textarea
+    try {
+      const el = document.createElement("textarea");
+      el.value = text;
+      el.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0";
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(el);
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }, []);
+
+  const handleShare = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/wall/${artistId}/${postId}`;
+    // navigator.share is available on mobile and HTTPS desktop
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${artistName} on Aera`,
+          text: `See this post by ${artistName}`,
+          url: shareUrl,
+        });
+        // share sheet opened successfully — no clipboard fallback needed
+        return;
+      } catch (err: unknown) {
+        // AbortError = user dismissed share sheet; everything else → copy fallback
+        if (err instanceof Error && err.name === "AbortError") return;
+      }
+    }
+    // Desktop / no share API: copy link and show confirmation
+    const ok = await copyToClipboard(shareUrl);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [artistId, postId, artistName, copyToClipboard]);
 
   return (
   <div className="flex gap-3 px-4 pt-4 pb-4">
@@ -108,21 +170,36 @@ const CardLayout: React.FC<CardLayoutProps> = ({
         </div>
       )}
 
+      {/* Prominent Reaction Comment Bar */}
+      <div className="mt-4 mb-3 w-full">
+        <ReactionAction 
+          activeReaction={activeReaction}
+          onReact={setActiveReaction}
+          count={reactionsCount}
+          variant="comment-bar"
+        />
+      </div>
+
       {/* Action Row */}
       <div className="flex items-center gap-6 mt-1 mb-1">
-        <button 
-          onClick={(e) => { e.stopPropagation(); setStarred(!starred); }}
-          className={`flex items-center gap-1.5 transition-colors ${starred ? "text-amber-500" : "text-white/30 hover:text-white/60"}`}
-        >
-          <Star className="w-3.5 h-3.5" fill={starred ? "currentColor" : "none"} />
-        </button>
         <button 
           onClick={(e) => { e.stopPropagation(); setSaved(!saved); }}
           className={`flex items-center gap-1.5 transition-colors ${saved ? "text-white/90" : "text-white/30 hover:text-white/60"}`}
         >
           <Bookmark className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
         </button>
-        <div className="flex items-center gap-1.5 text-white/20">
+        <button
+          onClick={handleShare}
+          className={`flex items-center gap-1.5 transition-colors ${
+            copied ? "text-emerald-400" : "text-white/30 hover:text-white/60"
+          }`}
+          aria-label="Share this post"
+        >
+          {copied
+            ? <Check className="w-3.5 h-3.5" />
+            : <Share2 className="w-3.5 h-3.5" />}
+        </button>
+        <div className="flex items-center gap-1.5 text-white/20 ml-auto">
           <Eye className="w-3.5 h-3.5" />
           <span className="text-[10px] font-medium">{viewsCount}</span>
         </div>
@@ -139,6 +216,8 @@ interface LineVariantProps {
   artistName: string;
   artistImage: string;
   postedAt: string;
+  postId: string;
+  artistId: string;
   themeGradient?: [string, string];
 }
 
@@ -147,12 +226,16 @@ const LineVariant: React.FC<LineVariantProps> = ({
   artistName,
   artistImage,
   postedAt,
+  postId,
+  artistId,
   themeGradient,
 }) => (
   <CardLayout
     artistName={artistName}
     artistImage={artistImage}
     postedAt={postedAt}
+    postId={postId}
+    artistId={artistId}
     text={text}
     themeGradient={themeGradient}
   />
@@ -234,6 +317,8 @@ interface PinVariantProps {
   artistName: string;
   artistImage: string;
   postedAt: string;
+  postId: string;
+  artistId: string;
   resolvedWork?: TheatreItem;
   isOriginal?: boolean;
   themeGradient?: [string, string];
@@ -246,6 +331,8 @@ const PinVariant: React.FC<PinVariantProps> = ({
   artistName,
   artistImage,
   postedAt,
+  postId,
+  artistId,
   resolvedWork,
   isOriginal = false,
   themeGradient,
@@ -254,6 +341,8 @@ const PinVariant: React.FC<PinVariantProps> = ({
     artistName={artistName}
     artistImage={artistImage}
     postedAt={postedAt}
+    postId={postId}
+    artistId={artistId}
     text={text}
     themeGradient={themeGradient}
   >
@@ -275,6 +364,8 @@ interface RecommendationVariantProps {
   artistName: string;
   artistImage: string;
   postedAt: string;
+  postId: string;
+  artistId: string;
   themeGradient?: [string, string];
 }
 
@@ -284,6 +375,8 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
   artistName,
   artistImage,
   postedAt,
+  postId,
+  artistId,
   themeGradient,
 }) => {
   return (
@@ -291,6 +384,8 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
       artistName={artistName}
       artistImage={artistImage}
       postedAt={postedAt}
+      postId={postId}
+      artistId={artistId}
       themeGradient={themeGradient}
     >
       <div className="pointer-events-auto bg-[#0d0d0d] rounded-xl border border-white/5 shadow-sm overflow-hidden mb-3">
@@ -379,6 +474,8 @@ export const WallPostCard = memo<WallPostCardProps>(
             artistName={post.artistName}
             artistImage={post.artistImage}
             postedAt={post.postedAt}
+            postId={post.id}
+            artistId={post.artistId}
             themeGradient={themeGradient}
           />
         )}
@@ -390,6 +487,8 @@ export const WallPostCard = memo<WallPostCardProps>(
             artistName={post.artistName}
             artistImage={post.artistImage}
             postedAt={post.postedAt}
+            postId={post.id}
+            artistId={post.artistId}
             resolvedWork={resolvedWork}
             isOriginal={post.type === "PIN_ORIGINAL"}
             themeGradient={themeGradient}
@@ -402,6 +501,8 @@ export const WallPostCard = memo<WallPostCardProps>(
             artistName={post.artistName}
             artistImage={post.artistImage}
             postedAt={post.postedAt}
+            postId={post.id}
+            artistId={post.artistId}
             themeGradient={themeGradient}
           />
         )}

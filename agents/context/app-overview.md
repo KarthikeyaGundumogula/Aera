@@ -256,11 +256,12 @@ Each Original applies a specific background, color palette, and typography.
 
 ---
 
-## 🗣️ 13. Discussions (Sequences)
+## 🗣️ 13. The "No Comments" Philosophy & Sequences
 
-FrameHouse explicitly separates viewing art from debating it.
-- **The Screen (Theatre):** Immersive, dark, purely for **Works**. Interaction is limited to viewing and reacting.
-- **The Sets (Discussions):** Deep, community-owned discussion threads (Sequences) live natively inside Sets, pushing heavy discussions into dedicated spaces rather than cluttering the global feed.
+FrameHouse explicitly kills the toxic "reply-guy" economy by removing traditional comment sections from all entities (Works, Recommendations, and Wall posts).
+- **The Screen (Theatre):** Immersive, dark, purely for **Works**. Interaction is limited to viewing, Starring, and Pinning. There are no comment sections under Works.
+- **Artist Reactions (Creator Acknowledgment):** To plug the engagement hole of no comments, Artists can react to Audience Wall posts when their work is pinned. This reaction acts as a highly valued "Acknowledged by Artist" seal. In the future, this will utilize a strictly curated set of visual "meme/GIF" templates (digital body language) to maintain a positive, expressive dialogue without the negativity of open text.
+- **The Sets (Discussions):** Deep, community-owned discussion threads (Sequences) live natively inside Sets, pushing heavy debates into dedicated spaces using visual Cards rather than cluttering the global feed.
 
 ---
 

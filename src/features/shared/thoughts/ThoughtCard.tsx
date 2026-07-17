@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Zap, Flame, Star, Sparkles, GitCommit } from "lucide-react";
+import { GitCommit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThoughtItem } from "../../../mock/thoughts";
 import { ARTISTS_MOCK } from "../../../mock";
@@ -20,13 +20,6 @@ export function ThoughtCard({
     (a) => a.name.toLowerCase() === thought.authorName.toLowerCase()
   ) || ARTISTS_MOCK[0];
 
-  const REACTION_MAP = {
-    heart: { Icon: Heart, color: "text-rose-500" },
-    zap: { Icon: Zap, color: "text-yellow-500" },
-    flame: { Icon: Flame, color: "text-orange-500" },
-    star: { Icon: Star, color: "text-amber-400" },
-    sparkles: { Icon: Sparkles, color: "text-cyan-400" },
-  };
 
   return (
     <>
@@ -48,26 +41,6 @@ export function ThoughtCard({
               <div className="flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors" title="Threads">
                 <GitCommit className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-bold font-sans">{thought.threadCount || 0}</span>
-              </div>
-              
-              <div className="flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors group/reactions cursor-default">
-                <div className="flex -space-x-1.5">
-                  {(thought.topReactions || ["heart"]).map((r, i) => {
-                    const mapped = REACTION_MAP[r as keyof typeof REACTION_MAP];
-                    if (!mapped) return null;
-                    const { Icon, color } = mapped;
-                    return (
-                      <div 
-                        key={i} 
-                        className={`w-4 h-4 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md flex items-center justify-center relative shadow-sm`}
-                        style={{ zIndex: 10 - i }}
-                      >
-                        <Icon className={`w-2.5 h-2.5 ${color}`} />
-                      </div>
-                    );
-                  })}
-                </div>
-                <span className="text-[10px] font-bold font-sans">{thought.reactionCount || 0}</span>
               </div>
             </div>
 
