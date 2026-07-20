@@ -5,6 +5,7 @@ import { WallPostCard } from "./WallPostCard";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { WallSwiper, WallSwiperArtistGroup } from "./WallSwiper";
+import { mockLedger } from "../../../mock/ledger";
 
 interface WallFeedProps {
   posts: WallPost[];
@@ -42,6 +43,10 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
     () => Object.fromEntries(MOCK_RECOMMENDATIONS.map((r) => [r.id, r])),
     []
   );
+  const ledgerById = useMemo(
+    () => Object.fromEntries(mockLedger.map((l) => [l.id, l])),
+    []
+  );
 
   const swiperGroups = useMemo<WallSwiperArtistGroup[]>(() => {
     if (posts.length === 0) return [];
@@ -59,9 +64,10 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
         resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
         resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
         resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
+        resolvedLedgerEntry: post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined,
       }))
     }];
-  }, [posts, worksById, originalsById]);
+  }, [posts, worksById, originalsById, ledgerById]);
 
   if (posts.length === 0) {
     return (
@@ -81,18 +87,15 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
       {/* ── Responsive Layout: Twitter-like feed on mobile, Masonry on desktop ── */}
       <div className="flex flex-col md:block md:columns-3 lg:columns-4 md:gap-4">
         {posts.map((post, index) => {
-          const resolvedWork = post.pinnedWorkId
-            ? worksById[post.pinnedWorkId]
-            : undefined;
-          const resolvedOriginal = post.pinnedOriginalId
-            ? originalsById[post.pinnedOriginalId]
-            : undefined;
+          const resolvedWork = post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined;
+          const resolvedOriginal = post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined;
           const resolvedRecommendation = post.pinnedRecommendationId
             ? recommendationsById[post.pinnedRecommendationId]
             : undefined;
+          const resolvedLedgerEntry = post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined;
 
-          // Pure LINE posts always span both columns on desktop
-          const isFullWidth = post.type === "LINE";
+          // LEDGER_ENTRY posts span full width like LINE posts
+          const isFullWidth = post.type === "LINE" || post.type === "LEDGER_ENTRY";
 
           return (
             <React.Fragment key={post.id}>
@@ -114,6 +117,7 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
                   resolvedWork={resolvedWork}
                   resolvedOriginal={resolvedOriginal}
                   resolvedRecommendation={resolvedRecommendation}
+                  resolvedLedgerEntry={resolvedLedgerEntry}
                   inFoyer={inFoyer}
                   themeGradient={themeGradient}
                   onClick={() => setSelectedPostIndex(index)}

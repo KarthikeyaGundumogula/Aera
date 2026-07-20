@@ -6,7 +6,7 @@ export const StarAction: React.FC<ActionProps & { isStaring?: boolean }> = ({
   isActive, 
   onClick, 
   count, 
-  variant = "exhibition", 
+  variant = "viewer", 
   className = "",
   isStaring = false
 }) => {

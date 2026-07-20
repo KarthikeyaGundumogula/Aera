@@ -28,6 +28,8 @@ import { SaveAction } from "../../../components/actions/SaveAction";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
+import { LedgerItem } from "../../../mock/ledger";
+import { LedgerWallCard } from "./LedgerWallCard";
 import { ReactionAction } from "../../../components/actions/ReactionAction";
 import { ReactionId } from "../../../types/reactions";
 
@@ -81,7 +83,7 @@ function formatRelativeTime(iso: string): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-// ─── Inline action row (Honour + Share + Open Exhibition) ────────────────────
+// ─── Inline action row (Honour + Share + Open Viewer) ────────────────────
 
 interface WorkActionsProps {
   item: TheatreItem;
@@ -126,7 +128,7 @@ function WorkActions({ item, onNavigate }: WorkActionsProps) {
             e?.stopPropagation();
             setIsStarred(!isStarred);
           }}
-          variant="exhibition"
+          variant="viewer"
         />
         <SaveAction
           isActive={isSaved}
@@ -134,7 +136,7 @@ function WorkActions({ item, onNavigate }: WorkActionsProps) {
             e?.stopPropagation();
             setIsSaved(!isSaved);
           }}
-          variant="exhibition"
+          variant="viewer"
         />
         <button
           onClick={(e) => {
@@ -283,7 +285,7 @@ const PinFull: React.FC<PinFullProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const openExhibition = useCallback(
+  const openViewer = useCallback(
     (item: TheatreItem) => {
       onClose();
       navigate(`/works/${item.id}`, { state: { item } });
@@ -313,12 +315,12 @@ const PinFull: React.FC<PinFullProps> = ({
           <EditEmbed
             item={resolvedWork}
             isActive={isActive}
-            onNavigate={() => openExhibition(resolvedWork)}
+            onNavigate={() => openViewer(resolvedWork)}
           />
         ) : (
           <CoverCard
             item={resolvedWork}
-            onNavigate={() => openExhibition(resolvedWork)}
+            onNavigate={() => openViewer(resolvedWork)}
           />
         )}
 
@@ -420,6 +422,37 @@ const RecommendationFull: React.FC<{
   );
 };
 
+// ─── 4. Ledger Full ────────────────────────────────────────────────────────────
+
+const LedgerFull: React.FC<{
+  post: WallPost;
+  entry?: LedgerItem;
+}> = ({ post, entry }) => {
+  const navigate = useNavigate();
+
+  if (!entry) return null;
+
+  return (
+    <div className="w-full flex flex-col gap-6 px-4 max-w-[500px] mx-auto pointer-events-auto">
+      <LedgerWallCard
+        post={post}
+        entry={entry}
+        previewOnly={true}
+      />
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/ledger/${entry.id}`);
+        }}
+        className="mx-auto flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_24px_rgba(245,158,11,0.2)]"
+      >
+        <span>View Editorial Entry</span>
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
+
 // ─── Progress dots ────────────────────────────────────────────────────────────
 
 const ProgressDots: React.FC<{ total: number; current: number }> = ({
@@ -456,6 +489,7 @@ export interface WallSwiperEntry {
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
   resolvedRecommendation?: Recommendation;
+  resolvedLedgerEntry?: import("../../../mock/ledger").LedgerItem;
 }
 
 export interface WallSwiperArtistGroup {
@@ -781,6 +815,13 @@ export function WallSwiper({
                     rec={entry.resolvedRecommendation}
                   />
                 </div>
+              ) : entry.post.type === "LEDGER_ENTRY" ? (
+                <div className="w-full pointer-events-none">
+                  <LedgerFull
+                    post={entry.post}
+                    entry={entry.resolvedLedgerEntry}
+                  />
+                </div>
               ) : (
                 <div className="w-full pointer-events-none">
                   <PinFull
@@ -860,6 +901,10 @@ export function WallSwiper({
                 <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/40">
                   {activeGroup.entries[activePostIndex].post.type === "LINE"
                     ? "Line"
+                    : activeGroup.entries[activePostIndex].post.type === "RECOMMENDATION"
+                    ? "Recommendation"
+                    : activeGroup.entries[activePostIndex].post.type === "LEDGER_ENTRY"
+                    ? "Ledger Entry"
                     : "Pin"}{" "}
                   ·{" "}
                   {formatRelativeTime(

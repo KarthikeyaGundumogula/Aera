@@ -10,19 +10,19 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
-import type { LibraryItem } from "../../../mock/library";
-import { LibraryTaggedWorksStack } from "./LibraryTaggedWorksStack";
+import type { LedgerItem } from "../../../mock/ledger";
+import { LedgerTaggedWorksStack } from "./LedgerTaggedWorksStack";
 
-export const LibraryItemCard = memo(function LibraryItemCard({
+export const LedgerItemCard = memo(function LedgerItemCard({
   item,
   onUpdate,
 }: {
-  item: LibraryItem;
-  onUpdate: (item: LibraryItem) => void;
+  item: LedgerItem;
+  onUpdate: (item: LedgerItem) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [hypeText, setHypeText] = useState(item.hypeText);
+  const [preThoughts, setHypeText] = useState(item.preThoughts);
   const [afterThoughts, setAfterThoughts] = useState(item.afterThoughts || "");
   const [status, setStatus] = useState(item.status);
 
@@ -31,7 +31,7 @@ export const LibraryItemCard = memo(function LibraryItemCard({
     onUpdate({
       ...item,
       status,
-      hypeText,
+      preThoughts,
       afterThoughts: afterThoughts || undefined,
     });
     setIsEditing(false);
@@ -39,7 +39,7 @@ export const LibraryItemCard = memo(function LibraryItemCard({
 
   const handleCancel = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setHypeText(item.hypeText);
+    setHypeText(item.preThoughts);
     setAfterThoughts(item.afterThoughts || "");
     setStatus(item.status);
     setIsEditing(false);
@@ -187,7 +187,7 @@ export const LibraryItemCard = memo(function LibraryItemCard({
               </div>
             ) : (
               <p className="text-white/60 font-medium leading-relaxed italic border-l border-white/10 pl-4 text-xs sm:text-sm max-w-2xl line-clamp-2 uppercase tracking-tight">
-                {item.hypeText}
+                {item.preThoughts}
               </p>
             )}
           </div>
@@ -213,7 +213,7 @@ export const LibraryItemCard = memo(function LibraryItemCard({
               </div>
               <div className="relative">
                 <textarea
-                  value={hypeText}
+                  value={preThoughts ?? ""}
                   onChange={(e) => setHypeText(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-5 text-xs sm:text-sm text-white/90 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/10 transition-all min-h-[120px] resize-none placeholder:text-white/10 shadow-inner"
@@ -277,9 +277,9 @@ export const LibraryItemCard = memo(function LibraryItemCard({
               {item.taggedWorks.length > 0 && (
                 <div>
                   <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-4">
-                    Works Library
+                    Works Ledger
                   </div>
-                  <LibraryTaggedWorksStack works={item.taggedWorks} />
+                  <LedgerTaggedWorksStack works={item.taggedWorks} />
                 </div>
               )}
             </div>

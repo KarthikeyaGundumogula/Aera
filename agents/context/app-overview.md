@@ -44,15 +44,15 @@ FrameHouse operates on meaningful, cinematic interactions rather than generic en
 ### ⭐ Star
 - The primary interaction metric for Works, changed to **Star** but elevated visually.
 - Rendered via a bespoke SVG `<linearGradient id="gold-metal">` which gives it a physical, premium metallic sheen.
-- Double-tapping anywhere on the Exhibition frame triggers a Star flash animation. This is implemented via a native `touchend` event listener.
+- Double-tapping anywhere on the Viewer frame triggers a Star flash animation. This is implemented via a native `touchend` event listener.
 - Tapping the Star button directly in the identity block toggles the state.
 
 ### 📌 Pin to Wall
-- Users can pin any Work to their personal Wall directly from the Exhibition view.
+- Users can pin any Work to their personal Wall directly from the Viewer view.
 - Rendered as a `Pin` icon button in the actions row of the identity block.
 
 ### 🔖 Save
-- Users can save Works to their Library/Ledger.
+- Users can save Works to their Ledger.
 - Rendered as a `Bookmark` icon in the actions row.
 
 ### ❤️ Favourite Artist
@@ -96,6 +96,7 @@ A highly curated, persistent "moodboard" or exhibition space on an Artist's prof
   2. `PIN_WORK` - A pinned TheatreItem (Edit/Poster/Storyboard) with an optional attached Line.
   3. `PIN_ORIGINAL` - A pinned Original movie/series with an optional attached Line.
   4. `RECOMMENDATION` - An embedded recommendation card with an optional attached quote.
+  5. `LEDGER_ENTRY` - A bespoke horizontal "newspaper clipping" card showing a user's curated Ledger log (Surge score, watched status, thoughts).
 - **Visual Mechanics**: Wall cards are highly responsive—flat and edge-to-edge on mobile for a Twitter-style feed, and physical rounded cards with shadows on desktop. Tapping any post opens a full-screen `WallSwiper`.
 - **Distribution**: Wall posts are **NOT** broadcasted globally. They only go to the "Foyer" of users who have explicitly *Favorited* the Artist, creating an intimate, high-trust loop.
 
@@ -166,30 +167,30 @@ The Theatre is a full-screen, immersive, dark-mode grid. Works are assembled int
 
 ---
 
-### Exhibition System (Dedicated Work View)
+### Viewer System (Dedicated Work View)
 
-When a user opens a Work, they enter the **Exhibition** — a full-page, two-column cinematic view (on desktop) or a stacked view (on mobile).
+When a user opens a Work, they enter the **Viewer** — a full-page, two-column cinematic view (on desktop) or a stacked view (on mobile).
 
-#### `ExhibitionFrame` (`src/features/works/layouts/ExhibitionFrame.tsx`)
+#### `ViewerFrame` (`src/features/works/layouts/ViewerFrame.tsx`)
 The **primary layout wrapper** for all work types. It provides:
 - **Two-column desktop grid**: `lg:grid-cols-[minmax(0,1fr)_380px]`. Left column = media, right column = `ArtistContextPanel`.
-- **`ExhibitionNav`** floating at top-left/right for Back, Share, and Originals.
+- **`ViewerNav`** floating at top-left/right for Back, Share, and Originals.
 - **YouTube-style Identity Block** below the media: shows work `<h1>` title, Artist avatar (rounded-xl), Artist name, Favourite heart, and the action row (Star, Pin, Save).
 - **Double-tap Star**: Implemented via a native `touchend` event listener (`lastTapRef` for delta timing). Triggers `doubleTapFlash` state which renders the Star flash animation.
 - **`MediaSlotContext`**: Passes `isStarred`, `staring`, `doubleTapFlash`, `triggerDoubleTap` down to the media slot render prop.
-- **`showIdentityBlock`** prop (default `true`): allows child exhibitions to hide it if they manage it themselves.
+- **`showIdentityBlock`** prop (default `true`): allows child viewers to hide it if they manage it themselves.
 
-#### `ExhibitionNav` (`src/features/works/components/ExhibitionNav.tsx`)
+#### `ViewerNav` (`src/features/works/components/ViewerNav.tsx`)
 - A minimal floating chrome bar. No solid background — it floats over the media atmosphere.
 - **Left**: Back pill (uses `navigate(-1)`).
 - **Right**: Originals button (conditionally shows if `item.originalIds` is non-empty) + Share button.
 - **Share**: Uses `navigator.clipboard.writeText` with a `document.execCommand('copy')` fallback for non-HTTPS environments.
 - Shows a `CinematicToast` with "LINK COPIED" on success.
 
-#### Work-Specific Exhibitions:
-- **`EditExhibition`** (`src/features/works/layouts/EditExhibition.tsx`): Renders an iframe embed (YouTube/Twitter) as the media slot inside `ExhibitionFrame`.
-- **`PosterExhibition`** (`src/features/works/layouts/PosterExhibition.tsx`): Renders the full-res poster image as the media slot.
-- **`StoryboardExhibition`** (`src/features/works/layouts/StoryboardExhibition.tsx`): A cinematic paginated viewer (up to 10 images). Instead of a 3D card flip, it uses a premium frosted glass (`backdrop-blur-2xl`) overlay to display the story/caption text on top of the image when toggling between "Visuals" and "Story". Page navigation via swipe (mobile) or chevron buttons (desktop).
+#### Work-Specific Viewers:
+- **`EditViewer`** (`src/features/works/layouts/EditViewer.tsx`): Renders an iframe embed (YouTube/Twitter) as the media slot inside `ViewerFrame`.
+- **`PosterViewer`** (`src/features/works/layouts/PosterViewer.tsx`): Renders the full-res poster image as the media slot.
+- **`StoryboardViewer`** (`src/features/works/layouts/StoryboardViewer.tsx`): A cinematic paginated viewer (up to 10 images). Instead of a 3D card flip, it uses a premium frosted glass (`backdrop-blur-2xl`) overlay to display the story/caption text on top of the image when toggling between "Visuals" and "Story". Page navigation via swipe (mobile) or chevron buttons (desktop).
 
 ---
 
@@ -200,7 +201,7 @@ The right-column panel (380px wide on desktop, full-width stacked below on mobil
 **Tabbed Interface** — A pill toggle with two tabs:
 1. **The Wall** — Shows the Artist's curated Wall posts:
    - `LINE` posts: Full-width italic blockquote text.
-   - `PIN_WORK` posts: Full-sized media card (respects aspect ratio: `aspect-video` for edits, `aspect-[4/5]` for posters) with a gradient overlay. Clicking navigates to that work's Exhibition page via `openWork`.
+   - `PIN_WORK` posts: Full-sized media card (respects aspect ratio: `aspect-video` for edits, `aspect-[4/5]` for posters) with a gradient overlay. Clicking navigates to that work's Viewer page via `openWork`.
    - Each post has a small date label.
 2. **In Theatre** — Shows other works by the same artist, rendered using the **`MobileClusterView` cluster engine** (up to 2 clusters), identical to the main Theatre. Clicking a work opens it.
 
@@ -212,7 +213,8 @@ The right-column panel (380px wide on desktop, full-width stacked below on mobil
 - **No Circle Containers**: Buttons, avatars, nav buttons, and tags use `rounded-xl` or `rounded-2xl`. `rounded-full` is ONLY used for the Floating Action Button (FAB).
 
 ### Modal & UX Mechanics:
-- **Exhibition is page-native (The Modal Architecture is Dead)**: Works open as full routes (`/works/:id`), providing an immersive edge-to-edge cinematic theatre.
+- **Viewer is page-native (The Modal Architecture is Dead)**: Works open as full routes (`/works/:id`), providing an immersive edge-to-edge cinematic theatre.
+- **WallPostPage**: Tapping a wall post directly can route to a dedicated standalone fullscreen wall post view (`/wall/:artistId/:postId`).
 - **Storyboard Reading Mechanic**: Storyboards feature a frosted glass (`backdrop-blur-2xl`) overlay rather than a 3D flip, ensuring text remains readable while keeping the underlying cinematic frame visible.
 - **Universal Scroll Resilience**: Legacy mobile iOS scroll hacks were phased out as the app embraced true native pages instead of floating overlays.
 

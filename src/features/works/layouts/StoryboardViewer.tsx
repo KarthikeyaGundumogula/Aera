@@ -2,9 +2,9 @@ import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { TheatreItem } from "../../../types";
-import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
+import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
 
-interface StoryboardExhibitionProps {
+interface StoryboardViewerProps {
   item: TheatreItem;
 }
 
@@ -22,10 +22,10 @@ const FALLBACK_CAPTIONS = [
 ];
 
 /**
- * StoryboardExhibition — wraps ExhibitionFrame with a 3D flip-card paginated
- * viewer as the media slot. All chrome lives in ExhibitionFrame.
+ * StoryboardViewer — wraps ViewerFrame with a 3D flip-card paginated
+ * viewer as the media slot. All chrome lives in ViewerFrame.
  */
-export function StoryboardExhibition({ item }: StoryboardExhibitionProps) {
+export function StoryboardViewer({ item }: StoryboardViewerProps) {
   const [pageIndex, setPageIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
@@ -56,7 +56,7 @@ export function StoryboardExhibition({ item }: StoryboardExhibitionProps) {
   };
 
   return (
-    <ExhibitionFrame
+    <ViewerFrame
       item={item}
       mediaMaxWidth="min(460px,calc(100vw-2rem))"
       mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (

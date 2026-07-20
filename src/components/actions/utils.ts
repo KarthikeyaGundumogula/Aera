@@ -1,6 +1,6 @@
 import React from "react";
 
-export type ActionVariant = "feed" | "exhibition";
+export type ActionVariant = "feed" | "viewer";
 
 export interface ActionProps {
   isActive: boolean;

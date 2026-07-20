@@ -83,6 +83,15 @@ export const WALL_POSTS: WallPost[] = [
     // no Line — respect
     postedAt: "2026-06-30T08:00:00Z",
   },
+  {
+    id: "wp-ledger-001",
+    artistId: "fh-001",
+    artistName: "Karthik G",
+    artistImage: "/stars/pawan-kalyan.jpeg",
+    type: "LEDGER_ENTRY",
+    ledgerEntryId: "wl_02",
+    postedAt: "2026-04-21T22:30:00Z",
+  },
 
   // ─── fh-002 (Priya Nair) ─────────────────────────────────────────────────
 
@@ -143,6 +152,15 @@ export const WALL_POSTS: WallPost[] = [
     // no Line — the poster is the statement
     postedAt: "2026-07-01T09:30:00Z",
   },
+  {
+    id: "wp-ledger-002",
+    artistId: "fh-002",
+    artistName: "Priya Nair",
+    artistImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
+    type: "LEDGER_ENTRY",
+    ledgerEntryId: "wl_03",
+    postedAt: "2026-04-24T10:00:00Z",
+  },
 
   // ─── fh-003 (Arjun Reddy) ────────────────────────────────────────────────
 
@@ -192,6 +210,15 @@ export const WALL_POSTS: WallPost[] = [
     pinnedOriginalId: "rrr-original",
     // no Line — pins it in silence
     postedAt: "2026-07-02T08:00:00Z",
+  },
+  {
+    id: "wp-ledger-003",
+    artistId: "fh-003",
+    artistName: "Arjun Reddy",
+    artistImage: "/stars/yash.jpg",
+    type: "LEDGER_ENTRY",
+    ledgerEntryId: "wl_04",
+    postedAt: "2026-04-19T21:00:00Z",
   },
 
   // ─── AUTO GENERATED MOCK POSTS ──────────────────────────────────────────
@@ -704,7 +731,7 @@ export const WALL_POSTS: WallPost[] = [
  */
 export function getWallPostsByArtist(artistId: string): WallPost[] {
   return WALL_POSTS
-    .filter((p) => p.artistId === artistId)
+    .filter((p) => p.artistId === artistId && p.type !== "LEDGER_ENTRY")
     .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 }
 
@@ -716,6 +743,6 @@ export function getWallPostsByArtist(artistId: string): WallPost[] {
  */
 function getFoyerWallPosts(favoritedArtistIds: string[]): WallPost[] {
   return WALL_POSTS
-    .filter((p) => favoritedArtistIds.includes(p.artistId))
+    .filter((p) => favoritedArtistIds.includes(p.artistId) && p.type !== "LEDGER_ENTRY")
     .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 }

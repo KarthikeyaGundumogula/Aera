@@ -8,7 +8,7 @@ import {
   Settings,
   Plus,
   Heart,
-  Bookmark,
+  BookPlus,
   Upload,
   LogOut,
   MessageSquare,
@@ -166,7 +166,7 @@ export function SetDetailPage() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-xl z-[200] flex items-center gap-2 pointer-events-none"
           >
-            <Bookmark size={14} className="fill-current" />
+            <BookPlus size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
               Added to Library
             </span>

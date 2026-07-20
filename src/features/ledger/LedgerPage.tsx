@@ -1,32 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
-import { mockLibrary, LibraryItem } from "../../mock/library";
-import { LibraryItemCard } from "./components/LibraryItemCard";
+import { mockLedger, LedgerItem } from "../../mock/ledger";
+import { LedgerItemCard } from "./components/LedgerItemCard";
 import { ArrowLeft, Plus } from "lucide-react";
 
-export function LibraryPage() {
-  const [library, setLibrary] = useState<LibraryItem[]>(mockLibrary);
+export function LedgerPage() {
+  const [ledger, setLedger] = useState<LedgerItem[]>(mockLedger);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const filter = searchParams.get("filter") || "all";
 
-  // Listen for global library updates from the LibraryEntryModal
+  // Listen for global ledger updates from the LedgerEntryModal
   useEffect(() => {
     const handleUpdate = () => {
-      setLibrary([...mockLibrary]);
+      setLedger([...mockLedger]);
     };
-    window.addEventListener("libraryUpdated", handleUpdate);
-    return () => window.removeEventListener("libraryUpdated", handleUpdate);
+    window.addEventListener("ledgerUpdated", handleUpdate);
+    return () => window.removeEventListener("ledgerUpdated", handleUpdate);
   }, []);
 
-  const handleUpdateItem = (updatedItem: LibraryItem) => {
-    setLibrary((prev) =>
+  const handleUpdateItem = (updatedItem: LedgerItem) => {
+    setLedger((prev) =>
       prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
     );
   };
 
-  const filteredLibrary = library.filter((item) => {
+  const filteredLedger = ledger.filter((item) => {
     if (filter === "all") return true;
     return item.status === filter;
   });
@@ -44,11 +44,11 @@ export function LibraryPage() {
           </button>
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
-              Library
+              Ledger
             </h1>
             <button
               onClick={() =>
-                window.dispatchEvent(new CustomEvent("openLibraryModal"))
+                window.dispatchEvent(new CustomEvent("openLedgerModal"))
               }
               className={`group flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex-shrink-0 bg-white/5 text-white/60 border-white/10 hover:border-white/30 hover:text-white`}
             >
@@ -59,7 +59,7 @@ export function LibraryPage() {
             </button>
           </div>
           <p className="text-white/40 text-sm sm:text-base max-w-xl mt-4">
-            Your cinematic library. Track originals, document your expectations,
+            Your cinematic ledger. Track originals, document your expectations,
             and log your thoughts.
           </p>
         </header>
@@ -100,22 +100,22 @@ export function LibraryPage() {
 
         {/* Grid (Vertical Stack) */}
         <div className="flex flex-col space-y-4 max-w-4xl mx-auto">
-          {filteredLibrary.map((item) => (
-            <LibraryItemCard
+          {filteredLedger.map((item) => (
+            <LedgerItemCard
               key={item.id}
               item={item}
               onUpdate={handleUpdateItem}
             />
           ))}
 
-          {filteredLibrary.length === 0 && (
+          {filteredLedger.length === 0 && (
             <div className="py-20 flex flex-col items-center justify-center text-center">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/15 mb-4">
                 No entries yet
               </p>
               <button
                 onClick={() =>
-                  window.dispatchEvent(new CustomEvent("openLibraryModal"))
+                  window.dispatchEvent(new CustomEvent("openLedgerModal"))
                 }
                 className="text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-colors"
               >

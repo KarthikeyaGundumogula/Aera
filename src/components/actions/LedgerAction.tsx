@@ -1,8 +1,8 @@
 import React from "react";
-import { BookOpen } from "lucide-react";
+import { BookPlus } from "lucide-react";
 import { ActionProps, getActionClasses, handleActionClick } from "./utils";
 
-export const LibraryAction: React.FC<ActionProps> = ({ isActive, onClick, variant = "feed", className = "" }) => {
+export const LedgerAction: React.FC<ActionProps> = ({ isActive, onClick, variant = "feed", className = "" }) => {
   const isFeed = variant === "feed";
   
   const activeClasses = isFeed 
@@ -18,7 +18,7 @@ export const LibraryAction: React.FC<ActionProps> = ({ isActive, onClick, varian
 
   return (
     <button onPointerDown={(e) => e.stopPropagation()} onClick={actionHandler} className={classes}>
-      <BookOpen
+      <BookPlus
         className={isFeed ? "w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" : "w-[13px] h-[13px] shrink-0"}
         fill={isActive ? "currentColor" : "none"}
       />

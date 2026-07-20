@@ -1,21 +1,21 @@
 import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { TheatreItem } from "../../../types";
-import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
+import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
 
-interface EditExhibitionProps {
+interface EditViewerProps {
   item: TheatreItem;
 }
 
 /**
- * EditExhibition — wraps ExhibitionFrame with the YouTube/Twitter embed as
+ * EditViewer — wraps ViewerFrame with the YouTube/Twitter embed as
  * the media slot. All chrome (identity block, artist panel, nav) lives in
- * ExhibitionFrame.
+ * ViewerFrame.
  */
-export function EditExhibition({ item }: EditExhibitionProps) {
+export function EditViewer({ item }: EditViewerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isYoutubeLoaded, setIsYoutubeLoaded] = useState(false);
 
@@ -34,7 +34,7 @@ export function EditExhibition({ item }: EditExhibitionProps) {
       : item.image || "";
 
   return (
-    <ExhibitionFrame
+    <ViewerFrame
       item={item}
       mediaMaxWidth={isTwitter ? "min(550px,calc(100vw-2rem))" : "min(680px,calc(100vw-2rem))"}
       mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (

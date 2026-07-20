@@ -1,13 +1,13 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { GRID_ITEMS } from "../../mock";
 import { useAuth } from "../../context/AuthContext";
-import { EditExhibition } from "./layouts/EditExhibition";
-import { PosterExhibition } from "./layouts/PosterExhibition";
-import { StoryboardExhibition } from "./layouts/StoryboardExhibition";
-import { RecommendationExhibition } from "./layouts/RecommendationExhibition";
+import { EditViewer } from "./layouts/EditViewer";
+import { PosterViewer } from "./layouts/PosterViewer";
+import { StoryboardViewer } from "./layouts/StoryboardViewer";
+import { RecommendationViewer } from "./layouts/RecommendationViewer";
 
 /**
- * WorkPage — The Exhibition Screen at /works/:id
+ * WorkPage — The Viewer Screen at /works/:id
  *
  * Rendering modes:
  *
@@ -20,11 +20,11 @@ import { RecommendationExhibition } from "./layouts/RecommendationExhibition";
  *    - Shows a not-found screen if the id doesn't match anything.
  *
  * The format-specific layout is determined by item.category:
- *   Edit         → EditExhibition (cinematic video)
- *   Poster       → PosterExhibition (gallery split-screen)
- *   Storyboard       → StoryboardExhibition (filmstrip/magazine)
- *   Recommendation → RecommendationExhibition (resonance card)
- *   default      → EditExhibition
+ *   Edit         → EditViewer (cinematic video)
+ *   Poster       → PosterViewer (gallery split-screen)
+ *   Storyboard       → StoryboardViewer (filmstrip/magazine)
+ *   Recommendation → RecommendationViewer (resonance card)
+ *   default      → EditViewer
  */
 export default function WorkPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,14 +61,14 @@ export default function WorkPage() {
 
   switch (category) {
     case "Poster":
-      return <PosterExhibition item={item} />;
+      return <PosterViewer item={item} />;
     case "Storyboard":
-      return <StoryboardExhibition item={item} />;
+      return <StoryboardViewer item={item} />;
     case "Recommendation":
-      return <RecommendationExhibition item={item} />;
+      return <RecommendationViewer item={item} />;
     case "Edit":
     case "Call":
     default:
-      return <EditExhibition item={item} />;
+      return <EditViewer item={item} />;
   }
 }

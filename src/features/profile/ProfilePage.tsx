@@ -13,14 +13,15 @@ import {
   ARTISTS_MOCK,
   STARS_MOCK,
   MAKERS_MOCK,
+  CURRENT_USER_MOCK,
   GRID_ITEMS,
   ORIGINALS,
 } from "../../mock";
-import {
-  MOCK_RECOMMENDATIONS,
-  Recommendation,
-} from "../../mock/recommendations";
+import { mockLedger } from "../../mock/ledger";
+import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { OriginalPosterCard } from "../originals/components/OriginalPosterCard";
+import { MiniDossierSheet } from "./components/MiniDossierSheet";
+import { AnimatePresence } from "motion/react";
 import { FeedRecommendationCard } from "../../components/FeedRecommendationCard";
 import { buildClusters } from "../theatre/engine/clusterBuilder";
 import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
@@ -95,8 +96,9 @@ const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const [isFavorited, setIsFavorited] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "THEATRE" | "WALL" | "LIBRARY" | "RECOMMENDATIONS"
+    "THEATRE" | "WALL" | "LIBRARY"
   >("THEATRE");
+  const [dossierOriginalId, setDossierOriginalId] = useState<string | null>(null);
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -131,6 +133,8 @@ const ProfilePage: React.FC = () => {
     const elRect = activeEl.getBoundingClientRect();
     setOrbX(elRect.left + elRect.width / 2 - rowRect.left);
   }, [activeTab, isInitialLoading]);
+
+  const currentArtistId = profileId || "fh-001";
 
   // Re-measure on resize so the orb never drifts
   useEffect(() => {
@@ -234,8 +238,23 @@ const ProfilePage: React.FC = () => {
 
   const userWorks = useMemo(() => {
     if (!profile) return [];
-    return GRID_ITEMS.filter((w) => w.artistId === profileId || !w.artistId);
-  }, [profile, profileId]);
+    return GRID_ITEMS.filter((w) => w.artistId === profile.id);
+  }, [profile]);
+
+  const artistOriginals = useMemo(() => {
+    return ORIGINALS.filter((org) => {
+      const hasLedger = mockLedger.some(
+        (l) => l.originalId === org.id && (l.artistId === currentArtistId || (!l.artistId && (currentArtistId === "fh-001" || currentArtistId === CURRENT_USER_MOCK.id)))
+      );
+      const hasRec = MOCK_RECOMMENDATIONS.some(
+        (r) => r.original.id === org.id && r.artist.id === currentArtistId
+      );
+      const hasWork = userWorks.some(
+        (w) => w.originalIds?.includes(org.id)
+      );
+      return hasLedger || hasRec || hasWork;
+    });
+  }, [currentArtistId, userWorks]);
 
   if (isInitialLoading) return <ProfileSkeleton />;
 
@@ -320,8 +339,7 @@ const ProfilePage: React.FC = () => {
                   "THEATRE",
                   "WALL",
                   "LIBRARY",
-                  "RECOMMENDATIONS",
-                ] as ("THEATRE" | "WALL" | "LIBRARY" | "RECOMMENDATIONS")[]
+                ] as ("THEATRE" | "WALL" | "LIBRARY")[]
               ).map((tab) => (
                 <button
                   key={tab}
@@ -360,37 +378,21 @@ const ProfilePage: React.FC = () => {
           {orbX !== null && (
             <motion.div
               className="absolute pointer-events-none"
-              animate={{ x: orbX - 80 }}
+              animate={{ x: orbX }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              style={{
-                bottom: "0px",
-                width: "160px",
-                height: "56px",
-                background: `radial-gradient(ellipse at 50% 100%, ${theme.nameGradient[0]}40 0%, ${theme.nameGradient[0]}1A 40%, transparent 72%)`,
-                filter: "blur(10px)",
-                clipPath: "inset(-200px -200px 0px -200px)",
-              }}
-            />
+              style={{ bottom: "0px" }}
+            >
+              <div
+                className="w-[120px] md:w-[200px] h-[56px] md:h-[64px] -translate-x-1/2"
+                style={{
+                  background: `radial-gradient(ellipse at 50% 100%, ${theme.nameGradient[0]}B3 0%, ${theme.nameGradient[0]}4D 40%, transparent 70%)`,
+                  filter: "blur(10px)",
+                  clipPath: "inset(-200px -200px 0px -200px)",
+                }}
+              />
+            </motion.div>
           )}
 
-          {/* Semi-sphere orb — uses the profile's primary gradient color */}
-          {orbX !== null && (
-            <motion.div
-              className="absolute pointer-events-none"
-              animate={{ x: orbX - 5 }}
-              transition={{ type: "spring", stiffness: 320, damping: 28 }}
-              style={{
-                bottom: "0px",
-                width: "10px",
-                height: "5px",
-                borderRadius: "5px 5px 0 0",
-                background: `linear-gradient(to right, ${theme.nameGradient[0]}, ${theme.nameGradient[1]})`,
-                boxShadow:
-                  `0 0 5px 2px ${theme.nameGradient[0]}F2, 0 0 16px 6px ${theme.nameGradient[0]}BF, 0 0 36px 14px ${theme.nameGradient[0]}40`,
-                clipPath: "inset(-200px -200px 0px -200px)",
-              }}
-            />
-          )}
         </div>
 
         {/* ─── TAB CONTENT ─── */}
@@ -416,26 +418,32 @@ const ProfilePage: React.FC = () => {
             )}
 
             {activeTab === "LIBRARY" && (
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1.5 sm:gap-4 md:gap-5 items-stretch mt-2">
-                {ORIGINALS.map((original, index) => (
-                  <OriginalPosterCard
-                    key={original.id}
-                    original={original}
-                    makers={MAKERS_MOCK}
-                    stars={STARS_MOCK}
-                    index={index}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1.5 sm:gap-4 md:gap-5 items-stretch mt-2">
+                  {artistOriginals.map((original, index) => (
+                    <OriginalPosterCard
+                      key={original.id}
+                      original={original}
+                      makers={MAKERS_MOCK}
+                      stars={STARS_MOCK}
+                      index={index}
+                      onClick={() => setDossierOriginalId(original.id)}
+                    />
+                  ))}
+                </div>
+                <AnimatePresence>
+                  {dossierOriginalId && (
+                    <MiniDossierSheet
+                      originalId={dossierOriginalId}
+                      profileId={profile?.id || CURRENT_USER_MOCK.id}
+                      onClose={() => setDossierOriginalId(null)}
+                    />
+                  )}
+                </AnimatePresence>
+              </>
             )}
 
-            {activeTab === "RECOMMENDATIONS" && (
-              <div className="flex flex-col gap-12 max-w-2xl mx-auto mt-2">
-                {MOCK_RECOMMENDATIONS.map((rec: Recommendation) => (
-                  <FeedRecommendationCard key={rec.id} rec={rec} />
-                ))}
-              </div>
-            )}
+
           </section>
         </div>
       </div>

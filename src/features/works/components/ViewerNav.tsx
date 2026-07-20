@@ -6,7 +6,7 @@ import { TheatreItem } from "../../../types";
 import { CurateOverlay } from "../../shared/modals/CurateOverlay";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 
-interface ExhibitionNavProps {
+interface ViewerNavProps {
   item: TheatreItem;
 }
 
@@ -36,11 +36,11 @@ function copyLink(id: string | number, onDone: () => void) {
 }
 
 /**
- * ExhibitionNav — ultra-minimal floating chrome.
+ * ViewerNav — ultra-minimal floating chrome.
  * Back pill top-left · Share + Originals top-right.
  * No backgrounds on the bar itself — it floats over the atmosphere.
  */
-export function ExhibitionNav({ item }: ExhibitionNavProps) {
+export function ViewerNav({ item }: ViewerNavProps) {
   const navigate = useNavigate();
   const [showCurate, setShowCurate] = useState(false);
   const [toast, setToast] = useState<string | null>(null);

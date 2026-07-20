@@ -7,7 +7,7 @@ import {
   ChevronDown,
   UserCircle,
   MessageSquare,
-  Bookmark,
+  BookPlus,
   LogOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -54,10 +54,10 @@ export function ProfileNav({
       description: "Manage your stage",
     },
     {
-      label: "Library",
-      icon: <Bookmark className="w-4 h-4" />,
-      path: "/library",
-      description: "Your cinematic library",
+      label: "Ledger",
+      icon: <BookPlus className="w-4 h-4" />,
+      path: "/ledger",
+      description: "Your cinematic ledger",
     },
     {
       label: "Contact Founder",

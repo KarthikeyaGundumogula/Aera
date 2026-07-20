@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from "react";
 import { motion } from "motion/react";
-import { Camera, Star, Bookmark, Eye, Share2, Check } from "lucide-react";
+import { Camera, Star, BookPlus, Eye, Share2, Check } from "lucide-react";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
@@ -10,6 +10,8 @@ import { Original } from "../../../types/originals";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { ReactionAction } from "../../../components/actions/ReactionAction";
 import { ReactionId } from "../../../types/reactions";
+import { LedgerItem } from "../../../mock/ledger";
+import { LedgerWallCard } from "./LedgerWallCard";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -186,7 +188,7 @@ const CardLayout: React.FC<CardLayoutProps> = ({
           onClick={(e) => { e.stopPropagation(); setSaved(!saved); }}
           className={`flex items-center gap-1.5 transition-colors ${saved ? "text-white/90" : "text-white/30 hover:text-white/60"}`}
         >
-          <Bookmark className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
+          <BookPlus className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
         </button>
         <button
           onClick={handleShare}
@@ -441,6 +443,7 @@ interface WallPostCardProps {
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
   resolvedRecommendation?: Recommendation;
+  resolvedLedgerEntry?: LedgerItem;
   inFoyer?: boolean;
   themeGradient?: [string, string];
   className?: string;
@@ -449,7 +452,7 @@ interface WallPostCardProps {
 }
 
 export const WallPostCard = memo<WallPostCardProps>(
-  ({ post, resolvedWork, resolvedOriginal, resolvedRecommendation, inFoyer = false, themeGradient, className, onClick }) => {
+  ({ post, resolvedWork, resolvedOriginal, resolvedRecommendation, resolvedLedgerEntry, inFoyer = false, themeGradient, className, onClick }) => {
     const isMobile = useMediaQuery();
 
     const pinnedImage: string | undefined =
@@ -468,6 +471,15 @@ export const WallPostCard = memo<WallPostCardProps>(
 
     const cardContent = (
       <>
+        {post.type === "LEDGER_ENTRY" && resolvedLedgerEntry && (
+          <LedgerWallCard
+            post={post}
+            entry={resolvedLedgerEntry}
+            previewOnly={inFoyer}
+            inFoyer={inFoyer}
+            onClick={onClick}
+          />
+        )}
         {post.type === "LINE" && (
           <LineVariant
             text={post.text!}
@@ -508,6 +520,11 @@ export const WallPostCard = memo<WallPostCardProps>(
         )}
       </>
     );
+
+    // LEDGER_ENTRY has its own self-contained layout — bypass the standard motion wrapper
+    if (post.type === "LEDGER_ENTRY") {
+      return <>{cardContent}</>;
+    }
 
     return (
       <motion.div

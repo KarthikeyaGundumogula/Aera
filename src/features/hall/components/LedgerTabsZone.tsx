@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookPlus, ChevronRight } from "lucide-react";
 
 import { FHLoader } from "../../../components/FHLoader";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { mockLibrary } from "../../../mock/library";
+import { mockLedger } from "../../../mock/ledger";
 import { GRID_ITEMS } from "../../../mock";
-import { LibraryZone } from "./LibraryZone";
+import { LedgerZone } from "./LedgerZone";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
 
-// Grab some works to simulate chronological library works
-const LIBRARY_WORKS = GRID_ITEMS.filter((w) =>
-  mockLibrary.some((l) => w.originalIds?.includes(l.originalId)),
+// Grab some works to simulate chronological ledger works
+const LEDGER_WORKS = GRID_ITEMS.filter((w) =>
+  mockLedger.some((l) => w.originalIds?.includes(l.originalId)),
 )
   .slice(0, 15)
   .reverse(); // Reverse for mock "chronological"
 
-export function LibraryTabsZone() {
+export function LedgerTabsZone() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"originals" | "works">(
     "originals",
@@ -34,8 +34,8 @@ export function LibraryTabsZone() {
     <div className="relative">
       <div className="px-6 md:px-12 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <SectionHeader
-          icon={BookOpen}
-          title="Your Library"
+          icon={BookPlus}
+          title="Your Ledger"
           containerClassName="opacity-100"
         />
 
@@ -53,7 +53,7 @@ export function LibraryTabsZone() {
               Originals
               {activeTab === "originals" && (
                 <motion.div
-                  layoutId="libraryTabIndicator"
+                  layoutId="ledgerTabIndicator"
                   className="absolute left-0 right-0 bottom-0 h-[2px] bg-amber-400"
                 />
               )}
@@ -69,7 +69,7 @@ export function LibraryTabsZone() {
               Stage
               {activeTab === "works" && (
                 <motion.div
-                  layoutId="libraryTabIndicator"
+                  layoutId="ledgerTabIndicator"
                   className="absolute left-0 right-0 bottom-0 h-[2px] bg-amber-400"
                 />
               )}
@@ -77,10 +77,10 @@ export function LibraryTabsZone() {
           </div>
 
           <button
-            onClick={() => navigate("/library")}
+            onClick={() => navigate("/ledger")}
             className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors hidden sm:flex"
           >
-            Full Library <ChevronRight className="w-3 h-3" />
+            Full Ledger <ChevronRight className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -95,7 +95,7 @@ export function LibraryTabsZone() {
               exit={{ opacity: 0 }}
               className="flex items-center justify-center h-[250px] w-full"
             >
-              <FHLoader label="Loading Library..." />
+              <FHLoader label="Loading Ledger..." />
             </motion.div>
           ) : (
             <motion.div
@@ -106,9 +106,9 @@ export function LibraryTabsZone() {
               transition={{ duration: 0.3 }}
             >
               {activeTab === "originals" ? (
-                <LibraryZone items={mockLibrary} />
+                <LedgerZone items={mockLedger} />
               ) : (
-                <HorizontalClusterSection items={LIBRARY_WORKS} compact />
+                <HorizontalClusterSection items={LEDGER_WORKS} compact />
               )}
             </motion.div>
           )}

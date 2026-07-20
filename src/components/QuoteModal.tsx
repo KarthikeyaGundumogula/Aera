@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send, Pin, Star, Bookmark } from "lucide-react";
+import { X, Send, Pin, Star, BookPlus } from "lucide-react";
 import { TheatreItem } from "../types";
 
 interface QuoteModalProps {
@@ -193,7 +193,7 @@ export function QuoteModal({ isOpen, onClose, item, renderTop }: QuoteModalProps
                       </div>
                     )}
                     <div className="px-2.5 py-1.5 rounded-lg border border-white/10 flex items-center justify-center text-white/40 pointer-events-none">
-                      <Bookmark size={12} />
+                      <BookPlus size={12} />
                     </div>
                     <div className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center text-white/80 font-bold text-[9px] tracking-widest uppercase pointer-events-none">
                       View

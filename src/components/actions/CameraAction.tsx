@@ -16,7 +16,7 @@ export const CameraAction: React.FC<CameraActionProps> = ({
   onQuote,
   isPinned,
   count, 
-  variant = "exhibition", 
+  variant = "viewer", 
   iconOnly = false,
   className = "" 
 }) => {

@@ -2,7 +2,7 @@ import React from "react";
 import { Camera } from "lucide-react";
 import { ActionProps, getActionClasses, handleActionClick } from "./utils";
 
-export const PinAction: React.FC<ActionProps> = ({ isActive, onClick, count, variant = "exhibition", className = "" }) => {
+export const PinAction: React.FC<ActionProps> = ({ isActive, onClick, count, variant = "viewer", className = "" }) => {
   const isFeed = variant === "feed";
   
   const activeClasses = isFeed 

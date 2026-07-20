@@ -78,6 +78,10 @@ export const ProfilePage = lazy(() =>
   import("@/features/profile").then((m) => ({ default: m.ProfilePage })),
 );
 
+export const OriginalRecommendationsPage = lazy(() =>
+  import("@/features/profile").then((m) => ({ default: m.OriginalRecommendationsPage })),
+);
+
 export const WallPostPage = lazy(
   () => import("@/features/profile/WallPostPage"),
 );
@@ -112,10 +116,16 @@ export const FestivalDetailPage = lazy(() =>
   })),
 );
 
-// ─── Library ───────────────────────────────────────────────────────────────────
-export const LibraryPage = lazy(() =>
-  import("@/features/library/library-index").then((m) => ({
-    default: m.LibraryPage,
+// ─── Ledger ───────────────────────────────────────────────────────────────────
+export const LedgerPage = lazy(() =>
+  import("@/features/ledger/ledger-index").then((m) => ({
+    default: m.LedgerPage,
+  })),
+);
+
+export const LedgerViewer = lazy(() =>
+  import("@/features/ledger/LedgerViewer").then((m) => ({
+    default: m.LedgerViewer,
   })),
 );
 

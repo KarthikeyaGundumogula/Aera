@@ -1,17 +1,17 @@
 import React, { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { TheatreItem } from "../../../types";
-import { ExhibitionFrame, MediaSlotContext } from "./ExhibitionFrame";
+import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
 
-interface PosterExhibitionProps {
+interface PosterViewerProps {
   item: TheatreItem;
 }
 
 /**
- * PosterExhibition — wraps ExhibitionFrame with a full-size poster image as
- * the media slot. Double-tap fires the honour flash via ExhibitionFrame.
+ * PosterViewer — wraps ViewerFrame with a full-size poster image as
+ * the media slot. Double-tap fires the honour flash via ViewerFrame.
  */
-export function PosterExhibition({ item }: PosterExhibitionProps) {
+export function PosterViewer({ item }: PosterViewerProps) {
   const imageSrc = item.image ?? (item.images?.[0] || "");
   const [imgLoaded, setImgLoaded] = useState(false);
 
@@ -32,7 +32,7 @@ export function PosterExhibition({ item }: PosterExhibitionProps) {
         </div>
       )}
 
-      <ExhibitionFrame
+      <ViewerFrame
         item={item}
         mediaMaxWidth="min(440px,calc(100vw-2rem))"
         mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (

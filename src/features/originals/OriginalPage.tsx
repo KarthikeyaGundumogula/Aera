@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowRight, Bookmark, Settings, Plus } from "lucide-react";
+import { ArrowRight, BookPlus, Settings, Plus } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
@@ -47,7 +47,7 @@ export function OriginalPage() {
     () => [
       {
         label: "Save to Watchlist",
-        icon: <Bookmark className="w-4 h-4" />,
+        icon: <BookPlus className="w-4 h-4" />,
         action: () => {
           if (!showToast) {
             setShowToast(true);
@@ -283,7 +283,7 @@ export function OriginalPage() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-xl z-[200] flex items-center gap-2 pointer-events-none"
           >
-            <Bookmark size={14} className="fill-current" />
+            <BookPlus size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
               Added to Library
             </span>

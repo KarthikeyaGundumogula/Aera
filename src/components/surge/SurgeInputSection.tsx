@@ -7,7 +7,7 @@ interface SurgeInputSectionProps {
   score: number;
   peak?: number;
   onChange: (v: number) => void;
-  /** Optional divider rendered above the score section (for use in Library) */
+  /** Optional divider rendered above the score section (for use in Ledger) */
   withDivider?: boolean;
 }
 
@@ -15,7 +15,7 @@ interface SurgeInputSectionProps {
  * SurgeInputSection
  *
  * Single source of truth for the score-input UI used in both
- * CreateRecommendationModal and LibraryEntryModal.
+ * CreateRecommendationModal and LedgerEntryModal.
  *
  * Owns the peakFlash state so callers don't have to duplicate it.
  */
@@ -29,7 +29,7 @@ export function SurgeInputSection({
 
   return (
     <>
-      {/* Optional divider (Library uses it) */}
+      {/* Optional divider (Ledger uses it) */}
       {withDivider && <div className="h-px bg-white/[0.04]" aria-hidden />}
 
       {/* Peak crossed flash overlay — rendered at the section level */}

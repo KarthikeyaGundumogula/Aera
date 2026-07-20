@@ -27,6 +27,7 @@ import {
   OriginalPage,
   OriginalCreatePage,
   OriginalsListPage,
+  OriginalRecommendationsPage,
   // Profile
   ArtistSetupPage,
   LoginPage,
@@ -44,8 +45,9 @@ import {
   SetDetailPage,
   DiscussionPage,
   FestivalDetailPage,
-  // Library
-  LibraryPage,
+  // Ledger
+  LedgerPage,
+  LedgerViewer,
   // Center
   CenterPage,
   RecommendationsPage,
@@ -91,7 +93,7 @@ function NotFoundPage() {
 /**
  * AppRoutes — separated so it can use useLocation inside BrowserRouter.
  *
- * Works (/works/:id) are full-page Exhibition Screens, not overlays.
+ * Works (/works/:id) are full-page Viewer Screens, not overlays.
  */
 function AppRoutes() {
   return (
@@ -149,6 +151,7 @@ function AppRoutes() {
             <Route path="/profile/reserved" element={<ReservedArtistsPage />} />
             <Route path="/profile/edit" element={<ProfileEditPage />} />
             <Route path="/profile/:profileId" element={<ProfilePage />} />
+            <Route path="/profile/:profileId/recommendations/:originalId" element={<OriginalRecommendationsPage />} />
             {/* Wall post deep-link — opens full-screen swiper at shared post */}
             <Route path="/wall/:artistId/:postId" element={<WallPostPage />} />
 
@@ -156,7 +159,8 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
-            <Route path="/library" element={<LibraryPage />} />
+            <Route path="/ledger" element={<LedgerPage />} />
+            <Route path="/ledger/:id" element={<LedgerViewer />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}
             <Route

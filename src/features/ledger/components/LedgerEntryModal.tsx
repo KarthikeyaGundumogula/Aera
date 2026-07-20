@@ -13,11 +13,11 @@ import {
   Film,
   Eye,
   Clock,
-  BookmarkPlus,
+  BookPlus,
   ChevronLeft,
 } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
-import { mockLibrary, LibraryItem } from "../../../mock/library";
+import { mockLedger, LedgerItem } from "../../../mock/ledger";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
 
@@ -26,7 +26,7 @@ const AMBER = "#D97706";
 const AMBER_DIM = "rgba(217,119,6,0.10)";
 const AMBER_GLOW = "rgba(217,119,6,0.28)";
 
-interface LibraryEntryModalProps {
+interface LedgerEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -212,9 +212,9 @@ function CinematicTextarea({
 
 // ─── Main modal ───────────────────────────────────────────────────────────────
 
-export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
+export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
   const [existingIds] = useState<string[]>(() =>
-    mockLibrary.map((l) => l.originalId),
+    mockLedger.map((l) => l.originalId),
   );
   const [selectedOriginal, setSelectedOriginal] = useState<Original | null>(
     null,
@@ -283,13 +283,13 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
 
   const handleConfirm = useCallback(() => {
     if (!selectedOriginal) return;
-    const newEntry: LibraryItem = {
+    const newEntry: LedgerItem = {
       id: `wl_${Date.now()}`,
       originalId: selectedOriginal.id,
       originalName: selectedOriginal.title,
       originalPosterUrl: selectedOriginal.coverImage,
       status,
-      hypeText:
+      preThoughts:
         status === "want_to_watch"
           ? expectations || "On the radar."
           : expectations || "Experienced.",
@@ -299,14 +299,14 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
       addedAt: new Date().toISOString(),
     };
     setIsAdded(true);
-    mockLibrary.unshift(newEntry);
-    window.dispatchEvent(new CustomEvent("libraryUpdated"));
+    mockLedger.unshift(newEntry);
+    window.dispatchEvent(new CustomEvent("ledgerUpdated"));
     setTimeout(() => onClose(), 1300);
   }, [selectedOriginal, status, expectations, afterThoughts, onClose]);
 
   const canSubmit = selectedOriginal !== null;
   const submitLabel =
-    status === "watched" ? "Seal the Verdict" : "Log to Library";
+    status === "watched" ? "Seal the Verdict" : "Log to Ledger";
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -349,7 +349,7 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
             key="lem-modal"
             role="dialog"
             aria-modal="true"
-            aria-label="Add to Library"
+            aria-label="Add to Ledger"
             className="fixed inset-0 z-[210] flex items-center justify-center px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -415,7 +415,7 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
               <div className="relative flex items-start justify-between px-6 pt-6 pb-0">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <BookmarkPlus
+                    <BookPlus
                       className="w-3 h-3 opacity-60"
                       style={{ color: AMBER }}
                       strokeWidth={2}
@@ -424,7 +424,7 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
                       className="text-[9px] font-black uppercase tracking-[0.35em]"
                       style={{ color: `${AMBER}99` }}
                     >
-                      Library
+                      Ledger
                     </span>
                   </div>
                   <h2 className="text-white text-lg font-light tracking-wide leading-tight">
@@ -633,7 +633,7 @@ export function LibraryEntryModal({ isOpen, onClose }: LibraryEntryModalProps) {
                       className="flex items-center gap-1.5 text-xs font-semibold"
                       style={{ color: AMBER }}
                     >
-                      <BookmarkPlus className="w-3.5 h-3.5" strokeWidth={2} />
+                      <BookPlus className="w-3.5 h-3.5" strokeWidth={2} />
                       Logged
                     </motion.div>
                   ) : (

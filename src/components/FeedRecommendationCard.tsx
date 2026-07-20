@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Zap,
   BookOpen,
-  Bookmark,
+  BookPlus,
   Info,
   ChevronDown,
   ArrowUpRight,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Recommendation } from "../mock/recommendations";
 import { BoostAction } from "./actions/BoostAction";
-import { LibraryAction } from "./actions/LibraryAction";
+import { LedgerAction } from "./actions/LedgerAction";
 import { SaveAction } from "./actions/SaveAction";
 import { CameraAction } from "./actions/CameraAction";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
@@ -392,7 +392,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                       }}
                       aria-label={saved ? "Saved" : "Save"}
                     >
-                      <Bookmark
+                      <BookPlus
                         className="w-[18px] h-[18px] sm:w-5 sm:h-5"
                         fill={saved ? "currentColor" : "none"}
                       />
@@ -410,8 +410,8 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
               >
                 {/* Primary Actions */}
                 <div className="flex items-center gap-2 sm:gap-3 flex-1">
-                  <BoostAction isActive={boosted} onClick={() => setBoosted(!boosted)} variant="exhibition" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
-                  <LibraryAction isActive={inLedger} onClick={() => setInLedger(!inLedger)} variant="exhibition" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
+                  <BoostAction isActive={boosted} onClick={() => setBoosted(!boosted)} variant="viewer" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
+                  <LedgerAction isActive={inLedger} onClick={() => setInLedger(!inLedger)} variant="viewer" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
                 </div>
 
                 {/* Secondary Action */}
@@ -422,7 +422,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                       isPinned={pinned}
                       onPin={() => setPinned(!pinned)} 
                       onQuote={() => setIsQuoteModalOpen(true)}
-                      variant="exhibition" 
+                      variant="viewer" 
                       iconOnly
                       className="!w-7 !h-7 sm:!w-[30px] sm:!h-[30px] flex items-center justify-center !px-0 rounded-lg" 
                     />

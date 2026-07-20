@@ -1,26 +1,26 @@
 import React from "react";
 import { motion } from "motion/react";
 import { TheatreItem } from "../../../types";
-import { ExhibitionFrame } from "./ExhibitionFrame";
+import { ViewerFrame } from "./ViewerFrame";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { RecommendationCard } from "../../../components/RecommendationCard";
 
-interface RecommendationExhibitionProps {
+interface RecommendationViewerProps {
   item: TheatreItem;
 }
 
 /**
- * RecommendationExhibition — wraps ExhibitionFrame with RecommendationCard as
+ * RecommendationViewer — wraps ViewerFrame with RecommendationCard as
  * the media slot. The identity block is suppressed because RecommendationCard
  * has its own artist/title display built in.
  */
-export function RecommendationExhibition({ item }: RecommendationExhibitionProps) {
+export function RecommendationViewer({ item }: RecommendationViewerProps) {
   const rec = item.recId
     ? MOCK_RECOMMENDATIONS.find((r) => r.id === item.recId) ?? null
     : null;
 
   return (
-    <ExhibitionFrame
+    <ViewerFrame
       item={item}
       showIdentityBlock={false}
       mediaMaxWidth="min(600px,calc(100vw-2rem))"

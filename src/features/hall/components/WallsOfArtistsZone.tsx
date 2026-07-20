@@ -6,6 +6,7 @@ import { WALL_POSTS } from "../../../mock/wall";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { WallSwiper, WallSwiperArtistGroup } from "../../profile/components/WallSwiper";
+import { mockLedger } from "../../../mock/ledger";
 
 function AvatarFallback({ className }: { className: string }) {
   // Strip img-specific classes like object-cover to safely apply to the div
@@ -47,6 +48,11 @@ export function WallsOfArtistsZone() {
     []
   );
 
+  const ledgerById = useMemo(
+    () => Object.fromEntries(mockLedger.map((l) => [l.id, l])),
+    []
+  );
+
   useEffect(() => {
     // Initial load: group WALL_POSTS by artist and take first 3 entries for each
     const groupsMap = new Map<string, WallSwiperArtistGroup>();
@@ -68,6 +74,7 @@ export function WallsOfArtistsZone() {
           resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
           resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
           resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
+          resolvedLedgerEntry: post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined,
         });
       }
     }
@@ -98,6 +105,7 @@ export function WallsOfArtistsZone() {
         resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
         resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
         resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
+        resolvedLedgerEntry: post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined,
       }));
       
       return {

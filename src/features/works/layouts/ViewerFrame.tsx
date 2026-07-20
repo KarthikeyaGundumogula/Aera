@@ -5,10 +5,10 @@ import { CameraAction } from "../../../components/actions/CameraAction";
 import { SaveAction } from "../../../components/actions/SaveAction";
 import { QuoteModal } from "../../../components/QuoteModal";
 import { TheatreItem, OriginalArtist } from "../../../types";
-import { ExhibitionNav } from "../components/ExhibitionNav";
+import { ViewerNav } from "../components/ViewerNav";
 import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
-import { Pin, Bookmark, Heart } from "lucide-react";
+import { Pin, BookPlus, Heart } from "lucide-react";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { ARTISTS_MOCK } from "../../../mock";
@@ -28,7 +28,7 @@ function formatStat(num: number): string {
   return num.toString();
 }
 
-interface ExhibitionFrameProps {
+interface ViewerFrameProps {
   item: TheatreItem;
   /**
    * The unique media content for this work type.
@@ -54,11 +54,11 @@ const DOUBLE_TAP_MS = 400;
 const DOUBLE_TAP_MIN_MS = 30;
 
 /**
- * ExhibitionFrame — the single, unified exhibition chrome.
+ * ViewerFrame — the single, unified viewer chrome.
  *
  * Handles:
  *  - Responsive two-column grid (desktop) / vertical stack (mobile)
- *  - ExhibitionNav (top bar)
+ *  - ViewerNav (top bar)
  *  - YouTube-style identity block: Title → Avatar + Name + Favourite → Actions
  *  - Honour / Favourite state
  *  - ArtistProfile modal
@@ -66,12 +66,12 @@ const DOUBLE_TAP_MIN_MS = 30;
  *
  * Each work type passes a `mediaSlot` render-prop with its unique media JSX.
  */
-export function ExhibitionFrame({
+export function ViewerFrame({
   item,
   mediaSlot,
   showIdentityBlock = true,
   mediaMaxWidth,
-}: ExhibitionFrameProps) {
+}: ViewerFrameProps) {
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [isStarred, setIsStarred] = useState(false);
   const [staring, setStaring] = useState(false);
@@ -164,7 +164,7 @@ export function ExhibitionFrame({
 
         {/* Left column ─────────────────────────────────────────────────────── */}
         <div className="flex flex-col relative">
-          <ExhibitionNav item={item} />
+          <ViewerNav item={item} />
 
           <div className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-[60px] pb-8 sm:pt-[64px]">
 
@@ -287,7 +287,7 @@ export function ExhibitionFrame({
                       isActive={isStarred}
                       onClick={handleStarBtn}
                       count={formatStat(isStarred ? starsCount + 1 : starsCount)}
-                      variant="exhibition"
+                      variant="viewer"
                       isStaring={staring}
                     />
                     
@@ -297,14 +297,14 @@ export function ExhibitionFrame({
                       onPin={handlePin}
                       onQuote={() => setIsQuoteModalOpen(true)}
                       count={formatStat(pinned ? pinsCount + 1 : pinsCount)}
-                      variant="exhibition"
+                      variant="viewer"
                     />
                     
                     <SaveAction
                       isActive={saved}
                       onClick={() => setSaved((s) => !s)}
                       count={formatStat(saved ? savesCount + 1 : savesCount)}
-                      variant="exhibition"
+                      variant="viewer"
                     />
                   </div>
                 </div>

@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
-import { LibraryItem } from "../../../mock/library";
+import { LedgerItem } from "../../../mock/ledger";
 
-interface LibraryZoneProps {
-  items: LibraryItem[];
+interface LedgerZoneProps {
+  items: LedgerItem[];
 }
 
 const STATUS_MAP = {
@@ -22,14 +22,14 @@ const STATUS_MAP = {
   },
 };
 
-function LibraryCard({ item }: { item: LibraryItem }) {
+function LedgerCard({ item }: { item: LedgerItem }) {
   const navigate = useNavigate();
   const statusCfg = STATUS_MAP[item.status];
   const StatusIcon = statusCfg.icon;
 
   return (
     <motion.button
-      onClick={() => navigate("/library")}
+      onClick={() => navigate("/ledger")}
       whileHover={{ scale: 1.015 }}
       whileTap={{ scale: 0.98 }}
       className="
@@ -76,21 +76,21 @@ function LibraryCard({ item }: { item: LibraryItem }) {
         <p className="text-[11px] text-white/40 font-mono leading-relaxed line-clamp-2">
           {item.status === "watched" && item.afterThoughts
             ? item.afterThoughts
-            : item.hypeText}
+            : item.preThoughts}
         </p>
       </div>
     </motion.button>
   );
 }
 
-export function LibraryZone({ items }: LibraryZoneProps) {
+export function LedgerZone({ items }: LedgerZoneProps) {
   if (!items.length) return null;
 
   return (
     <div className="overflow-x-auto no-scrollbar pb-4">
       <div className="flex gap-4 w-max px-6 md:px-12">
         {items.map((item) => (
-          <LibraryCard key={item.id} item={item} />
+          <LedgerCard key={item.id} item={item} />
         ))}
       </div>
     </div>

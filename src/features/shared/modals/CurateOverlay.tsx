@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Tag } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
 import { OWN_RELEASE_ORIGINAL } from "../../../constants/originals";
-import { LibraryAction } from "../../../components/actions/LibraryAction";
+import { LedgerAction } from "../../../components/actions/LedgerAction";
 
 interface CurateOverlayProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ export function CurateOverlay({
   onShowToast,
 }: CurateOverlayProps) {
   const navigate = useNavigate();
-  const [libraryOriginals, setLibraryOriginals] = useState<string[]>([]);
+  const [ledgerOriginals, setLedgerOriginals] = useState<string[]>([]);
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
   // Only show the originals that this fragment is related to
@@ -29,24 +29,24 @@ export function CurateOverlay({
     ...ORIGINALS.filter((item) => originalIds.includes(item.id)),
   ];
 
-  const handleAddToLibrary = (id: string) => {
-    if (libraryOriginals.includes(id)) {
-      onShowToast("Already Saved to Library");
+  const handleAddToLedger = (id: string) => {
+    if (ledgerOriginals.includes(id)) {
+      onShowToast("Already Saved to Ledger");
     } else {
-      setLibraryOriginals((prev) => [...prev, id]);
-      onShowToast("Original Added to Library");
+      setLedgerOriginals((prev) => [...prev, id]);
+      onShowToast("Original Added to Ledger");
     }
   };
 
-  const handleTagToLibrary = (id: string) => {
+  const handleTagToLedger = (id: string) => {
     if (taggedOriginals.includes(id)) {
       onShowToast("Already Tagged to Original");
       return;
     }
 
     setTaggedOriginals((prev) => [...prev, id]);
-    if (!libraryOriginals.includes(id)) {
-      setLibraryOriginals((prev) => [...prev, id]);
+    if (!ledgerOriginals.includes(id)) {
+      setLedgerOriginals((prev) => [...prev, id]);
       onShowToast("Original Added & Work Tagged");
     } else {
       onShowToast("Work Tagged to Original");
@@ -88,7 +88,7 @@ export function CurateOverlay({
               </div>
             ) : (
               relatedOriginals.map((item) => {
-                const inLibrary = libraryOriginals.includes(item.id);
+                const inLedger = ledgerOriginals.includes(item.id);
                 const isTagged = taggedOriginals.includes(item.id);
 
                 return (
@@ -112,15 +112,15 @@ export function CurateOverlay({
                       </h4>
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2 pr-1 sm:pr-2">
-                      <LibraryAction 
-                        isActive={inLibrary}
-                        onClick={() => handleAddToLibrary(item.id)}
+                      <LedgerAction 
+                        isActive={inLedger}
+                        onClick={() => handleAddToLedger(item.id)}
                         variant="feed"
                       />
                       <button
-                        onClick={() => handleTagToLibrary(item.id)}
+                        onClick={() => handleTagToLedger(item.id)}
                         className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${isTagged ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10"}`}
-                        title="Tag work to Library"
+                        title="Tag work to Ledger"
                       >
                         <Tag
                           className={`w-3 h-3 sm:w-4 sm:h-4 ${isTagged ? "fill-current" : ""}`}

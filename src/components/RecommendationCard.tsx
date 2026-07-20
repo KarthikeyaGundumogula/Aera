@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Zap,
   BookOpen,
-  Bookmark,
+  BookPlus,
   Info,
   ChevronDown,
   Heart,
@@ -17,7 +17,7 @@ import { SaveAction } from "./actions/SaveAction";
 import { QuoteModal } from "./QuoteModal";
 import { FHLoader } from "./FHLoader";
 import { BoostAction } from "./actions/BoostAction";
-import { LibraryAction } from "./actions/LibraryAction";
+import { LedgerAction } from "./actions/LedgerAction";
 import { CameraAction } from "./actions/CameraAction";
 import { SurgeBars } from "./SurgeBars";
 import { formatRelativeTime } from "../utils/time";
@@ -35,7 +35,7 @@ export const RecommendationCard = memo(function RecommendationCard({
 }: Props) {
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [boosted, setBoosted] = useState(false);
-  const [inLibrary, setInLibrary] = useState(false);
+  const [inLedger, setInLedger] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
@@ -501,7 +501,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                   }}
                   aria-label={saved ? "Saved" : "Save"}
                 >
-                  <Bookmark
+                  <BookPlus
                     className="w-[18px] h-[18px] sm:w-5 sm:h-5"
                     fill={saved ? "currentColor" : "none"}
                   />
@@ -517,8 +517,8 @@ export const RecommendationCard = memo(function RecommendationCard({
               >
                 {/* Primary Actions */}
                 <div className="flex items-center gap-2 sm:gap-3 flex-1">
-                  <BoostAction isActive={boosted} onClick={() => setBoosted(!boosted)} variant="exhibition" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
-                  <LibraryAction isActive={inLibrary} onClick={() => setInLibrary(!inLibrary)} variant="exhibition" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
+                  <BoostAction isActive={boosted} onClick={() => setBoosted(!boosted)} variant="viewer" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
+                  <LedgerAction isActive={inLedger} onClick={() => setInLedger(!inLedger)} variant="viewer" className="!h-7 sm:!h-[30px] flex-1 justify-center rounded-lg" />
                 </div>
 
                 {/* Secondary Action */}
@@ -528,7 +528,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                     isPinned={pinned}
                     onPin={() => setPinned(!pinned)} 
                     onQuote={() => setIsQuoteModalOpen(true)}
-                    variant="exhibition" 
+                    variant="viewer" 
                     iconOnly
                     className="!w-7 !h-7 sm:!w-[30px] sm:!h-[30px] flex items-center justify-center !px-0 rounded-lg" 
                   />

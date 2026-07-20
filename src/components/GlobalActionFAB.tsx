@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clapperboard, X, BookPlus, Sparkles, Quote } from "lucide-react";
 import { RecommendationModal } from "./RecommendationModal";
 import { CreateRecommendationModal } from "./CreateRecommendationModal";
-import { LibraryEntryModal } from "@/features/library/components/LibraryEntryModal";
+import { LedgerEntryModal } from "@/features/ledger/components/LedgerEntryModal";
 import { PostLineModal } from "./PostLineModal";
 import { ActionNode, ARC_RADIUS } from "./fab/ActionNode";
 import { useRecommendationContext } from "../context/RecommendationContext";
@@ -46,7 +46,7 @@ export function GlobalActionFAB() {
     closeRecommendation,
   } = useRecommendationContext();
 
-  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
+  const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
   const [isCreateRecOpen, setIsCreateRecOpen] = useState(false);
   const [isPostLineOpen, setIsPostLineOpen] = useState(false);
   const [isSnapping, setIsSnapping] = useState(false);
@@ -190,17 +190,17 @@ export function GlobalActionFAB() {
   }, [
     isMenuOpen,
     isModalOpen,
-    isLibraryModalOpen,
+    isLedgerModalOpen,
     isCreateRecOpen,
     isPostLineOpen,
   ]);
 
-  // Listen for global event to open Library Modal
+  // Listen for global event to open Ledger Modal
   useEffect(() => {
-    const handleOpenLibrary = () => setIsLibraryModalOpen(true);
-    window.addEventListener("openLibraryModal", handleOpenLibrary);
+    const handleOpenLedger = () => setIsLedgerModalOpen(true);
+    window.addEventListener("openLedgerModal", handleOpenLedger);
     return () =>
-      window.removeEventListener("openLibraryModal", handleOpenLibrary);
+      window.removeEventListener("openLedgerModal", handleOpenLedger);
   }, []);
 
   function handleOpen() {
@@ -428,12 +428,12 @@ export function GlobalActionFAB() {
               />
               <ActionNode
                 icon={<BookPlus className="w-5 h-5" strokeWidth={2.5} />}
-                label="Add to Library"
+                label="Add to Ledger"
                 angleDeg={-180}
                 delay={0.05}
                 onClick={() => {
                   setIsMenuOpen(false);
-                  setIsLibraryModalOpen(true);
+                  setIsLedgerModalOpen(true);
                 }}
               />
             </>
@@ -572,9 +572,9 @@ export function GlobalActionFAB() {
         onClose={() => setIsCreateRecOpen(false)}
       />
 
-      <LibraryEntryModal
-        isOpen={isLibraryModalOpen}
-        onClose={() => setIsLibraryModalOpen(false)}
+      <LedgerEntryModal
+        isOpen={isLedgerModalOpen}
+        onClose={() => setIsLedgerModalOpen(false)}
       />
 
       <PostLineModal

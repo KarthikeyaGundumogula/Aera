@@ -8,10 +8,11 @@ interface OriginalPosterCardProps {
   makers: OriginalMaker[];
   stars: OriginalStar[];
   index: number;
+  onClick?: () => void;
 }
 
 export const OriginalPosterCard = memo(
-  ({ original, makers, stars, index }: OriginalPosterCardProps) => {
+  ({ original, makers, stars, index, onClick }: OriginalPosterCardProps) => {
     const navigate = useNavigate();
 
     const director = useMemo(() => {
@@ -58,12 +59,17 @@ export const OriginalPosterCard = memo(
             delay: index * 0.04,
             ease: [0.23, 1, 0.32, 1],
           }}
-          onClick={() => navigate(`/originals/${original.id}`)}
+          onClick={() => {
+            if (onClick) onClick();
+            else navigate(`/originals/${original.id}`);
+          }}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ")
-              navigate(`/originals/${original.id}`);
+            if (e.key === "Enter" || e.key === " ") {
+              if (onClick) onClick();
+              else navigate(`/originals/${original.id}`);
+            }
           }}
           className="flex flex-col h-full cursor-pointer transition-all duration-300 ease-out group overflow-hidden"
           style={{
