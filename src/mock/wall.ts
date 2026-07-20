@@ -30,7 +30,7 @@ export const WALL_POSTS: WallPost[] = [
     artistName: "Karthik G",
     artistImage: "/stars/pawan-kalyan.jpeg",
     type: "RECOMMENDATION",
-    pinnedRecommendationId: "rec-001",
+    pinnedRecommendationId: "rec-karthik-og",
     text: "i can't stop thinking about this sequence.",
     postedAt: "2026-07-05T10:00:00Z",
   },
@@ -110,7 +110,7 @@ export const WALL_POSTS: WallPost[] = [
     artistName: "Priya Nair",
     artistImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
     type: "RECOMMENDATION",
-    pinnedRecommendationId: "rec-002",
+    pinnedRecommendationId: "rec-priya-rrr",
     postedAt: "2026-07-05T12:00:00Z",
   },
   {
@@ -179,7 +179,7 @@ export const WALL_POSTS: WallPost[] = [
     artistName: "Arjun Reddy",
     artistImage: "/stars/yash.jpg",
     type: "RECOMMENDATION",
-    pinnedRecommendationId: "rec-003",
+    pinnedRecommendationId: "rec-arjun-kgf",
     postedAt: "2026-07-05T09:00:00Z",
   },
   {

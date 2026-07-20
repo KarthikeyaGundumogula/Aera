@@ -8,7 +8,7 @@ import React, {
   useDeferredValue,
 } from "react";
 import { motion } from "motion/react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ARTISTS_MOCK,
   STARS_MOCK,
@@ -95,9 +95,16 @@ const loadedProfiles = new Set<string>();
 const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const [isFavorited, setIsFavorited] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "THEATRE" | "WALL" | "LIBRARY"
-  >("THEATRE");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get("tab")?.toUpperCase();
+  const activeTab: "THEATRE" | "WALL" | "LIBRARY" = 
+    (rawTab === "THEATRE" || rawTab === "WALL" || rawTab === "LIBRARY") 
+      ? rawTab 
+      : "THEATRE";
+
+  const setActiveTab = (tab: "THEATRE" | "WALL" | "LIBRARY") => {
+    setSearchParams({ tab: tab.toLowerCase() }, { replace: true });
+  };
   const [dossierOriginalId, setDossierOriginalId] = useState<string | null>(null);
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();

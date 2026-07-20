@@ -9,8 +9,6 @@ import { mockLedger } from "../../../mock/ledger";
 
 interface WallFeedProps {
   posts: WallPost[];
-  /** When true, every card is flat (no tilt) with the Foyer amber strip */
-  inFoyer?: boolean;
   themeGradient?: [string, string];
 }
 
@@ -27,8 +25,7 @@ interface WallFeedProps {
  *   - Tapping any card opens WallSwiper — a full-screen feed-like viewer
  *     where the user can swipe through all wall posts.
  */
-export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, themeGradient }) => {
-  const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
+export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
 
   // O(1) lookup maps — resolved once, never re-computed unless posts change
   const worksById = useMemo(
@@ -118,26 +115,13 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, inFoyer = false, them
                   resolvedOriginal={resolvedOriginal}
                   resolvedRecommendation={resolvedRecommendation}
                   resolvedLedgerEntry={resolvedLedgerEntry}
-                  inFoyer={inFoyer}
                   themeGradient={themeGradient}
-                  onClick={() => setSelectedPostIndex(index)}
                 />
             </motion.div>
             </React.Fragment>
           );
         })}
       </div>
-
-      <AnimatePresence>
-        {selectedPostIndex !== null && swiperGroups.length > 0 && (
-          <WallSwiper 
-            groups={swiperGroups}
-            initialGroupIndex={0}
-            initialPostIndices={{ [swiperGroups[0].artistId]: selectedPostIndex }}
-            onClose={() => setSelectedPostIndex(null)}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 };

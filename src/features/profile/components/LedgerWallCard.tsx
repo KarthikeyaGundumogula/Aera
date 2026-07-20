@@ -31,8 +31,6 @@ interface LedgerWallCardProps {
   entry: LedgerItem;
   /** When true (Hall context): card is a peek — show explicit "View Entry" button, no tap nav */
   previewOnly?: boolean;
-  /** When shown inside the Foyer feed (adds "From Wall" label) */
-  inFoyer?: boolean;
   onClick?: () => void;
 }
 
@@ -42,7 +40,7 @@ function formatScore(n: number) {
 }
 
 export const LedgerWallCard = memo<LedgerWallCardProps>(
-  ({ post, entry, previewOnly = false, inFoyer = false, onClick }) => {
+  ({ post, entry, previewOnly = false, onClick }) => {
     const navigate = useNavigate();
     const isWatched = entry.status === "watched";
 
@@ -127,7 +125,7 @@ export const LedgerWallCard = memo<LedgerWallCardProps>(
 
           {/* Pre-thoughts excerpt OR "Logged after watching" label */}
           {entry.preThoughts ? (
-            <p className="text-[11px] font-medium italic text-white/40 leading-snug line-clamp-2">
+            <p className="text-[11px] font-medium italic text-white/40 leading-snug">
               "{entry.preThoughts}"
             </p>
           ) : (
@@ -138,7 +136,7 @@ export const LedgerWallCard = memo<LedgerWallCardProps>(
 
           {/* Post-experience excerpt */}
           {entry.afterThoughts && (
-            <p className="text-[12px] font-medium text-white/75 leading-snug line-clamp-2">
+            <p className="text-[12px] font-medium text-white/75 leading-snug">
               {entry.afterThoughts}
             </p>
           )}
@@ -197,27 +195,6 @@ export const LedgerWallCard = memo<LedgerWallCardProps>(
       </motion.div>
     );
 
-
-    if (inFoyer) {
-      return (
-        <div>
-          <div
-            className="flex items-center gap-2 px-3 py-2 border-l-2 border-amber-500"
-            style={{ backgroundColor: "rgba(245, 158, 11, 0.08)" }}
-          >
-            <BookPlus
-              size={10}
-              className="text-amber-500 flex-shrink-0"
-              aria-hidden="true"
-            />
-            <span className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-400">
-              Ledger Entry · {post.artistName}
-            </span>
-          </div>
-          <div className="px-0 pt-3 pb-2">{card}</div>
-        </div>
-      );
-    }
 
     return (
       <div className="px-4 py-2">

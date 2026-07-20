@@ -187,6 +187,7 @@ export function WallsOfArtistsZone() {
             initialGroupIndex={selectedSwiperIndex} 
             onFetchOlder={handleFetchOlder}
             onClose={() => setSelectedSwiperIndex(null)} 
+            context="foyer"
           />
         )}
       </AnimatePresence>

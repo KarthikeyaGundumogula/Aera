@@ -9,6 +9,7 @@ import { ViewerNav } from "../components/ViewerNav";
 import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
 import { Pin, BookPlus, Heart } from "lucide-react";
+import { ShareAction } from "../../../components/actions/ShareAction";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { ARTISTS_MOCK } from "../../../mock";
@@ -305,6 +306,17 @@ export function ViewerFrame({
                       onClick={() => setSaved((s) => !s)}
                       count={formatStat(saved ? savesCount + 1 : savesCount)}
                       variant="viewer"
+                    />
+
+                    <ShareAction
+                      title={`${item.title || "Work"} on Aera`}
+                      text={`Check out ${item.title || "this work"} on Aera`}
+                      url={`${window.location.origin}/works/${item.id}`}
+                      variant="viewer"
+                      onShareSuccess={() => {
+                        setToastMsg("LINK COPIED");
+                        setTimeout(() => setToastMsg(null), 2400);
+                      }}
                     />
                   </div>
                 </div>

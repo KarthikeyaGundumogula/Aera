@@ -50,27 +50,10 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
     if (showPicker || showFullPicker) {
       setShowPicker(false);
       setShowFullPicker(false);
-      return;
-    }
-    if (activeReaction) {
-      onReact(null);
     } else {
-      // Default to most recently used, or FIRE
-      onReact(recentEmojis[0] || "🔥");
+      setShowPicker(true);
     }
   };
-
-  const handlers = useLongPress({
-    onLongPress: () => {
-      setShowPicker(true);
-      // Vibrate if supported
-      if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
-    },
-    onClick: handleToggle,
-    delay: 350,
-  });
 
   const displayIcon = activeReaction || "🔥";
   const isActive = !!activeReaction;
@@ -111,7 +94,7 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
     if (activeVariant === "comment-bar") {
       return (
         <div 
-          {...handlers}
+          onClick={handleToggle}
           className={`w-full h-11 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 transition-colors flex items-center justify-between px-3 cursor-pointer group ${className}`}
         >
           <div className="flex items-center gap-3">
@@ -136,7 +119,7 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
       <>
         {/* The main action button */}
         <button
-          {...handlers}
+          onClick={handleToggle}
           className={`${baseClasses} ${isActive ? activeClasses : idleClasses} ${className}`}
           aria-label={isActive ? "Remove reaction" : "React to post"}
         >

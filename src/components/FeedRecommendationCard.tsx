@@ -93,11 +93,8 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
             {/* Poster — fixed height so tall images don't inflate card */}
             <div className="px-2.5 pt-2.5 pb-2 shrink-0">
               <div
-                className={`relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 shadow-[0_8px_24px_rgba(0,0,0,0.6)] ${variant === "default" ? "cursor-pointer group/poster" : ""}`}
-                onClick={variant === "default" ? (e) => {
-                  e.stopPropagation();
-                  navigate(`/originals/${rec.original.id}`);
-                } : undefined}
+                className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 shadow-[0_8px_24px_rgba(0,0,0,0.6)] cursor-pointer group/poster"
+                onClick={handleCardClick}
               >
                 <PosterImage
                   src={rec.original.coverImage}
@@ -191,13 +188,13 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
 
           {/* RIGHT: Content Column */}
           <div
-            className={`flex-1 min-w-0 flex flex-col relative z-10 ${variant === "default" ? "cursor-pointer" : ""}`}
-            onClick={variant === "default" ? handleCardClick : undefined}
+            className="flex-1 min-w-0 flex flex-col relative z-10 cursor-pointer"
+            onClick={handleCardClick}
           >
             {/* TOP: Film Title */}
             <div className="px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2">
               <h3
-                className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2"
+                className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05]"
                 style={{ textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}
               >
                 {rec.original.title}
@@ -219,17 +216,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                 <motion.p
                   ref={textRef}
                   layout
-                  className={`leading-relaxed font-medium transition-colors duration-300 text-white/85 ${
-                    notesExpanded
-                      ? "text-[13px] sm:text-[14px]"
-                      : "text-[12px] sm:text-[13px]"
-                  }`}
-                  style={{
-                    display: "-webkit-box",
-                    WebkitBoxOrient: "vertical",
-                    WebkitLineClamp: notesExpanded ? "unset" : 5,
-                    overflow: "hidden",
-                  }}
+                  className="leading-relaxed font-medium transition-colors duration-300 text-white/85 text-[12px] sm:text-[13px]"
                 >
                   {rec.notes}
                 </motion.p>

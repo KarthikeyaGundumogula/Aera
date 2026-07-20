@@ -11,7 +11,6 @@ import {
   X,
   ChevronRight,
   Loader2,
-  ArrowUpRight,
   Share2,
   Check,
 } from "lucide-react";
@@ -489,7 +488,7 @@ export interface WallSwiperEntry {
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
   resolvedRecommendation?: Recommendation;
-  resolvedLedgerEntry?: import("../../../mock/ledger").LedgerItem;
+  resolvedLedgerEntry?: LedgerItem;
 }
 
 export interface WallSwiperArtistGroup {
@@ -506,6 +505,7 @@ interface WallSwiperProps {
   initialPostIndices?: Record<string, number>;
   onFetchOlder?: (artistId: string) => Promise<void>;
   onClose: () => void;
+  context?: "foyer" | "profile";
 }
 
 /**
@@ -525,6 +525,7 @@ export function WallSwiper({
   initialPostIndices = {},
   onFetchOlder,
   onClose,
+  context = "profile",
 }: WallSwiperProps) {
   const navigate = useNavigate();
 
@@ -573,7 +574,10 @@ export function WallSwiper({
   const nextGroup = groups[wrap(groupIndex + 1)];
 
   const activePostIndex = postIndices[activeGroup.artistId] || 0;
-  const isShowingOlderCard = activePostIndex === activeGroup.entries.length;
+  
+  // Only show the terminal card if we are in the Foyer OR if the Profile wall has 'hasMore' posts to load
+  const canShowTerminalCard = context === "foyer" || (context === "profile" && activeGroup.hasMore);
+  const isShowingOlderCard = canShowTerminalCard && activePostIndex === activeGroup.entries.length;
   
   const reactionsCount = (activeGroup.artistName.length * 12) + (activePostIndex * 5) + 15;
 
@@ -680,31 +684,41 @@ export function WallSwiper({
         const current = prev[activeGroup.artistId] || 0;
         const next = current + dir;
 
-        const isOnOlderCard = current === activeGroup.entries.length;
+        const canShowTerminalCard = context === "foyer" || (context === "profile" && activeGroup.hasMore);
+        const isOnTerminalCard = canShowTerminalCard && current === activeGroup.entries.length;
 
-        // ── Tapping RIGHT on the "older posts" card → fetch more posts
-        if (dir === 1 && isOnOlderCard) {
-          fetchOlder();
-          return prev; // postIndex stays at older-card position until posts load
+        // ── Tapping RIGHT on the terminal card
+        if (dir === 1 && isOnTerminalCard) {
+          if (context === "profile") {
+            fetchOlder();
+            return prev; // postIndex stays at older-card position until posts load
+          } else {
+            // In Foyer, tap on terminal card goes to profile, we shouldn't get here because we handle the button click explicitly, 
+            // but if they tap the side, we could advance to next artist. Let's advance to next artist.
+            const target = groups[wrap(groupIndex + 1)];
+            paginateGroup(1);
+            return { ...prev, [target.artistId]: 0 };
+          }
         }
 
-        // ── Tap LEFT at post 0 → go to previous artist, land on their last post
+        // ── Tap LEFT at post 0 → go to previous artist, land on their last post (or terminal card)
         if (next < 0) {
           const target = groups[wrap(groupIndex - 1)];
-          const landingIdx = Math.max(0, target.entries.length - 1);
+          const targetCanShowTerminalCard = context === "foyer" || (context === "profile" && target.hasMore);
+          const landingIdx = targetCanShowTerminalCard ? target.entries.length : Math.max(0, target.entries.length - 1);
           paginateGroup(-1);
           return { ...prev, [target.artistId]: landingIdx };
         }
 
-        // ── Tap RIGHT past the "older" card → next artist, post 0
-        if (next > activeGroup.entries.length) {
+        // ── Tap RIGHT past the terminal card → next artist, post 0
+        if (canShowTerminalCard && next > activeGroup.entries.length) {
           const target = groups[wrap(groupIndex + 1)];
           paginateGroup(1);
           return { ...prev, [target.artistId]: 0 };
         }
 
-        // ── Tap RIGHT at the last post when no older → next artist, post 0
-        if (next === activeGroup.entries.length && !activeGroup.hasMore) {
+        // ── Tap RIGHT past the last post when NO terminal card → next artist, post 0
+        if (!canShowTerminalCard && next === activeGroup.entries.length) {
           const target = groups[wrap(groupIndex + 1)];
           paginateGroup(1);
           return { ...prev, [target.artistId]: 0 };
@@ -743,102 +757,7 @@ export function WallSwiper({
     [0.5, 1, 0.5],
   );
 
-  // Slide renderer — used for all three treadmill slots.
-  function SlideContent({
-    group,
-    xMotion,
-    scaleMotion,
-    opacityMotion,
-    isActive,
-  }: {
-    group: WallSwiperArtistGroup;
-    xMotion: MotionValue<number>;
-    scaleMotion?: MotionValue<number>;
-    opacityMotion?: MotionValue<number>;
-    isActive: boolean;
-  }) {
-    const postIdx = postIndices[group.artistId] || 0;
-    const isOlderCard = postIdx === group.entries.length;
-    const entry = group.entries[postIdx];
 
-    return (
-      <motion.div
-        className="absolute inset-0 w-full h-full will-change-transform"
-        style={{
-          x: xMotion,
-          scale: scaleMotion,
-          opacity: opacityMotion,
-          touchAction: "pan-y",
-        }}
-      >
-        <div className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none">
-          <div className="w-full my-auto pointer-events-none shrink-0">
-            {isOlderCard ? (
-              <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-5 pointer-events-none my-8">
-                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  {isFetching ? (
-                    <Loader2 className="w-5 h-5 text-white/50 animate-spin" />
-                  ) : (
-                    <ChevronRight className="w-7 h-7 text-white/50" />
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-sm font-black uppercase tracking-[0.15em] text-white/90 mb-1.5">
-                    Earlier posts
-                  </h3>
-                  <p className="text-xs text-white/40 leading-relaxed max-w-[220px] mx-auto">
-                    These posts stay on {group.artistName}'s wall until they
-                    remove them.
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fetchOlder();
-                  }}
-                  disabled={isFetching}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 pointer-events-auto"
-                >
-                  {isFetching ? "Loading..." : "Load earlier posts"}
-                </button>
-              </div>
-            ) : (
-              entry &&
-              (entry.post.type === "LINE" ? (
-                <div className="w-full pointer-events-none">
-                  <LineFull post={entry.post} />
-                </div>
-              ) : entry.post.type === "RECOMMENDATION" ? (
-                <div className="w-full pointer-events-none">
-                  <RecommendationFull
-                    post={entry.post}
-                    rec={entry.resolvedRecommendation}
-                  />
-                </div>
-              ) : entry.post.type === "LEDGER_ENTRY" ? (
-                <div className="w-full pointer-events-none">
-                  <LedgerFull
-                    post={entry.post}
-                    entry={entry.resolvedLedgerEntry}
-                  />
-                </div>
-              ) : (
-                <div className="w-full pointer-events-none">
-                  <PinFull
-                    post={entry.post}
-                    resolvedWork={entry.resolvedWork}
-                    resolvedOriginal={entry.resolvedOriginal}
-                    isActive={isActive}
-                    onClose={onClose}
-                  />
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </motion.div>
-    );
-  }
 
   return createPortal(
     <ModalWrapper isOpen={true} onClose={onClose} isImmersive={true}>
@@ -1046,12 +965,30 @@ export function WallSwiper({
           scaleMotion={prevScale}
           opacityMotion={prevOpacity}
           isActive={false}
+          postIndex={postIndices[prevGroup.artistId] || 0}
+          isFetching={isFetching}
+          onFetchOlder={fetchOlder}
+          onClose={onClose}
+          context={context}
+          onNavigateToProfile={() => {
+            onClose();
+            navigate(`/profile/${prevGroup.artistId}`);
+          }}
         />
         <SlideContent
           group={activeGroup}
           xMotion={currX}
           opacityMotion={currOpacity}
           isActive={true}
+          postIndex={postIndices[activeGroup.artistId] || 0}
+          isFetching={isFetching}
+          onFetchOlder={fetchOlder}
+          onClose={onClose}
+          context={context}
+          onNavigateToProfile={() => {
+            onClose();
+            navigate(`/profile/${activeGroup.artistId}`);
+          }}
         />
         <SlideContent
           group={nextGroup}
@@ -1059,6 +996,15 @@ export function WallSwiper({
           scaleMotion={nextScale}
           opacityMotion={nextOpacity}
           isActive={false}
+          postIndex={postIndices[nextGroup.artistId] || 0}
+          isFetching={isFetching}
+          onFetchOlder={fetchOlder}
+          onClose={onClose}
+          context={context}
+          onNavigateToProfile={() => {
+            onClose();
+            navigate(`/profile/${nextGroup.artistId}`);
+          }}
         />
       </div>
 
@@ -1087,3 +1033,137 @@ export function WallSwiper({
     document.body,
   );
 }
+
+// ─── Slide Content (extracted to avoid unmount/remount on parent render) ──────
+
+interface SlideContentProps {
+  group: WallSwiperArtistGroup;
+  xMotion: MotionValue<number>;
+  scaleMotion?: MotionValue<number>;
+  opacityMotion?: MotionValue<number>;
+  isActive: boolean;
+  postIndex: number;
+  isFetching: boolean;
+  onFetchOlder: () => void;
+  onClose: () => void;
+  context?: "foyer" | "profile";
+  onNavigateToProfile: () => void;
+}
+
+const SlideContent = React.memo(function SlideContent({
+  group,
+  xMotion,
+  scaleMotion,
+  opacityMotion,
+  isActive,
+  postIndex,
+  isFetching,
+  onFetchOlder,
+  onClose,
+  context,
+  onNavigateToProfile,
+}: SlideContentProps) {
+  const isOlderCard = postIndex === group.entries.length;
+  const entry = group.entries[postIndex];
+
+  return (
+    <motion.div
+      className="absolute inset-0 w-full h-full will-change-transform"
+      style={{
+        x: xMotion,
+        scale: scaleMotion,
+        opacity: opacityMotion,
+        touchAction: "pan-y",
+      }}
+    >
+      <div className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none">
+        <div className="w-full my-auto pointer-events-none shrink-0">
+          {isOlderCard ? (
+            context === "foyer" ? (
+              <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-5 pointer-events-none my-8">
+                <AvatarImage src={group.artistImage} alt={group.artistName} className="w-20 h-20 rounded-2xl object-cover border border-white/10" />
+                <div>
+                  <h3 className="text-lg font-black uppercase tracking-[0.15em] text-white/90 mb-1.5">
+                    {group.artistName}
+                  </h3>
+                  <p className="text-xs text-white/40 leading-relaxed max-w-[220px] mx-auto">
+                    Explore their full profile to see all their works, originals, and history.
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNavigateToProfile();
+                  }}
+                  className="px-6 py-3 mt-2 rounded-xl bg-white text-black text-xs font-black uppercase tracking-widest hover:bg-white/90 transition-all active:scale-95 pointer-events-auto"
+                >
+                  Go to Artist Profile
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-5 pointer-events-none my-8">
+                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                  {isFetching ? (
+                    <Loader2 className="w-5 h-5 text-white/50 animate-spin" />
+                  ) : (
+                    <ChevronRight className="w-7 h-7 text-white/50" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.15em] text-white/90 mb-1.5">
+                    Earlier posts
+                  </h3>
+                  <p className="text-xs text-white/40 leading-relaxed max-w-[220px] mx-auto">
+                    These posts stay on {group.artistName}'s wall until they
+                    remove them.
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFetchOlder();
+                  }}
+                  disabled={isFetching}
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 pointer-events-auto"
+                >
+                  {isFetching ? "Loading..." : "Load earlier posts"}
+                </button>
+              </div>
+            )
+          ) : (
+            entry &&
+            (entry.post.type === "LINE" ? (
+              <div className="w-full pointer-events-none">
+                <LineFull post={entry.post} />
+              </div>
+            ) : entry.post.type === "RECOMMENDATION" ? (
+              <div className="w-full pointer-events-none">
+                <RecommendationFull
+                  post={entry.post}
+                  rec={entry.resolvedRecommendation}
+                />
+              </div>
+            ) : entry.post.type === "LEDGER_ENTRY" ? (
+              <div className="w-full pointer-events-none">
+                <LedgerFull
+                  post={entry.post}
+                  entry={entry.resolvedLedgerEntry}
+                />
+              </div>
+            ) : (
+              <div className="w-full pointer-events-none">
+                <PinFull
+                  post={entry.post}
+                  resolvedWork={entry.resolvedWork}
+                  resolvedOriginal={entry.resolvedOriginal}
+                  isActive={isActive}
+                  onClose={onClose}
+                />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+});

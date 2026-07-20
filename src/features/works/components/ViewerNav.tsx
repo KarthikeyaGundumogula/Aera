@@ -1,39 +1,17 @@
 import React, { useRef, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowLeft, Share2, Layers } from "lucide-react";
+import { ArrowLeft, Layers } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TheatreItem } from "../../../types";
 import { CurateOverlay } from "../../shared/modals/CurateOverlay";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
+import { ShareAction } from "../../../components/actions/ShareAction";
 
 interface ViewerNavProps {
   item: TheatreItem;
 }
 
-function copyLink(id: string | number, onDone: () => void) {
-  const url = `${window.location.origin}/works/${id}`;
-  
-  const fallbackCopy = () => {
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = url;
-      ta.style.cssText = "position:fixed;opacity:0;left:-9999px;top:-9999px;";
-      document.body.appendChild(ta);
-      ta.focus(); ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      onDone();
-    } catch (e) {
-      console.warn("Fallback copy failed", e);
-    }
-  };
 
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(onDone).catch(fallbackCopy);
-  } else {
-    fallbackCopy();
-  }
-}
 
 /**
  * ViewerNav — ultra-minimal floating chrome.
@@ -82,15 +60,13 @@ export function ViewerNav({ item }: ViewerNavProps) {
               <span className="text-[8.5px] font-black uppercase tracking-[0.22em] hidden sm:inline">Originals</span>
             </button>
           )}
-          <button
-            onClick={() => copyLink(item.id, () => showToast("LINK COPIED"))}
-            aria-label="Share"
-            className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-black/55 backdrop-blur-md border border-white/8 text-white/40 hover:text-white hover:border-white/20 transition-all duration-200 active:scale-[0.95]"
-            style={{ touchAction: "manipulation" }}
-          >
-            <Share2 size={12} strokeWidth={2} />
-            <span className="text-[8.5px] font-black uppercase tracking-[0.22em] hidden sm:inline">Share</span>
-          </button>
+          <ShareAction
+            title={`${item.title || "Work"} on Aera`}
+            text={`Check out ${item.title || "this work"} on Aera`}
+            url={`${window.location.origin}/works/${item.id}`}
+            variant="nav"
+            onShareSuccess={() => showToast("LINK COPIED")}
+          />
         </motion.div>
       </div>
 
