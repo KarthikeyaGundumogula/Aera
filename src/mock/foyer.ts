@@ -1,8 +1,7 @@
 import { AnnouncementGroup, AnnouncementType } from "../types/foyer";
-import { getMockTheatreItems } from "./theatre";
-import { originals } from "./originals";
-import { getWallPostsForArtist } from "./wall";
-import { getLedgerItems } from "./ledger";
+import { GRID_ITEMS, ORIGINALS } from "./index";
+import { getWallPostsByArtist } from "./wall";
+import { mockLedger } from "./ledger";
 
 const ARTISTS = [
   {
@@ -20,16 +19,16 @@ const ARTISTS = [
 ];
 
 export function getMockFoyerAnnouncements(): AnnouncementGroup[] {
-  const theatreItems = getMockTheatreItems();
-  const allWallPosts = ARTISTS.map(a => getWallPostsForArtist(a.id)).flat();
-  const ledgerItems = getLedgerItems();
+  const theatreItems = GRID_ITEMS;
+  const allWallPosts = ARTISTS.map(a => getWallPostsByArtist(a.id)).flat();
+  const ledgerItems = mockLedger;
 
   return ARTISTS.map((artist) => {
     // Collect 1 work, 1 original, 1 ledger entry, and 1 wall post for this artist to simulate a rich announcement billboard
     const announcements = [];
     
     // 1. New Work
-    const work = theatreItems.find(t => t.creatorId === artist.id) || theatreItems[0];
+    const work = theatreItems.find((t: any) => t.artistId === artist.id) || theatreItems[0];
     if (work) {
       announcements.push({
         id: `ann-work-${artist.id}`,
@@ -39,12 +38,12 @@ export function getMockFoyerAnnouncements(): AnnouncementGroup[] {
         type: "NEW_WORK" as AnnouncementType,
         resolvedWork: work,
         text: "Just released a new work!",
-        postedAt: work.releaseDate || new Date().toISOString(),
+        postedAt: (work as any).year ? `${(work as any).year}-01-01` : new Date().toISOString(),
       });
     }
 
     // 2. New Original
-    const original = originals.find(o => o.creatorId === artist.id) || originals[0];
+    const original = ORIGINALS.find((o: any) => o.artistId === artist.id) || ORIGINALS[0];
     if (original) {
       announcements.push({
         id: `ann-orig-${artist.id}`,
@@ -54,7 +53,7 @@ export function getMockFoyerAnnouncements(): AnnouncementGroup[] {
         type: "NEW_ORIGINAL" as AnnouncementType,
         resolvedOriginal: original,
         text: "New Original pinned to the wall.",
-        postedAt: original.releasedAt || new Date().toISOString(),
+        postedAt: original.releaseDate || new Date().toISOString(),
       });
     }
     

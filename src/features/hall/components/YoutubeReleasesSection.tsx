@@ -1,7 +1,7 @@
 import { Youtube } from "lucide-react";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 
-export function YoutubeReleasesZone() {
+export function YoutubeReleasesSection() {
   return (
     <RecentReleasesSection
       title="Top Releases this Week"

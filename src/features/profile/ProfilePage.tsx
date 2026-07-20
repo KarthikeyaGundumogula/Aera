@@ -404,7 +404,7 @@ const ProfilePage: React.FC = () => {
 
         {/* ─── TAB CONTENT ─── */}
         <div className="w-full pt-0 pb-20">
-          <section className="px-8 md:px-12">
+          <section className={activeTab === "THEATRE" ? "px-2 md:px-4" : "px-8 md:px-12"}>
             {activeTab === "THEATRE" && (
               <div className="mt-3">
                 <UnifiedTheatre

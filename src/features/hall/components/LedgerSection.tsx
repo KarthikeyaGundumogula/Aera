@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
 import { LedgerItem } from "../../../mock/ledger";
 
-interface LedgerZoneProps {
+interface LedgerSectionProps {
   items: LedgerItem[];
 }
 
@@ -83,7 +83,7 @@ function LedgerCard({ item }: { item: LedgerItem }) {
   );
 }
 
-export function LedgerZone({ items }: LedgerZoneProps) {
+export function LedgerSection({ items }: LedgerSectionProps) {
   if (!items.length) return null;
 
   return (

@@ -1,10 +1,9 @@
-import React, { useMemo, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useMemo } from "react";
+import { motion } from "motion/react";
 import { WallPost } from "../../../types/wall";
 import { WallPostCard } from "./WallPostCard";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
-import { WallSwiper, WallSwiperArtistGroup } from "./WallSwiper";
 import { mockLedger } from "../../../mock/ledger";
 
 interface WallFeedProps {
@@ -22,8 +21,7 @@ interface WallFeedProps {
  *   - Cards stagger in at 40ms intervals.
  *
  * Interaction:
- *   - Tapping any card opens WallSwiper — a full-screen feed-like viewer
- *     where the user can swipe through all wall posts.
+ *   - Inline interactions (Reaction bar, Save, Share, direct navigation to Work/Original/Ledger).
  */
 export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
 
@@ -45,26 +43,7 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
     []
   );
 
-  const swiperGroups = useMemo<WallSwiperArtistGroup[]>(() => {
-    if (posts.length === 0) return [];
-    
-    // In WallFeed, all posts usually belong to the same artist.
-    const firstPost = posts[0];
-    
-    return [{
-      artistId: firstPost.artistId,
-      artistName: firstPost.artistName,
-      artistImage: firstPost.artistImage,
-      hasMore: false, // For now, in profile page we just show all posts they have
-      entries: posts.map(post => ({
-        post,
-        resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
-        resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
-        resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
-        resolvedLedgerEntry: post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined,
-      }))
-    }];
-  }, [posts, worksById, originalsById, ledgerById]);
+
 
   if (posts.length === 0) {
     return (

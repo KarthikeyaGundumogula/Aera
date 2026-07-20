@@ -51,7 +51,7 @@ import { GlobalSearch } from "../../../components/search/GlobalSearch";
 import { FeedContext } from "../../../context/FeedContext";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 import { DesktopHeader } from "../../navigation/DesktopHeader";
-import { FestivalsZone } from "../../hall/components/FestivalsZone";
+import { FestivalsSection } from "../../hall/components/FestivalsSection";
 
 // HomeFeedLayoutProps empty for now
 
@@ -373,7 +373,7 @@ export function CenterFeedLayout() {
             title="Festivals"
             containerClassName="px-6 md:px-12 mb-6"
           />
-          <FestivalsZone festivals={FESTIVALS} />
+          <FestivalsSection festivals={FESTIVALS} />
         </section>
 
         {/* TRENDING DISCUSSIONS */}

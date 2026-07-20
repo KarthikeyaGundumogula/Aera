@@ -25,15 +25,15 @@ import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { DesktopHeader } from "../navigation/DesktopHeader";
 import { SectionHeader } from "../../components/SectionHeader";
 import { HorizontalClusterSection } from "./components/HorizontalClusterSection";
-import { FestivalsZone } from "./components/FestivalsZone";
-import { DiscussionsZone } from "./components/DiscussionsZone";
-import { RecommendationsZone } from "./components/RecommendationsZone";
+import { FestivalsSection } from "./components/FestivalsSection";
+import { DiscussionsSection } from "./components/DiscussionsSection";
+import { RecommendationsSection } from "./components/RecommendationsSection";
 import { LedgerTabsZone } from "./components/LedgerTabsZone";
-import { YoutubeReleasesZone } from "./components/YoutubeReleasesZone";
-import { OriginalSpotlightZone } from "./components/OriginalSpotlightZone";
-import { ArtistRecommendationsZone } from "./components/ArtistRecommendationsZone";
-import { WallsOfArtistsZone } from "./components/WallsOfArtistsZone";
-import { TopOriginalsZone } from "./components/TopOriginalsZone";
+import { YoutubeReleasesSection } from "./components/YoutubeReleasesSection";
+import { OriginalSpotlightSection } from "./components/OriginalSpotlightSection";
+import { ArtistRecommendationsSection } from "./components/ArtistRecommendationsSection";
+import { FoyerSection } from "./components/FoyerSection";
+import { TopOriginalsSection } from "./components/TopOriginalsSection";
 
 /**
  * Hall — The app's personalized curation for the user.
@@ -112,7 +112,7 @@ export default function HallPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <WallsOfArtistsZone />
+          <FoyerSection />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
@@ -124,7 +124,7 @@ export default function HallPage() {
           transition={{ delay: 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6"
         >
-          <TopOriginalsZone />
+          <TopOriginalsSection />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
@@ -138,7 +138,7 @@ export default function HallPage() {
           transition={{ delay: 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6 scroll-mt-24"
         >
-          <ArtistRecommendationsZone />
+          <ArtistRecommendationsSection />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
@@ -166,7 +166,7 @@ export default function HallPage() {
                 All Sets <ChevronRight className="w-3 h-3" />
               </button>
             </div>
-            <FestivalsZone festivals={memberFestivals} />
+            <FestivalsSection festivals={memberFestivals} />
           </motion.section>
         )}
 
@@ -179,7 +179,7 @@ export default function HallPage() {
           transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6"
         >
-          <RecommendationsZone />
+          <RecommendationsSection />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
@@ -197,7 +197,7 @@ export default function HallPage() {
               title="Discussions"
               containerClassName="px-6 md:px-12 mb-5 opacity-100"
             />
-            <DiscussionsZone thoughts={memberDiscussions} />
+            <DiscussionsSection thoughts={memberDiscussions} />
           </motion.section>
         )}
 
@@ -224,7 +224,7 @@ export default function HallPage() {
           transition={{ delay: 0.25, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6"
         >
-          <YoutubeReleasesZone />
+          <YoutubeReleasesSection />
         </motion.section>
 
         {/* ══════════════════════════════════════════════════════
@@ -244,7 +244,7 @@ export default function HallPage() {
             }}
             className={`mb-6 ${idx === 0 ? "scroll-mt-24" : ""}`}
           >
-            <OriginalSpotlightZone
+            <OriginalSpotlightSection
               original={original}
               works={GRID_ITEMS.filter((w) => w.category === "Edit").slice(
                 0,

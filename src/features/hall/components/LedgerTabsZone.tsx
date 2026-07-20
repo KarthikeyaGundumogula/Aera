@@ -7,7 +7,7 @@ import { FHLoader } from "../../../components/FHLoader";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { mockLedger } from "../../../mock/ledger";
 import { GRID_ITEMS } from "../../../mock";
-import { LedgerZone } from "./LedgerZone";
+import { LedgerSection } from "./LedgerSection";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
 
 // Grab some works to simulate chronological ledger works
@@ -106,7 +106,7 @@ export function LedgerTabsZone() {
               transition={{ duration: 0.3 }}
             >
               {activeTab === "originals" ? (
-                <LedgerZone items={mockLedger} />
+                <LedgerSection items={mockLedger} />
               ) : (
                 <HorizontalClusterSection items={LEDGER_WORKS} compact />
               )}

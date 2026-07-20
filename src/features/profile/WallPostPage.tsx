@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getWallPostsByArtist } from "../../mock/wall";
 import { GRID_ITEMS, ORIGINALS } from "../../mock";
 import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
-import { WallSwiper, WallSwiperArtistGroup } from "./components/WallSwiper";
+import { FoyerSwiper, FoyerArtistGroup } from "../hall/components/FoyerSwiper";
 
 /**
  * WallPostPage — Deep-link landing page for shared wall posts.
@@ -11,7 +11,7 @@ import { WallSwiper, WallSwiperArtistGroup } from "./components/WallSwiper";
  * Route: /wall/:artistId/:postId
  *
  * When a recipient opens a shared link they land here. The page builds a
- * WallSwiperArtistGroup for the artist and opens the full-screen WallSwiper
+ * FoyerArtistGroup for the artist and opens the full-screen FoyerSwiper
  * positioned at the exact post that was shared. Closing navigates back or home.
  */
 export default function WallPostPage() {
@@ -31,7 +31,7 @@ export default function WallPostPage() {
     []
   );
 
-  const group = useMemo<WallSwiperArtistGroup | null>(() => {
+  const group = useMemo<FoyerArtistGroup | null>(() => {
     if (!artistId) return null;
     const posts = getWallPostsByArtist(artistId);
     if (posts.length === 0) return null;
@@ -77,7 +77,7 @@ export default function WallPostPage() {
   return (
     <>
       <div className="min-h-screen bg-[#050302]" />
-      <WallSwiper
+      <FoyerSwiper
         groups={[group]}
         initialGroupIndex={0}
         initialPostIndices={initialPostIndices}

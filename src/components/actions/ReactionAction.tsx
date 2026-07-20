@@ -168,7 +168,7 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="absolute bottom-full left-0 mb-3 z-[400] flex items-center gap-1.5 p-2 rounded-2xl bg-[#111111]/90 backdrop-blur-xl border border-white/10 shadow-2xl origin-bottom-left"
+            className="absolute bottom-full right-0 mb-3 z-[400] flex items-center gap-1.5 p-2 rounded-2xl bg-[#111111]/90 backdrop-blur-xl border border-white/10 shadow-2xl origin-bottom-right"
           >
             {recentEmojis.slice(0, 5).map((emoji) => {
               const isSelected = activeReaction === emoji;

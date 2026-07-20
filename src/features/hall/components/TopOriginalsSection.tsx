@@ -7,7 +7,7 @@ import { ORIGINALS, STARS_MOCK, MAKERS_MOCK } from "../../../mock";
 // Pick top originals (e.g., first 4)
 const RECOMMENDED_ORIGINALS = ORIGINALS.slice(0, 4);
 
-export function TopOriginalsZone() {
+export function TopOriginalsSection() {
   const navigate = useNavigate();
 
   return (

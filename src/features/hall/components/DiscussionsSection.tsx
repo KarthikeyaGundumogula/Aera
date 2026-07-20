@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { ThoughtCard } from "../../shared/thoughts/ThoughtCard";
 import { ThoughtItem } from "../../../mock/thoughts";
 
-interface DiscussionsZoneProps {
+interface DiscussionsSectionProps {
   thoughts: ThoughtItem[];
 }
 
-export function DiscussionsZone({ thoughts }: DiscussionsZoneProps) {
+export function DiscussionsSection({ thoughts }: DiscussionsSectionProps) {
   const navigate = useNavigate();
 
   if (!thoughts.length) return null;

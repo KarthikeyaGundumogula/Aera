@@ -18,7 +18,7 @@ interface ArtistProfileProps {
   artist: OriginalArtist | null;
   onClose?: () => void;
   index?: number;
-  variant?: "default" | "featured";
+  variant?: "default" | "featured" | "inline";
   zIndex?: string;
 }
 
@@ -80,86 +80,7 @@ export const ArtistProfile = memo(
       setIsOpen(false);
     };
 
-    return (
-      <>
-        {/* CARD TRIGGER - Film Strip Style (Only show if not an external modal) */}
-        {!onClose && (
-          <motion.div
-            onClick={() => setIsOpen(true)}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: (index % 5) * 0.05 }}
-            className={`group relative overflow-hidden cursor-pointer ${isFeatured ? "aspect-[3.5/1]" : "aspect-[3.2/1]"}`}
-          >
-            <div className="flex h-full items-center gap-2 px-1 py-1">
-              <div
-                className={`shrink-0 overflow-hidden rounded-xl ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
-              >
-                <img loading="lazy"
-                  src={artist.image}
-                  alt={artist.name}
-                  className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                />
-              </div>
-
-              <div
-                className={`min-w-0 ${isFeatured ? "space-y-0.5 md:space-y-1" : "space-y-1"}`}
-              >
-                <AdaptiveTitle
-                  title={artist.name}
-                  as="h4"
-                  multiWordClass={isFeatured ? "text-xs md:text-base" : "text-sm md:text-[15px]"}
-                  singleWordClamp={isFeatured ? "clamp(0.75rem, 4vw, 1.1rem)" : "clamp(0.8rem, 3.5vw, 1rem)"}
-                  className="tracking-tight"
-                />
-
-                <div
-                  className={`flex items-center ${isFeatured ? "gap-3 md:gap-5" : "gap-3 md:gap-4"}`}
-                >
-                  <div>
-                    <p
-                      className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
-                    >
-                      <SpiritIcon
-                        className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
-                      />
-                      Spirit
-                    </p>
-                    <p
-                      className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
-                    >
-                      {artist.spirit}
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
-                    >
-                      <WorksIcon
-                        className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
-                      />
-                      Works
-                    </p>
-                    <p
-                      className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
-                    >
-                      {artist.works}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        <ModalWrapper 
-          isOpen={isOpen} 
-          onClose={() => setIsOpen(false)}
-          className="bg-black/80 backdrop-blur-xl"
-          zIndex={zIndex}
-        >
-          <div className="perspective-2000 w-full max-w-[340px] sm:max-w-[380px] h-fit">
+    const cardContent = (
             <motion.div
               animate={{ rotateY: isFlipped ? 180 : 0 }}
               transition={{
@@ -171,12 +92,13 @@ export const ArtistProfile = memo(
               style={{ transformStyle: "preserve-3d" }}
               onClick={(e) => {
                 e.stopPropagation();
+                if (variant === "inline") return;
                 // Prevent flipping if an interactive element (like CreditTag or Social Link) was clicked
                 const target = e.target as HTMLElement;
                 if (target.closest("button") || target.closest("a")) return;
                 setIsFlipped(!isFlipped);
               }}
-              className="relative w-full h-full cursor-pointer"
+              className={`relative w-full h-full ${variant === "inline" ? "" : "cursor-pointer"}`}
             >
               {/* FRONT SIDE (RESTORED CLASSIC ID CARD) */}
               <div
@@ -406,8 +328,97 @@ export const ArtistProfile = memo(
                 </div>
               </div>
             </motion.div>
+    );
+
+    return (
+      <>
+        {/* CARD TRIGGER - Film Strip Style (Only show if not an external modal) */}
+        {variant !== "inline" && !onClose && (
+          <motion.div
+            onClick={() => setIsOpen(true)}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: (index % 5) * 0.05 }}
+            className={`group relative overflow-hidden cursor-pointer ${isFeatured ? "aspect-[3.5/1]" : "aspect-[3.2/1]"}`}
+          >
+            <div className="flex h-full items-center gap-2 px-1 py-1">
+              <div
+                className={`shrink-0 overflow-hidden rounded-xl ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
+              >
+                <img loading="lazy"
+                  src={artist.image}
+                  alt={artist.name}
+                  className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+
+              <div
+                className={`min-w-0 ${isFeatured ? "space-y-0.5 md:space-y-1" : "space-y-1"}`}
+              >
+                <AdaptiveTitle
+                  title={artist.name}
+                  as="h4"
+                  multiWordClass={isFeatured ? "text-xs md:text-base" : "text-sm md:text-[15px]"}
+                  singleWordClamp={isFeatured ? "clamp(0.75rem, 4vw, 1.1rem)" : "clamp(0.8rem, 3.5vw, 1rem)"}
+                  className="tracking-tight"
+                />
+
+                <div
+                  className={`flex items-center ${isFeatured ? "gap-3 md:gap-5" : "gap-3 md:gap-4"}`}
+                >
+                  <div>
+                    <p
+                      className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
+                    >
+                      <SpiritIcon
+                        className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
+                      />
+                      Spirit
+                    </p>
+                    <p
+                      className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
+                    >
+                      {artist.spirit}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      className={`mb-0.5 flex items-center gap-1 font-bold uppercase tracking-[0.2em] text-white/30 ${isFeatured ? "text-[7px] md:text-[9px]" : "text-[8px]"}`}
+                    >
+                      <WorksIcon
+                        className={` ${isFeatured ? "h-2 w-2 md:h-3 md:w-3" : "h-3 w-3"}`}
+                      />
+                      Works
+                    </p>
+                    <p
+                      className={`font-bold text-white ${isFeatured ? "text-[10px] md:text-sm" : "text-xs md:text-sm"}`}
+                    >
+                      {artist.works}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {variant === "inline" ? (
+          <div className="perspective-2000 w-full max-w-[340px] sm:max-w-[380px] h-fit mx-auto my-auto pointer-events-auto">
+            {cardContent}
           </div>
-        </ModalWrapper>
+        ) : (
+          <ModalWrapper 
+            isOpen={isOpen} 
+            onClose={() => setIsOpen(false)}
+            className="bg-black/80 backdrop-blur-xl"
+            zIndex={zIndex}
+          >
+            <div className="perspective-2000 w-full max-w-[340px] sm:max-w-[380px] h-fit">
+              {cardContent}
+            </div>
+          </ModalWrapper>
+        )}
       </>
     );
   },

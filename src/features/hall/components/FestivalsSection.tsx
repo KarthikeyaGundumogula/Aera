@@ -4,7 +4,7 @@ import { Trophy, Clock, Zap } from "lucide-react";
 import { Festival } from "../../../types";
 import { ARTISTS_MOCK } from "../../../mock";
 
-interface FestivalsZoneProps {
+interface FestivalsSectionProps {
   festivals: Festival[];
 }
 
@@ -119,7 +119,7 @@ function FestivalCard({ festival }: { festival: Festival }) {
   );
 }
 
-export function FestivalsZone({ festivals }: FestivalsZoneProps) {
+export function FestivalsSection({ festivals }: FestivalsSectionProps) {
   if (!festivals.length) return null;
 
   // Sort: LIVE first, then UPCOMING, then CONCLUDED

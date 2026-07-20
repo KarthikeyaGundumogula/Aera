@@ -153,7 +153,7 @@ export const RecommendationCard = memo(function RecommendationCard({
       <div
         className={
           variant === "default"
-            ? "relative h-[310px] w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
+            ? "relative h-[285px] w-[360px] sm:w-[440px] rounded-2xl bg-[#080604] border border-white/15 overflow-hidden bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.04),transparent_70%)]"
             : "relative w-full overflow-hidden"
         }
         style={

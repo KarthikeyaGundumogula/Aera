@@ -9,7 +9,7 @@ const RECOMMENDED_WORKS = GRID_ITEMS.filter((w) =>
   RECOMMENDED_ORIGINALS.some((o) => w.originalIds?.includes(o.id)),
 ).slice(0, 15);
 
-export function RecommendationsZone() {
+export function RecommendationsSection() {
   return (
     <div className="relative">
       <div className="px-6 md:px-12 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">

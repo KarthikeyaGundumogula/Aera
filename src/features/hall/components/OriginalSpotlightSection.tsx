@@ -9,12 +9,12 @@ import { ORIGINALS, GRID_ITEMS } from "../../../mock";
 
 import { TheatreItem, Original } from "../../../types";
 
-interface OriginalSpotlightZoneProps {
+interface OriginalSpotlightSectionProps {
   original: Original;
   works: TheatreItem[];
 }
 
-export function OriginalSpotlightZone({ original, works }: OriginalSpotlightZoneProps) {
+export function OriginalSpotlightSection({ original, works }: OriginalSpotlightSectionProps) {
   const [activeTab, setActiveTab] = useState<"releases" | "works">("releases");
   const [isPending, startTransition] = useTransition();
 

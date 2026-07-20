@@ -87,9 +87,9 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
       {/* ── The Card ── */}
       <div className="relative w-full h-auto">
         {/* ── Horizontal Layout: Poster (Left) + Content (Right) ── */}
-        <div className="flex h-full">
+        <div className="flex">
           {/* LEFT: Portrait Poster Column — presented as a cinematic standalone poster */}
-          <div className="w-[130px] sm:w-[150px] shrink-0 flex flex-col bg-transparent relative z-10 h-full">
+          <div className="w-[130px] sm:w-[150px] shrink-0 flex flex-col bg-transparent relative z-10">
             {/* Poster — fixed height so tall images don't inflate card */}
             <div className="px-2.5 pt-2.5 pb-2 shrink-0">
               <div
@@ -117,7 +117,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
             </div>
 
             {/* Maker Credits + Stars */}
-            <div className="px-2.5 pb-2.5 flex flex-col gap-1.5">
+            <div className="px-2.5 pb-2 flex flex-col gap-1 sm:gap-1.5">
               {rec.original.director && (
                 <div
                   className="group/credit cursor-pointer"
@@ -207,7 +207,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
             </div>
 
             {/* MIDDLE + FOOTER Container */}
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1 justify-between">
               {/* Notes */}
               <motion.div
                 layout

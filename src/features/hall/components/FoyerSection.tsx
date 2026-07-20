@@ -5,7 +5,7 @@ import { SectionHeader } from "../../../components/SectionHeader";
 import { WALL_POSTS } from "../../../mock/wall";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
-import { WallSwiper, WallSwiperArtistGroup } from "../../profile/components/WallSwiper";
+import { FoyerSwiper, FoyerArtistGroup } from "./FoyerSwiper";
 import { mockLedger } from "../../../mock/ledger";
 
 function AvatarFallback({ className }: { className: string }) {
@@ -29,9 +29,9 @@ function AvatarImage({ src, alt, className }: { src?: string; alt: string; class
   return <img src={src} alt={alt} className={className} draggable={false} onError={() => setError(true)} />;
 }
 
-export function WallsOfArtistsZone() {
+export function FoyerSection() {
   const [selectedSwiperIndex, setSelectedSwiperIndex] = useState<number | null>(null);
-  const [artistGroups, setArtistGroups] = useState<WallSwiperArtistGroup[]>([]);
+  const [artistGroups, setArtistGroups] = useState<FoyerArtistGroup[]>([]);
 
   const worksById = useMemo(
     () => Object.fromEntries(GRID_ITEMS.map((w) => [String(w.id), w])),
@@ -55,7 +55,7 @@ export function WallsOfArtistsZone() {
 
   useEffect(() => {
     // Initial load: group WALL_POSTS by artist and take first 3 entries for each
-    const groupsMap = new Map<string, WallSwiperArtistGroup>();
+    const groupsMap = new Map<string, FoyerArtistGroup>();
     for (const post of WALL_POSTS) {
       if (!groupsMap.has(post.artistId)) {
         groupsMap.set(post.artistId, {
@@ -182,12 +182,11 @@ export function WallsOfArtistsZone() {
 
       <AnimatePresence>
         {selectedSwiperIndex !== null && (
-          <WallSwiper 
+          <FoyerSwiper 
             groups={artistGroups} 
             initialGroupIndex={selectedSwiperIndex} 
             onFetchOlder={handleFetchOlder}
             onClose={() => setSelectedSwiperIndex(null)} 
-            context="foyer"
           />
         )}
       </AnimatePresence>

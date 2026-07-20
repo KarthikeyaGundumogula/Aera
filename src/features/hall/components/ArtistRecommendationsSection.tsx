@@ -8,7 +8,7 @@ import { RecommendationCard } from "../../../components/RecommendationCard";
 import { FeedContext } from "../../../context/FeedContext";
 import { TheatreItem } from "../../../types";
 
-export function ArtistRecommendationsZone() {
+export function ArtistRecommendationsSection() {
   const navigate = useNavigate();
   if (!MOCK_RECOMMENDATIONS || MOCK_RECOMMENDATIONS.length === 0) return null;
 

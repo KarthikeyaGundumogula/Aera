@@ -7,20 +7,16 @@ import {
   animate as motionAnimate,
   type MotionValue,
 } from "motion/react";
-import {
-  X,
-  ChevronRight,
-  Loader2,
-  Share2,
-  Check,
-} from "lucide-react";
+import { X, ChevronRight, Loader2, Share2, Check } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
 import { Original } from "../../../types/originals";
 import { Recommendation } from "../../../mock/recommendations";
+import { ARTISTS_MOCK } from "../../../mock";
 import { ModalWrapper } from "../../shared/modals/ModalWrapper";
+import { ArtistProfile } from "../../shared/profile/ArtistProfile";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { StarAction } from "../../../components/actions/StarAction";
 import { SaveAction } from "../../../components/actions/SaveAction";
@@ -28,7 +24,7 @@ import { FeedRecommendationCard } from "../../../components/FeedRecommendationCa
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
 import { LedgerItem } from "../../../mock/ledger";
-import { LedgerWallCard } from "./LedgerWallCard";
+import { LedgerWallCard } from "../../profile/components/LedgerWallCard";
 import { ReactionAction } from "../../../components/actions/ReactionAction";
 import { ReactionId } from "../../../types/reactions";
 
@@ -377,19 +373,14 @@ const RecommendationFull: React.FC<{
   if (!rec) return null;
 
   return (
-    <div className="w-full flex flex-col gap-6 px-4 max-w-[500px] mx-auto">
+    <div className="w-full flex flex-col gap-6 px-4 max-w-[680px] mx-auto pointer-events-none">
       {/* Use the exact Feed recommendation card but visually isolate it */}
-      <div className="pointer-events-auto bg-[#0d0d0d] rounded-xl border border-white/5 shadow-2xl p-1 overflow-hidden">
+      <div className="pointer-events-none bg-[#0d0d0d] rounded-2xl border border-white/10 shadow-2xl p-1.5 overflow-hidden">
         <FeedRecommendationCard rec={rec} variant="wall-embed" />
       </div>
 
       {post.text && (
-        <div className="w-full flex flex-col items-start gap-1.5 px-1 py-0.5 border-l-2 border-amber-500 pl-3 mt-1 text-left pointer-events-none">
-          <div className="flex items-center gap-1.5 opacity-80 mb-1">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
-              Quoted by {post.artistName}
-            </span>
-          </div>
+        <div className="w-full flex flex-col items-start gap-1.5 px-1 py-0.5 border-l-2 border-amber-500 pl-3.5 mt-1 text-left pointer-events-none">
           <p className="text-[14px] sm:text-[15px] leading-[1.6] text-white/80 italic">
             "{post.text}"
           </p>
@@ -413,9 +404,9 @@ const RecommendationFull: React.FC<{
           };
           navigate(`/works/rec-${rec.id}`, { state: { item: theatreItem } });
         }}
-        className="mx-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-white/60 hover:text-white text-xs font-black uppercase tracking-widest transition-all pointer-events-auto"
+        className="mx-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white/90 hover:text-white text-xs font-black uppercase tracking-widest transition-all pointer-events-auto active:scale-95"
       >
-        <span>View</span>
+        view
       </button>
     </div>
   );
@@ -432,18 +423,14 @@ const LedgerFull: React.FC<{
   if (!entry) return null;
 
   return (
-    <div className="w-full flex flex-col gap-6 px-4 max-w-[500px] mx-auto pointer-events-auto">
-      <LedgerWallCard
-        post={post}
-        entry={entry}
-        previewOnly={true}
-      />
+    <div className="w-full flex flex-col gap-6 px-4 max-w-[680px] mx-auto pointer-events-auto">
+      <LedgerWallCard post={post} entry={entry} previewOnly={true} />
       <button
         onClick={(e) => {
           e.stopPropagation();
           navigate(`/ledger/${entry.id}`);
         }}
-        className="mx-auto flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_24px_rgba(245,158,11,0.2)]"
+        className="mx-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_24px_rgba(245,158,11,0.2)]"
       >
         <span>View Editorial Entry</span>
         <ChevronRight className="w-4 h-4" />
@@ -481,9 +468,9 @@ const ProgressDots: React.FC<{ total: number; current: number }> = ({
   );
 };
 
-// ─── WallSwiper ───────────────────────────────────────────────────────────────
+// ─── FoyerSwiper ───────────────────────────────────────────────────────────────
 
-export interface WallSwiperEntry {
+export interface FoyerSwiperEntry {
   post: WallPost;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
@@ -491,25 +478,24 @@ export interface WallSwiperEntry {
   resolvedLedgerEntry?: LedgerItem;
 }
 
-export interface WallSwiperArtistGroup {
+export interface FoyerArtistGroup {
   artistId: string;
   artistName: string;
   artistImage: string;
-  entries: WallSwiperEntry[];
+  entries: FoyerSwiperEntry[];
   hasMore: boolean;
 }
 
-interface WallSwiperProps {
-  groups: WallSwiperArtistGroup[];
+interface FoyerSwiperProps {
+  groups: FoyerArtistGroup[];
   initialGroupIndex: number;
   initialPostIndices?: Record<string, number>;
   onFetchOlder?: (artistId: string) => Promise<void>;
   onClose: () => void;
-  context?: "foyer" | "profile";
 }
 
 /**
- * WallSwiper — Full-screen story-like viewer for Wall posts.
+ * FoyerSwiper — Full-screen story-like viewer for Wall posts.
  *
  * Swipe architecture: "treadmill" pattern.
  * - Three slides are always in the DOM at fixed positions: -100%, 0%, +100%.
@@ -519,14 +505,13 @@ interface WallSwiperProps {
  * - This is how Instagram Stories, TikTok, and Reddit's image-viewer handle
  *   infinite swipe without performance degradation.
  */
-export function WallSwiper({
+export function FoyerSwiper({
   groups,
   initialGroupIndex,
   initialPostIndices = {},
   onFetchOlder,
   onClose,
-  context = "profile",
-}: WallSwiperProps) {
+}: FoyerSwiperProps) {
   const navigate = useNavigate();
 
   // Normalised index: always in [0, groups.length)
@@ -574,12 +559,14 @@ export function WallSwiper({
   const nextGroup = groups[wrap(groupIndex + 1)];
 
   const activePostIndex = postIndices[activeGroup.artistId] || 0;
-  
-  // Only show the terminal card if we are in the Foyer OR if the Profile wall has 'hasMore' posts to load
-  const canShowTerminalCard = context === "foyer" || (context === "profile" && activeGroup.hasMore);
-  const isShowingOlderCard = canShowTerminalCard && activePostIndex === activeGroup.entries.length;
-  
-  const reactionsCount = (activeGroup.artistName.length * 12) + (activePostIndex * 5) + 15;
+
+  // Only show terminal card if artist group has more posts to load
+  const canShowTerminalCard = activeGroup.hasMore;
+  const isShowingOlderCard =
+    canShowTerminalCard && activePostIndex === activeGroup.entries.length;
+
+  const reactionsCount =
+    activeGroup.artistName.length * 12 + activePostIndex * 5 + 15;
 
   // Animate dragX to a target then commit the index change and snap back to 0.
   const commitGroupChange = useCallback(
@@ -684,28 +671,20 @@ export function WallSwiper({
         const current = prev[activeGroup.artistId] || 0;
         const next = current + dir;
 
-        const canShowTerminalCard = context === "foyer" || (context === "profile" && activeGroup.hasMore);
-        const isOnTerminalCard = canShowTerminalCard && current === activeGroup.entries.length;
+        const canShowTerminalCard = activeGroup.hasMore;
+        const isOnTerminalCard =
+          canShowTerminalCard && current === activeGroup.entries.length;
 
         // ── Tapping RIGHT on the terminal card
-        if (dir === 1 && isOnTerminalCard) {
-          if (context === "profile") {
-            fetchOlder();
-            return prev; // postIndex stays at older-card position until posts load
-          } else {
-            // In Foyer, tap on terminal card goes to profile, we shouldn't get here because we handle the button click explicitly, 
-            // but if they tap the side, we could advance to next artist. Let's advance to next artist.
-            const target = groups[wrap(groupIndex + 1)];
-            paginateGroup(1);
-            return { ...prev, [target.artistId]: 0 };
-          }
-        }
+        // We used to fetch older posts here, but since the Foyer decoupling,
+        // terminal cards show the Artist Profile and we want a right-tap to just skip to the next artist (handled below).
 
         // ── Tap LEFT at post 0 → go to previous artist, land on their last post (or terminal card)
         if (next < 0) {
           const target = groups[wrap(groupIndex - 1)];
-          const targetCanShowTerminalCard = context === "foyer" || (context === "profile" && target.hasMore);
-          const landingIdx = targetCanShowTerminalCard ? target.entries.length : Math.max(0, target.entries.length - 1);
+          const landingIdx = target.hasMore
+            ? target.entries.length
+            : Math.max(0, target.entries.length - 1);
           paginateGroup(-1);
           return { ...prev, [target.artistId]: landingIdx };
         }
@@ -757,20 +736,10 @@ export function WallSwiper({
     [0.5, 1, 0.5],
   );
 
-
-
   return createPortal(
     <ModalWrapper isOpen={true} onClose={onClose} isImmersive={true}>
       {/* Top-right controls: Share + Close */}
       <div className="fixed top-4 right-4 z-[300] flex items-center gap-2">
-        {!isShowingOlderCard && (
-          <ReactionAction 
-            activeReaction={activeReaction}
-            onReact={setActiveReaction}
-            count={reactionsCount}
-            isFeed={false}
-          />
-        )}
         <button
           onClick={handleSwiperShare}
           className={`w-9 h-9 rounded-xl backdrop-blur-md border flex items-center justify-center transition-all duration-200 ${
@@ -820,11 +789,13 @@ export function WallSwiper({
                 <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/40">
                   {activeGroup.entries[activePostIndex].post.type === "LINE"
                     ? "Line"
-                    : activeGroup.entries[activePostIndex].post.type === "RECOMMENDATION"
-                    ? "Recommendation"
-                    : activeGroup.entries[activePostIndex].post.type === "LEDGER_ENTRY"
-                    ? "Ledger Entry"
-                    : "Pin"}{" "}
+                    : activeGroup.entries[activePostIndex].post.type ===
+                        "RECOMMENDATION"
+                      ? "Recommendation"
+                      : activeGroup.entries[activePostIndex].post.type ===
+                          "LEDGER_ENTRY"
+                        ? "Ledger Entry"
+                        : "Pin"}{" "}
                   ·{" "}
                   {formatRelativeTime(
                     activeGroup.entries[activePostIndex].post.postedAt,
@@ -969,11 +940,12 @@ export function WallSwiper({
           isFetching={isFetching}
           onFetchOlder={fetchOlder}
           onClose={onClose}
-          context={context}
           onNavigateToProfile={() => {
             onClose();
             navigate(`/profile/${prevGroup.artistId}`);
           }}
+          activeReaction={activeReaction}
+          onReact={setActiveReaction}
         />
         <SlideContent
           group={activeGroup}
@@ -984,11 +956,12 @@ export function WallSwiper({
           isFetching={isFetching}
           onFetchOlder={fetchOlder}
           onClose={onClose}
-          context={context}
           onNavigateToProfile={() => {
             onClose();
             navigate(`/profile/${activeGroup.artistId}`);
           }}
+          activeReaction={activeReaction}
+          onReact={setActiveReaction}
         />
         <SlideContent
           group={nextGroup}
@@ -1000,11 +973,12 @@ export function WallSwiper({
           isFetching={isFetching}
           onFetchOlder={fetchOlder}
           onClose={onClose}
-          context={context}
           onNavigateToProfile={() => {
             onClose();
             navigate(`/profile/${nextGroup.artistId}`);
           }}
+          activeReaction={activeReaction}
+          onReact={setActiveReaction}
         />
       </div>
 
@@ -1029,6 +1003,8 @@ export function WallSwiper({
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Bottom-right controls: Removed from global Foyer, embedded in SlideContent instead */}
     </ModalWrapper>,
     document.body,
   );
@@ -1037,7 +1013,7 @@ export function WallSwiper({
 // ─── Slide Content (extracted to avoid unmount/remount on parent render) ──────
 
 interface SlideContentProps {
-  group: WallSwiperArtistGroup;
+  group: FoyerArtistGroup;
   xMotion: MotionValue<number>;
   scaleMotion?: MotionValue<number>;
   opacityMotion?: MotionValue<number>;
@@ -1046,8 +1022,9 @@ interface SlideContentProps {
   isFetching: boolean;
   onFetchOlder: () => void;
   onClose: () => void;
-  context?: "foyer" | "profile";
   onNavigateToProfile: () => void;
+  activeReaction: ReactionId | null;
+  onReact: (reaction: ReactionId | null) => void;
 }
 
 const SlideContent = React.memo(function SlideContent({
@@ -1060,11 +1037,28 @@ const SlideContent = React.memo(function SlideContent({
   isFetching,
   onFetchOlder,
   onClose,
-  context,
   onNavigateToProfile,
+  activeReaction,
+  onReact,
 }: SlideContentProps) {
   const isOlderCard = postIndex === group.entries.length;
   const entry = group.entries[postIndex];
+
+  // Find full artist details for the inline ArtistProfile modal
+  const artistProfile = React.useMemo(() => {
+    if (!isOlderCard) return null;
+    return (
+      ARTISTS_MOCK.find((a) => a.id === group.artistId) ||
+      ({
+        id: group.artistId,
+        name: group.artistName,
+        image: group.artistImage,
+        spirit: 0,
+        works: 0,
+        bio: "Creator on FrameHouse",
+      } as any)
+    );
+  }, [isOlderCard, group.artistId, group.artistName, group.artistImage]);
 
   return (
     <motion.div
@@ -1077,59 +1071,9 @@ const SlideContent = React.memo(function SlideContent({
       }}
     >
       <div className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none">
-        <div className="w-full my-auto pointer-events-none shrink-0">
+        <div className="w-full my-auto pointer-events-none shrink-0 flex items-center justify-center">
           {isOlderCard ? (
-            context === "foyer" ? (
-              <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-5 pointer-events-none my-8">
-                <AvatarImage src={group.artistImage} alt={group.artistName} className="w-20 h-20 rounded-2xl object-cover border border-white/10" />
-                <div>
-                  <h3 className="text-lg font-black uppercase tracking-[0.15em] text-white/90 mb-1.5">
-                    {group.artistName}
-                  </h3>
-                  <p className="text-xs text-white/40 leading-relaxed max-w-[220px] mx-auto">
-                    Explore their full profile to see all their works, originals, and history.
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNavigateToProfile();
-                  }}
-                  className="px-6 py-3 mt-2 rounded-xl bg-white text-black text-xs font-black uppercase tracking-widest hover:bg-white/90 transition-all active:scale-95 pointer-events-auto"
-                >
-                  Go to Artist Profile
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto text-center gap-5 pointer-events-none my-8">
-                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  {isFetching ? (
-                    <Loader2 className="w-5 h-5 text-white/50 animate-spin" />
-                  ) : (
-                    <ChevronRight className="w-7 h-7 text-white/50" />
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-sm font-black uppercase tracking-[0.15em] text-white/90 mb-1.5">
-                    Earlier posts
-                  </h3>
-                  <p className="text-xs text-white/40 leading-relaxed max-w-[220px] mx-auto">
-                    These posts stay on {group.artistName}'s wall until they
-                    remove them.
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onFetchOlder();
-                  }}
-                  disabled={isFetching}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 pointer-events-auto"
-                >
-                  {isFetching ? "Loading..." : "Load earlier posts"}
-                </button>
-              </div>
-            )
+            <ArtistProfile artist={artistProfile} variant="inline" />
           ) : (
             entry &&
             (entry.post.type === "LINE" ? (
@@ -1163,6 +1107,26 @@ const SlideContent = React.memo(function SlideContent({
             ))
           )}
         </div>
+      </div>
+
+      {/* Embedded Reactions: Belongs to this specific slide! */}
+      <div className="absolute bottom-6 sm:bottom-8 right-4 z-[300] flex flex-col items-end pointer-events-auto">
+        <AnimatePresence>
+          {!isOlderCard && entry?.post.type !== "LEDGER_ENTRY" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+            >
+              <ReactionAction
+                activeReaction={activeReaction}
+                onReact={onReact}
+                count={group.artistName.length * 12 + postIndex * 5 + 15}
+                isFeed={false}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

@@ -377,11 +377,6 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
           className="relative pl-3.5 py-0.5 mb-3"
           style={{ borderLeft: `2px solid ${themeGradient ? themeGradient[0] : "#F59E0B"}` }}
         >
-          <div className="flex items-center gap-1.5 opacity-80 mb-1">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
-              Quoted by {artistName}
-            </span>
-          </div>
           <p className="text-[15px] leading-[1.55] text-white/85 italic">
             "{text}"
           </p>

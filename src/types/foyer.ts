@@ -1,6 +1,6 @@
 import { TheatreItem } from "./theatre";
 import { Original } from "./originals";
-import { Recommendation } from "./wall";
+import { Recommendation } from "../mock/recommendations";
 import { LedgerItem } from "../mock/ledger";
 import { WallPost } from "./wall";
 
