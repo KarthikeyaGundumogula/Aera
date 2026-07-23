@@ -9,7 +9,10 @@ export interface SearchResults {
 
 export function useSearch(query: string) {
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [results, setResults] = useState<SearchResults>({ films: [], artists: [] });
+  const [results, setResults] = useState<SearchResults>({
+    films: GRID_ITEMS.slice(0, 4),
+    artists: PROFILES_DIRECTORY.slice(0, 4),
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,54 +22,55 @@ export function useSearch(query: string) {
       setDebouncedQuery(query);
     }, 300);
 
-    // Clear timeout if query changes before 300ms elapses
     return () => clearTimeout(handler);
   }, [query]);
 
-  // 2. Simulated API Integration with Race Condition Prevention
+  // 2. Search & Suggestion Engine with AbortController & 2-Character Minimum Threshold
   useEffect(() => {
-    // DO NOT call API if debouncedQuery length is less than 2
-    if (debouncedQuery.trim().length < 2) {
-      setResults({ films: [], artists: [] });
+    const trimmed = debouncedQuery.trim();
+
+    // Default suggestions when query is less than 2 characters (no API trigger)
+    if (trimmed.length < 2) {
+      setResults({
+        films: GRID_ITEMS.slice(0, 4),
+        artists: PROFILES_DIRECTORY.slice(0, 4),
+      });
       setLoading(false);
+      setError(null);
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    // Use AbortController to cancel previous in-flight requests if debouncedQuery changes again
     const abortController = new AbortController();
 
     const fetchResults = async () => {
       try {
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 400));
-        
-        // Critical: Check if request was aborted during the network delay
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
         if (abortController.signal.aborted) return;
 
-        const lowerQuery = debouncedQuery.toLowerCase();
+        const lowerQuery = trimmed.toLowerCase();
 
-        // Simulate backend fuzzy search logic
-        const filteredFilms = GRID_ITEMS.filter(item => {
+        const filteredFilms = GRID_ITEMS.filter((item) => {
           const t = item.title || "";
           const a = item.artist || "";
           return t.toLowerCase().includes(lowerQuery) || a.toLowerCase().includes(lowerQuery);
-        }).slice(0, 4); // Limit to top 4
+        }).slice(0, 4);
 
-        const filteredArtists = PROFILES_DIRECTORY.filter(artist => 
-          artist.name.toLowerCase().includes(lowerQuery) ||
-          artist.tagline?.toLowerCase().includes(lowerQuery)
-        ).slice(0, 4); // Limit to top 4
+        const filteredArtists = PROFILES_DIRECTORY.filter(
+          (artist) =>
+            artist.name.toLowerCase().includes(lowerQuery) ||
+            artist.tagline?.toLowerCase().includes(lowerQuery)
+        ).slice(0, 4);
 
-        // Only update UI from the latest request
         setResults({
           films: filteredFilms,
-          artists: filteredArtists
+          artists: filteredArtists,
         });
       } catch (err) {
-        // Ensure we don't set error state if it was an intentional abort
         if (!abortController.signal.aborted) {
           setError('Failed to fetch suggestions. Please try again.');
         }
@@ -79,7 +83,6 @@ export function useSearch(query: string) {
 
     fetchResults();
 
-    // Cleanup: Abort the fetch if debouncedQuery changes before it finishes
     return () => {
       abortController.abort();
     };

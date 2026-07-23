@@ -44,7 +44,8 @@ export const SearchDropdown = memo(function SearchDropdown({
   if (!isVisible) return null;
 
   const totalResults = results.films.length + results.artists.length;
-  const hasNoResults = !loading && !error && totalResults === 0 && query.length >= 2;
+  const isQuerying = query.trim().length >= 2;
+  const hasNoResults = !loading && !error && totalResults === 0 && isQuerying;
 
   return (
     <div className="flex-1 w-full max-w-2xl mx-auto overflow-y-auto no-scrollbar flex flex-col pb-24">
@@ -85,7 +86,7 @@ export const SearchDropdown = memo(function SearchDropdown({
           {results.films.length > 0 && (
             <div className="mb-6">
               <div className="px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/30 flex items-center gap-2">
-                <Film className="w-3.5 h-3.5" /> Films
+                <Film className="w-3.5 h-3.5" /> {isQuerying ? "Films" : "Trending Films"}
               </div>
               {results.films.map((film, idx) => {
                 const globalIndex = idx;
@@ -127,7 +128,7 @@ export const SearchDropdown = memo(function SearchDropdown({
           {results.artists.length > 0 && (
             <div>
               <div className="px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/30 flex items-center gap-2 border-t border-white/5 mt-2 pt-6">
-                <User className="w-3.5 h-3.5" /> Artists
+                <User className="w-3.5 h-3.5" /> {isQuerying ? "Artists" : "Featured Artists"}
               </div>
               {results.artists.map((artist, idx) => {
                 const globalIndex = results.films.length + idx;
