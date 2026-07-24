@@ -3,7 +3,7 @@ import React from "react";
 interface SurgeBarsProps {
   score: number;
   highestScore: number;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   colorVariant?: "white" | "amber" | "emerald";
   className?: string;
 }
@@ -39,6 +39,13 @@ export function SurgeBars({
       gap: 2.5,
       activeShadow: "0 0 8px",
       peakShadow: "0 0 14px",
+    },
+    xl: {
+      width: 5.5,
+      heights: [12, 18, 24, 30, 35, 40],
+      gap: 3,
+      activeShadow: "0 0 10px",
+      peakShadow: "0 0 16px",
     },
   }[size];
 

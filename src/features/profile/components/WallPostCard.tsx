@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from "react";
 import { motion } from "motion/react";
-import { Camera, Star, Bookmark, Eye } from "lucide-react";
+import { Camera, Star, Bookmark, Eye, Heart } from "lucide-react";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
@@ -15,6 +15,8 @@ import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 import { ShareAction } from "../../../components/actions/ShareAction";
 import { LedgerItem } from "../../../mock/ledger";
 import { LedgerWallCard } from "./LedgerWallCard";
+import { SpiritIcon } from "../../../components/icons/AppIcons";
+import { ARTISTS_MOCK } from "../../../mock";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -28,7 +30,18 @@ function formatRelativeTime(iso: string): string {
   return `${Math.floor(hours / 24)}d`;
 }
 
+function generateStat(id: string | number, multiplier: number, offset: number = 0): number {
+  let hash = 0;
+  const str = String(id);
+  for (let i = 0; i < str.length; i++) hash = (hash << 5) - hash + str.charCodeAt(i);
+  return (Math.abs(hash) % multiplier) + offset;
+}
 
+function formatStat(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + 'K';
+  return num.toString();
+}
 
 // ─── Shared Twitter-style Layout ──────────────────────────────────────────────
 
@@ -62,30 +75,47 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   const viewsCount = (artistName.length * 142) + 340;
   const reactionsCount = (artistName.length * 12) + 15;
 
+  const artistObj = ARTISTS_MOCK.find((a) => a.id === artistId || a.name === artistName);
+  const followersCount = (artistObj as any)?.followersCount ?? generateStat(artistId || artistName || "a", 30000, 5000);
+  const spiritCount = artistObj?.spirit ?? generateStat(artistId || artistName || "a", 2000, 500);
+
   return (
-  <div className="flex gap-3 px-4 pt-4 pb-4">
-    {/* Left Column: Avatar */}
-    <div className="flex-shrink-0">
-      <img
-        src={artistImage}
-        alt={artistName}
-        // Framehouse Rule: No perfectly circular avatars. Use rounded-xl.
-        className="w-10 h-10 rounded-xl object-cover object-top border border-white/10 shadow-sm"
-      />
+  <div className="flex flex-col px-4 pt-4 pb-4 gap-3">
+    {/* Header: Avatar + Name/Metrics (Left) & Timing (Top Right) */}
+    <div className="flex items-start justify-between gap-3 w-full">
+      <div className="flex items-center gap-3 min-w-0">
+        <img
+          src={artistImage}
+          alt={artistName}
+          // Framehouse Rule: No perfectly circular avatars. Use rounded-xl.
+          className="w-10 h-10 rounded-xl object-cover object-top border border-white/10 shadow-sm shrink-0"
+        />
+        <div className="flex flex-col justify-center min-w-0">
+          <span className="text-[11px] font-black uppercase tracking-[0.15em] text-white/90 truncate leading-tight">
+            {artistName}
+          </span>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/40 mt-1 leading-tight">
+            <span className="flex items-center gap-1">
+              <Heart className="w-3 h-3 text-white/40" />
+              {formatStat(followersCount)}
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <SpiritIcon className="w-3 h-3 text-white/70" />
+              {spiritCount}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Timing on top right corner */}
+      <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 shrink-0 pt-0.5">
+        {formatRelativeTime(postedAt)}
+      </span>
     </div>
 
-    {/* Right Column: Content */}
-    <div className="flex flex-col flex-1 min-w-0 pt-0.5">
-      {/* Header Row */}
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-white/90 truncate">
-          {artistName}
-        </span>
-        <span className="text-[10px] font-bold text-white/20">·</span>
-        <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 flex-shrink-0">
-          {formatRelativeTime(postedAt)}
-        </span>
-      </div>
+    {/* Main Content Area (Full Width) */}
+    <div className="flex flex-col w-full min-w-0">
 
       {/* Main Post Text / Quote */}
       {text && (

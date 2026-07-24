@@ -285,19 +285,64 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div
-      className="relative w-full min-h-screen overflow-x-hidden flex flex-col font-sans"
+      className="relative w-full min-h-screen overflow-x-clip flex flex-col font-sans"
       style={{ backgroundColor: theme.bg }}
     >
       <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/20 to-transparent z-[90] pointer-events-none" />
 
       <header
-        className={`fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-6 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-4 md:px-8 md:py-5 transition-all duration-500 ${
           isScrolled
-            ? "bg-black/60 backdrop-blur-xl border-b border-white/5"
+            ? "bg-[#070706]/90 backdrop-blur-2xl border-b shadow-lg"
             : "bg-transparent border-b border-transparent"
         }`}
+        style={
+          isScrolled
+            ? {
+                borderBottomColor: `${theme.nameGradient[0]}33`,
+                boxShadow: `0 8px 32px ${theme.nameGradient[0]}15`,
+              }
+            : undefined
+        }
       >
         <Logo onClick={() => navigate("/")} showText={false} />
+
+        {/* Center Tab Switcher (fades in smoothly when scrolled) */}
+        <div
+          className={`flex items-center gap-6 md:gap-12 transition-all duration-300 ${
+            isScrolled
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 -translate-y-2 pointer-events-none"
+          }`}
+        >
+          {(
+            [
+              "THEATRE",
+              "WALL",
+              "LIBRARY",
+            ] as ("THEATRE" | "WALL" | "LIBRARY")[]
+          ).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`text-[10px] md:text-[11px] font-black tracking-[0.2em] uppercase transition-all duration-200 ${
+                activeTab === tab
+                  ? "text-white"
+                  : "text-white/40 hover:text-white/70"
+              }`}
+              style={{
+                color: activeTab === tab ? (theme.nameGradient[1] || theme.nameGradient[0]) : undefined,
+                textShadow:
+                  activeTab === tab
+                    ? `0 0 8px ${theme.nameGradient[0]}99, 0 0 16px ${theme.nameGradient[1]}4D`
+                    : "none",
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-center gap-8">
           <ProfileNav />
         </div>
@@ -330,16 +375,9 @@ const ProfilePage: React.FC = () => {
       {/* ─── TABS & CONTENT (Native Background) ─── */}
       <div className="relative z-20 w-full bg-surface-deep min-h-screen text-white">
         {/* ─── CINEMATIC PARTITION + TAB INDICATOR ─── */}
-        {/*
-          Tabs first, then the partition line at the bottom.
-          The orb sits ON the bottom line like a stage footlight at floor level,
-          shooting its glow UPWARD to illuminate the active tab from below.
-          Colour: Theatre Amber (#D97706) — brand accent.
-          Motion: spring physics so the orb feels weighted, not mechanical.
-        */}
         <div ref={tabsRowRef} className="relative w-full">
           {/* Tab buttons row — rendered FIRST so they sit above the line */}
-          <div className="w-full flex justify-center pt-4 pb-3">
+          <div className="w-full flex justify-center py-3.5 md:py-4">
             <div className="flex items-center gap-8 md:gap-16">
               {(
                 [
