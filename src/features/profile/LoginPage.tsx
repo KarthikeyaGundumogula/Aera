@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, User, Sparkles, ChevronRight } from "lucide-react";
-import { ARTISTS_MOCK } from "../../mock";
 import type { OriginalArtist } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 
@@ -14,6 +13,8 @@ export default function LoginPage() {
     username: "",
     password: "",
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isLoggedIn = currentArtist !== null;
 
@@ -23,10 +24,17 @@ export default function LoginPage() {
     }
   }, [isLoggedIn, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(formData.username);
+    setError(null);
+    setIsLoading(true);
+    const success = await login(formData.username, formData.password);
+    setIsLoading(false);
+    if (!success) {
+      setError("Invalid handle or password. Please verify credentials.");
+    }
   };
+
 
 
   return (
@@ -128,14 +136,31 @@ export default function LoginPage() {
                   />
                 </div>
 
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center tracking-wide"
+                  >
+                    {error}
+                  </motion.div>
+                )}
+
                 <motion.button
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
+                  disabled={isLoading}
                   type="submit"
-                  className="w-full py-5 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-white/90 transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+                  className="w-full py-5 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
                   id="login-submit-btn"
                 >
-                  Enter Theatre <ChevronRight className="w-4 h-4" />
+                  {isLoading ? (
+                    <span>Verifying Stage Key...</span>
+                  ) : (
+                    <>
+                      Enter Theatre <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
                 </motion.button>
               </form>
 

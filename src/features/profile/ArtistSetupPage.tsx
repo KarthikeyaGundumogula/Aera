@@ -8,7 +8,6 @@ import { AccessKeySection } from "./components/AccessKeySection";
 import { SocialsSection, type SocialsData } from "./components/SocialsSection";
 
 import { ArtistProfile } from "../shared/profile";
-import { ARTISTS_MOCK } from "../../mock";
 import { OriginalArtist } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { useProfileForm } from "./hooks/useProfileForm";
@@ -77,23 +76,25 @@ export default function ArtistSetupPage() {
 
   const isReadyToSave = isStep1Ready && (formData.password?.length ?? 0) > 0;
 
-  const handleClaim = useCallback(() => {
+  const handleClaim = useCallback(async () => {
     if (!isReadyToSave) return;
     setIsSaved(true);
 
-    const mockArtist = ARTISTS_MOCK[0];
-    const artistDetails = {
-      ...mockArtist,
+    const avatarSeed = formData.username || formData.name || "artist";
+    const artistDetails: OriginalArtist = {
       id: `profile-${formData.username}`,
-      name: formData.name || mockArtist.name,
-      bio: formData.bio || mockArtist.bio,
-      image: formData.portraitPreview || mockArtist.image,
-      themeBgColor: formData.themeBgColor,
-      themeTextColor: formData.themeTextColor,
+      name: formData.name || "Artist",
+      bio: formData.bio || "Cinematic Visionary",
+      image: `boring-avatar:${avatarSeed}`,
+      spirit: 0,
+      works: 0,
+      themeBgColor: formData.themeBgColor || "#0f1a42",
+      themeTextColor: formData.themeTextColor || "#fac107",
     };
-    register(artistDetails);
+    await register(artistDetails, formData.password);
     setSuccessArtist(artistDetails);
   }, [isReadyToSave, formData, register]);
+
 
   const handleModalClose = () => setSuccessArtist(null);
 
@@ -293,11 +294,14 @@ export default function ArtistSetupPage() {
                         whileTap={{ scale: 0.98 }}
                         onClick={() =>
                           setSuccessArtist({
-                            ...ARTISTS_MOCK[0],
-                            name: formData.name,
-                            bio: formData.bio,
-                            image:
-                              formData.portraitPreview || ARTISTS_MOCK[0].image,
+                            id: `profile-${formData.username}`,
+                            name: formData.name || "Artist",
+                            bio: formData.bio || "Cinematic Visionary",
+                            image: `boring-avatar:${formData.username || formData.name || "artist"}`,
+                            spirit: 0,
+                            works: 0,
+                            themeBgColor: formData.themeBgColor || "#0f1a42",
+                            themeTextColor: formData.themeTextColor || "#fac107",
                           })
                         }
                         className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white/10 transition-all"

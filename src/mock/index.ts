@@ -1,132 +1,24 @@
 /**
- * Mock Data Barrel — Assembles backend tables into frontend-ready shapes.
- *
- * Backend tables → Mock files:
- *   Originals   → originals.json
- *   Works       → works.json
- *   Artists     → artists.json
- *   Stars       → stars.json
- *   Makers      → makers.json
- *   Sets        → sets.json
+ * Mock Data Barrel — Strictly emptied for E2E integration.
+ * All arrays return empty datasets so the app exclusively relies on real backend payloads.
  */
-import worksData from "./works.json";
-import originalsData from "./originals.json";
-import artistsData from "./artists.json";
-import starsData from "./stars.json";
-import makersData from "./makers.json";
-import setsData from "./sets.json";
-import festivalsData from "./festivals.json";
 import { Original, OriginalArtist, OriginalStar, OriginalMaker, TheatreItem, Set, Festival } from "../types";
-import { buildThumbnail } from "../utils/embed";
-import { MOCK_RECOMMENDATIONS } from "./recommendations";
-import { recToTheatreItem } from "../utils/recAdapter";
 
-/** Shape of raw entries in works.json — extends TheatreItem with deprecated singular field. */
-interface WorkRow extends Omit<TheatreItem, 'originalIds'> {
-  originalIds?: string[];
-  /** @deprecated Use `originalIds` */
-  originalId?: string;
-}
+export const GRID_ITEMS: TheatreItem[] = [];
 
-// ─── Raw table casts ────────────────────────────────────────────────────────
+export const ORIGINALS: Original[] = [];
 
-/** All fan-made works (edits, posters, scripts).
- *  Derives `image` from srcId at assembly time so the JSON stays lean. */
-const ALL_WORKS: TheatreItem[] = (worksData as WorkRow[]).map((w): TheatreItem => ({
-  ...w,
-  // Hydrate thumbnail: prefer explicit image, else build from srcId
-  image:
-    w.image ??
-    (w.platform && w.srcId ? buildThumbnail(w.platform as 'youtube' | 'twitter', w.srcId) : undefined),
-  // Handle rename transition: singular to array
-  originalIds: w.originalIds ?? (w.originalId ? [w.originalId] : []),
-  platform: w.platform as 'youtube' | 'twitter' | undefined,
-}));
+export const ORIGINALS_DATA: Record<string, Original> = {};
 
-/** All fan creators. */
-interface ArtistRow extends OriginalArtist {
-  originalId: string;
-}
-const ALL_ARTISTS = artistsData as unknown as ArtistRow[];
+export const STARS_MOCK: OriginalStar[] = [];
 
-// ─── Assembled exports (simulates backend JOINs) ───────────────────────────
+export const MAKERS_MOCK: OriginalMaker[] = [];
 
-/**
- * GRID_ITEMS — Every work in the system.
- * Used by: Theatre canvases, HomeFeedLayout, OriginalTheatreSection.
- */
-export const GRID_ITEMS: TheatreItem[] = [
-  ...ALL_WORKS,
-  ...MOCK_RECOMMENDATIONS.map(recToTheatreItem)
-];
+export const ARTISTS_MOCK: OriginalArtist[] = [];
 
-/**
- * ORIGINALS — Full Original objects with topArtists, works, heroHighlights.
- * Assembled by joining works + artists onto each original via originalId.
- */
-export const ORIGINALS: Original[] = (originalsData as Array<Omit<Original, "topArtists" | "works" | "heroHighlights">>).map(org => {
-  const orgWorks = ALL_WORKS.filter(w => w.originalIds?.includes(org.id));
-  // Strictly filter artists who actually worked on this original
-  const orgArtists = ALL_ARTISTS.filter(a => 
-    a.workedOn?.some(wo => wo.id === org.id)
-  ).map(({ ...rest }) => rest as OriginalArtist);
-  
-  // Highlights: Strictly include only YouTube video edits for the ReleasesCarousel
-  const highlights = orgWorks.filter(w => 
-    w.category === 'Edit' && 
-    w.platform === 'youtube'
-  );
+export const SETS: Set[] = [];
 
-  return {
-    ...org,
-    topArtists: orgArtists,
-    works: orgWorks,
-    heroHighlights: highlights,
-  };
-});
-
-/**
- * ORIGINALS_DATA — Originals indexed by ID for O(1) lookup.
- * Used by: OriginalPage, OriginalsTheatrePage.
- */
-export const ORIGINALS_DATA: Record<string, Original> = Object.fromEntries(
-  ORIGINALS.map((original) => [original.id, original])
-);
-
-// FEATURED_ITEMS removed in favor of using ORIGINALS directly in HomeFeedLayout
-
-
-
-/**
- * STARS_MOCK — All stars (real actors/characters) as a flat array.
- * Used by: OriginalPage stars section.
- */
-export const STARS_MOCK = starsData as OriginalStar[];
-
-/**
- * MAKERS_MOCK — All makers (real crew) as a flat array.
- * Used by: OriginalPage makers section.
- */
-export const MAKERS_MOCK = makersData as OriginalMaker[];
-
-/**
- * ARTISTS_MOCK — All fan creators as a flat array.
- */
-export const ARTISTS_MOCK = ALL_ARTISTS.map(({ originalId: _, ...rest }) => rest as OriginalArtist);
-
-/**
- * SETS — Curated communities.
- */
-export const SETS: Set[] = setsData as Set[];
-
-/**
- * FESTIVALS — Cinematic events.
- */
-export const FESTIVALS: Festival[] = festivalsData as Festival[];
-
-// ─── Profiles Directory (unified search pool) ───────────────────────────────
-
-import profilesDirectoryData from "./profiles-directory.json";
+export const FESTIVALS: Festival[] = [];
 
 export interface ProfileEntry {
   id: string;
@@ -136,23 +28,13 @@ export interface ProfileEntry {
   profileType: "STAR" | "MAKER" | "ARTIST";
 }
 
-/**
- * PROFILES_DIRECTORY — All known platform identities (Stars, Makers, Artists).
- * Used by: PersonSearchInput for cast/crew selection.
- */
-export const PROFILES_DIRECTORY: ProfileEntry[] = profilesDirectoryData as ProfileEntry[];
-
-// ─── Thoughts & Discussions ───────────────────────────────────────────────────
+export const PROFILES_DIRECTORY: ProfileEntry[] = [];
 
 export * from "./thoughts";
 export * from "./discussionReplies";
+export * from "./recommendations";
+export * from "./ledger";
+export * from "./wall";
+export * from "./foyer";
 
-// ─── Current User (Mock Auth) ────────────────────────────────────────────────
-
-export const CURRENT_USER_MOCK = {
-  id: "user-current",
-  name: "Karthikeya",
-  favoritedOriginalIds: ["og-original", "rrr-original", "kgf-original", "vikram-original"],
-  memberSetIds: ["set-lcu", "set-got", "set-baahubali"],
-};
-
+export const CURRENT_USER_MOCK = null;

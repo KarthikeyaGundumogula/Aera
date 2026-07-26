@@ -29,7 +29,7 @@ const TEST_USER = {
   handle: `e2e_artist_${UNIQUE_SUFFIX}`,
   password: 'kApten@1023',             // Must have uppercase, lowercase, number — no special char requirement
   tag_line: 'i dont give a damn about your opinion',
-  profile_picture: 'aofdjosfjosf',    // Plain string — no URL validation in tars
+  profile_picture: 'boring-avatar:kapten',    // Seed string for boring-avatars integration
   youtube_profile: 'aojojfosjf',      // Plain string for social profile
   stage_name: 'kapten',               // Must be lowercase letters and spaces only — matches fixtures.rs
   color_theme: '#FF0000',             // Valid hex color

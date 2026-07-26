@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Users, Heart, Share2, Instagram, Twitter, Youtube } from "lucide-react";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { FavoriteButton } from "../../../components/FavoriteButton";
+import { ArtistAvatar } from "../../../components/ArtistAvatar";
 
 interface ProfileHeroProps {
   name: string;
@@ -119,18 +120,12 @@ export function ProfileHero({
 
 
           <div className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/5">
-            {image ? (
-              <img loading="lazy"
-                src={image}
-                alt={name}
-                className="w-full h-full object-cover object-top"
-                style={{ objectPosition: imagePosition }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center opacity-10">
-                <Users size={48} />
-              </div>
-            )}
+            <ArtistAvatar
+              src={image}
+              name={name}
+              size={300}
+              className="w-full h-full rounded-2xl"
+            />
             
             {/* Absolute Centered Portrait Overlay */}
             {portraitOverlay && (

@@ -13,6 +13,7 @@ import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
 import { OriginalArtist } from "../../../types";
 import { CreditTag } from "../tags";
 import { ModalWrapper } from "../modals/ModalWrapper";
+import { ArtistAvatar } from "../../../components/ArtistAvatar";
 
 interface ArtistProfileProps {
   artist: OriginalArtist | null;
@@ -150,10 +151,11 @@ export const ArtistProfile = memo(
                         style={{ rotateX: springY, rotateY: springX }}
                         className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10 group bg-black/20 shadow-2xl"
                       >
-                        <img loading="lazy"
+                        <ArtistAvatar
                           src={artist.image}
-                          alt={artist.name}
-                          className="w-full h-full object-cover object-top"
+                          name={artist.name}
+                          size={240}
+                          className="w-full h-full rounded-2xl"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       </motion.div>
@@ -346,10 +348,11 @@ export const ArtistProfile = memo(
               <div
                 className={`shrink-0 overflow-hidden rounded-xl ${isFeatured ? "h-10 w-10 md:h-14 md:w-14" : "h-12 w-12 md:h-11 md:w-11"}`}
               >
-                <img loading="lazy"
+                <ArtistAvatar
                   src={artist.image}
-                  alt={artist.name}
-                  className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                  name={artist.name}
+                  size={56}
+                  className="h-full w-full rounded-xl"
                 />
               </div>
 

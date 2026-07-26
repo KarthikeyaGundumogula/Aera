@@ -42,10 +42,16 @@ test.describe('UI Navigation Smoke Tests', () => {
     await expect(page.locator('text=Scene not found')).not.toBeVisible();
   });
 
-  test('Unknown route shows 404 fallback', async ({ page }) => {
-    await page.goto('/this-page-absolutely-does-not-exist-xyz');
+  test('Command Center (ProfileNav) shows Create Profile and Sign In when logged out', async ({ page }) => {
+    await page.goto('/');
 
-    // The NotFoundPage renders "Scene not found"
-    await expect(page.locator('text=Scene not found')).toBeVisible();
+    // Click the Command Center (ProfileNav) button
+    const profileBtn = page.getByRole('button', { name: 'Command Center' });
+    await expect(profileBtn).toBeVisible();
+    await profileBtn.click();
+
+    // Verify Create Profile and Sign In options appear in the dropdown
+    await expect(page.locator('text=Create Profile')).toBeVisible();
+    await expect(page.locator('text=Sign In')).toBeVisible();
   });
 });

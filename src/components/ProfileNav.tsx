@@ -9,9 +9,12 @@ import {
   MessageSquare,
   BookPlus,
   LogOut,
+  UserPlus,
+  LogIn,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../context/AuthContext";
+import { ArtistAvatar } from "./ArtistAvatar";
 
 /**
  * ProfileNav component — A sleek, premium dropdown menu
@@ -26,7 +29,7 @@ export function ProfileNav({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { currentArtist, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -46,26 +49,47 @@ export function ProfileNav({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const menuItems = [
-    {
-      label: "Studio",
-      icon: <Film className="w-4 h-4" />,
-      path: "/studio",
-      description: "Manage your stage",
-    },
-    {
-      label: "Ledger",
-      icon: <BookPlus className="w-4 h-4" />,
-      path: "/ledger",
-      description: "Your cinematic ledger",
-    },
-    {
-      label: "Contact Founder",
-      icon: <MessageSquare className="w-4 h-4" />,
-      path: "/contact",
-      description: "Slap your thoughts",
-    },
-  ];
+  const menuItems = currentArtist
+    ? [
+        {
+          label: "Studio",
+          icon: <Film className="w-4 h-4" />,
+          path: "/studio",
+          description: "Manage your stage",
+        },
+        {
+          label: "Ledger",
+          icon: <BookPlus className="w-4 h-4" />,
+          path: "/ledger",
+          description: "Your cinematic ledger",
+        },
+        {
+          label: "Contact Founder",
+          icon: <MessageSquare className="w-4 h-4" />,
+          path: "/contact",
+          description: "Slap your thoughts",
+        },
+      ]
+    : [
+        {
+          label: "Create Profile",
+          icon: <UserPlus className="w-4 h-4" />,
+          path: "/profile/new",
+          description: "Join as an artist",
+        },
+        {
+          label: "Sign In",
+          icon: <LogIn className="w-4 h-4" />,
+          path: "/profile/login",
+          description: "Access your stage",
+        },
+        {
+          label: "Contact Founder",
+          icon: <MessageSquare className="w-4 h-4" />,
+          path: "/contact",
+          description: "Slap your thoughts",
+        },
+      ];
 
   const handleNav = (path: string) => {
     if (beforeNavigate) {
@@ -94,7 +118,16 @@ export function ProfileNav({
           }
         `}
         >
-          <User className="w-5 h-5 transition-transform group-hover:scale-110" />
+          {currentArtist ? (
+            <ArtistAvatar
+              src={currentArtist.image}
+              name={currentArtist.name}
+              size={20}
+              className="rounded-lg"
+            />
+          ) : (
+            <User className="w-5 h-5 transition-transform group-hover:scale-110" />
+          )}
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
           />
@@ -161,18 +194,20 @@ export function ProfileNav({
               >
                 Return to Theatre
               </button>
-              <button
-                onClick={() => {
-                  if (beforeNavigate && !beforeNavigate("/")) return;
-                  logout();
-                  navigate("/");
-                  setIsOpen(false);
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2 text-[9px] font-bold uppercase tracking-[0.25em] text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
-              >
-                <LogOut className="w-3 h-3" />
-                Sign Out
-              </button>
+              {currentArtist && (
+                <button
+                  onClick={() => {
+                    if (beforeNavigate && !beforeNavigate("/")) return;
+                    logout();
+                    navigate("/");
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 text-[9px] font-bold uppercase tracking-[0.25em] text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                >
+                  <LogOut className="w-3 h-3" />
+                  Sign Out
+                </button>
+              )}
             </div>
           </motion.div>
         )}
