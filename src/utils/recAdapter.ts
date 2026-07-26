@@ -23,7 +23,7 @@ export function recToTheatreItem(rec: Recommendation): TheatreItem {
     artist: rec.artist.name,
     artistAvatar: rec.artist.profilePicture,
     recId: rec.id,
-    captions: [rec.notes],
+    captions: [rec.notes || rec.comment || ""],
     aspectRatio: 0.67,
   };
 }

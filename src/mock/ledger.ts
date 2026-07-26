@@ -33,7 +33,7 @@ export type LedgerItem = {
   preThoughts?: string;
   afterThoughts?: string;
   watchedAt?: string;
-  taggedWorks?: LedgerTaggedWork[];
+  taggedWorks: LedgerTaggedWork[];
   pinnedWorkId?: string;
 };
 

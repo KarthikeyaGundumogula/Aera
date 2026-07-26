@@ -37,4 +37,9 @@ export * from "./ledger";
 export * from "./wall";
 export * from "./foyer";
 
-export const CURRENT_USER_MOCK = null;
+export const CURRENT_USER_MOCK = {
+  id: "user-current",
+  name: "Karthikeya",
+  favoritedOriginalIds: [] as string[],
+  memberSetIds: [] as string[],
+};

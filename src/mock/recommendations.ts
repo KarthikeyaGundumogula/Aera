@@ -31,8 +31,8 @@ export interface Recommendation {
   artist: RecommendationArtist;
   comment: string;
   surgeScore: number;
-  score?: number;
-  notes?: string;
+  score: number;
+  notes: string;
   postedAt?: string;
   artistLiked?: boolean;
   contextLabel?: string;
