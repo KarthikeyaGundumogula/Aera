@@ -93,7 +93,7 @@ export const LedgerWallCard = memo<LedgerWallCardProps>(
               ) : (
                 <EyeOff className="w-2 h-2" />
               )}
-              {isWatched ? "Seen" : "Hype"}
+              {isWatched ? "Watched" : "Plan to Watch"}
             </span>
           </div>
         </div>

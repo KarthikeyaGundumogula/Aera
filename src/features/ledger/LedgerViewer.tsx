@@ -29,12 +29,13 @@
  */
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "motion/react";
-import { ArrowLeft, Share2, Check, BookPlus, Eye, Clock } from "lucide-react";
+import { ArrowLeft, Share2, Check, BookPlus, Eye, Clock, Edit3, Sparkles } from "lucide-react";
 import { mockLedger, LedgerItem, LedgerMakerCredit } from "../../mock/ledger";
-import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK } from "../../mock";
+import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK, CURRENT_USER_MOCK } from "../../mock";
 import { SurgeBars } from "../../components/SurgeBars";
+import { SurgeInputSection } from "../../components/surge/SurgeInputSection";
 
 // ─── Easing constant (strong ease-out per Emil design-eng principles) ──────────
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -428,15 +429,177 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
   );
 }
 
+// ─── In-Place Breakdown Editor Component ─────────────────────────────────────
+
+function InPlaceBreakdownEditor({
+  entryStatus,
+  preThoughts,
+  afterThoughts,
+  surgeScore,
+  savedSuccess,
+  setPreThoughts,
+  setAfterThoughts,
+  setSurgeScore,
+  handleStatusChangeInViewer,
+  handleSaveInPlace,
+  setIsEditing,
+}: {
+  entryStatus: "watched" | "want_to_watch";
+  preThoughts: string;
+  afterThoughts: string;
+  surgeScore: number;
+  savedSuccess: boolean;
+  setPreThoughts: (val: string) => void;
+  setAfterThoughts: (val: string) => void;
+  setSurgeScore: (val: number) => void;
+  handleStatusChangeInViewer: (status: "watched" | "want_to_watch") => void;
+  handleSaveInPlace: () => void;
+  setIsEditing: (val: boolean) => void;
+}) {
+  const peakMagnitude = 10000;
+  const pctScore = Math.min(Math.round((surgeScore / peakMagnitude) * 100), 100);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-6 md:p-10 space-y-6 bg-white/[0.02] border-b border-white/[0.08]"
+    >
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5" />
+          Edit Experience & Breakdown
+        </span>
+        {savedSuccess && (
+          <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+            <Check className="w-4 h-4" /> Breakdown Saved!
+          </span>
+        )}
+      </div>
+
+      {/* Status Selector Switcher */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+          Watching Status
+        </label>
+        <div className="flex items-center gap-2 p-1 rounded-xl bg-white/5 w-fit border border-white/10">
+          <button
+            onClick={() => handleStatusChangeInViewer("watched")}
+            className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
+              entryStatus === "watched"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm"
+                : "text-white/40 hover:text-white"
+            }`}
+          >
+            <Eye className="w-3 h-3" />
+            Watched
+          </button>
+          <button
+            onClick={() => handleStatusChangeInViewer("want_to_watch")}
+            className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
+              entryStatus === "want_to_watch"
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm"
+                : "text-white/40 hover:text-white"
+            }`}
+          >
+            <Clock className="w-3 h-3" />
+            Plan to Watch
+          </button>
+        </div>
+      </div>
+
+      {/* Pre-watching Expectations Input */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold uppercase tracking-wider text-white/60">
+          Pre-Watching Expectations
+        </label>
+        <textarea
+          value={preThoughts}
+          onChange={(e) => setPreThoughts(e.target.value)}
+          placeholder="What were your thoughts before watching?"
+          rows={3}
+          className="w-full p-4 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 resize-none font-serif leading-relaxed"
+        />
+      </div>
+
+      {/* Post-watching Breakdown Input (only when watched) */}
+      {entryStatus === "watched" && (
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-white/60">
+            Post-Watching Breakdown
+          </label>
+          <textarea
+            value={afterThoughts}
+            onChange={(e) => setAfterThoughts(e.target.value)}
+            placeholder="Log your reflection, thoughts, and post-watching breakdown..."
+            rows={5}
+            className="w-full p-4 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 resize-none font-serif leading-relaxed"
+          />
+        </div>
+      )}
+
+      {/* Surge Score Component (when watched) — Placed AFTER pre & post text inputs */}
+      {entryStatus === "watched" && (
+        <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] relative overflow-hidden space-y-2">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
+            Surge Resonance Score
+          </label>
+          <SurgeInputSection
+            score={surgeScore}
+            peak={10000}
+            onChange={setSurgeScore}
+          />
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 pt-2">
+        <button
+          onClick={handleSaveInPlace}
+          className="py-3 px-6 rounded-xl bg-amber-500 text-black font-black uppercase text-[10px] tracking-[0.2em] hover:bg-amber-400 transition-all cursor-pointer shadow-lg shadow-amber-500/20"
+        >
+          Save Breakdown
+        </button>
+        <button
+          onClick={() => setIsEditing(false)}
+          className="py-3 px-5 rounded-xl bg-white/5 border border-white/10 text-white/60 font-black uppercase text-[10px] tracking-wider hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function LedgerViewer() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [copied, setCopied] = useState(false);
 
   const entry: LedgerItem | undefined = mockLedger.find((l) => l.id === id);
-  const surgeCount = useSurgeCount(entry?.surgeScore ?? 0, 1600);
+
+  const isOwner = true;
+
+  const [isEditing, setIsEditing] = useState<boolean>(
+    searchParams.get("edit") === "true" && isOwner
+  );
+  const [entryStatus, setEntryStatus] = useState<"watched" | "want_to_watch">(
+    entry?.status ?? "want_to_watch"
+  );
+  const [preThoughts, setPreThoughts] = useState<string>(
+    entry?.preThoughts ?? ""
+  );
+  const [afterThoughts, setAfterThoughts] = useState<string>(
+    entry?.afterThoughts ?? ""
+  );
+  const [surgeScore, setSurgeScore] = useState<number>(
+    entry?.surgeScore ?? 7500
+  );
+  const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
+
+  const surgeCount = useSurgeCount(isEditing ? surgeScore : (entry?.surgeScore ?? 0), 1600);
 
   if (!entry) {
     return (
@@ -456,13 +619,41 @@ export function LedgerViewer() {
     );
   }
 
+  const handleStatusChangeInViewer = (newStatus: "watched" | "want_to_watch") => {
+    setEntryStatus(newStatus);
+    entry.status = newStatus;
+    if (newStatus === "watched") {
+      if (!entry.watchedAt) {
+        entry.watchedAt = new Date().toISOString();
+      }
+      setIsEditing(true); // ONLY when status is changed to watched, prompt user to add breakdown!
+    } else {
+      setIsEditing(false);
+    }
+  };
+
+  const handleSaveInPlace = () => {
+    entry.status = entryStatus;
+    entry.preThoughts = preThoughts || null;
+    entry.afterThoughts = entryStatus === "watched" ? (afterThoughts || undefined) : undefined;
+    entry.surgeScore = entryStatus === "watched" ? surgeScore : undefined;
+    if (entryStatus === "watched" && !entry.watchedAt) {
+      entry.watchedAt = new Date().toISOString();
+    }
+    setSavedSuccess(true);
+    setTimeout(() => {
+      setSavedSuccess(false);
+      setIsEditing(false);
+    }, 1000);
+  };
+
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/ledger/${entry.id}`;
     if (navigator.share) {
       try {
         await navigator.share({
           title: `${entry.originalName} — Ledger Entry`,
-          text: entry.afterThoughts ?? entry.preThoughts ?? "",
+          text: afterThoughts ?? preThoughts ?? "",
           url: shareUrl,
         });
         return;
@@ -492,11 +683,11 @@ export function LedgerViewer() {
       }).format(new Date(entry.watchedAt))
     : null;
 
-  const isWatched = entry.status === "watched";
+  const isWatched = entryStatus === "watched";
 
-  const hasPreThoughts = Boolean(entry.preThoughts);
-  const hasAfterThoughts = Boolean(entry.afterThoughts);
-  const hasSurge = Boolean(entry.surgeScore);
+  const hasPreThoughts = Boolean(preThoughts);
+  const hasAfterThoughts = Boolean(afterThoughts);
+  const hasSurge = entryStatus === "watched" && Boolean(surgeScore);
 
   const authorProfile = useMemo(() => {
     if (entry.artistId) {
@@ -509,8 +700,42 @@ export function LedgerViewer() {
     return { name: entry.originalName, image: entry.originalPosterUrl };
   }, [entry]);
 
+  // Add to Ledger functionality
+  const alreadyInUserLedger = useMemo(() => {
+    return mockLedger.some(
+      (l) =>
+        l.originalId === entry.originalId &&
+        (l.artistId === CURRENT_USER_MOCK.id || l.artistId === "fh-001")
+    );
+  }, [entry.originalId]);
+
+  const [addedToLedger, setAddedToLedger] = useState(alreadyInUserLedger);
+
+  const handleAddToLedger = () => {
+    if (addedToLedger) return;
+
+    mockLedger.push({
+      id: `wl_user_${Date.now()}`,
+      artistId: CURRENT_USER_MOCK.id || "fh-001",
+      originalId: entry.originalId,
+      originalName: entry.originalName,
+      originalPosterUrl: entry.originalPosterUrl,
+      releaseYear: entry.releaseYear,
+      genre: entry.genre,
+      starName: entry.starName,
+      starImageUrl: entry.starImageUrl,
+      makers: entry.makers,
+      status: "want_to_watch",
+      preThoughts: `Added from ${authorProfile.name}'s breakdown.`,
+      taggedWorks: [],
+      addedAt: new Date().toISOString(),
+    });
+
+    setAddedToLedger(true);
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden pb-32 md:pb-0">
       {/* ── Floating Nav ─────────────────────────────────────────────────── */}
       <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 py-4 md:px-10">
         <button
@@ -525,9 +750,10 @@ export function LedgerViewer() {
           <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 hidden sm:block">
             Ledger Entry
           </span>
+
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/70 backdrop-blur-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/70 backdrop-blur-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all cursor-pointer"
           >
             {copied ? (
               <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -613,7 +839,18 @@ export function LedgerViewer() {
                 </p>
               )}
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 border cursor-pointer shadow-md ${
+                  isEditing
+                    ? "bg-white text-black border-white font-bold"
+                    : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
+                }`}
+              >
+                <Edit3 className="w-3 h-3" />
+                {isEditing ? "Done" : "Update Breakdown"}
+              </button>
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
                   isWatched
@@ -622,88 +859,128 @@ export function LedgerViewer() {
                 }`}
               >
                 <Eye className="w-2.5 h-2.5" />
-                {isWatched ? "Seen" : "Hype"}
+                {isWatched ? "Watched" : "Plan to Watch"}
               </span>
             </div>
           </motion.div>
 
-          {/* Pre-thoughts — the "BEFORE" headline */}
-          {entry.preThoughts && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5, ease: EASE_OUT }}
-              className="px-10 pt-8 pb-6 border-b border-white/[0.06]"
-            >
-              <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-4">
-                Before
-              </p>
-              <p className="text-[28px] font-black uppercase tracking-tight leading-[1.15] text-white/90">
-                {entry.preThoughts}
-              </p>
-            </motion.div>
-          )}
-
-          {/* Post-experience — the "AFTER" body */}
-          {entry.afterThoughts && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5, ease: EASE_OUT }}
-              className="px-10 pt-8 pb-8 border-b border-white/[0.06]"
-            >
-              <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-4">
-                After
-              </p>
-              <p className="text-[19px] font-medium leading-[1.75] text-white/75">
-                {entry.afterThoughts}
-              </p>
-            </motion.div>
-          )}
-
-          {/* Surge Score block — bottom anchor */}
-          {entry.surgeScore && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.55, duration: 0.6 }}
-              className="px-10 py-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6"
-            >
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-3">
-                  Surge Score
-                </p>
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <span
-                    className="text-[72px] font-black leading-none tracking-tighter"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #F59E0B 0%, #D97706 40%, #FBBF24 70%, #B45309 100%)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      filter: "drop-shadow(0 0 24px rgba(217,119,6,0.4))",
-                    }}
+          {/* ── IN-PLACE EDIT MODE ── */}
+          {isEditing ? (
+            <InPlaceBreakdownEditor
+              entryStatus={entryStatus}
+              preThoughts={preThoughts}
+              afterThoughts={afterThoughts}
+              surgeScore={surgeScore}
+              savedSuccess={savedSuccess}
+              setPreThoughts={setPreThoughts}
+              setAfterThoughts={setAfterThoughts}
+              setSurgeScore={setSurgeScore}
+              handleStatusChangeInViewer={handleStatusChangeInViewer}
+              handleSaveInPlace={handleSaveInPlace}
+              setIsEditing={setIsEditing}
+            />
+          ) : (
+            <>
+              {/* Prompt banner for Plan to Watch owners */}
+              {isOwner && entryStatus === "want_to_watch" && (
+                <div className="p-6 m-10 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 flex items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">
+                      In Watchlist (Plan to Watch)
+                    </p>
+                    <p className="text-xs text-white/60">
+                      Have you watched this film? Mark it as watched to add your post-watching breakdown.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleStatusChangeInViewer("watched")}
+                    className="py-3 px-5 rounded-xl bg-amber-500 text-black font-black uppercase text-[10px] tracking-[0.15em] hover:bg-amber-400 transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center gap-2 shrink-0"
                   >
-                    {Math.min(Math.round((surgeCount / 10000) * 100), 100)}%
-                  </span>
-                  <span className="text-[18px] font-bold text-white/40 tracking-tight font-mono">
-                    {surgeCount.toLocaleString()} / 10,000
-                  </span>
+                    <Eye className="w-3.5 h-3.5" />
+                    Mark as Watched & Add Breakdown
+                  </button>
                 </div>
-                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mt-2">
-                  Resonance at time of watching
-                </p>
-              </div>
+              )}
 
-              <div className="pb-2">
-                <SurgeBars
-                  score={surgeCount}
-                  highestScore={10000}
-                  colorVariant="amber"
-                  size="lg"
-                />
-              </div>
-            </motion.div>
+              {/* Pre-thoughts — the "BEFORE" headline */}
+              {hasPreThoughts && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.5, ease: EASE_OUT }}
+                  className="px-10 pt-8 pb-6 border-b border-white/[0.06]"
+                >
+                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-4">
+                    Before
+                  </p>
+                  <p className="text-[28px] font-black uppercase tracking-tight leading-[1.15] text-white/90">
+                    {preThoughts}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Post-experience — the "AFTER" body */}
+              {hasAfterThoughts && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.5, ease: EASE_OUT }}
+                  className="px-10 pt-8 pb-8 border-b border-white/[0.06]"
+                >
+                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-4">
+                    After
+                  </p>
+                  <p className="text-[19px] font-medium leading-[1.75] text-white/75">
+                    {afterThoughts}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Surge Score block — bottom anchor */}
+              {hasSurge && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.55, duration: 0.6 }}
+                  className="px-10 py-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6"
+                >
+                  <div>
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-3">
+                      Surge Score
+                    </p>
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <span
+                        className="text-[72px] font-black leading-none tracking-tighter"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #F59E0B 0%, #D97706 40%, #FBBF24 70%, #B45309 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          filter: "drop-shadow(0 0 24px rgba(217,119,6,0.4))",
+                        }}
+                      >
+                        {Math.min(Math.round((surgeCount / 10000) * 100), 100)}%
+                      </span>
+                      <span className="text-[18px] font-bold text-white/40 tracking-tight font-mono">
+                        {surgeCount.toLocaleString()} / 10,000
+                      </span>
+                    </div>
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mt-2">
+                      Resonance at time of watching
+                    </p>
+                  </div>
+
+                  <div className="pb-2">
+                    <SurgeBars
+                      score={surgeCount}
+                      highestScore={10000}
+                      colorVariant="amber"
+                      size="lg"
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </>
           )}
         </div>
 
@@ -747,9 +1024,26 @@ export function LedgerViewer() {
 
           {/* Ledger action */}
           <div className="pt-6">
-            <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-white/10 bg-white/[0.03] text-white/40 hover:border-white/20 hover:text-white/70 transition-all text-[9px] font-black uppercase tracking-[0.2em]">
-              <BookPlus className="w-3.5 h-3.5" />
-              Add to Ledger
+            <button
+              onClick={handleAddToLedger}
+              disabled={addedToLedger}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl border transition-all text-[9px] font-black uppercase tracking-[0.2em] cursor-pointer ${
+                addedToLedger
+                  ? "bg-amber-500/20 border-amber-500/30 text-amber-300 shadow-md shadow-amber-500/10 cursor-default"
+                  : "bg-white/[0.04] border-white/10 text-white/70 hover:bg-white/[0.08] hover:border-white/20 hover:text-white"
+              }`}
+            >
+              {addedToLedger ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-amber-400" />
+                  Added to Plan to Watch
+                </>
+              ) : (
+                <>
+                  <BookPlus className="w-3.5 h-3.5 text-amber-400" />
+                  Add to Ledger
+                </>
+              )}
             </button>
           </div>
         </motion.aside>
@@ -758,7 +1052,7 @@ export function LedgerViewer() {
       {/* ═══════════════════════════════════════════════════════════════════
           MOBILE LAYOUT  (<lg) — newspaper editorial
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="block lg:hidden border-t border-white/[0.07]">
+      <div className="block lg:hidden border-t border-white/[0.07] pb-36">
         {/* Status chip row */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -790,111 +1084,141 @@ export function LedgerViewer() {
               )}
             </div>
           </div>
-          <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
-              isWatched
-                ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
-                : "bg-amber-400/10 border-amber-400/20 text-amber-400"
-            }`}
-          >
-            <Eye className="w-2.5 h-2.5" />
-            {isWatched ? "Seen" : "Hype"}
-          </span>
-        </motion.div>
-
-        {/*
-         * ── Editorial body ────────────────────────────────────────────
-         *
-         * Line 1 is rendered BEFORE the float in the DOM, forcing Line 1 to
-         * span 100% full-width edge-to-edge across the container.
-         * The float-right MakerCard is placed AFTER Line 1 in the DOM, so
-         * Line 2+ and afterThoughts wrap to the left of the MakerCard.
-         */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.45, ease: EASE_OUT }}
-          className="px-5 pt-6 pb-4"
-        >
-          {hasPreThoughts || hasAfterThoughts ? (
-            <div className="overflow-hidden relative">
-              {/* Pre-thoughts headline with inline float placement */}
-              {hasPreThoughts &&
-                (() => {
-                  const { line1, rest } = splitHeadline(entry.preThoughts!);
-                  return (
-                    <p className="text-[19px] font-black uppercase tracking-tight leading-[1.3] text-white/90 mb-4">
-                      {/* Line 1 is rendered BEFORE the float in DOM -> 100% FULL WIDTH */}
-                      <span>{line1}</span>
-
-                      {/* Float-right Maker Card inserted AFTER Line 1 in DOM */}
-                      <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
-                        <MakerCardContent entry={entry} />
-                      </span>
-
-                      {/* Remaining pre-thoughts wrap to the left of MakerCard */}
-                      {rest && <span>{rest}</span>}
-                    </p>
-                  );
-                })()}
-
-              {/* If NO pre-thoughts, MakerCard floats after line 1 of afterThoughts */}
-              {!hasPreThoughts &&
-                hasAfterThoughts &&
-                (() => {
-                  const { line1, rest } = splitHeadline(entry.afterThoughts!);
-                  const firstChar = line1.charAt(0);
-                  const line1AfterChar = line1.slice(1);
-                  return (
-                    <p className="text-[15px] font-medium leading-[1.75] text-white/70">
-                      <DropCapSVG letter={firstChar} artistId={entry.artistId} />
-                      <span>{line1AfterChar}</span>
-
-                      {/* Float-right Maker Card inserted AFTER Line 1 in DOM */}
-                      <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
-                        <MakerCardContent entry={entry} />
-                      </span>
-
-                      {rest && <span>{rest}</span>}
-                    </p>
-                  );
-                })()}
-
-              {/* After-thoughts body when pre-thoughts ARE present */}
-              {hasPreThoughts && hasAfterThoughts && (
-                <p className="text-[15px] font-medium leading-[1.75] text-white/70">
-                  <DropCapSVG letter={entry.afterThoughts!.charAt(0)} artistId={entry.artistId} />
-                  {entry.afterThoughts!.slice(1)}
-                </p>
-              )}
-            </div>
-          ) : null}
-
-          {/*
-           * Scenario C: No text at all → show a restrained score label
-           * so the surge block below has context.
-           */}
-          {!hasPreThoughts && !hasAfterThoughts && hasSurge && (
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25 mb-2">
-              Surge Score
-            </p>
-          )}
-
-          {/* Compact Surge Score — in-flow, not a hero block */}
-          {hasSurge && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mt-6"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-wider transition-all flex items-center gap-1 border cursor-pointer shadow-sm ${
+                isEditing
+                  ? "bg-white text-black border-white font-bold"
+                  : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
+              }`}
             >
-              <MobileSurgeScore
-                surgeCount={surgeCount}
-                surgeScore={entry.surgeScore!}
-              />
-            </motion.div>
-          )}
+              <Edit3 className="w-2.5 h-2.5" />
+              {isEditing ? "Done" : "Update Breakdown"}
+            </button>
+            <span
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
+                isWatched
+                  ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
+                  : "bg-amber-400/10 border-amber-400/20 text-amber-400"
+              }`}
+            >
+              <Eye className="w-2.5 h-2.5" />
+              {isWatched ? "Watched" : "Plan to Watch"}
+            </span>
+          </div>
         </motion.div>
+
+        {/* ── MOBILE EDITING MODE ── */}
+        {isEditing ? (
+          <InPlaceBreakdownEditor
+            entryStatus={entryStatus}
+            preThoughts={preThoughts}
+            afterThoughts={afterThoughts}
+            surgeScore={surgeScore}
+            savedSuccess={savedSuccess}
+            setPreThoughts={setPreThoughts}
+            setAfterThoughts={setAfterThoughts}
+            setSurgeScore={setSurgeScore}
+            handleStatusChangeInViewer={handleStatusChangeInViewer}
+            handleSaveInPlace={handleSaveInPlace}
+            setIsEditing={setIsEditing}
+          />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.45, ease: EASE_OUT }}
+            className="px-5 pt-6 pb-4"
+          >
+            {/* Prompt banner for Plan to Watch owners */}
+            {isOwner && entryStatus === "want_to_watch" && (
+              <div className="p-4 mb-5 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 space-y-3">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">
+                    In Watchlist (Plan to Watch)
+                  </p>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    Have you watched this film? Mark it as watched to add your post-watching breakdown.
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleStatusChangeInViewer("watched")}
+                  className="w-full py-2.5 rounded-xl bg-amber-500 text-black font-black uppercase text-[10px] tracking-[0.15em] hover:bg-amber-400 transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Mark as Watched & Add Breakdown
+                </button>
+              </div>
+            )}
+
+            {hasPreThoughts || hasAfterThoughts ? (
+              <div className="overflow-hidden relative">
+                {/* Pre-thoughts headline with inline float placement */}
+                {hasPreThoughts &&
+                  (() => {
+                    const { line1, rest } = splitHeadline(preThoughts);
+                    return (
+                      <p className="text-[19px] font-black uppercase tracking-tight leading-[1.3] text-white/90 mb-4">
+                        <span>{line1}</span>
+                        <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
+                          <MakerCardContent entry={entry} />
+                        </span>
+                        {rest && <span>{rest}</span>}
+                      </p>
+                    );
+                  })()}
+
+                {!hasPreThoughts &&
+                  hasAfterThoughts &&
+                  (() => {
+                    const { line1, rest } = splitHeadline(afterThoughts);
+                    const firstChar = line1.charAt(0);
+                    const line1AfterChar = line1.slice(1);
+                    return (
+                      <p className="text-[15px] font-medium leading-[1.75] text-white/70">
+                        <DropCapSVG letter={firstChar} artistId={entry.artistId} />
+                        <span>{line1AfterChar}</span>
+                        <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
+                          <MakerCardContent entry={entry} />
+                        </span>
+                        {rest && <span>{rest}</span>}
+                      </p>
+                    );
+                  })()}
+
+                {hasPreThoughts && hasAfterThoughts && (
+                  <p className="text-[15px] font-medium leading-[1.75] text-white/70">
+                    <DropCapSVG letter={afterThoughts.charAt(0)} artistId={entry.artistId} />
+                    {afterThoughts.slice(1)}
+                  </p>
+                )}
+              </div>
+            ) : null}
+
+            {!hasPreThoughts && !hasAfterThoughts && hasSurge && (
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25 mb-2">
+                Surge Score
+              </p>
+            )}
+
+            {hasSurge && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="mt-6"
+              >
+                <MobileSurgeScore
+                  surgeCount={surgeCount}
+                  surgeScore={surgeScore}
+                />
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+
 
         {/* ── Stars & Makers identity card sections ────────────────── */}
         <motion.div
@@ -907,10 +1231,27 @@ export function LedgerViewer() {
         </motion.div>
 
         {/* ── Ledger action ─────────────────────────────────────────── */}
-        <div className="px-5 pb-10">
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-white/10 bg-white/[0.03] text-white/40 hover:border-white/20 hover:text-white/70 transition-all text-[9px] font-black uppercase tracking-[0.2em]">
-            <BookPlus className="w-3.5 h-3.5" />
-            Add to Ledger
+        <div className="px-5 mb-16 md:mb-0">
+          <button
+            onClick={handleAddToLedger}
+            disabled={addedToLedger}
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl border transition-all text-[9px] font-black uppercase tracking-[0.2em] cursor-pointer ${
+              addedToLedger
+                ? "bg-amber-500/20 border-amber-500/30 text-amber-300 shadow-md shadow-amber-500/10 cursor-default"
+                : "bg-white/[0.04] border-white/10 text-white/70 hover:bg-white/[0.08] hover:border-white/20 hover:text-white"
+            }`}
+          >
+            {addedToLedger ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-amber-400" />
+                Added to Plan to Watch
+              </>
+            ) : (
+              <>
+                <BookPlus className="w-3.5 h-3.5 text-amber-400" />
+                Add to Ledger
+              </>
+            )}
           </button>
         </div>
       </div>

@@ -109,6 +109,7 @@ const ProfilePage: React.FC = () => {
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showHeaderTabs, setShowHeaderTabs] = useState(false);
 
   // Tab orb tracking
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -123,8 +124,13 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+      if (tabsRowRef.current) {
+        const top = tabsRowRef.current.getBoundingClientRect().top;
+        setShowHeaderTabs(top <= 65);
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -310,7 +316,7 @@ const ProfilePage: React.FC = () => {
         {/* Center Tab Switcher (fades in smoothly when scrolled) */}
         <div
           className={`flex items-center gap-6 md:gap-12 transition-all duration-300 ${
-            isScrolled
+            showHeaderTabs
               ? "opacity-100 translate-y-0 pointer-events-auto"
               : "opacity-0 -translate-y-2 pointer-events-none"
           }`}

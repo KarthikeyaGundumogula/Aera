@@ -9,13 +9,13 @@ interface LedgerSectionProps {
 
 const STATUS_MAP = {
   want_to_watch: {
-    label: "Hype",
+    label: "Plan to Watch",
     color: "text-amber-400",
     bg: "bg-amber-400/10 border-amber-400/20",
     icon: EyeOff,
   },
   watched: {
-    label: "Seen",
+    label: "Watched",
     color: "text-emerald-400",
     bg: "bg-emerald-400/10 border-emerald-400/20",
     icon: Eye,
