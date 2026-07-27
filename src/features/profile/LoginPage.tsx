@@ -28,7 +28,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    const success = await login(formData.username, formData.password);
+    const success = await login(formData.username.trim().toLowerCase(), formData.password);
     setIsLoading(false);
     if (!success) {
       setError("Invalid handle or password. Please verify credentials.");
@@ -114,7 +114,7 @@ export default function LoginPage() {
                     placeholder="USERNAME"
                     value={formData.username}
                     onChange={(e) =>
-                      setFormData((p) => ({ ...p, username: e.target.value }))
+                      setFormData((p) => ({ ...p, username: e.target.value.toLowerCase() }))
                     }
                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-sm font-bold uppercase tracking-widest focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all placeholder:text-white/10"
                     id="login-username"

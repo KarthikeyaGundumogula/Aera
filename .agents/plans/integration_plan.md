@@ -19,9 +19,12 @@
    - **Human (You)**: Manually inspects the UI in browser at `http://localhost:3000` to verify visual aesthetics, animations, and UX feel.
 3. **Regression Safety**: Every endpoint integrated gets locked in with Playwright E2E test specs, guaranteeing future endpoint integrations never break past features.
 
----
+## 2. Mandatory Integration & Robustness Rules
 
-## 2. The 5-Step Agentic Integration Loop
+> [!IMPORTANT]
+> **Core Rule**: Always complete every API request-response cycle with proper error handling. Every network call must explicitly check HTTP response status, parse server error messages, handle network exceptions, and render actionable user-facing feedback without silent failures or unhandled promises.
+
+## 3. The 5-Step Agentic Integration Loop
 
 For every endpoint domain you assign:
 

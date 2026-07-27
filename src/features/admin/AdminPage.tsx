@@ -1,76 +1,139 @@
-import { motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { Film, User, Settings, ArrowLeft, Plus, Sparkles } from "lucide-react";
-import { StageIcon } from "../../components/icons/AppIcons";
+import { ArrowLeft, Shield, Film, Layers, UserCheck, Lock, LogIn, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
+import { StageIcon } from "@/components/icons/AppIcons";
+import { apiFetch } from "@/lib/api";
+import { AdminRoleForm } from "./components/AdminRoleForm";
+import { AdminOriginalModal } from "./components/AdminOriginalModal";
+import { AdminSetModal } from "./components/AdminSetModal";
+
+type AdminTab = "ROLES" | "ORIGINALS" | "SETS";
 
 export function AdminPage() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<AdminTab>("ROLES");
+  const [adminSession, setAdminSession] = useState<{ username: string } | null>(() => {
+    const saved = sessionStorage.getItem("tars_admin_session");
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  const adminActions = [
-    {
-      title: "Initiate Original",
-      description: "Define a new cinematic artifact in the collective.",
-      icon: <Film className="w-6 h-6" />,
-      path: "/admin/originals/new",
-      color: "bg-white/5",
-    },
-    {
-      title: "Shape Star Stage",
-      description: "Create a Stage for a leading star.",
-      icon: <User className="w-6 h-6" />,
-      path: "/admin/profile/new?type=star",
-      color: "bg-white/5",
-    },
-    {
-      title: "Forge Maker Stage",
-      description: "Establish the Stage of a creative visionary.",
-      icon: <Settings className="w-6 h-6" />,
-      path: "/admin/profile/new?type=maker",
-      color: "bg-white/5",
-    },
+  // Login form state
+  const [adminUsername, setAdminUsername] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminUsername.trim() || !adminPassword.trim()) return;
+
+    setIsAuthenticating(true);
+    setLoginError(null);
+
+    try {
+      const cleanUsername = adminUsername.trim().toLowerCase();
+      const cleanPassword = adminPassword.trim();
+
+      const res = await apiFetch("/auth/admin/login", {
+        method: "POST",
+        body: JSON.stringify({
+          admin_name: cleanUsername,
+          admin_password: cleanPassword,
+        }),
+      });
+
+      if (res.ok) {
+        const sessionData = { username: cleanUsername };
+        sessionStorage.setItem("tars_admin_session", JSON.stringify(sessionData));
+        setAdminSession(sessionData);
+        setAdminUsername("");
+        setAdminPassword("");
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        let rawMsg = errData.message || `Admin authentication failed (HTTP ${res.status}).`;
+        if (res.status === 422 || rawMsg.includes("Unable to process")) {
+          rawMsg = "Payload validation failed: Username must be lowercase. Password requires 8+ chars with uppercase, lowercase & number (e.g. SecurePass123).";
+        }
+        setLoginError(rawMsg);
+      }
+    } catch (err) {
+      setLoginError(`Network error: ${String(err)}`);
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    try {
+      await apiFetch("/auth/admin/logout", { method: "POST" });
+    } catch (e) {
+      console.warn("[AdminPage] Admin logout warning:", e);
+    }
+    sessionStorage.removeItem("tars_admin_session");
+    setAdminSession(null);
+  };
+
+  const tabs: { id: AdminTab; label: string; icon: React.ReactNode }[] = [
+    { id: "ROLES", label: "RBAC & User Roles", icon: <UserCheck className="w-4 h-4" /> },
+    { id: "ORIGINALS", label: "Originals Registry", icon: <Film className="w-4 h-4" /> },
+    { id: "SETS", label: "Sets & Festivals", icon: <Layers className="w-4 h-4" /> },
   ];
 
   return (
-    <div className="relative min-h-screen bg-surface-deep text-white overflow-hidden font-sans selection:bg-white selection:text-black">
-      {/* ─── Cinematic Background Layer ─────────────────────────────── */}
-      <div
-        className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
-        aria-hidden="true"
-      >
+    <div className="relative min-h-screen bg-surface-deep text-white overflow-y-auto font-sans selection:bg-white selection:text-black">
+      {/* ── Ambient Glow Background ── */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-white/[0.02] blur-[140px] rounded-xl animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[45%] h-[45%] bg-white/[0.015] blur-[140px] rounded-xl" />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">
-        {/* ─── Top Navigation ────────────────────────────────────────── */}
-        <div className="flex items-center justify-between mb-20">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-12 pb-32 flex flex-col min-h-screen">
+        {/* ── Top Navigation ── */}
+        <div className="flex items-center justify-between mb-16">
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/studio")}
             className="group flex items-center gap-3 w-fit text-white/40 hover:text-white/70 transition-all active:scale-95"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-              Exit to Hall
-            </span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Return to Studio</span>
           </motion.button>
 
-          <div className="flex items-center gap-2">
-            <StageIcon className="w-4 h-4 text-white/80" />
-            <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
-              Admin Stage
-            </span>
+          <div className="flex items-center gap-4">
+            {adminSession ? (
+              <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-2xl">
+                <Shield className="w-4 h-4 text-emerald-400" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300">
+                  Admin: {adminSession.username}
+                </span>
+                <button
+                  onClick={handleAdminLogout}
+                  className="ml-2 p-1 text-emerald-400 hover:text-white transition-colors"
+                  title="Logout Admin Session"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <StageIcon className="w-4 h-4 text-white/80" />
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
+                  System Protocol — Locked
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ─── Header ────────────────────────────────────────────────── */}
-        <header className="mb-16">
+        {/* ── Header ── */}
+        <header className="mb-12">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="text-6xl md:text-8xl font-black uppercase tracking-[-0.03em] leading-[0.85] mb-6"
+            className="text-5xl md:text-7xl font-black uppercase tracking-[-0.03em] leading-[0.85] mb-4"
           >
             Command <br />
             <span className="text-white/20">Center</span>
@@ -79,59 +142,146 @@ export function AdminPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-white/40 text-sm max-w-sm tracking-wide leading-relaxed"
+            className="text-white/40 text-xs max-w-md tracking-wide leading-relaxed"
           >
-            High-level access to the Collective ecosystem. Curate, shape, and forge
-            the future of cinematic artifacts.
+            High-level access to tars system protocol. Authenticate as an admin to manage RBAC roles, initiate Originals, and curate Sets.
           </motion.p>
         </header>
 
-        {/* ─── Dashboard Grid ────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {adminActions.map((action, index) => (
-            <motion.button
-              key={action.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(action.path)}
-              className="group relative text-left p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 transition-all overflow-hidden"
-            >
-              {/* Subtle Ambient Glow */}
-              <div className="absolute -top-12 -right-12 w-24 h-24 bg-white/[0.02] blur-3xl rounded-xl group-hover:bg-white/[0.05] transition-colors" />
-
-              <div className="relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-10 group-hover:bg-white/10 transition-colors">
-                  {action.icon}
-                </div>
-
-                <h3 className="text-xl font-bold uppercase tracking-tight mb-2 group-hover:text-white transition-colors">
-                  {action.title}
-                </h3>
-                <p className="text-white/40 text-xs leading-relaxed group-hover:text-white/60 transition-colors">
-                  {action.description}
-                </p>
-
-                <div className="mt-10 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 group-hover:text-white transition-colors">
-                  <span>Open Festival</span>
-                  <Plus className="w-3 h-3 transition-transform group-hover:rotate-90" />
-                </div>
+        {/* ── LOCKED STATE: Admin Authentication Form ── */}
+        {!adminSession ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-lg mx-auto my-12 p-8 rounded-3xl bg-white/[0.03] border border-white/10 flex flex-col gap-6"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-amber-400" />
               </div>
-            </motion.button>
-          ))}
-        </div>
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wide">Admin Auth Required</h3>
+                <p className="text-white/40 text-xs">Enter your tars admin credentials to unlock protocol functions.</p>
+              </div>
+            </div>
 
-        {/* ─── Footer Note ─────────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1 }}
-          className="mt-auto pt-12 text-[9px] font-bold uppercase tracking-[0.5em] text-white/10 text-center"
-        >
-          Secured Protocol — Unauthorized Access Logged
-        </motion.div>
+            {loginError && (
+              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleAdminLogin} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Admin Username</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. admin"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value.toLowerCase())}
+                  className="bg-white/5 border border-white/10 rounded-2xl py-3.5 px-4 text-xs font-bold text-white outline-none focus:border-white transition-all placeholder:text-white/20"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Admin Password</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Admin Password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded-2xl py-3.5 px-4 text-xs font-bold text-white outline-none focus:border-white transition-all placeholder:text-white/20"
+                />
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isAuthenticating}
+                type="submit"
+                className="w-full py-4 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-white/90 disabled:opacity-50 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2 mt-2"
+              >
+                <LogIn className="w-4 h-4" />
+                {isAuthenticating ? "Authenticating..." : "Unlock Protocol Actions"}
+              </motion.button>
+            </form>
+          </motion.div>
+        ) : (
+          /* ── UNLOCKED STATE: Tab Switcher & Active Hub ── */
+          <>
+            <div className="flex items-center gap-3 mb-12 border-b border-white/10 pb-4 overflow-x-auto">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 ${
+                      isActive
+                        ? "bg-white text-black shadow-[0_10px_20px_rgba(255,255,255,0.15)]"
+                        : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <main className="flex-1 flex flex-col items-center">
+              <AnimatePresence mode="wait">
+                {activeTab === "ROLES" && (
+                  <motion.div
+                    key="ROLES"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    className="w-full flex justify-center"
+                  >
+                    <AdminRoleForm />
+                  </motion.div>
+                )}
+
+                {activeTab === "ORIGINALS" && (
+                  <motion.div
+                    key="ORIGINALS"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    className="w-full flex justify-center"
+                  >
+                    <AdminOriginalModal />
+                  </motion.div>
+                )}
+
+                {activeTab === "SETS" && (
+                  <motion.div
+                    key="SETS"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    className="w-full flex justify-center"
+                  >
+                    <AdminSetModal />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </main>
+          </>
+        )}
+
+        {/* ── Footer ── */}
+        <div className="mt-20 pt-8 border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="w-3.5 h-3.5 text-emerald-400" />
+            <span>tars Root Protocol Active</span>
+          </div>
+          <span>Authorized Sessions Only</span>
+        </div>
       </div>
     </div>
   );

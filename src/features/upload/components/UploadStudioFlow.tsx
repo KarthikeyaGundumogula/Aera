@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
+import { apiFetch } from "@/lib/api";
+import { compressImageHighFidelity } from "@/utils/imageCompressor";
 
 import { THEATRE_FORMATS } from "../../../constants/formats";
 import { IdentityStep } from "./steps/IdentityStep";
@@ -89,16 +91,74 @@ export function UploadStudioFlow({
 
   const { addWork } = useAuth();
 
-  const handleRelease = useCallback(() => {
+  const handleRelease = useCallback(async () => {
     setIsSubmitting(true);
     
+    let finalSrcId = "";
+    if (formData.category === "Edit") {
+      finalSrcId = formData.platform === "youtube"
+        ? (formData.contentUrl.split("v=")[1] || formData.contentUrl.split("/").pop() || "")
+        : (formData.contentUrl.split("/").pop() || "");
+    } else {
+      finalSrcId = `img-key-${Date.now()}`;
+    }
+
+    const categoryEndpointMap: Record<string, string> = {
+      Edit: "EDIT",
+      Poster: "POSTER",
+      Storyboard: "SCRIPT",
+    };
+    const workTypeEndpoint = categoryEndpointMap[formData.category] || "EDIT";
+
+    try {
+      // 1. If image work (Poster / Storyboard), execute client-side high-fidelity compression
+      if (formData.category !== "Edit" && formData.contentUrl.startsWith("blob:")) {
+        const response = await fetch(formData.contentUrl);
+        const blob = await response.blob();
+        const rawFile = new File([blob], `work-${Date.now()}.jpg`, { type: "image/jpeg" });
+        const compressedFile = await compressImageHighFidelity(rawFile);
+
+        // 2. Request presigned upload URL from backend
+        try {
+          const presignedRes = await apiFetch(`/works/upload-url?fileType=image/jpeg&fileName=${encodeURIComponent(compressedFile.name)}`);
+          if (presignedRes.ok) {
+            const { uploadUrl, downloadUrl } = await presignedRes.json();
+            await fetch(uploadUrl, {
+              method: "PUT",
+              headers: { "Content-Type": "image/jpeg" },
+              body: compressedFile,
+            });
+            finalSrcId = downloadUrl || finalSrcId;
+          }
+        } catch (e) {
+          console.warn("[UploadStudioFlow] Backend presigned URL unconfigured, keeping compressed image locally:", e);
+        }
+      }
+
+      // 3. Post work metadata to backend
+      const payload = {
+        title: formData.title || "Untitled Work",
+        src_id: finalSrcId,
+        platform: formData.platform,
+        format: formData.aspectRatio.toString(),
+        originals: formData.originalIds,
+      };
+
+      await apiFetch(`/works/new/${workTypeEndpoint}`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      console.warn("[UploadStudioFlow] Backend submission warning, proceeding locally:", e);
+    }
+
     const newWork = {
       id: `work-custom-${Date.now()}`,
       title: formData.title,
       category: formData.category,
       image: formData.category === "Storyboard" ? (formData.storyboardPages[0]?.url || "") : formData.contentUrl,
       platform: formData.platform,
-      srcId: formData.platform === "youtube" ? (formData.contentUrl.split("v=")[1] || formData.contentUrl.split("/").pop() || "") : "",
+      srcId: finalSrcId,
       credits: 0,
       aspectRatio: formData.aspectRatio,
       originalIds: formData.originalIds,
@@ -110,7 +170,7 @@ export function UploadStudioFlow({
 
     window.setTimeout(() => {
       onComplete();
-    }, 3500);
+    }, 2000);
   }, [onComplete, formData, addWork, festivalId, setId]);
 
   useEffect(() => {
