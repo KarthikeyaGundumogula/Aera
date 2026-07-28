@@ -151,10 +151,15 @@ export function ProfileNav({
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             className="absolute right-0 mt-3 w-64 origin-top-right rounded-2xl border border-white/10 bg-black/80 backdrop-blur-2xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden"
           >
-            <div className="px-3 py-2 mb-1">
+            <div className="px-3 py-2 mb-1 flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">
                 Command Center
               </span>
+              {currentArtist && (
+                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                  {currentArtist.role || "organizer"}
+                </span>
+              )}
             </div>
 
             <div className="space-y-1">

@@ -9,7 +9,26 @@ export const FestivalStage = memo(function FestivalStage() {
     (f) => f.status === "LIVE" || f.status === "UPCOMING",
   );
 
-  if (activeFestivals.length === 0) return null;
+  if (activeFestivals.length === 0) {
+    return (
+      <section
+        className="w-full py-8 border-b border-white/[0.04] bg-surface-deep/50"
+        aria-label="Live Festival Stage"
+      >
+        <div className="px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-xl bg-white/20" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">
+              Festivals
+            </span>
+          </div>
+          <span className="text-[9px] font-mono tracking-widest uppercase text-white/20">
+            No Active Events
+          </span>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section

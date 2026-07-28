@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Lock, Key, AlertCircle, CheckCircle2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { PasswordRulesChecklist, isPasswordValid } from "@/components/PasswordRulesChecklist";
 
 interface PasswordResetModalProps {
   isOpen: boolean;
@@ -14,32 +16,57 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
   
   const [status, setStatus] = useState<"idle" | "error" | "success">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleReset = (e: React.FormEvent) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setStatus("error");
       setErrorMessage("New passwords do not match.");
       return;
     }
-    if (newPassword.length < 6) {
+    if (!isPasswordValid(newPassword)) {
       setStatus("error");
-      setErrorMessage("Password must be at least 6 characters.");
+      setErrorMessage("Password must be at least 8 characters with uppercase, lowercase, and number (e.g. SecurePass123).");
       return;
     }
     
-    // Mock save
-    setStatus("success");
-    setTimeout(() => {
-      onClose();
-      // Reset state after close
-      setTimeout(() => {
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setStatus("idle");
-      }, 300);
-    }, 1500);
+    setIsSubmitting(true);
+    try {
+      const res = await apiFetch("/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({
+          old_password: currentPassword,
+          new_password: newPassword,
+        }),
+      });
+
+      if (res.ok) {
+        setStatus("success");
+        setTimeout(() => {
+          onClose();
+          setTimeout(() => {
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setStatus("idle");
+          }, 300);
+        }, 1500);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setStatus("error");
+        let msg = errData.message || `Password update failed (HTTP ${res.status}).`;
+        if (res.status === 422 || msg.includes("Unable to process")) {
+          msg = "Password validation failed: Must be 8+ chars with uppercase, lowercase & number (e.g. SecurePass123).";
+        }
+        setErrorMessage(msg);
+      }
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(`Network error: ${String(err)}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -122,6 +149,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
                         placeholder="••••••••"
                       />
                     </div>
+                    {newPassword.length > 0 && <PasswordRulesChecklist password={newPassword} />}
                   </div>
 
                   <div className="space-y-1.5">
@@ -172,10 +200,10 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
 
                 <button
                   type="submit"
-                  disabled={status === "success"}
+                  disabled={status === "success" || isSubmitting}
                   className="w-full py-4 bg-white text-black hover:bg-white/90 disabled:opacity-50 disabled:hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 shadow-lg mt-2"
                 >
-                  {status === "success" ? "Saved" : "Update Password"}
+                  {isSubmitting ? "Updating..." : status === "success" ? "Saved" : "Update Password"}
                 </button>
               </form>
             </motion.div>

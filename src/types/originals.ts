@@ -6,6 +6,7 @@ export interface OriginalArtist {
   image: string;
   spirit: number;
   works: number;
+  role?: string;
   bio?: string;
   socials?: {
     instagram?: string;

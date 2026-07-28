@@ -2,8 +2,12 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { ShieldCheck, UserCheck, Key, CheckCircle2, AlertCircle, UserPlus, Trash2, LogIn, Lock } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { PasswordRulesChecklist } from "@/components/PasswordRulesChecklist";
+import { useAuth } from "@/context/AuthContext";
 
 export function AdminRoleForm() {
+  const { currentArtist, updateProfile } = useAuth();
+
   // Admin Login State
   const [loginAdminName, setLoginAdminName] = useState("");
   const [loginAdminPassword, setLoginAdminPassword] = useState("");
@@ -140,7 +144,18 @@ export function AdminRoleForm() {
   // Handler 3: Update Profile Role (profiles table)
   const handleUpdateUserRole = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profileId.trim()) return;
+    const targetId = profileId.trim();
+    if (!targetId) return;
+
+    // UUID format check
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (!uuidRegex.test(targetId)) {
+      setRoleMessage({
+        text: `Invalid Profile ID '${targetId}'. Profile role update requires a 36-character UUID (e.g. e0a9f197-2ad2-423a-b892-123456789abc).`,
+        type: "error",
+      });
+      return;
+    }
 
     setIsUpdatingRole(true);
     setRoleMessage(null);
@@ -149,17 +164,26 @@ export function AdminRoleForm() {
       const res = await apiFetch("/admin/update_user_role", {
         method: "POST",
         body: JSON.stringify({
-          profile_id: profileId.trim(),
+          profile_id: targetId,
           new_role: newRole,
         }),
       });
 
       if (res.ok) {
-        setRoleMessage({ text: `Successfully updated ${profileId} role to '${newRole}'!`, type: "success" });
+        setRoleMessage({ text: `Successfully updated ${targetId} role to '${newRole}'!`, type: "success" });
+        if (currentArtist && (currentArtist.id === targetId || currentArtist.id.includes(targetId))) {
+          updateProfile({ role: newRole });
+        }
         setProfileId("");
       } else {
         const errData = await res.json().catch(() => ({}));
-        setRoleMessage({ text: errData.message || `Failed to update role (HTTP ${res.status})`, type: "error" });
+        let message = errData.message || `Failed to update profile role (HTTP ${res.status})`;
+        if (res.status === 422 || message.includes("Unable to process")) {
+          message = "Payload validation failed: Profile ID must be a valid 36-character UUID and role name must contain alphanumeric characters.";
+        } else if (res.status === 401) {
+          message = "Unauthorized: Active Admin login session is required to perform role updates.";
+        }
+        setRoleMessage({ text: message, type: "error" });
       }
     } catch (err) {
       setRoleMessage({ text: `Network error: ${String(err)}`, type: "error" });
@@ -184,7 +208,14 @@ export function AdminRoleForm() {
         setRoleName("");
         setRoleDesc("");
       } else {
-        setActionMessage({ text: `Failed to create role (${res.status})`, type: "error" });
+        const errData = await res.json().catch(() => ({}));
+        let message = errData.message || `Failed to create role (HTTP ${res.status})`;
+        if (res.status === 422 || message.includes("Unable to process")) {
+          message = "Payload validation failed: Role name can only contain alphanumeric characters, hyphens or underscores (no spaces).";
+        } else if (res.status === 401) {
+          message = "Unauthorized: Active Admin login session is required.";
+        }
+        setActionMessage({ text: message, type: "error" });
       }
     } catch (err) {
       setActionMessage({ text: `Network error: ${String(err)}`, type: "error" });
@@ -207,7 +238,14 @@ export function AdminRoleForm() {
         setPermName("");
         setPermDesc("");
       } else {
-        setActionMessage({ text: `Failed to create permission (${res.status})`, type: "error" });
+        const errData = await res.json().catch(() => ({}));
+        let message = errData.message || `Failed to create permission (HTTP ${res.status})`;
+        if (res.status === 422 || message.includes("Unable to process")) {
+          message = "Payload validation failed: Permission name can only contain alphanumeric characters, hyphens or underscores.";
+        } else if (res.status === 401) {
+          message = "Unauthorized: Active Admin login session is required.";
+        }
+        setActionMessage({ text: message, type: "error" });
       }
     } catch (err) {
       setActionMessage({ text: `Network error: ${String(err)}`, type: "error" });
@@ -330,6 +368,7 @@ export function AdminRoleForm() {
               onChange={(e) => setAdminPassword(e.target.value)}
               className="bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-xs font-bold outline-none focus:border-white transition-all placeholder:text-white/20"
             />
+            {adminPassword.length > 0 && <PasswordRulesChecklist password={adminPassword} />}
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}

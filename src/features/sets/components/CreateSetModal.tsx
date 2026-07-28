@@ -1,34 +1,86 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { ModalWrapper } from '../../shared/modals/ModalWrapper';
 import { CinematicColorPicker } from '../../../components/CinematicColorPicker';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '../../../context/AuthContext';
 
 interface CreateSetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (setData: { title: string; statement: string; description: string; coverImage: string; accentColor: string; }) => void;
+  onCreate?: (setData: { title: string; statement: string; description: string; coverImage: string; accentColor: string; }) => void;
 }
 
 export function CreateSetModal({ isOpen, onClose, onCreate }: CreateSetModalProps) {
+  const { currentArtist } = useAuth();
+  const role = currentArtist?.role?.toLowerCase();
+  const isOrganizer = !!currentArtist && (role === "organizer" || role === "admin");
+
   const [formData, setFormData] = useState({
     title: '',
     statement: '',
     description: '',
     accentColor: '#fac107',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onCreate({
-      title: formData.title,
-      statement: formData.statement,
-      description: formData.description,
-      accentColor: formData.accentColor,
-      // Default to empty or placeholder if no image was selected for now
-      coverImage: '',
-    });
-    onClose();
+    if (!isOrganizer) {
+      setErrorMessage("Unauthorized: Set creation is strictly reserved for profiles with the 'organizer' role.");
+      return;
+    }
+    if (!formData.title.trim() || !formData.statement.trim()) return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await apiFetch("/sets/new", {
+        method: "POST",
+        body: JSON.stringify({
+          name: formData.title.trim(),
+          statement: formData.statement.trim(),
+          description: formData.description.trim() || formData.statement.trim(),
+          color_theme: formData.accentColor,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const createdId = data.SetCreated || "Created";
+        setSuccessMessage(`Set "${formData.title}" established successfully!`);
+        if (onCreate) {
+          onCreate({
+            title: formData.title,
+            statement: formData.statement,
+            description: formData.description,
+            accentColor: formData.accentColor,
+            coverImage: '',
+          });
+        }
+        setTimeout(() => {
+          onClose();
+          setSuccessMessage(null);
+          setFormData({ title: '', statement: '', description: '', accentColor: '#fac107' });
+        }, 1200);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        let msg = errData.message || `Failed to create Set (HTTP ${res.status})`;
+        if (res.status === 401) {
+          msg = "Unauthorized: Set creation requires an active Artist profile with the 'organizer' role.";
+        }
+        setErrorMessage(msg);
+      }
+    } catch (err) {
+      setErrorMessage(`Network error: ${String(err)}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -47,12 +99,28 @@ export function CreateSetModal({ isOpen, onClose, onCreate }: CreateSetModalProp
           <X size={16} />
         </button>
 
-        <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-8 pr-8 text-white">
+        <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 pr-8 text-white">
           Create New Set
         </h2>
+        <p className="text-white/40 text-xs mb-6">
+          Establish a new Set community (POST /sets/new). Foreign key <code className="text-yellow-300">curator</code> binds to your active Organizer Profile.
+        </p>
+
+        {errorMessage && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{successMessage}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          
           {/* Identity Preview & Color Picker Zone */}
           <div className="flex flex-col gap-3">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1 flex justify-between items-center">
@@ -158,10 +226,11 @@ export function CreateSetModal({ isOpen, onClose, onCreate }: CreateSetModalProp
             </button>
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-black bg-white hover:bg-white/90 shadow-[0_10px_30px_rgba(255,255,255,0.15)] transition-all flex items-center gap-2"
+              disabled={isSubmitting}
+              className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-black bg-white hover:bg-white/90 disabled:opacity-50 shadow-[0_10px_30px_rgba(255,255,255,0.15)] transition-all flex items-center gap-2"
             >
               <Plus size={14} />
-              Create Set
+              {isSubmitting ? "Establishing..." : "Create Set"}
             </button>
           </div>
         </form>

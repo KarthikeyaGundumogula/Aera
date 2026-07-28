@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Lock, Eye, EyeOff, Check, X } from "lucide-react";
+import { PasswordRulesChecklist, isPasswordValid } from "@/components/PasswordRulesChecklist";
 
 interface AccessKeySectionProps {
   onKeySet: (key: string) => void;
@@ -12,18 +13,19 @@ export function AccessKeySection({ onKeySet }: AccessKeySectionProps) {
   const [showFirst, setShowFirst] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const isMatching = firstKey.length > 0 && firstKey === confirmKey;
-  const isMismatch = confirmKey.length > 0 && firstKey !== confirmKey;
+  const isValidPassword = isPasswordValid(firstKey);
+  const isMatching = firstKey.length > 0 && firstKey === confirmKey && isValidPassword;
+  const isMismatch = confirmKey.length > 0 && (firstKey !== confirmKey || !isValidPassword);
 
-  // Notify parent when matched
+  // Notify parent when matched and valid
   const handleKeyChange = (field: "first" | "confirm", val: string) => {
     if (field === "first") {
       setFirstKey(val);
-      if (val === confirmKey && val.length > 0) onKeySet(val);
+      if (val === confirmKey && isPasswordValid(val)) onKeySet(val);
       else onKeySet("");
     } else {
       setConfirmKey(val);
-      if (val === firstKey && val.length > 0) onKeySet(val);
+      if (val === firstKey && isPasswordValid(firstKey)) onKeySet(val);
       else onKeySet("");
     }
   };
@@ -61,6 +63,7 @@ export function AccessKeySection({ onKeySet }: AccessKeySectionProps) {
               {showFirst ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
+          <PasswordRulesChecklist password={firstKey} />
         </div>
 
         {/* Step 2: Confirmation */}

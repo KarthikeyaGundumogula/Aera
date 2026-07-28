@@ -82,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             image: `boring-avatar:${payload.username}`,
             spirit: 0,
             works: 0,
+            role: "organizer",
             bio: "Cinematic Visionary",
             themeBgColor: "#0f1a42",
             themeTextColor: "#fac107",
@@ -135,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             image: `boring-avatar:${cleanUsername}`,
             spirit: 0,
             works: 0,
+            role: "organizer",
             bio: "Cinematic Visionary",
             themeBgColor: "#0f1a42",
             themeTextColor: "#fac107",
@@ -162,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ...artist,
       spirit: 0,
       works: 0,
+      role: artist.role || "organizer",
       themeBgColor: artist.themeBgColor || "#0f1a42",
       themeTextColor: artist.themeTextColor || "#fac107",
     };

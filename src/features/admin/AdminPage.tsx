@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Film, Layers, UserCheck, Lock, LogIn, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Shield, Film, UserCheck, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
 import { StageIcon } from "@/components/icons/AppIcons";
 import { apiFetch } from "@/lib/api";
 import { AdminRoleForm } from "./components/AdminRoleForm";
 import { AdminOriginalModal } from "./components/AdminOriginalModal";
-import { AdminSetModal } from "./components/AdminSetModal";
 
-type AdminTab = "ROLES" | "ORIGINALS" | "SETS";
+type AdminTab = "ROLES" | "ORIGINALS";
 
 export function AdminPage() {
   const navigate = useNavigate();
@@ -77,7 +76,6 @@ export function AdminPage() {
   const tabs: { id: AdminTab; label: string; icon: React.ReactNode }[] = [
     { id: "ROLES", label: "RBAC & User Roles", icon: <UserCheck className="w-4 h-4" /> },
     { id: "ORIGINALS", label: "Originals Registry", icon: <Film className="w-4 h-4" /> },
-    { id: "SETS", label: "Sets & Festivals", icon: <Layers className="w-4 h-4" /> },
   ];
 
   return (
@@ -144,24 +142,25 @@ export function AdminPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-white/40 text-xs max-w-md tracking-wide leading-relaxed"
           >
-            High-level access to tars system protocol. Authenticate as an admin to manage RBAC roles, initiate Originals, and curate Sets.
+            High-level access to tars system protocol. Authenticate as an admin to manage system admin accounts, RBAC roles, and initiate Originals.
           </motion.p>
         </header>
 
-        {/* ── LOCKED STATE: Admin Authentication Form ── */}
+        {/* ── Content ── */}
         {!adminSession ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-lg mx-auto my-12 p-8 rounded-3xl bg-white/[0.03] border border-white/10 flex flex-col gap-6"
-          >
+          /* Locked State */
+          <div className="max-w-md mx-auto w-full p-8 rounded-3xl bg-amber-500/[0.03] border border-amber-500/20 flex flex-col gap-6 shadow-[0_20px_50px_rgba(245,158,11,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-amber-400" />
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                <Shield className="w-5 h-5 text-amber-400" />
               </div>
               <div>
-                <h3 className="text-xl font-bold uppercase tracking-wide">Admin Auth Required</h3>
-                <p className="text-white/40 text-xs">Enter your tars admin credentials to unlock protocol functions.</p>
+                <h3 className="text-sm font-black uppercase tracking-widest text-amber-300">
+                  Admin Authentication Required
+                </h3>
+                <p className="text-white/40 text-[10px] uppercase tracking-wider mt-0.5">
+                  Authenticate as an Admin (<code className="text-amber-200">admins</code> table) to unlock control panel.
+                </p>
               </div>
             </div>
 
@@ -202,17 +201,17 @@ export function AdminPage() {
                 whileTap={{ scale: 0.98 }}
                 disabled={isAuthenticating}
                 type="submit"
-                className="w-full py-4 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-white/90 disabled:opacity-50 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2 mt-2"
+                className="w-full py-4 bg-amber-400 text-black rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-amber-300 disabled:opacity-50 transition-all shadow-[0_10px_20px_rgba(245,158,11,0.2)] mt-2"
               >
-                <LogIn className="w-4 h-4" />
-                {isAuthenticating ? "Authenticating..." : "Unlock Protocol Actions"}
+                {isAuthenticating ? "Authenticating..." : "Unlock Admin Dashboard"}
               </motion.button>
             </form>
-          </motion.div>
+          </div>
         ) : (
-          /* ── UNLOCKED STATE: Tab Switcher & Active Hub ── */
+          /* Unlocked Admin Dashboard */
           <>
-            <div className="flex items-center gap-3 mb-12 border-b border-white/10 pb-4 overflow-x-auto">
+            {/* ── Tabs Navigation ── */}
+            <div className="flex items-center gap-3 mb-10 overflow-x-auto no-scrollbar pb-2">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -255,18 +254,6 @@ export function AdminPage() {
                     className="w-full flex justify-center"
                   >
                     <AdminOriginalModal />
-                  </motion.div>
-                )}
-
-                {activeTab === "SETS" && (
-                  <motion.div
-                    key="SETS"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    className="w-full flex justify-center"
-                  >
-                    <AdminSetModal />
                   </motion.div>
                 )}
               </AnimatePresence>

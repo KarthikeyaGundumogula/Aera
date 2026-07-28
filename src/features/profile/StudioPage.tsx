@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Film, Plus, X, Shield } from "lucide-react";
+import { Film, Plus, X, Shield, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { StudioWorkCard } from "./components/StudioWorkCard";
 import { LiveStagePreview } from "./components/LiveStagePreview";
@@ -187,14 +187,21 @@ export default function StudioPage() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-24 mt-4 flex flex-col gap-10">
         {/* ─── Redesigned Contained 1:1 Live Stage Preview ─── */}
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl w-fit mb-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
-              Customize Your Stage Colors Below
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
+            <div className="flex items-center gap-3 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl w-fit">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                Customize Your Stage Colors Below
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest text-amber-300">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <span>Profile Role: <span className="text-white">{currentArtist.role || "organizer"}</span></span>
+            </div>
           </div>
           <LiveStagePreview
             username={currentArtist.id.toUpperCase().replace("ART-", "")}

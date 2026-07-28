@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, User, Sparkles, ChevronRight } from "lucide-react";
 import type { OriginalArtist } from "../../types";
 import { useAuth } from "../../context/AuthContext";
+import { PasswordRulesChecklist } from "@/components/PasswordRulesChecklist";
 
 
 export default function LoginPage() {
