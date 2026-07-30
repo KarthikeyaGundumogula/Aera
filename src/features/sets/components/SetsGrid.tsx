@@ -1,8 +1,9 @@
 import { memo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Layers } from 'lucide-react';
 import { SETS } from '../../../mock';
 import { SetCard } from './SetCard';
 import { useAuth } from '../../../context/AuthContext';
+import { EmptyState } from '../../../components/EmptyState';
 
 interface SetsGridProps {
   onCreateSetClick?: () => void;
@@ -15,25 +16,21 @@ export const SetsGrid = memo(function SetsGrid({ onCreateSetClick }: SetsGridPro
 
   if (SETS.length === 0) {
     return (
-      <section className="px-6 pt-12 pb-32 flex flex-col items-center justify-center text-center max-w-md mx-auto" aria-label="Sets Registry">
-        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-          <Plus className="w-5 h-5 text-white/40" />
-        </div>
-        <h3 className="text-lg font-black uppercase tracking-wider text-white mb-2">No Sets Established Yet</h3>
-        <p className="text-xs text-white/40 tracking-wide mb-6">
-          {isOrganizer
-            ? "Be the first organizer to establish a new Set community."
-            : "Set community creation is reserved exclusively for profiles with the 'organizer' role."}
-        </p>
-        {isOrganizer && onCreateSetClick && (
-          <button 
-            onClick={onCreateSetClick}
-            className="flex items-center gap-2 px-6 py-3.5 bg-white border border-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-black hover:bg-white/90 transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)] active:scale-95"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Establish First Set</span>
-          </button>
-        )}
+      <section className="px-6 pt-12 pb-32 max-w-xl mx-auto" aria-label="Sets Registry">
+        <EmptyState
+          sectionTitle="ALL SETS"
+          sectionIcon={Layers}
+          icon={Layers}
+          title="No Sets Established Yet"
+          description={
+            isOrganizer
+              ? "Be the first organizer to establish a new Set community."
+              : "Set community creation is reserved exclusively for profiles with the 'organizer' role."
+          }
+          badge="SET REGISTRY EMPTY"
+          actionLabel={isOrganizer ? "Establish First Set" : undefined}
+          onAction={isOrganizer ? onCreateSetClick : undefined}
+        />
       </section>
     );
   }

@@ -108,8 +108,8 @@ export function ProfileHero({
           </svg>
         </div>
 
-        {/* Rows 3, 4, 5: Profile Picture */}
-        <div className="col-start-1 row-start-3 row-end-6 relative z-10 w-[45%] md:w-[33.75%] max-w-xl h-full flex items-center justify-center">
+        {/* Rows 3, 4, 5: Profile Picture (Dynamic aspect-square fit matching inner image) */}
+        <div className="col-start-1 row-start-3 row-end-6 relative z-10 h-full flex items-center justify-center">
           {/* Left Flank slot (e.g. for Pan Y Slider) */}
           {leftFlankContent && (
             <div className="absolute -left-12 md:-left-16 top-1/2 -translate-y-1/2 z-20">
@@ -117,13 +117,12 @@ export function ProfileHero({
             </div>
           )}
 
-
-
-          <div className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/5">
+          <div className="relative h-full aspect-square max-w-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/5 flex items-center justify-center">
             <ArtistAvatar
               src={image}
               name={name}
               size={300}
+              imagePosition={imagePosition}
               className="w-full h-full rounded-2xl"
             />
             
@@ -135,8 +134,7 @@ export function ProfileHero({
             )}
           </div>
 
-
-          {/* Avant-Garde Floating Vertical Social Instrument (Attached to the right flank of the portrait frame) */}
+          {/* Avant-Garde Floating Vertical Social Instrument */}
           {socials && (Object.keys(socials).length > 0) && (
             <div className="absolute -right-12 md:-right-16 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4 py-4 z-20 group">
               {socials.instagram && (
@@ -184,7 +182,7 @@ export function ProfileHero({
           <div className="flex items-center gap-4">
             <div className="w-8 h-[1px] bg-white/20" />
             <span className="text-[10px] font-mono tracking-[0.6em] uppercase text-white/60 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
-              {handle || "USERNAME"}
+              {handle ? (handle.startsWith("@") ? handle : `@${handle}`) : "@USERNAME"}
             </span>
             <div className="w-8 h-[1px] bg-white/20" />
           </div>
@@ -232,7 +230,7 @@ export function ProfileHero({
         )}
       </div>
 
-      {/* Global Bottom Gradient (Blends the entire Hero into the Feed Section smoothly) */}
+      {/* Global Bottom Gradient */}
       {showGradient && (
         <div
           className="absolute bottom-0 left-0 w-full h-[30vh] md:h-[40vh] pointer-events-none z-10"

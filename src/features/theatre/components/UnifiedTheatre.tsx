@@ -8,6 +8,7 @@ import { StaticDesktopCluster } from "./desktop/StaticDesktopCluster";
 import { MobileClusterView } from "./mobile/MobileClusterView";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { FeedContext } from "../../../context/FeedContext";
+import { EmptyState, EMPTY_PRESETS } from "../../../components/EmptyState";
 
 interface UnifiedTheatreProps {
   works: TheatreItem[];
@@ -93,9 +94,8 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
 
   if (!works.length && !isLoading) {
     return (
-      <div className="h-[40vh] flex flex-col items-center justify-center text-center opacity-40">
-        <p className="text-xs uppercase tracking-[0.4em] font-black">Archive Empty</p>
-        <div className="w-12 h-px bg-white/20 mt-4" />
+      <div className="py-12 px-4">
+        <EmptyState {...EMPTY_PRESETS.theatre} />
       </div>
     );
   }

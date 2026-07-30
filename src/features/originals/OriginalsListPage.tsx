@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Clapperboard } from "lucide-react";
 import { ORIGINALS, MAKERS_MOCK, STARS_MOCK } from "../../mock";
 import { OriginalPosterCard } from "./components/OriginalPosterCard";
+import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 
 export function OriginalsListPage() {
   const navigate = useNavigate();
@@ -88,11 +89,8 @@ export function OriginalsListPage() {
 
         {/* Empty state (defensive) */}
         {ORIGINALS.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-40 text-center">
-            <Clapperboard className="w-8 h-8 text-white/10 mb-4" aria-hidden="true" />
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/15">
-              Gallery is empty
-            </p>
+          <div className="py-12">
+            <EmptyState {...EMPTY_PRESETS.originals} />
           </div>
         )}
       </main>

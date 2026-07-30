@@ -62,8 +62,11 @@ flowchart TD
 | **1. Auth** | `/auth/login` | `POST` | `LoginPage.tsx` (`/profile/login`) | `[x] Done` | ✅ Yes |
 | **1. Auth** | `/auth/logout` | `POST` | Profile Header / Studio | `[x] Done` | ✅ Yes |
 | **1. Auth** | `/auth/reset-password` | `POST` | `ProfileEditPage.tsx` | `[ ] Pending` | ⏳ Pending |
-| **2. Profiles**| `/profiles/:id` | `GET` | `ProfilePage.tsx` (`/profile/:id`) | `[ ] Pending` | ⏳ Pending |
-| **2. Profiles**| `/profiles/edit` | `PUT` | `ProfileEditPage.tsx` | `[ ] Pending` | ⏳ Pending |
+| **2. Profiles**| `/profiles/me` | `GET` | `AuthContext.tsx` / Studio | `[x] Done` | ✅ Yes |
+| **2. Profiles**| `/profiles/get_profile_details/:user_name` | `GET` | `ProfilePage.tsx` (`/profile/:user_name`) | `[x] Done` | ✅ Yes |
+| **2. Profiles**| `/profiles/:artist_id/works` | `GET` | `ProfilePage.tsx` (Theatre Tab) | `[x] Done` | ✅ Yes |
+| **2. Profiles**| `/profiles/:artist_id/wall` | `GET` | `ProfilePage.tsx` (Wall Tab) | `[x] Done` | ✅ Yes |
+| **2. Profiles**| `/artists/update_stage` | `POST` | `StudioPage.tsx` (`/studio`) | `[x] Done` | ✅ Yes |
 | **3. Originals**| `/originals/new` | `POST` | `OriginalCreatePage.tsx` (`/admin/originals/new`)| `[ ] Pending` | ⏳ Pending |
 | **3. Originals**| `/originals/:id` | `GET` | `OriginalPage.tsx` (`/originals/:id`) | `[ ] Pending` | ⏳ Pending |
 | **3. Originals**| `/originals` | `GET` | `OriginalsListPage.tsx` (`/originals`) | `[ ] Pending` | ⏳ Pending |

@@ -1,21 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Film, Plus, X, Shield, ShieldCheck } from "lucide-react";
+import { Film, Plus, X, Shield, ShieldCheck, Check, AlertCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { StudioWorkCard } from "./components/StudioWorkCard";
 import { LiveStagePreview } from "./components/LiveStagePreview";
-import { ORIGINALS } from "../../mock";
-import { UploadStudioFlow } from "../upload/components/UploadStudioFlow";
 import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import ArtistSetupPage from "./ArtistSetupPage";
 import { PasswordResetModal } from "./components/PasswordResetModal";
 import { UnsavedChangesModal } from "./components/UnsavedChangesModal";
+import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 
 export default function StudioPage() {
-  const { currentArtist, userWorks, updateProfile, updateWorkTitle, logout } = useAuth();
+  const { currentArtist, userWorks, updateProfile, updateWorkTitle } = useAuth();
   const navigate = useNavigate();
 
   // Profile Form States
@@ -31,6 +30,10 @@ export default function StudioPage() {
 
   const [themeTextColor, setThemeTextColor] = useState("#fac107");
   const [themeBgColor, setThemeBgColor] = useState("#0f1a42");
+
+  // Save feedback state
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
 
   // Modals state
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -64,16 +67,14 @@ export default function StudioPage() {
     socials.instagram !== (currentArtist?.socials?.instagram || "") ||
     socials.twitter !== (currentArtist?.socials?.twitter || "") ||
     socials.youtube !== (currentArtist?.socials?.youtube || "") ||
-    themeTextColor !== (currentArtist?.themeTextColor || "#fac107") ||
-    themeBgColor !== (currentArtist?.themeBgColor || "#0f1a42");
+    themeTextColor.toLowerCase() !== (currentArtist?.themeTextColor || "#fac107").toLowerCase() ||
+    themeBgColor.toLowerCase() !== (currentArtist?.themeBgColor || "#0f1a42").toLowerCase();
 
   useEffect(() => {
     if (isDirty && !trapActiveRef.current) {
-      // Push trap when becoming dirty
       window.history.pushState(null, "", window.location.href);
       trapActiveRef.current = true;
     } else if (!isDirty && trapActiveRef.current) {
-      // Pop trap silently when returning to clean state
       isNavigatingRef.current = true;
       window.history.back();
       trapActiveRef.current = false;
@@ -92,10 +93,8 @@ export default function StudioPage() {
     const handlePopState = () => {
       if (isNavigatingRef.current) return;
       
-      trapActiveRef.current = false; // The trap was popped by the user
+      trapActiveRef.current = false;
 
-      // The trap state was popped, meaning we are at the real URL now.
-      // We pause here to show the modal.
       setPendingNavigation(() => () => {
         isNavigatingRef.current = true;
         window.history.back();
@@ -135,19 +134,19 @@ export default function StudioPage() {
   const handleCancelLeave = () => {
     setIsWarningModalOpen(false);
     setPendingNavigation(null);
-    // If the pending navigation was a back button press, we must re-push the trap state
-    // because it was already popped by the browser.
     window.history.pushState(null, "", window.location.href);
     trapActiveRef.current = true;
   };
 
-  // If not logged in, render the Stage setup (ArtistSetupPage)
   if (!currentArtist) {
     return <ArtistSetupPage />;
   }
 
-  const handleProfileSave = () => {
-    updateProfile({
+  const handleProfileSave = async () => {
+    setIsSaving(true);
+    setSaveStatus("idle");
+
+    const success = await updateProfile({
       name: stageName,
       bio: tagline,
       image: portraitPreview || currentArtist.image,
@@ -155,17 +154,24 @@ export default function StudioPage() {
       socials: socials,
       themeTextColor,
       themeBgColor,
+      color_theme: `${themeTextColor},${themeBgColor}`,
     });
-    // Optional: reset navigation ref if they save and stay
+
+    setIsSaving(false);
+    if (success) {
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } else {
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    }
     isNavigatingRef.current = false;
   };
 
   return (
     <div className="relative min-h-screen bg-surface-deep text-white font-sans selection:bg-white selection:text-black overflow-x-hidden pb-32">
-      {/* Mobile Header */}
       <MobileTopHeader showSearch={false} />
 
-      {/* Header bar (Desktop) */}
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-[100] items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
         <Logo onClick={() => handleNavigation("/")} showText={false} />
         <div className="flex items-center gap-8">
@@ -176,7 +182,7 @@ export default function StudioPage() {
                 navigate(path);
               });
               setIsWarningModalOpen(true);
-              return false; // Prevent ProfileNav from navigating immediately
+              return false;
             }
             isNavigatingRef.current = true;
             return true;
@@ -185,7 +191,6 @@ export default function StudioPage() {
       </header>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-24 mt-4 flex flex-col gap-10">
-        {/* ─── Redesigned Contained 1:1 Live Stage Preview ─── */}
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
             <div className="flex items-center gap-3 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl w-fit">
@@ -204,7 +209,7 @@ export default function StudioPage() {
             </div>
           </div>
           <LiveStagePreview
-            username={currentArtist.id.toUpperCase().replace("ART-", "")}
+            username={currentArtist.userName || currentArtist.name}
             displayName={stageName}
             tagline={tagline}
             portrait={portraitPreview}
@@ -219,17 +224,25 @@ export default function StudioPage() {
           />
         </div>
 
-        {/* ─── Stage Control parameters Panel ─── */}
         <section className="bg-[#0b0c10] border border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Inputs */}
           <div className="lg:col-span-10 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="md:col-span-3 space-y-1.5">
+                <label className="block text-[8px] font-black uppercase tracking-[0.25em] text-white/30 pl-1">
+                  Artist Handle (Permanent)
+                </label>
+                <div className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider text-white/50 cursor-not-allowed select-none truncate">
+                  @{currentArtist.userName || currentArtist.name}
+                </div>
+              </div>
+
               <div className="md:col-span-4 space-y-1.5">
                 <label className="block text-[8px] font-black uppercase tracking-[0.25em] text-white/30 pl-1">
-                  Stage name
+                  Stage name (max 15 chars)
                 </label>
                 <input
                   type="text"
+                  maxLength={15}
                   value={stageName}
                   onChange={(e) => setStageName(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wider focus:border-white/30 focus:bg-white/10 outline-none transition-all"
@@ -237,12 +250,13 @@ export default function StudioPage() {
                 />
               </div>
 
-              <div className="md:col-span-8 space-y-1.5">
+              <div className="md:col-span-5 space-y-1.5">
                 <label className="block text-[8px] font-black uppercase tracking-[0.25em] text-white/30 pl-1">
-                  Tagline Bio
+                  Tagline Bio (max 100 chars)
                 </label>
                 <input
                   type="text"
+                  maxLength={100}
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-medium text-white/70 focus:border-white/30 focus:bg-white/10 outline-none transition-all leading-relaxed"
@@ -322,19 +336,27 @@ export default function StudioPage() {
             </div>
           </div>
 
-          {/* Action trigger panel */}
           <div className="lg:col-span-2 flex flex-col justify-end gap-3 self-stretch lg:pt-6">
+            {saveStatus === "success" && (
+              <div className="flex items-center gap-1.5 text-emerald-400 text-[9px] font-black uppercase tracking-wider justify-center">
+                <Check className="w-3.5 h-3.5" /> Stage Saved
+              </div>
+            )}
+            {saveStatus === "error" && (
+              <div className="flex items-center gap-1.5 text-red-400 text-[9px] font-black uppercase tracking-wider justify-center">
+                <AlertCircle className="w-3.5 h-3.5" /> Update Failed
+              </div>
+            )}
             <button
               onClick={handleProfileSave}
-              disabled={!isDirty}
+              disabled={!isDirty || isSaving}
               className="w-full py-3.5 bg-white text-black hover:bg-white/90 disabled:opacity-20 disabled:hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 shadow-lg"
             >
-              Save Stage
+              {isSaving ? "Saving Stage..." : "Save Stage"}
             </button>
           </div>
         </section>
 
-        {/* ─── Security Settings Panel ─── */}
         <section className="bg-[#0b0c10] border border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
@@ -358,7 +380,6 @@ export default function StudioPage() {
           </div>
         </section>
 
-        {/* ─── Media Pool (Resolve-themed Grid Section) ─── */}
         <section className="flex flex-col gap-6">
           <div className="flex items-center justify-between border-b border-white/5 pb-4">
             <div className="flex items-center gap-3">
@@ -393,21 +414,11 @@ export default function StudioPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl py-24 px-6 text-center bg-white/[0.01]">
-              <Film className="w-12 h-12 text-white/10 mb-4" />
-              <h3 className="text-base font-black uppercase tracking-widest text-white/60 mb-2">
-                Empty Media Pool
-              </h3>
-              <p className="text-xs text-white/30 uppercase tracking-[0.3em] max-w-sm mb-8 leading-relaxed">
-               Release your first cinematic work to establish your timeline.
-              </p>
-              <button
-                onClick={() => handleNavigation("/works/new")}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-widest transition-all active:scale-95"
-              >
-                <Plus className="w-4 h-4" /> Release First Work
-              </button>
-            </div>
+            <EmptyState
+              {...EMPTY_PRESETS.studioWorks}
+              actionLabel="Release First Work"
+              onAction={() => handleNavigation("/works/new")}
+            />
           )}
         </section>
       </div>

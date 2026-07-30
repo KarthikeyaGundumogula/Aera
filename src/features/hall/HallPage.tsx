@@ -24,6 +24,7 @@ import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { DesktopHeader } from "../navigation/DesktopHeader";
 import { SectionHeader } from "../../components/SectionHeader";
+import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 import { HorizontalClusterSection } from "./components/HorizontalClusterSection";
 import { FestivalsSection } from "./components/FestivalsSection";
 import { DiscussionsSection } from "./components/DiscussionsSection";
@@ -144,31 +145,43 @@ export default function HallPage() {
         {/* ══════════════════════════════════════════════════════
             SCENE 1 — FESTIVALS IN YOUR SETS
         ══════════════════════════════════════════════════════ */}
-        {memberFestivals.length > 0 && (
-          <motion.section
-            ref={festivalsRef}
-            id="section-festivals"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-6 scroll-mt-24"
-          >
-            <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
-              <SectionHeader
-                icon={Trophy}
-                title="Festivals"
-                containerClassName="opacity-100"
-              />
-              <button
-                onClick={() => navigate("/sets")}
-                className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors"
-              >
-                All Sets <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
+        <motion.section
+          ref={festivalsRef}
+          id="section-festivals"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-6 scroll-mt-24"
+        >
+          <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
+            <SectionHeader
+              icon={Trophy}
+              title="Festivals"
+              containerClassName="opacity-100"
+            />
+            <button
+              onClick={() => navigate("/sets")}
+              className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors"
+            >
+              All Sets <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+          {memberFestivals.length > 0 ? (
             <FestivalsSection festivals={memberFestivals} />
-          </motion.section>
-        )}
+          ) : (
+            <div className="px-6 md:px-12">
+              <EmptyState
+                icon={Trophy}
+                title="No Member Set Festivals"
+                description="Join or create a Set to follow upcoming film showcases and festival competitions."
+                badge="NO FESTIVALS"
+                actionLabel="Explore Sets"
+                onAction={() => navigate("/sets")}
+                variant="compact"
+              />
+            </div>
+          )}
+        </motion.section>
 
         {/* ══════════════════════════════════════════════════════
             SCENE 2 — THIS WEEK'S RECOMMENDATIONS
@@ -185,21 +198,33 @@ export default function HallPage() {
         {/* ══════════════════════════════════════════════════════
             SCENE 3 — DISCUSSIONS IN YOUR SETS
         ══════════════════════════════════════════════════════ */}
-        {memberDiscussions.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-6"
-          >
-            <SectionHeader
-              icon={MessageSquare}
-              title="Discussions"
-              containerClassName="px-6 md:px-12 mb-5 opacity-100"
-            />
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-6"
+        >
+          <SectionHeader
+            icon={MessageSquare}
+            title="Discussions"
+            containerClassName="px-6 md:px-12 mb-5 opacity-100"
+          />
+          {memberDiscussions.length > 0 ? (
             <DiscussionsSection thoughts={memberDiscussions} />
-          </motion.section>
-        )}
+          ) : (
+            <div className="px-6 md:px-12">
+              <EmptyState
+                icon={MessageSquare}
+                title="No Active Set Discussions"
+                description="There are no ongoing dispatches or thoughts in your active Sets."
+                badge="NO DISCUSSIONS"
+                actionLabel="Discover Sets"
+                onAction={() => navigate("/sets")}
+                variant="compact"
+              />
+            </div>
+          )}
+        </motion.section>
 
         {/* ══════════════════════════════════════════════════════
             SCENE 4 — YOUR LEDGER

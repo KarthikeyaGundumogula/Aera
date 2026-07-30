@@ -5,6 +5,7 @@ import { WallPostCard } from "./WallPostCard";
 import { GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { mockLedger } from "../../../mock/ledger";
+import { EmptyState, EMPTY_PRESETS } from "../../../components/EmptyState";
 
 interface WallFeedProps {
   posts: WallPost[];
@@ -47,13 +48,8 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
 
   if (posts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
-          Nothing on the wall yet
-        </p>
-        <p className="text-[12px] text-white/15 max-w-[220px]">
-          When the artist drops a Line or pins a Work, it appears here.
-        </p>
+      <div className="py-8 px-4">
+        <EmptyState {...EMPTY_PRESETS.wall} />
       </div>
     );
   }

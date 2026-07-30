@@ -162,6 +162,17 @@ export function ProfileNav({
               )}
             </div>
 
+            {currentArtist && (
+              <div className="px-3 pb-2 mb-2 border-b border-white/5 flex flex-col">
+                <span className="text-xs font-black uppercase text-white truncate">
+                  {currentArtist.name}
+                </span>
+                <span className="text-[9px] font-mono text-white/40 truncate">
+                  @{currentArtist.userName || currentArtist.name}
+                </span>
+              </div>
+            )}
+
             <div className="space-y-1">
               {menuItems.map((item) => (
                 <button

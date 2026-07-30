@@ -2,106 +2,119 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { OriginalArtist, TheatreItem } from "../types";
 import { apiFetch } from "@/lib/api";
 
-// Helper functions to manage cookies client-side.
-function getCookie(name: string): string | null {
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(";");
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === " ") c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+export function formatColorTheme(textColor?: string, bgColor?: string): string {
+  const normalizeHex = (hex?: string, defaultHex = "#fac107"): string => {
+    if (!hex) return defaultHex;
+    let clean = hex.trim();
+    if (!clean.startsWith("#")) clean = `#${clean}`;
+    if (clean.length === 4) {
+      clean = `#${clean[1]}${clean[1]}${clean[2]}${clean[2]}${clean[3]}${clean[3]}`;
+    } else if (clean.length === 9) {
+      clean = clean.slice(0, 7);
+    }
+    return /^#[0-9a-fA-F]{6}$/.test(clean) ? clean.toUpperCase() : defaultHex.toUpperCase();
+  };
+
+  const text = normalizeHex(textColor, "#fac107");
+  const bg = normalizeHex(bgColor, "#0f1a42");
+  return `${text},${bg}`;
+}
+
+export function parseColorTheme(colorTheme?: string | null): { themeTextColor: string; themeBgColor: string } {
+  if (!colorTheme) {
+    return { themeTextColor: "#fac107", themeBgColor: "#0f1a42" };
   }
-  return null;
-}
+  const parts = colorTheme.split(/[,|:;-]/).map(s => s.trim()).filter(s => s.length > 0);
+  const normalizedParts = parts.map(p => (p.startsWith("#") ? p : `#${p}`).toUpperCase());
 
-function setCookie(name: string, value: string, days = 7) {
-  let expires = "";
-  if (days) {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    expires = "; expires=" + date.toUTCString();
+  if (normalizedParts.length >= 2) {
+    return { themeTextColor: normalizedParts[0], themeBgColor: normalizedParts[1] };
+  } else if (normalizedParts.length === 1) {
+    return { themeTextColor: normalizedParts[0], themeBgColor: "#0f1a42" };
   }
-  document.cookie = `${name}=${value || ""}${expires}; path=/; SameSite=Strict`;
-}
-
-function eraseCookie(name: string) {
-  document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict`;
-}
-
-// Generate a simulated JWT token string (Header.Payload.Signature)
-function generateMockJwt(artistId: string, name: string): string {
-  const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-  const payload = btoa(JSON.stringify({ id: artistId, username: name, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 }));
-  const signature = "simulated_signature";
-  return `${header}.${payload}.${signature}`;
-}
-
-// Decode a simulated JWT token string to read the payload
-function parseMockJwt(token: string): { id: string; username: string } | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const payloadJson = atob(parts[1]);
-    return JSON.parse(payloadJson);
-  } catch {
-    return null;
-  }
+  return { themeTextColor: "#fac107", themeBgColor: "#0f1a42" };
 }
 
 interface AuthContextType {
   currentArtist: OriginalArtist | null;
   userWorks: TheatreItem[];
+  isLoading: boolean;
   login: (username: string, password?: string) => Promise<boolean>;
   register: (artist: OriginalArtist, password?: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  updateProfile: (updates: Partial<OriginalArtist>) => void;
+  updateProfile: (updates: Partial<OriginalArtist>) => Promise<boolean>;
   updateWorkTitle: (workId: string | number, newTitle: string) => void;
   addWork: (work: TheatreItem) => void;
+  refreshProfile: () => Promise<OriginalArtist | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+async function fetchMyProfile(): Promise<OriginalArtist | null> {
+  try {
+    const res = await apiFetch("/profiles/me", { method: "GET" });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const data = json.data || json;
+    if (!data || !data.id) return null;
+
+    const { themeTextColor, themeBgColor } = parseColorTheme(data.colorTheme);
+
+    return {
+      id: data.id,
+      name: data.stageName || data.userName,
+      userName: data.userName,
+      image: data.profilePicture || `boring-avatar:${data.userName}`,
+      spirit: data.spirit || 0,
+      works: data.worksCount || 0,
+      role: data.roleName || "organizer",
+      bio: data.tagLine || "",
+      color_theme: data.colorTheme || "#FAC107,#0F1A42",
+      themeTextColor,
+      themeBgColor,
+      socials: {
+        instagram: data.instagramProfile || undefined,
+        twitter: data.twitterProfile || undefined,
+        youtube: data.youtubeProfile || undefined,
+      },
+    };
+  } catch (e) {
+    console.warn("Failed to fetch /profiles/me:", e);
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentArtist, setCurrentArtist] = useState<OriginalArtist | null>(null);
   const [userWorks, setUserWorks] = useState<TheatreItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Session Check on Boot
-  useEffect(() => {
-    const token = getCookie("framehouse_auth_token");
-    if (token) {
-      const payload = parseMockJwt(token);
-      if (payload) {
-        let artist: OriginalArtist | null = null;
-        const savedArtist = sessionStorage.getItem(`framehouse_artist_details_${payload.id}`);
-        if (savedArtist) {
-          artist = JSON.parse(savedArtist);
-        } else {
-          artist = {
-            id: payload.id,
-            name: payload.username,
-            image: `boring-avatar:${payload.username}`,
-            spirit: 0,
-            works: 0,
-            role: "organizer",
-            bio: "Cinematic Visionary",
-            themeBgColor: "#0f1a42",
-            themeTextColor: "#fac107",
-          };
-        }
-        if (artist) {
-          setCurrentArtist(artist);
-        }
-      }
-    }
+  const refreshProfile = useCallback(async (): Promise<OriginalArtist | null> => {
+    const artist = await fetchMyProfile();
+    setCurrentArtist(artist);
+    return artist;
   }, []);
 
-  // Load and sync works for the current user
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      setIsLoading(true);
+      const artist = await fetchMyProfile();
+      if (isMounted) {
+        setCurrentArtist(artist);
+        setIsLoading(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   useEffect(() => {
     if (!currentArtist) {
       setUserWorks([]);
       return;
     }
-
     const savedWorksKey = `framehouse_user_works_${currentArtist.id}`;
     const savedWorks = sessionStorage.getItem(savedWorksKey);
     if (savedWorks) {
@@ -125,30 +138,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (res.ok) {
-        let artist: OriginalArtist | null = null;
-        const savedArtist = sessionStorage.getItem(`framehouse_artist_details_${cleanUsername}`);
-        if (savedArtist) {
-          artist = JSON.parse(savedArtist);
-        } else {
-          artist = {
-            id: `art-${cleanUsername}`,
-            name: username,
-            image: `boring-avatar:${cleanUsername}`,
-            spirit: 0,
-            works: 0,
-            role: "organizer",
-            bio: "Cinematic Visionary",
-            themeBgColor: "#0f1a42",
-            themeTextColor: "#fac107",
-          };
-        }
-
+        const artist = await fetchMyProfile();
         if (artist) {
-          setCookie("framehouse_auth_token", generateMockJwt(artist.id, artist.name));
           setCurrentArtist(artist);
           return true;
         }
-        return false;
+        const fallbackArtist: OriginalArtist = {
+          id: `art-${cleanUsername}`,
+          name: username,
+          userName: cleanUsername,
+          image: `boring-avatar:${cleanUsername}`,
+          spirit: 0,
+          works: 0,
+          role: "organizer",
+          bio: "Cinematic Visionary",
+          color_theme: "#FAC107,#0F1A42",
+          themeTextColor: "#FAC107",
+          themeBgColor: "#0F1A42",
+        };
+        setCurrentArtist(fallbackArtist);
+        return true;
       } else {
         console.warn("Backend login failed with status:", res.status);
         return false;
@@ -160,38 +169,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(async (artist: OriginalArtist, password?: string): Promise<boolean> => {
-    const defaultArtist = {
-      ...artist,
-      spirit: 0,
-      works: 0,
-      role: artist.role || "organizer",
-      themeBgColor: artist.themeBgColor || "#0f1a42",
-      themeTextColor: artist.themeTextColor || "#fac107",
+    const cleanHandle = (artist.userName || artist.name).trim().toLowerCase().replace(/[^a-z0-9_]/g, "") || "artist_handle";
+    const regPassword = password || "kApten@1023";
+    const stageName = artist.name.trim().toLowerCase().replace(/[^a-z\u0C00-\u0C7F ]/g, "").replace(/\s+/g, " ").trim().slice(0, 15) || "artist stage";
+
+    const payload: Record<string, unknown> = {
+      handle: cleanHandle,
+      tag_line: artist.bio || "Cinematic Visionary",
+      password: regPassword,
+      profile_picture: artist.image || `boring-avatar:${cleanHandle}`,
+      stage_name: stageName,
+      color_theme: formatColorTheme(artist.themeTextColor || "#fac107", artist.themeBgColor || "#0f1a42"),
     };
 
-    const cleanHandle = artist.name.trim().toLowerCase().replace(/[^a-z0-9_]/g, "") || "artist_handle";
-    const regPassword = password || "kApten@1023";
-    const stageName = artist.name.trim().toLowerCase().replace(/[^a-z ]/g, "") || "artist stage";
+    if (artist.socials?.youtube && artist.socials.youtube.trim().length > 0) {
+      payload.youtube_profile = artist.socials.youtube.trim();
+    }
+    if (artist.socials?.twitter && artist.socials.twitter.trim().length > 0) {
+      payload.twitter_profile = artist.socials.twitter.trim();
+    }
+    if (artist.socials?.instagram && artist.socials.instagram.trim().length > 0) {
+      payload.instagram_profile = artist.socials.instagram.trim();
+    }
 
     try {
       const res = await apiFetch("/auth/register", {
         method: "POST",
-        body: JSON.stringify({
-          handle: cleanHandle,
-          tag_line: artist.bio || "Cinematic Visionary",
-          password: regPassword,
-          profile_picture: artist.image || `boring-avatar:${cleanHandle}`,
-          youtube_profile: null,
-          twitter_profile: null,
-          instagram_profile: null,
-          stage_name: stageName,
-          color_theme: defaultArtist.themeBgColor.startsWith("#") ? defaultArtist.themeBgColor : "#FF0000",
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        sessionStorage.setItem(`framehouse_artist_details_${defaultArtist.id}`, JSON.stringify(defaultArtist));
-        sessionStorage.setItem(`framehouse_artist_details_${cleanHandle}`, JSON.stringify(defaultArtist));
         return await login(cleanHandle, regPassword);
       } else {
         console.warn("Backend register failed with status:", res.status);
@@ -209,19 +216,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("Backend logout error:", e);
     }
-    eraseCookie("framehouse_auth_token");
     setCurrentArtist(null);
   }, []);
 
+  const updateProfile = useCallback(async (updates: Partial<OriginalArtist>): Promise<boolean> => {
+    try {
+      const payload: Record<string, unknown> = {};
+      if (updates.name !== undefined) {
+        const cleanStage = updates.name.trim().toLowerCase().replace(/[^a-z\u0C00-\u0C7F ]/g, "").replace(/\s+/g, " ").trim().slice(0, 15);
+        if (cleanStage.length > 0) {
+          payload.stage_name = cleanStage;
+        }
+      }
+      if (updates.bio !== undefined) {
+        const trimmedBio = updates.bio.trim().slice(0, 100);
+        if (trimmedBio.length > 0) {
+          payload.tag_line = trimmedBio;
+        }
+      }
+      if (updates.image !== undefined) {
+        const trimmedImg = updates.image.trim();
+        if (trimmedImg.length > 0) {
+          payload.profile_picture = trimmedImg;
+        }
+      }
+      if (updates.themeTextColor || updates.themeBgColor || updates.color_theme) {
+        const text = updates.themeTextColor || currentArtist?.themeTextColor || "#fac107";
+        const bg = updates.themeBgColor || currentArtist?.themeBgColor || "#0f1a42";
+        payload.color_theme = formatColorTheme(text, bg);
+      }
+      if (updates.socials) {
+        if (updates.socials.youtube && updates.socials.youtube.trim().length > 0) {
+          payload.youtube_profile = updates.socials.youtube.trim();
+        }
+        if (updates.socials.twitter && updates.socials.twitter.trim().length > 0) {
+          payload.twitter_profile = updates.socials.twitter.trim();
+        }
+        if (updates.socials.instagram && updates.socials.instagram.trim().length > 0) {
+          payload.instagram_profile = updates.socials.instagram.trim();
+        }
+      }
 
-  const updateProfile = useCallback((updates: Partial<OriginalArtist>) => {
-    setCurrentArtist(prev => {
-      if (!prev) return prev;
-      const updated = { ...prev, ...updates };
-      sessionStorage.setItem(`framehouse_artist_details_${prev.id}`, JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+      const res = await apiFetch("/artists/update_stage", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        await refreshProfile();
+        return true;
+      } else {
+        const errText = await res.text().catch(() => "");
+        console.warn("Failed to update stage on backend:", res.status, errText);
+      }
+    } catch (e) {
+      console.error("Error updating stage profile:", e);
+    }
+
+    // Local fallback update
+    setCurrentArtist(prev => prev ? { ...prev, ...updates } : prev);
+    return false;
+  }, [currentArtist, refreshProfile]);
 
   const updateWorkTitle = useCallback((workId: string | number, newTitle: string) => {
     setUserWorks(prevWorks =>
@@ -243,10 +298,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         sessionStorage.setItem(`framehouse_user_works_${prevArtist.id}`, JSON.stringify(nextWorks));
         return nextWorks;
       });
-      // NOTE: GRID_ITEMS is intentionally NOT mutated here.
-      // The user's works are tracked exclusively in userWorks state.
-      // Theatre pages that need to show the logged-in user's works should
-      // read from AuthContext.userWorks instead of the global GRID_ITEMS array.
       return prevArtist;
     });
   }, []);
@@ -254,13 +305,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(() => ({
     currentArtist,
     userWorks,
+    isLoading,
     login,
     register,
     logout,
     updateProfile,
     updateWorkTitle,
     addWork,
-  }), [currentArtist, userWorks, login, register, logout, updateProfile, updateWorkTitle, addWork]);
+    refreshProfile,
+  }), [currentArtist, userWorks, isLoading, login, register, logout, updateProfile, updateWorkTitle, addWork, refreshProfile]);
 
   return (
     <AuthContext.Provider value={value}>

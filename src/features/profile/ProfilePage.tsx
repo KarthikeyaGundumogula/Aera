@@ -1,6 +1,5 @@
 import React, {
   useMemo,
-  memo,
   useState,
   useEffect,
   useLayoutEffect,
@@ -22,17 +21,16 @@ import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { OriginalPosterCard } from "../originals/components/OriginalPosterCard";
 import { MiniDossierSheet } from "./components/MiniDossierSheet";
 import { AnimatePresence } from "motion/react";
-import { FeedRecommendationCard } from "../../components/FeedRecommendationCard";
-import { buildClusters } from "../theatre/engine/clusterBuilder";
-import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
 import { UnifiedTheatre } from "../theatre/components/UnifiedTheatre";
-import { SectionHeader } from "../../components/SectionHeader";
-import { Film, ArrowRight } from "lucide-react";
+import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
 import { ProfileHero } from "../shared/profile/ProfileHero";
 import { WallFeed } from "./components/WallFeed";
 import { getWallPostsByArtist } from "../../mock/wall";
+import { useAuth, parseColorTheme } from "../../context/AuthContext";
+import { apiFetch } from "@/lib/api";
+import type { TheatreItem } from "../../types";
 
 const THEMES: Record<
   string,
@@ -90,10 +88,28 @@ const ProfileSkeleton: React.FC = () => {
   );
 };
 
+interface ProfileDisplayData {
+  id: string;
+  name: string;
+  handle: string;
+  tagline: string;
+  image: string;
+  spirit: string;
+  favoritesCount: string;
+  type: "ARTIST" | "STAR" | "MAKER";
+  socials?: {
+    instagram?: string;
+    twitter?: string;
+    youtube?: string;
+  };
+  colorTheme?: string;
+}
+
 const loadedProfiles = new Set<string>();
 
 const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
+  const { currentArtist } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const rawTab = searchParams.get("tab")?.toUpperCase();
@@ -110,15 +126,17 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const [backendProfile, setBackendProfile] = useState<ProfileDisplayData | null>(null);
+  const [backendWorks, setBackendWorks] = useState<TheatreItem[]>([]);
+  const [backendWallPosts, setBackendWallPosts] = useState<any[]>([]);
+
   // Tab orb tracking
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const tabsRowRef = useRef<HTMLDivElement>(null);
   const [orbX, setOrbX] = useState<number | null>(null);
 
-  // Skip skeleton if we already loaded this profile in the current session
-  const [isInitialLoading, setIsInitialLoading] = useState(
-    () => !(profileId && loadedProfiles.has(profileId)),
-  );
+  // Initial loading state
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -128,9 +146,6 @@ const ProfilePage: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Measure active tab center and update orb position.
-  // Deps include isInitialLoading so it fires when the skeleton clears and
-  // the actual tabs mount for the first time — not just on tab switches.
   useLayoutEffect(() => {
     if (isInitialLoading) return;
     const activeEl = tabRefs.current[activeTab];
@@ -141,9 +156,6 @@ const ProfilePage: React.FC = () => {
     setOrbX(elRect.left + elRect.width / 2 - rowRect.left);
   }, [activeTab, isInitialLoading]);
 
-  const currentArtistId = profileId || "fh-001";
-
-  // Re-measure on resize so the orb never drifts
   useEffect(() => {
     const onResize = () => {
       const activeEl = tabRefs.current[activeTab];
@@ -158,95 +170,207 @@ const ProfilePage: React.FC = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    if (!profileId) return;
-
-    if (loadedProfiles.has(profileId)) {
+    if (!profileId) {
       setIsInitialLoading(false);
       return;
     }
 
-    setIsInitialLoading(true);
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-      loadedProfiles.add(profileId);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [profileId]);
+    let isMounted = true;
+    const cleanHandle = profileId.replace(/^profile-/, "").toLowerCase();
 
-  const profile = useMemo(() => {
-    if (!deferredProfileId) return null;
+    (async () => {
+      setIsInitialLoading(true);
 
-    const artist = ARTISTS_MOCK.find((p) => p.id === deferredProfileId);
-    if (artist) {
-      return {
-        id: artist.id,
-        name: artist.name,
-        tagline: artist.bio || "Artist",
-        image: artist.image,
-        spirit: artist.spirit.toLocaleString(),
-        favoritesCount: "18.4K",
-        type: "ARTIST" as const,
-        socials: artist.socials,
-      };
+      // Check 1: If current logged-in user matches requested profile handle or ID
+      if (
+        currentArtist &&
+        (currentArtist.name.toLowerCase() === cleanHandle ||
+          currentArtist.id.toLowerCase() === profileId.toLowerCase() ||
+          currentArtist.id.toLowerCase().includes(cleanHandle))
+      ) {
+        if (isMounted) {
+          setBackendProfile({
+            id: currentArtist.id,
+            name: currentArtist.name,
+            handle: cleanHandle,
+            tagline: currentArtist.bio || "Visionary Artist",
+            image: currentArtist.image || `boring-avatar:${cleanHandle}`,
+            spirit: currentArtist.spirit.toLocaleString(),
+            favoritesCount: "1.2K",
+            type: "ARTIST",
+            socials: currentArtist.socials,
+            colorTheme: currentArtist.color_theme || `${currentArtist.themeTextColor || "#fac107"},${currentArtist.themeBgColor || "#0f1a42"}`,
+          });
+          setIsInitialLoading(false);
+        }
+        return;
+      }
+
+      // Check 2: Call backend GET /profiles/get_profile_details/{username}
+      try {
+        const res = await apiFetch(`/profiles/get_profile_details/${cleanHandle}`);
+        if (res.ok) {
+          const json = await res.json();
+          const stage = json.artist_stage || json.data || json;
+          if (stage && isMounted) {
+            setBackendProfile({
+              id: stage.id || profileId,
+              name: stage.stageName || stage.userName || cleanHandle,
+              handle: stage.userName || cleanHandle,
+              tagline: stage.tagLine || "Visionary Artist",
+              image: stage.profilePicture || `boring-avatar:${stage.userName || cleanHandle}`,
+              spirit: (stage.spirit || 0).toLocaleString(),
+              favoritesCount: "1.2K",
+              type: "ARTIST",
+              socials: {
+                instagram: stage.instagramProfile || undefined,
+                twitter: stage.twitterProfile || undefined,
+                youtube: stage.youtubeProfile || undefined,
+              },
+              colorTheme: stage.colorTheme || "#fac107,#0f1a42",
+            });
+            setIsInitialLoading(false);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Backend get_profile_details failed, trying mock fallbacks:", e);
+      }
+
+      // Check 3: Mock Fallback
+      if (isMounted) {
+        const artist = ARTISTS_MOCK.find(
+          (p) => p.id.toLowerCase() === profileId.toLowerCase() || p.id.toLowerCase().includes(cleanHandle)
+        );
+        if (artist) {
+          setBackendProfile({
+            id: artist.id,
+            name: artist.name,
+            handle: artist.name.toLowerCase().replace(/ /g, "_"),
+            tagline: artist.bio || "Artist",
+            image: artist.image,
+            spirit: artist.spirit.toLocaleString(),
+            favoritesCount: "18.4K",
+            type: "ARTIST",
+            socials: artist.socials,
+            colorTheme: `${artist.themeTextColor || "#fac107"},${artist.themeBgColor || "#0f1a42"}`,
+          });
+          setIsInitialLoading(false);
+          return;
+        }
+
+        const star = STARS_MOCK.find(
+          (s) =>
+            `profile-${s.actorName.toLowerCase().replace(/ /g, "-").replace(/\./g, "")}` === profileId.toLowerCase() ||
+            s.actorName.toLowerCase().includes(cleanHandle)
+        );
+        if (star) {
+          setBackendProfile({
+            id: profileId,
+            name: star.actorName,
+            handle: star.actorName.toLowerCase().replace(/ /g, "_"),
+            tagline: star.characterName,
+            image: star.imageUrl,
+            spirit: "2,480",
+            favoritesCount: "142K",
+            type: "STAR",
+            socials: {
+              instagram: star.actorName.toLowerCase().replace(/ /g, ""),
+              twitter: star.actorName.toLowerCase().replace(/ /g, ""),
+            },
+          });
+          setIsInitialLoading(false);
+          return;
+        }
+
+        const maker = MAKERS_MOCK.find(
+          (m) =>
+            `profile-${m.actorName.toLowerCase().replace(/ /g, "-").replace(/\./g, "")}` === profileId.toLowerCase() ||
+            m.actorName.toLowerCase().includes(cleanHandle)
+        );
+        if (maker) {
+          setBackendProfile({
+            id: profileId,
+            name: maker.actorName,
+            handle: maker.actorName.toLowerCase().replace(/ /g, "_"),
+            tagline: maker.characterName,
+            image: maker.imageUrl,
+            spirit: "1,840",
+            favoritesCount: "82K",
+            type: "MAKER",
+            socials: {
+              instagram: maker.actorName.toLowerCase().replace(/ /g, ""),
+              twitter: maker.actorName.toLowerCase().replace(/ /g, ""),
+            },
+          });
+          setIsInitialLoading(false);
+          return;
+        }
+
+        setBackendProfile(null);
+        setIsInitialLoading(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profileId, currentArtist]);
+
+  useEffect(() => {
+    if (!backendProfile?.id) return;
+    const isUuid = /^[0-9a-fA-F-]{36}$/.test(backendProfile.id);
+    if (!isUuid) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        if (activeTab === "THEATRE") {
+          const res = await apiFetch(`/profiles/${backendProfile.id}/works?limit=12`);
+          if (res.ok && isMounted) {
+            const json = await res.json();
+            const items = json.items || json.data || [];
+            setBackendWorks(items);
+          }
+        } else if (activeTab === "WALL") {
+          const res = await apiFetch(`/profiles/${backendProfile.id}/wall?limit=12`);
+          if (res.ok && isMounted) {
+            const json = await res.json();
+            const items = json.items || json.data || [];
+            setBackendWallPosts(items);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch paginated tab feed from backend:", e);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [backendProfile?.id, activeTab]);
+
+  const profile = backendProfile;
+
+  const parsedTheme = useMemo(() => {
+    if (profile?.colorTheme) {
+      return parseColorTheme(profile.colorTheme);
     }
+    const themeObj = profileId ? THEMES[profileId] || DEFAULT_THEME : DEFAULT_THEME;
+    return { themeTextColor: themeObj.nameGradient[0], themeBgColor: themeObj.bg };
+  }, [profile?.colorTheme, profileId]);
 
-    const star = STARS_MOCK.find(
-      (s) =>
-        `profile-${s.actorName
-          .toLowerCase()
-          .replace(/ /g, "-")
-          .replace(/\./g, "")}` === deferredProfileId,
-    );
-    if (star) {
-      return {
-        id: deferredProfileId,
-        name: star.actorName,
-        tagline: star.characterName,
-        image: star.imageUrl,
-        spirit: "2,480",
-        favoritesCount: "142K",
-        type: "STAR" as const,
-        socials: {
-          instagram: star.actorName.toLowerCase().replace(/ /g, ""),
-          twitter: star.actorName.toLowerCase().replace(/ /g, ""),
-        },
-      };
-    }
-
-    const maker = MAKERS_MOCK.find(
-      (m) =>
-        `profile-${m.actorName
-          .toLowerCase()
-          .replace(/ /g, "-")
-          .replace(/\./g, "")}` === deferredProfileId,
-    );
-    if (maker) {
-      return {
-        id: deferredProfileId,
-        name: maker.actorName,
-        tagline: maker.characterName,
-        image: maker.imageUrl,
-        spirit: "1,840",
-        favoritesCount: "82K",
-        type: "MAKER" as const,
-        socials: {
-          instagram: maker.actorName.toLowerCase().replace(/ /g, ""),
-          twitter: maker.actorName.toLowerCase().replace(/ /g, ""),
-        },
-      };
-    }
-
-    return null;
-  }, [deferredProfileId]);
-
-  const theme = deferredProfileId
-    ? THEMES[deferredProfileId] || DEFAULT_THEME
-    : DEFAULT_THEME;
+  const heroTheme = useMemo(() => ({
+    nameGradient: [parsedTheme.themeTextColor, parsedTheme.themeTextColor] as [string, string],
+  }), [parsedTheme.themeTextColor]);
 
   const userWorks = useMemo(() => {
     if (!profile) return [];
+    if (backendWorks.length > 0) return backendWorks;
     return GRID_ITEMS.filter((w) => w.artistId === profile.id);
-  }, [profile]);
+  }, [profile, backendWorks]);
+
+  const currentArtistId = profileId || "fh-001";
 
   const artistOriginals = useMemo(() => {
     return ORIGINALS.filter((org) => {
@@ -286,7 +410,7 @@ const ProfilePage: React.FC = () => {
   return (
     <div
       className="relative w-full min-h-screen overflow-x-clip flex flex-col font-sans"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: parsedTheme.themeBgColor }}
     >
       <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/20 to-transparent z-[90] pointer-events-none" />
 
@@ -299,15 +423,15 @@ const ProfilePage: React.FC = () => {
         style={
           isScrolled
             ? {
-                borderBottomColor: `${theme.nameGradient[0]}33`,
-                boxShadow: `0 8px 32px ${theme.nameGradient[0]}15`,
+                borderBottomColor: `${parsedTheme.themeTextColor}33`,
+                boxShadow: `0 8px 32px ${parsedTheme.themeTextColor}15`,
               }
             : undefined
         }
       >
         <Logo onClick={() => navigate("/")} showText={false} />
 
-        {/* Center Tab Switcher (fades in smoothly when scrolled) */}
+        {/* Center Tab Switcher */}
         <div
           className={`flex items-center gap-6 md:gap-12 transition-all duration-300 ${
             isScrolled
@@ -331,10 +455,10 @@ const ProfilePage: React.FC = () => {
                   : "text-white/40 hover:text-white/70"
               }`}
               style={{
-                color: activeTab === tab ? (theme.nameGradient[1] || theme.nameGradient[0]) : undefined,
+                color: activeTab === tab ? parsedTheme.themeTextColor : undefined,
                 textShadow:
                   activeTab === tab
-                    ? `0 0 8px ${theme.nameGradient[0]}99, 0 0 16px ${theme.nameGradient[1]}4D`
+                    ? `0 0 8px ${parsedTheme.themeTextColor}99, 0 0 16px ${parsedTheme.themeTextColor}4D`
                     : "none",
               }}
             >
@@ -352,7 +476,7 @@ const ProfilePage: React.FC = () => {
         className="fixed inset-0 pointer-events-none z-[1]"
         style={{
           backgroundImage: `url('https://www.transparenttextures.com/patterns/stardust.png')`,
-          opacity: theme.grainOpacity,
+          opacity: 0.03,
           mixBlendMode: "overlay",
         }}
       />
@@ -360,23 +484,21 @@ const ProfilePage: React.FC = () => {
       {/* ─── PROFILE HERO ─── */}
       <ProfileHero
         name={profile.name}
-        handle={profile.id.toUpperCase().replace("PROFILE-", "")}
+        handle={profile.handle.toUpperCase()}
         tagline={profile.tagline}
         image={profile.image}
         spirit={profile.spirit}
         favoritesCount={profile.favoritesCount}
-        theme={theme}
+        theme={heroTheme}
         isFavorited={isFavorited}
         onFavorite={() => setIsFavorited(!isFavorited)}
         socials={profile.socials}
         className="pt-16 md:pt-32 pb-8"
       />
 
-      {/* ─── TABS & CONTENT (Native Background) ─── */}
+      {/* ─── TABS & CONTENT ─── */}
       <div className="relative z-20 w-full bg-surface-deep min-h-screen text-white">
-        {/* ─── CINEMATIC PARTITION + TAB INDICATOR ─── */}
         <div ref={tabsRowRef} className="relative w-full">
-          {/* Tab buttons row — rendered FIRST so they sit above the line */}
           <div className="w-full flex justify-center py-3.5 md:py-4">
             <div className="flex items-center gap-8 md:gap-16">
               {(
@@ -400,7 +522,7 @@ const ProfilePage: React.FC = () => {
                   style={{
                     textShadow:
                       activeTab === tab
-                        ? `0 0 8px ${theme.nameGradient[0]}99, 0 0 16px ${theme.nameGradient[1]}4D`
+                        ? `0 0 8px ${parsedTheme.themeTextColor}99, 0 0 16px ${parsedTheme.themeTextColor}4D`
                         : "none",
                     transition: "text-shadow 0.4s ease",
                   }}
@@ -411,7 +533,6 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* ── LINE at the bottom of the tab zone ── */}
           <div
             className="w-full h-px"
             style={{
@@ -419,7 +540,6 @@ const ProfilePage: React.FC = () => {
             }}
           />
 
-          {/* Footlight bloom — uses the profile's primary gradient color */}
           {orbX !== null && (
             <motion.div
               className="absolute pointer-events-none"
@@ -430,14 +550,13 @@ const ProfilePage: React.FC = () => {
               <div
                 className="w-[120px] md:w-[200px] h-[56px] md:h-[64px] -translate-x-1/2"
                 style={{
-                  background: `radial-gradient(ellipse at 50% 100%, ${theme.nameGradient[0]}B3 0%, ${theme.nameGradient[0]}4D 40%, transparent 70%)`,
+                  background: `radial-gradient(ellipse at 50% 100%, ${parsedTheme.themeTextColor}B3 0%, ${parsedTheme.themeTextColor}4D 40%, transparent 70%)`,
                   filter: "blur(10px)",
                   clipPath: "inset(-200px -200px 0px -200px)",
                 }}
               />
             </motion.div>
           )}
-
         </div>
 
         {/* ─── TAB CONTENT ─── */}
@@ -456,26 +575,32 @@ const ProfilePage: React.FC = () => {
             {activeTab === "WALL" && (
               <div className="mt-4 -mx-8 md:mx-0">
                 <WallFeed
-                  posts={getWallPostsByArtist(profileId ?? "")}
-                  themeGradient={theme.nameGradient}
+                  posts={backendWallPosts.length > 0 ? backendWallPosts : getWallPostsByArtist(profileId ?? "")}
+                  themeGradient={[parsedTheme.themeTextColor, parsedTheme.themeTextColor]}
                 />
               </div>
             )}
 
             {activeTab === "LIBRARY" && (
               <>
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1.5 sm:gap-4 md:gap-5 items-stretch mt-2">
-                  {artistOriginals.map((original, index) => (
-                    <OriginalPosterCard
-                      key={original.id}
-                      original={original}
-                      makers={MAKERS_MOCK}
-                      stars={STARS_MOCK}
-                      index={index}
-                      onClick={() => setDossierOriginalId(original.id)}
-                    />
-                  ))}
-                </div>
+                {artistOriginals.length > 0 ? (
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1.5 sm:gap-4 md:gap-5 items-stretch mt-2">
+                    {artistOriginals.map((original, index) => (
+                      <OriginalPosterCard
+                        key={original.id}
+                        original={original}
+                        makers={MAKERS_MOCK}
+                        stars={STARS_MOCK}
+                        index={index}
+                        onClick={() => setDossierOriginalId(original.id)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8">
+                    <EmptyState {...EMPTY_PRESETS.library} />
+                  </div>
+                )}
                 <AnimatePresence>
                   {dossierOriginalId && (
                     <MiniDossierSheet
@@ -487,8 +612,6 @@ const ProfilePage: React.FC = () => {
                 </AnimatePresence>
               </>
             )}
-
-
           </section>
         </div>
       </div>

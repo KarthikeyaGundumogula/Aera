@@ -9,6 +9,7 @@ interface ArtistAvatarProps {
   className?: string;
   colors?: string[];
   showTitleFallback?: boolean;
+  imagePosition?: string;
 }
 
 const DEFAULT_AVATAR_COLORS = [
@@ -27,6 +28,7 @@ export function ArtistAvatar({
   className = "",
   colors = DEFAULT_AVATAR_COLORS,
   showTitleFallback = false,
+  imagePosition = "50% 0%",
 }: ArtistAvatarProps) {
   const [imgError, setImgError] = useState(false);
 
@@ -54,8 +56,8 @@ export function ArtistAvatar({
         src={src}
         alt={cleanName}
         onError={() => setImgError(true)}
-        className={`object-cover object-center rounded-xl ${className}`}
-        style={sizeStyle}
+        className={`object-cover rounded-xl ${className}`}
+        style={{ ...sizeStyle, objectPosition: imagePosition }}
       />
     );
   }

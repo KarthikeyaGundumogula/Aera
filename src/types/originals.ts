@@ -3,6 +3,7 @@ import { TheatreItem } from "./theatre";
 export interface OriginalArtist {
   id: string;
   name: string;
+  userName?: string;
   image: string;
   spirit: number;
   works: number;
@@ -16,6 +17,7 @@ export interface OriginalArtist {
   workedOn?: { id: string; title: string; color?: string }[];
   themeTextColor?: string;
   themeBgColor?: string;
+  color_theme?: string;
   imagePosition?: string;
 }
 
