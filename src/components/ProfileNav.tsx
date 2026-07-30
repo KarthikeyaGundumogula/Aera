@@ -54,10 +54,10 @@ export function ProfileNav({
       description: "Manage your stage",
     },
     {
-      label: "Ledger",
+      label: "Library",
       icon: <BookPlus className="w-4 h-4" />,
-      path: "/ledger",
-      description: "Your cinematic ledger",
+      path: "/profile/fh-001?tab=library",
+      description: "Your cinematic library",
     },
     {
       label: "Contact Founder",

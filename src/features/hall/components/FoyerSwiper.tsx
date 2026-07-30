@@ -7,7 +7,7 @@ import {
   animate as motionAnimate,
   type MotionValue,
 } from "motion/react";
-import { X, ChevronRight, Loader2, Share2, Check } from "lucide-react";
+import { X, ChevronRight, Loader2, Share2, Check, Sparkles } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { WallPost } from "../../../types/wall";
@@ -27,6 +27,7 @@ import { LedgerItem } from "../../../mock/ledger";
 import { LedgerWallCard } from "../../profile/components/LedgerWallCard";
 import { ReactionAction } from "../../../components/actions/ReactionAction";
 import { ReactionId } from "../../../types/reactions";
+import { TaggedWorksModal } from "../../../components/TaggedWorksModal";
 
 function AvatarFallback({ className }: { className: string }) {
   const baseClasses = className
@@ -419,22 +420,46 @@ const LedgerFull: React.FC<{
   entry?: LedgerItem;
 }> = ({ post, entry }) => {
   const navigate = useNavigate();
+  const [showTaggedWorks, setShowTaggedWorks] = useState(false);
 
   if (!entry) return null;
 
   return (
     <div className="w-full flex flex-col gap-6 px-4 max-w-[680px] mx-auto pointer-events-auto">
-      <LedgerWallCard post={post} entry={entry} previewOnly={true} />
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate(`/ledger/${entry.id}`);
-        }}
-        className="mx-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_24px_rgba(245,158,11,0.2)]"
-      >
-        <span>View Editorial Entry</span>
-        <ChevronRight className="w-4 h-4" />
-      </button>
+      <LedgerWallCard
+        post={post}
+        entry={entry}
+        previewOnly={true}
+        onOpenTaggedWorks={() => navigate(`/tagged-works/${entry.originalId}`)}
+      />
+      <div className="flex items-center justify-center gap-3 flex-wrap">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/tagged-works/${entry.originalId}`);
+          }}
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_24px_rgba(245,158,11,0.2)] cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>Check Collection ({(entry.taggedWorks || []).length || 3})</span>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/profile/${entry.artistId || "fh-001"}?tab=library`);
+          }}
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white/70 hover:text-white text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
+        >
+          <span>View Library Entry</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      <TaggedWorksModal
+        isOpen={showTaggedWorks}
+        onClose={() => setShowTaggedWorks(false)}
+        entry={entry}
+      />
     </div>
   );
 };

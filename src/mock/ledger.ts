@@ -39,6 +39,30 @@ export type LedgerItem = {
   watchedAt?: string;
 };
 
+const SAMPLE_TAGGED_WORKS: LedgerTaggedWork[] = [
+  {
+    id: "tw-1",
+    type: "hype_cut",
+    thumbnailUrl: "/posters/og.jpeg",
+    authorName: "FireEdits",
+    platform: "YouTube",
+  },
+  {
+    id: "tw-2",
+    type: "poster",
+    thumbnailUrl: "/posters/rrr.jpeg",
+    authorName: "Studio CineArts",
+    platform: "Instagram",
+  },
+  {
+    id: "tw-3",
+    type: "hype_cut",
+    thumbnailUrl: "/posters/kgf.jpeg",
+    authorName: "Mass Cutz",
+    platform: "YouTube",
+  },
+];
+
 export const mockLedger: LedgerItem[] = [
   // ─── fh-001 (Karthik G) ───────────────────────────────────────────────────
   {
@@ -59,7 +83,7 @@ export const mockLedger: LedgerItem[] = [
     status: "want_to_watch",
     preThoughts:
       "Pawan Kalyan's most raw, unstoppable avatar. The hype cuts for this are insane — I need to see this day one.",
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-24T10:00:00Z",
   },
   {
@@ -83,7 +107,7 @@ export const mockLedger: LedgerItem[] = [
     afterThoughts:
       "Absolutely overwhelming. The animal sequence and Naatu Naatu exceeded all expectations. Peak cinema.",
     surgeScore: 8720,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-20T14:30:00Z",
     watchedAt: "2026-04-21T21:00:00Z",
   },
@@ -106,7 +130,7 @@ export const mockLedger: LedgerItem[] = [
     afterThoughts:
       "Rocky Bhai doesn't bow — and neither does this movie. The sheer scale every 10 minutes is unmatched.",
     surgeScore: 6440,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-22T09:15:00Z",
     watchedAt: "2026-04-23T20:00:00Z",
   },
@@ -129,7 +153,7 @@ export const mockLedger: LedgerItem[] = [
     afterThoughts:
       "A landmark achievement in world cinema. The waterfall sequence remains unforgettable.",
     surgeScore: 9100,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-10T12:00:00Z",
     watchedAt: "2026-04-11T18:00:00Z",
   },
@@ -152,7 +176,7 @@ export const mockLedger: LedgerItem[] = [
     afterThoughts:
       "Lokesh Kanagaraj constructs universes. The Rolex sequence alone is worth the price of admission.",
     surgeScore: 5120,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-18T11:00:00Z",
     watchedAt: "2026-04-19T20:30:00Z",
   },
@@ -173,7 +197,7 @@ export const mockLedger: LedgerItem[] = [
     preThoughts: "Waiting for the colour grading and lighting style to drop.",
     afterThoughts: "Visual perfection. The high-contrast tones in the night sequences are sublime.",
     surgeScore: 7800,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-20T10:00:00Z",
     watchedAt: "2026-04-21T14:00:00Z",
   },
@@ -192,7 +216,7 @@ export const mockLedger: LedgerItem[] = [
     preThoughts: "Choreography and pacing masterclass.",
     afterThoughts: "Pure energy. The sync between music and motion is flawless.",
     surgeScore: 8900,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-15T09:00:00Z",
     watchedAt: "2026-04-16T19:00:00Z",
   },
@@ -211,7 +235,7 @@ export const mockLedger: LedgerItem[] = [
     preThoughts: null,
     afterThoughts: "The high-contrast monochrome tones create such an intense atmosphere.",
     surgeScore: 6800,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-18T16:00:00Z",
     watchedAt: "2026-04-19T22:00:00Z",
   },
@@ -230,7 +254,7 @@ export const mockLedger: LedgerItem[] = [
     preThoughts: "A study in production design and mythic framing.",
     afterThoughts: "Emotion and scale in complete harmony.",
     surgeScore: 8500,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-12T11:00:00Z",
     watchedAt: "2026-04-13T17:00:00Z",
   },
@@ -249,7 +273,7 @@ export const mockLedger: LedgerItem[] = [
     preThoughts: "Anirudh's score with Lokesh's dark aesthetic is a match made in heaven.",
     afterThoughts: "Adrenaline pumping from start to finish. Masterful sound edit.",
     surgeScore: 7900,
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-14T15:00:00Z",
     watchedAt: "2026-04-15T21:00:00Z",
   },
@@ -268,7 +292,7 @@ export const mockLedger: LedgerItem[] = [
     makers: [{ name: "Sujeeth", role: "Director" }],
     status: "want_to_watch",
     preThoughts: "The sheer violence and style in the fan cuts has me hooked.",
-    taggedWorks: [],
+    taggedWorks: SAMPLE_TAGGED_WORKS,
     addedAt: "2026-04-22T08:00:00Z",
   },
   {

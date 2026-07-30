@@ -29,7 +29,7 @@ function LedgerCard({ item }: { item: LedgerItem }) {
 
   return (
     <motion.button
-      onClick={() => navigate("/ledger")}
+      onClick={() => navigate(`/profile/${item.artistId || "fh-001"}?tab=library`)}
       whileHover={{ scale: 1.015 }}
       whileTap={{ scale: 0.98 }}
       className="

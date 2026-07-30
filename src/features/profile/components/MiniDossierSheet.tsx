@@ -7,6 +7,7 @@ import { CURRENT_USER_MOCK, GRID_ITEMS, ORIGINALS } from "../../../mock";
 import { mockLedger, LedgerItem } from "../../../mock/ledger";
 import { MOCK_RECOMMENDATIONS, Recommendation } from "../../../mock/recommendations";
 import { SurgeBars } from "../../../components/SurgeBars";
+import { TaggedWorksModal } from "../../../components/TaggedWorksModal";
 
 interface MiniDossierSheetProps {
   originalId: string;
@@ -16,6 +17,7 @@ interface MiniDossierSheetProps {
 
 export function MiniDossierSheet({ originalId, profileId, onClose }: MiniDossierSheetProps) {
   const navigate = useNavigate();
+  const [showTaggedWorksModal, setShowTaggedWorksModal] = useState(false);
 
   const initialEntry = mockLedger.find(
     (l) =>
@@ -291,6 +293,23 @@ export function MiniDossierSheet({ originalId, profileId, onClose }: MiniDossier
                 )}
               </div>
             )}
+          </div>
+
+          {/* ── Collection Button ────────────────────────────── */}
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                onClose();
+                navigate(`/tagged-works/${originalId || initialEntry?.originalId || "og-original"}`);
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-wider flex items-center justify-between cursor-pointer transition-all"
+            >
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                Check Collection ({(initialEntry?.taggedWorks || []).length || 3})
+              </span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           {/* ── Compact Side-by-Side Action Pills ────────────────────────── */}

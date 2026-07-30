@@ -21,7 +21,7 @@
 import React, { memo } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, BookPlus, ChevronRight } from "lucide-react";
+import { Eye, EyeOff, BookPlus, ChevronRight, Sparkles } from "lucide-react";
 import { LedgerItem } from "../../../mock/ledger";
 import { WallPost } from "../../../types/wall";
 import { SurgeBars } from "../../../components/SurgeBars";
@@ -31,6 +31,7 @@ interface LedgerWallCardProps {
   entry: LedgerItem;
   /** When true (Hall context): card is a peek — show explicit "View Entry" button, no tap nav */
   previewOnly?: boolean;
+  onOpenTaggedWorks?: (entry: LedgerItem) => void;
   onClick?: () => void;
 }
 
@@ -39,8 +40,13 @@ function formatScore(n: number) {
   return String(n);
 }
 
-export const LedgerWallCard = memo<LedgerWallCardProps>(
-  ({ post, entry, previewOnly = false, onClick }) => {
+export const LedgerWallCard = memo(function LedgerWallCard({
+  post,
+  entry,
+  previewOnly = false,
+  onOpenTaggedWorks,
+  onClick,
+}: LedgerWallCardProps) {
     const navigate = useNavigate();
     const isWatched = entry.status === "watched";
 
@@ -48,7 +54,7 @@ export const LedgerWallCard = memo<LedgerWallCardProps>(
       // Only navigate directly when NOT in preview-only (Hall) mode
       if (!previewOnly) {
         if (onClick) onClick();
-        navigate(`/ledger/${entry.id}`);
+        navigate(`/profile/${entry.artistId || "fh-001"}?tab=library`);
       }
     };
 
@@ -174,23 +180,43 @@ export const LedgerWallCard = memo<LedgerWallCardProps>(
         </div>
         </div>{/* close main row */}
 
-        {/* View Entry button — only shown in previewOnly (Hall) mode */}
+        {/* Action buttons — shown in previewOnly (Hall) mode */}
         {previewOnly && (
-          <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/ledger/${entry.id}`); }}
-            className="
-              flex items-center justify-between w-full
-              px-3.5 py-2.5 mt-0
-              border-t border-white/[0.06]
-              text-[9px] font-black uppercase tracking-[0.2em]
-              text-white/30 hover:text-amber-400
-              hover:bg-white/[0.02]
-              transition-colors duration-150
-            "
-          >
-            <span>View full entry</span>
-            <ChevronRight className="w-3 h-3" />
-          </button>
+          <div className="border-t border-white/[0.06] flex items-center divide-x divide-white/[0.06]">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onOpenTaggedWorks) {
+                  onOpenTaggedWorks(entry);
+                } else {
+                  navigate(`/tagged-works/${entry.originalId}`);
+                }
+              }}
+              className="
+                flex-1 px-3 py-2.5 flex items-center justify-center gap-1.5
+                text-[9px] font-black uppercase tracking-[0.15em]
+                text-amber-400 hover:bg-amber-500/10
+                transition-colors duration-150 cursor-pointer
+              "
+            >
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>Check Collection ({(entry.taggedWorks || []).length || 3})</span>
+            </button>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate(`/profile/${entry.artistId || "fh-001"}?tab=library`); }}
+              className="
+                px-3.5 py-2.5 flex items-center justify-between gap-1
+                text-[9px] font-black uppercase tracking-[0.15em]
+                text-white/30 hover:text-white
+                hover:bg-white/[0.02]
+                transition-colors duration-150 cursor-pointer
+              "
+            >
+              <span>Full Entry</span>
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
         )}
       </motion.div>
     );

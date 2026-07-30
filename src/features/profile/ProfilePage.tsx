@@ -27,7 +27,7 @@ import { buildClusters } from "../theatre/engine/clusterBuilder";
 import { buildMobileClusters } from "../theatre/engine/mobileClusterBuilder";
 import { UnifiedTheatre } from "../theatre/components/UnifiedTheatre";
 import { SectionHeader } from "../../components/SectionHeader";
-import { Film, ArrowRight } from "lucide-react";
+import { Film, ArrowRight, Sparkles } from "lucide-react";
 import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
 import { ProfileHero } from "../shared/profile/ProfileHero";
@@ -482,6 +482,7 @@ const ProfilePage: React.FC = () => {
                     />
                   ))}
                 </div>
+
                 <AnimatePresence>
                   {dossierOriginalId && (
                     <MiniDossierSheet
