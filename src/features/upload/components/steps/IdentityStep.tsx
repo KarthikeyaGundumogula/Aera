@@ -10,12 +10,32 @@ interface IdentityStepProps {
   onNext: () => void;
 }
 
+export function validateWorkTitle(title: string): string | null {
+  if (!title) return null;
+  if (title.length > 100) {
+    return "Title cannot be more than 100 characters.";
+  }
+  if (title.trim() !== title) {
+    return "Title cannot have leading or trailing spaces.";
+  }
+  for (const char of title) {
+    if (char === " ") continue;
+    if (!/\p{L}/u.test(char)) {
+      return `Character '${char}' is not allowed. Only letters and spaces are allowed (no numbers or symbols).`;
+    }
+  }
+  return null;
+}
+
 export function IdentityStep({
   category,
   title,
   setFormData,
   onNext,
 }: IdentityStepProps) {
+  const titleError = validateWorkTitle(title);
+  const isValid = !!title.trim() && !titleError;
+
   return (
     <motion.div
       key="step-identity"
@@ -115,20 +135,33 @@ export function IdentityStep({
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           <input
             type="text"
-            placeholder="Name your release"
+            placeholder="Name your release (letters and spaces only)"
             autoFocus
             value={title}
             onChange={(e) => setFormData({ title: e.target.value })}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-xl font-medium focus:ring-2 focus:ring-white/20 focus:border-white outline-none transition-all placeholder:text-white/10"
+            className={`w-full bg-white/5 border rounded-2xl p-6 text-xl font-medium outline-none transition-all placeholder:text-white/10 ${
+              titleError
+                ? "border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                : "border-white/10 focus:border-white focus:ring-2 focus:ring-white/20"
+            }`}
           />
+          {titleError && (
+            <motion.p
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs font-medium text-red-400 pl-2 tracking-wide"
+            >
+              ⚠️ {titleError}
+            </motion.p>
+          )}
         </div>
 
         <div className="flex items-center justify-end pt-4">
           <button
-            disabled={!title}
+            disabled={!isValid}
             onClick={onNext}
             className="px-10 py-4 bg-white text-black rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/90 disabled:opacity-30 transition-all flex items-center gap-2"
           >
@@ -139,3 +172,4 @@ export function IdentityStep({
     </motion.div>
   );
 }
+

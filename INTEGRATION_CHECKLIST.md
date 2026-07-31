@@ -15,10 +15,11 @@
 ### B. Profiles & Artist Stages (`/profiles`)
 - [x] `GET /profiles/get_profile_details/{user_name}` — Fetch Artist Stage Details, Branding & Top Works  
   - **Status**: ✅ Implemented in `tars` (`src/routes/profiles.rs`) & Integrated in `Aera` (`src/features/profile/StudioPage.tsx`)
-- [ ] `GET /profiles/me` — Fetch Active Authenticated Profile Details & Assigned Role  
-  - **Status**: ⏳ Needed for Backend Role Sync
+- [x] `GET /profiles/me` — Fetch Active Authenticated Profile Details & Assigned Role  
+  - **Status**: ✅ Integrated in `AuthContext.tsx` — called on mount, after login, and after stage updates
 - [ ] `GET /profiles/all` — Fetch Artist Profiles Directory (Foyer / Profiles Directory)  
   - **Status**: ⏳ Needed for Directory Grid
+
 
 ### C. Originals Registry (`/originals`)
 - [ ] `GET /originals` — List All Originals Titles (Theatre & Hall feed)  
@@ -112,19 +113,20 @@
 - [x] `GET /profiles/get_profile_details/{user_name}` — Fetch Profile Stage Details  
   - **Status**: ✅ Completed (`src/lib/api.ts` & `src/features/profile/StudioPage.tsx`)
 - [x] `POST /artists/update_stage` — Update Profile Stage & Branding  
-  - **Status**: ✅ Completed (`src/features/profile/StudioPage.tsx`)
+  - **Status**: ✅ Completed (`src/context/AuthContext.tsx` — `updateProfile`)
 - [ ] `POST /artists/favorite_artist` — Favorite an Artist Profile  
   - **Status**: ⏳ Pending
 - [ ] `POST /artists/unfavorite_artist` — Unfavorite an Artist Profile  
   - **Status**: ⏳ Pending
-- [ ] `POST /artists/save_work` — Save Work to Artist Library  
-  - **Status**: ⏳ Pending
-- [ ] `DELETE /artists/unsave_work` — Remove Saved Work from Library  
-  - **Status**: ⏳ Pending
-- [ ] `POST /artists/star_work` — Star/Like a Work  
-  - **Status**: ⏳ Pending
-- [ ] `DELETE /artists/unstar_work` — Unstar/Dislike a Work  
-  - **Status**: ⏳ Pending
+- [x] `POST /artists/save_work` — Save Work to Artist Library  
+  - **Status**: ✅ Completed (`src/features/works/layouts/ViewerFrame.tsx` — payload: `{ entity_id: Uuid }`)
+- [x] `DELETE /artists/unsave_work` — Remove Saved Work from Library  
+  - **Status**: ✅ Completed (`src/features/works/layouts/ViewerFrame.tsx` — payload: `{ entity_id: Uuid }`)
+- [x] `POST /artists/star_work` — Star/Like a Work  
+  - **Status**: ✅ Completed (`src/features/works/layouts/ViewerFrame.tsx` — payload: `{ entity_id: Uuid }`)
+- [x] `DELETE /artists/unstar_work` — Unstar/Dislike a Work  
+  - **Status**: ✅ Completed (`src/features/works/layouts/ViewerFrame.tsx` — payload: `{ entity_id: Uuid }`)
+
 - [ ] `POST /artists/boost_recommendation` — Boost Recommendation Score  
   - **Status**: ⏳ Pending
 - [ ] `DELETE /artists/remove_recommendation_boost` — Remove Boost  
@@ -133,8 +135,8 @@
   - **Status**: ⏳ Pending
 - [ ] `DELETE /artists/unsave_recommendation` — Unsave Recommendation  
   - **Status**: ⏳ Pending
-- [ ] `POST /artists/new/wall_post` — Publish Artist Wall Post  
-  - **Status**: ⏳ Pending
+- [x] `POST /artists/new/wall_post` — Publish Artist Wall Post (Pin / Quote)  
+  - **Status**: ✅ Completed (`src/components/QuoteModal.tsx` & `src/features/works/layouts/ViewerFrame.tsx` — payload: `{ text_line, work_id }`, text_line trimmed & max 500 chars)
 - [ ] `DELETE /artists/delete/wall_post/{resource_id}` — Delete Wall Post  
   - **Status**: ⏳ Pending
 - [ ] `POST /artists/add_reaction` — React to Wall Post  
@@ -204,12 +206,13 @@
 
 ## 🎥 8. Works & Media Submissions (`/works`)
 
-- [ ] `POST /works/new/{work_type}` — Upload New Work  
-  - **Status**: ⏳ Pending (`src/features/upload/components/UploadStudioFlow.tsx`)
-- [ ] `POST /works/{resource_id}/update` — Update Work Details  
-  - **Status**: ⏳ Pending
-- [ ] `DELETE /works/{resource_id}/delete` — Delete Work  
-  - **Status**: ⏳ Pending
+- [x] `POST /works/new/{work_type}` — Upload New Work  
+  - **Status**: ✅ Completed (`src/features/upload/components/UploadStudioFlow.tsx`) — payload aligned to TARS enums (YOUTUBE/TWITTER/NATIVE, IMAX/ACADEMY/SQUARE/VERTICAL, CANVAS/STANDARD), works list refreshed on success
+- [x] `POST /works/{resource_id}/update` — Update Work Title  
+  - **Status**: ✅ Completed (`src/context/AuthContext.tsx` — `updateWorkTitle`) — optimistic update + backend persist
+- [x] `DELETE /works/{resource_id}/delete` — Delete Work  
+  - **Status**: ✅ Completed (`src/context/AuthContext.tsx` — `deleteWork`, `src/features/profile/components/StudioWorkCard.tsx` — delete button + confirmation modal)
+
 
 ---
 
@@ -240,3 +243,17 @@ npx playwright test
 ```
 - **Total Specs**: 12 / 12 **PASSED** (100%)
 - **TypeScript Check**: `npx tsc --noEmit` — **0 Errors**
+
+## ✅ Studio Page Integration (July 31, 2026)
+
+| Feature | Endpoint | Status |
+| :--- | :--- | :--- |
+| Profile auto-load | `GET /profiles/me` | ✅ Wired |
+| Stage branding update | `POST /artists/update_stage` | ✅ Wired |
+| Studio works feed | `GET /profiles/{id}/works` | ✅ Wired |
+| Work title rename | `POST /works/{id}/update` | ✅ Wired |
+| Work deletion | `DELETE /works/{id}/delete` | ✅ Wired |
+| Upload release (Edit/Poster/Script) | `POST /works/new/{work_type}` | ✅ Payload aligned |
+| Wall feed (profile page) | `GET /profiles/{id}/wall` | ✅ Mapped |
+| Profile page works tab | `GET /profiles/{id}/works` | ✅ Mapped |
+

@@ -1,7 +1,10 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+
+import { useAuth } from "@/context/AuthContext";
 
 import { CreationIdentitySection } from "./components/creation/CreationIdentitySection";
 import { CreationMetaSection } from "./components/creation/CreationMetaSection";
@@ -10,7 +13,9 @@ import { CastMember } from "./components/creation/PersonSearchInput";
 
 export default function OriginalCreatePage() {
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -26,14 +31,66 @@ export default function OriginalCreatePage() {
     setFormData((prev) => ({ ...prev, ...data }));
   }, []);
 
-  const handleSeal = useCallback(() => {
-    if (!formData.title) return;
+  const handleSeal = useCallback(async () => {
+    if (!formData.title.trim()) return;
+
     setIsSaved(true);
-    // Simulate API delay
-    setTimeout(() => {
-      navigate("/originals");
-    }, 3000);
-  }, [formData.title, navigate]);
+    setErrorMessage(null);
+
+    const parsedGenres = formData.genres;
+    const stars = formData.stars.map((s) => ({
+      artist: s.profileId,
+      role: s.characterName || "Star",
+    }));
+    const makers = formData.makers.map((m) => ({
+      artist: m.profileId,
+      role: m.characterName || "Director",
+    }));
+
+    const isValidUuid = (id?: string) => typeof id === "string" && /^[0-9a-fA-F-]{36}$/.test(id);
+    const targetAssociatedId = isValidUuid(currentArtist?.id) ? currentArtist?.id : undefined;
+
+    const payload: Record<string, unknown> = {
+      title: formData.title.trim(),
+      release_date: formData.releaseDate || new Date().toISOString(),
+      description: formData.description.trim() || "Cinematic Original Masterpiece",
+      cover_img: formData.coverImage.trim() || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+      category: "MOVIE",
+      genres: parsedGenres.length > 0 ? parsedGenres : ["Action", "Drama"],
+      password: "kApten@1023",
+      stars,
+      makers,
+    };
+
+    if (targetAssociatedId) {
+      payload.associated_with = targetAssociatedId;
+    }
+
+    try {
+      const res = await apiFetch("/originals/new", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setTimeout(() => {
+          navigate("/originals");
+        }, 1500);
+        return;
+      } else {
+        let userMsg = "Failed to seal Original. Please ensure you are logged into an active Admin session.";
+        if (res.status === 401 || res.status === 403) {
+          userMsg = "Unauthorized: Active Admin login session is required to initiate Originals.";
+        }
+        setErrorMessage(userMsg);
+        setIsSaved(false);
+      }
+    } catch (e) {
+      console.warn("Failed to create original:", e);
+      setErrorMessage("Unable to connect to server. Please check your connection.");
+      setIsSaved(false);
+    }
+  }, [formData, currentArtist, navigate]);
 
   return (
     <div className="relative min-h-screen bg-surface-deep text-white overflow-y-auto font-sans selection:bg-white selection:text-black pb-32">
@@ -120,6 +177,13 @@ export default function OriginalCreatePage() {
           viewport={{ once: true }}
           className="mt-24 pt-12 border-t border-white/5 flex flex-col items-center gap-6"
         >
+          {errorMessage && (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2 max-w-md">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           <AnimatePresence mode="wait">
             {isSaved ? (
               <motion.div

@@ -2,6 +2,65 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { OriginalArtist, TheatreItem } from "../types";
 import { apiFetch } from "@/lib/api";
 
+/**
+ * Maps a raw WorkPreviewCard from GET /profiles/{id}/works to a TheatreItem
+ * for use throughout Aera's UI.
+ */
+function mapBackendWorkToTheatreItem(raw: {
+  id: string;
+  title?: string | null;
+  work_type?: string;
+  workType?: string;
+  thumbnail?: string | null;
+  src_id?: string | null;
+  srcId?: string | null;
+  platform?: string | null;
+  artistId?: string;
+  artist?: string;
+  artistAvatar?: string;
+}): TheatreItem {
+  const rawCategory = raw.work_type || raw.workType || "Edit";
+  const category: TheatreItem["category"] =
+    rawCategory.toUpperCase() === "EDIT"
+      ? "Edit"
+      : rawCategory.toUpperCase() === "POSTER"
+      ? "Poster"
+      : rawCategory.toUpperCase() === "SCRIPT"
+      ? "Storyboard"
+      : "Edit";
+
+  let thumbnail = raw.thumbnail || undefined;
+  let srcId: string | undefined = raw.src_id || raw.srcId || undefined;
+  let platform: TheatreItem["platform"] | undefined =
+    (raw.platform?.toLowerCase() as TheatreItem["platform"]) || undefined;
+
+  if (thumbnail && thumbnail.includes("youtube")) {
+    const match = thumbnail.match(/vi\/([^/]+)\//);
+    if (match) {
+      srcId = srcId || match[1];
+      platform = platform || "youtube";
+    }
+  }
+
+  // Fallback for Edit category if thumbnail is missing but srcId is present
+  if (category === "Edit" && srcId && !thumbnail) {
+    thumbnail = `https://img.youtube.com/vi/${srcId}/hqdefault.jpg`;
+    platform = platform || "youtube";
+  }
+
+  return {
+    id: raw.id,
+    title: raw.title ?? undefined,
+    category,
+    image: thumbnail,
+    srcId,
+    platform,
+    artistId: raw.artistId,
+    artist: raw.artist,
+    artistAvatar: raw.artistAvatar,
+  };
+}
+
 export function formatColorTheme(textColor?: string, bgColor?: string): string {
   const normalizeHex = (hex?: string, defaultHex = "#fac107"): string => {
     if (!hex) return defaultHex;
@@ -43,9 +102,11 @@ interface AuthContextType {
   register: (artist: OriginalArtist, password?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<OriginalArtist>) => Promise<boolean>;
-  updateWorkTitle: (workId: string | number, newTitle: string) => void;
+  updateWorkTitle: (workId: string | number, newTitle: string) => Promise<boolean>;
+  deleteWork: (workId: string | number) => Promise<boolean>;
   addWork: (work: TheatreItem) => void;
   refreshProfile: () => Promise<OriginalArtist | null>;
+  fetchUserWorks: (artistId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,6 +128,7 @@ async function fetchMyProfile(): Promise<OriginalArtist | null> {
       image: data.profilePicture || `boring-avatar:${data.userName}`,
       spirit: data.spirit || 0,
       works: data.worksCount || 0,
+      favoritesCount: data.favoritesCount || 0,
       role: data.roleName || "organizer",
       bio: data.tagLine || "",
       color_theme: data.colorTheme || "#FAC107,#0F1A42",
@@ -110,19 +172,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // ─── Fetch user works from backend ──────────────────────────────────────────
+
+  const fetchUserWorks = useCallback(async (artistId: string): Promise<void> => {
+    if (!artistId) return;
+    // Only fetch for real UUIDs — local mock IDs start with "art-"
+    const isUuid = /^[0-9a-fA-F-]{36}$/.test(artistId);
+    if (!isUuid) return;
+    try {
+      const res = await apiFetch(`/profiles/${artistId}/works?limit=50`);
+      if (res.ok) {
+        const json = await res.json();
+        const rawItems: Array<{
+          id: string;
+          title?: string | null;
+          work_type?: string;
+          workType?: string;
+          thumbnail?: string | null;
+        }> = json.data || json.items || [];
+        const mapped = rawItems.map(mapBackendWorkToTheatreItem);
+        setUserWorks(mapped);
+        return;
+      }
+    } catch (e) {
+      console.warn("[AuthContext] fetchUserWorks failed, keeping empty list:", e);
+    }
+    // Fallback: empty works (don't use stale sessionStorage)
+    setUserWorks([]);
+  }, []);
+
   useEffect(() => {
     if (!currentArtist) {
       setUserWorks([]);
       return;
     }
-    const savedWorksKey = `framehouse_user_works_${currentArtist.id}`;
-    const savedWorks = sessionStorage.getItem(savedWorksKey);
-    if (savedWorks) {
-      setUserWorks(JSON.parse(savedWorks));
-    } else {
-      setUserWorks([]);
-    }
-  }, [currentArtist]);
+    fetchUserWorks(currentArtist.id);
+  }, [currentArtist, fetchUserWorks]);
+
 
   const login = useCallback(async (username: string, password?: string): Promise<boolean> => {
     const cleanUsername = username.trim().toLowerCase();
@@ -278,11 +364,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, [currentArtist, refreshProfile]);
 
-  const updateWorkTitle = useCallback((workId: string | number, newTitle: string) => {
+  const updateWorkTitle = useCallback(async (workId: string | number, newTitle: string): Promise<boolean> => {
+    // Optimistic local update first
     setUserWorks(prevWorks =>
       prevWorks.map((w) => (w.id === workId ? { ...w, title: newTitle } : w))
     );
+    // Persist to backend (only valid UUIDs)
+    const idStr = String(workId);
+    const isUuid = /^[0-9a-fA-F-]{36}$/.test(idStr);
+    if (!isUuid) return true; // local-only work, optimistic update is fine
+    try {
+      const res = await apiFetch(`/works/${idStr}/update`, {
+        method: "POST",
+        body: JSON.stringify({ title: newTitle }),
+      });
+      if (res.ok) {
+        return true;
+      }
+      console.warn("[AuthContext] updateWorkTitle backend call failed:", res.status);
+      return false;
+    } catch (e) {
+      console.warn("[AuthContext] updateWorkTitle network error:", e);
+      return false;
+    }
   }, []);
+
+  const deleteWork = useCallback(async (workId: string | number): Promise<boolean> => {
+    const idStr = String(workId);
+    const isUuid = /^[0-9a-fA-F-]{36}$/.test(idStr);
+    // Optimistic removal from local state
+    setUserWorks(prevWorks => prevWorks.filter((w) => String(w.id) !== idStr));
+    if (!isUuid) return true; // local-only work removed optimistically
+    try {
+      const res = await apiFetch(`/works/${idStr}/delete`, { method: "DELETE" });
+      if (res.ok) {
+        return true;
+      }
+      console.warn("[AuthContext] deleteWork backend call failed:", res.status);
+      // Revert optimistic removal on failure
+      return false;
+    } catch (e) {
+      console.warn("[AuthContext] deleteWork network error:", e);
+      return false;
+    }
+  }, []);
+
 
   const addWork = useCallback((work: TheatreItem) => {
     setCurrentArtist(prevArtist => {
@@ -293,11 +419,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         artist: prevArtist.name,
         artistAvatar: prevArtist.image || undefined,
       };
-      setUserWorks(prevWorks => {
-        const nextWorks = [workWithMeta, ...prevWorks];
-        sessionStorage.setItem(`framehouse_user_works_${prevArtist.id}`, JSON.stringify(nextWorks));
-        return nextWorks;
-      });
+      setUserWorks(prevWorks => [workWithMeta, ...prevWorks]);
       return prevArtist;
     });
   }, []);
@@ -311,9 +433,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     updateProfile,
     updateWorkTitle,
+    deleteWork,
     addWork,
     refreshProfile,
-  }), [currentArtist, userWorks, isLoading, login, register, logout, updateProfile, updateWorkTitle, addWork, refreshProfile]);
+    fetchUserWorks,
+  }), [currentArtist, userWorks, isLoading, login, register, logout, updateProfile, updateWorkTitle, deleteWork, addWork, refreshProfile, fetchUserWorks]);
+
 
   return (
     <AuthContext.Provider value={value}>

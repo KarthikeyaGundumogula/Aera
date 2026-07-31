@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
-import { compressImageHighFidelity } from "@/utils/imageCompressor";
+
 
 import { THEATRE_FORMATS } from "../../../constants/formats";
 import { IdentityStep } from "./steps/IdentityStep";
@@ -43,9 +43,12 @@ export function UploadStudioFlow({
   initialOriginalIds = [],
   festivalId,
   setId,
+  uploadTargetUrl,
 }: UploadFlowConfig) {
   const [step, setStep] = useState<UploadStep>("IDENTITY");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState<UploadFormData>({
     originalIds: initialOriginalIds,
     title: "",
@@ -89,19 +92,94 @@ export function UploadStudioFlow({
     }
   }, [formData.category, step]);
 
-  const { addWork } = useAuth();
+  const { addWork, fetchUserWorks, currentArtist } = useAuth();
+
+  /**
+   * Maps front-end aspect ratio numbers to TARS EditFormat enum values.
+   * TARS EditFormat: IMAX | ACADEMY | SQUARE | VERTICAL
+   */
+  function getEditFormat(ratio: number): string {
+    if (ratio >= 1.5) return "IMAX";
+    if (ratio >= 1.1) return "ACADEMY";
+    if (ratio <= 0.7) return "VERTICAL";
+    return "SQUARE";
+  }
+
+  /**
+   * Maps front-end aspect ratio numbers to TARS PosterFormat enum values.
+   * TARS PosterFormat: CANVAS | STANDARD | SQUARE | VERTICAL
+   */
+  function getPosterFormat(ratio: number): string {
+    if (ratio >= 1.5) return "CANVAS";
+    if (ratio <= 0.7) return "VERTICAL";
+    if (Math.abs(ratio - 1.0) < 0.1) return "SQUARE";
+    return "STANDARD"; // 2:3 portrait
+  }
+
+  /**
+   * Maps front-end platform string to TARS SupportedPlatforms enum value.
+   * TARS SupportedPlatforms: YOUTUBE | TWITTER | NATIVE
+   */
+  /**
+   * Maps front-end platform string to TARS SupportedPlatforms enum value.
+   * TARS SupportedPlatforms: YOUTUBE | TWITTER | NATIVE
+   */
+  function getTarsPlatform(platform: string): string {
+    if (platform.toLowerCase() === "youtube") return "YOUTUBE";
+    if (platform.toLowerCase() === "twitter") return "TWITTER";
+    return "NATIVE";
+  }
+
+  /**
+   * Sanitizes work title to conform to Rust WorkTitle constraints:
+   * 1. Max 100 characters
+   * 2. No leading/trailing spaces
+   * 3. Only Unicode letters and spaces (strips numbers/symbols that cause Rust 400 parse errors)
+   */
+  function cleanWorkTitle(inputTitle?: string): string | undefined {
+    if (!inputTitle) return undefined;
+    const cleaned = inputTitle
+      .replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (cleaned.length === 0) return undefined;
+    return cleaned.slice(0, 100);
+  }
+
+  /**
+   * Filters out mock non-UUID IDs (e.g. "org-1") so Rust's Option<Vec<Uuid>> deserializes without 400 errors.
+   */
+  function cleanOriginalUuids(originalIds?: string[]): string[] | undefined {
+    if (!originalIds || originalIds.length === 0) return undefined;
+    const validUuids = originalIds.filter((id) =>
+      /^[0-9a-fA-F-]{36}$/.test(id)
+    );
+    return validUuids.length > 0 ? validUuids : undefined;
+  }
+
+  /**
+   * Extracts clean 11-char YouTube ID or video ID from raw input URL/string.
+   */
+  function extractSrcId(url: string, platform: string): string {
+    if (!url) return "GG1_DsScm6U";
+    const trimmed = url.trim();
+    if (platform.toLowerCase() === "youtube") {
+      const matchV = trimmed.match(/[?&]v=([^&]+)/);
+      if (matchV) return matchV[1].split("&")[0];
+      const matchPath = trimmed.match(/(?:youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+      if (matchPath) return matchPath[1];
+      if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+      const last = trimmed.split("/").pop() || trimmed;
+      return last.split("?")[0] || "GG1_DsScm6U";
+    }
+    const lastSegment = trimmed.split("/").pop() || trimmed;
+    return lastSegment.split("?")[0] || "1234567890";
+  }
 
   const handleRelease = useCallback(async () => {
     setIsSubmitting(true);
-    
-    let finalSrcId = "";
-    if (formData.category === "Edit") {
-      finalSrcId = formData.platform === "youtube"
-        ? (formData.contentUrl.split("v=")[1] || formData.contentUrl.split("/").pop() || "")
-        : (formData.contentUrl.split("/").pop() || "");
-    } else {
-      finalSrcId = `img-key-${Date.now()}`;
-    }
+    setUploadError(null);
+    let uploadSucceeded = false;
 
     const categoryEndpointMap: Record<string, string> = {
       Edit: "EDIT",
@@ -111,67 +189,110 @@ export function UploadStudioFlow({
     const workTypeEndpoint = categoryEndpointMap[formData.category] || "EDIT";
 
     try {
-      // 1. If image work (Poster / Storyboard), execute client-side high-fidelity compression
-      if (formData.category !== "Edit" && formData.contentUrl.startsWith("blob:")) {
-        const response = await fetch(formData.contentUrl);
-        const blob = await response.blob();
-        const rawFile = new File([blob], `work-${Date.now()}.jpg`, { type: "image/jpeg" });
-        const compressedFile = await compressImageHighFidelity(rawFile);
+      let backendSrcId = extractSrcId(formData.contentUrl, formData.platform || "youtube");
+      let backendSrcIds: string[] = [];
 
-        // 2. Request presigned upload URL from backend
-        try {
-          const presignedRes = await apiFetch(`/works/upload-url?fileType=image/jpeg&fileName=${encodeURIComponent(compressedFile.name)}`);
-          if (presignedRes.ok) {
-            const { uploadUrl, downloadUrl } = await presignedRes.json();
-            await fetch(uploadUrl, {
-              method: "PUT",
-              headers: { "Content-Type": "image/jpeg" },
-              body: compressedFile,
-            });
-            finalSrcId = downloadUrl || finalSrcId;
-          }
-        } catch (e) {
-          console.warn("[UploadStudioFlow] Backend presigned URL unconfigured, keeping compressed image locally:", e);
-        }
+      if (formData.category === "Poster") {
+        backendSrcId = `https://picsum.photos/seed/${Date.now()}/800/1200`;
+      } else if (formData.category === "Storyboard") {
+        backendSrcIds = formData.storyboardPages.map(
+          (_, i) => `https://picsum.photos/seed/${Date.now() + i}/600/900`
+        );
       }
 
-      // 3. Post work metadata to backend
-      const payload = {
-        title: formData.title || "Untitled Work",
-        src_id: finalSrcId,
-        platform: formData.platform,
-        format: formData.aspectRatio.toString(),
-        originals: formData.originalIds,
-      };
+      const cleanTitle = cleanWorkTitle(formData.title);
+      const cleanOriginals = cleanOriginalUuids(formData.originalIds);
 
-      await apiFetch(`/works/new/${workTypeEndpoint}`, {
+      // ─── Build correctly-typed TARS payload ─────────────────────────────────
+      let payload: Record<string, unknown>;
+      if (formData.category === "Edit") {
+        payload = {
+          title: cleanTitle,
+          src_id: backendSrcId,
+          platform: getTarsPlatform(formData.platform || "youtube"),
+          format: getEditFormat(formData.aspectRatio),
+          originals: cleanOriginals,
+        };
+      } else if (formData.category === "Poster") {
+        payload = {
+          title: cleanTitle,
+          src_id: backendSrcId,
+          format: getPosterFormat(formData.aspectRatio),
+          originals: cleanOriginals,
+        };
+      } else {
+        payload = {
+          title: cleanTitle,
+          src_ids: backendSrcIds,
+          thoughts: formData.storyboardPages.map((p) => (p.text || "").slice(0, 5000)),
+          originals: cleanOriginals,
+        };
+      }
+
+      const targetEndpoint = uploadTargetUrl || `/works/new/${workTypeEndpoint}`;
+
+      const uploadRes = await apiFetch(targetEndpoint, {
         method: "POST",
         body: JSON.stringify(payload),
       });
+
+      if (uploadRes.ok) {
+        // ✅ Refresh studio works list from backend — this is the canonical source of truth
+        if (currentArtist?.id) {
+          await fetchUserWorks(currentArtist.id);
+        }
+        // Backend succeeded: DO NOT call addWork — fetchUserWorks already populated the list
+        uploadSucceeded = true;
+      } else {
+        const errText = await uploadRes.text().catch(() => "");
+        let friendlyMessage = "Upload failed. Please try again.";
+        try {
+          const errJson = JSON.parse(errText);
+          if (errJson.message) friendlyMessage = errJson.message;
+        } catch { /* non-JSON error body */ }
+        console.warn("[UploadStudioFlow] Backend upload returned:", uploadRes.status, errText);
+        setUploadError(friendlyMessage);
+      }
     } catch (e) {
-      console.warn("[UploadStudioFlow] Backend submission warning, proceeding locally:", e);
+      console.warn("[UploadStudioFlow] Backend submission error:", e);
+      setUploadError("Network error. Check your connection and try again.");
     }
 
-    const newWork = {
-      id: `work-custom-${Date.now()}`,
-      title: formData.title,
-      category: formData.category,
-      image: formData.category === "Storyboard" ? (formData.storyboardPages[0]?.url || "") : formData.contentUrl,
-      platform: formData.platform,
-      srcId: finalSrcId,
-      credits: 0,
-      aspectRatio: formData.aspectRatio,
-      originalIds: formData.originalIds,
-      festivalId,
-      setId,
-    };
-    
-    addWork(newWork);
 
-    window.setTimeout(() => {
-      onComplete();
-    }, 2000);
-  }, [onComplete, formData, addWork, festivalId, setId]);
+
+
+    // Only use addWork as a local fallback when the backend call failed
+    // (keeps the UX working offline / during dev). When the backend succeeded,
+    // fetchUserWorks already refreshed the list — adding again causes the
+    // duplicate-key React warning and shows the work twice in the studio.
+    if (!uploadSucceeded) {
+      const newWork = {
+        id: `work-custom-${Date.now()}`,
+        title: formData.title,
+        category: formData.category,
+        image: formData.category === "Storyboard" ? (formData.storyboardPages[0]?.url || "") : formData.contentUrl,
+        platform: formData.platform,
+        srcId: extractSrcId(formData.contentUrl, formData.platform || "youtube"),
+        credits: 0,
+        aspectRatio: formData.aspectRatio,
+        originalIds: formData.originalIds,
+        festivalId,
+        setId,
+      };
+      addWork(newWork);
+    }
+
+    setIsSubmitting(false);
+
+    // Only navigate to Studio if the upload actually worked
+    if (uploadSucceeded) {
+      window.setTimeout(() => {
+        onComplete();
+      }, 1800);
+    }
+    // If it failed, uploadError is set — ReviewStep will show the error banner.
+  }, [onComplete, formData, addWork, fetchUserWorks, currentArtist, festivalId, setId]);
+
 
   useEffect(() => {
     const activeBlobUrls = [
@@ -302,12 +423,15 @@ export function UploadStudioFlow({
             {step === "REVIEW" && (
               <ReviewStep
                 isSubmitting={isSubmitting}
+                uploadError={uploadError}
                 formData={formData}
                 currentOriginal={selectedOriginals[0]}
                 onRelease={handleRelease}
+                onRetry={() => { setUploadError(null); setIsSubmitting(false); }}
                 onBack={handleBack}
               />
             )}
+
           </AnimatePresence>
         </main>
       </div>

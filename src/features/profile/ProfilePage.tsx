@@ -31,6 +31,42 @@ import { getWallPostsByArtist } from "../../mock/wall";
 import { useAuth, parseColorTheme } from "../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { TheatreItem } from "../../types";
+import type { WallPost } from "../../types/wall";
+
+
+/**
+ * Maps a TARS WallPostItem (GET /profiles/{id}/wall) to the frontend WallPost type.
+ * Infers the post type from which optional pin field is present.
+ */
+function mapBackendWallPost(raw: {
+  id: string;
+  artistId: string;
+  artistName: string;
+  artistImage: string;
+  text?: string | null;
+  pinnedWorkId?: string | null;
+  pinnedOriginalId?: string | null;
+  pinnedRecommendationId?: string | null;
+  postedAt: string;
+}): WallPost {
+  let type: WallPost["type"] = "LINE";
+  if (raw.pinnedWorkId) type = "PIN_WORK";
+  else if (raw.pinnedOriginalId) type = "PIN_ORIGINAL";
+  else if (raw.pinnedRecommendationId) type = "RECOMMENDATION";
+
+  return {
+    id: raw.id,
+    artistId: raw.artistId,
+    artistName: raw.artistName,
+    artistImage: raw.artistImage || `boring-avatar:${raw.artistId}`,
+    type,
+    text: raw.text ?? undefined,
+    pinnedWorkId: raw.pinnedWorkId ?? undefined,
+    pinnedOriginalId: raw.pinnedOriginalId ?? undefined,
+    pinnedRecommendationId: raw.pinnedRecommendationId ?? undefined,
+    postedAt: raw.postedAt,
+  };
+}
 
 const THEMES: Record<
   string,
@@ -48,6 +84,7 @@ const THEMES: Record<
   "profile-ram-charan": {
     bg: "#050505",
     nameGradient: ["#737373", "#e5e5e5"],
+
     grainOpacity: 0.05,
   },
   "fh-001": {
@@ -195,8 +232,8 @@ const ProfilePage: React.FC = () => {
             handle: cleanHandle,
             tagline: currentArtist.bio || "Visionary Artist",
             image: currentArtist.image || `boring-avatar:${cleanHandle}`,
-            spirit: currentArtist.spirit.toLocaleString(),
-            favoritesCount: "1.2K",
+            spirit: (currentArtist.spirit || 0).toLocaleString(),
+            favoritesCount: (currentArtist.favoritesCount || 0).toLocaleString(),
             type: "ARTIST",
             socials: currentArtist.socials,
             colorTheme: currentArtist.color_theme || `${currentArtist.themeTextColor || "#fac107"},${currentArtist.themeBgColor || "#0f1a42"}`,
@@ -220,7 +257,7 @@ const ProfilePage: React.FC = () => {
               tagline: stage.tagLine || "Visionary Artist",
               image: stage.profilePicture || `boring-avatar:${stage.userName || cleanHandle}`,
               spirit: (stage.spirit || 0).toLocaleString(),
-              favoritesCount: "1.2K",
+              favoritesCount: (stage.favoritesCount || 0).toLocaleString(),
               type: "ARTIST",
               socials: {
                 instagram: stage.instagramProfile || undefined,
@@ -352,6 +389,28 @@ const ProfilePage: React.FC = () => {
 
   const profile = backendProfile;
 
+  const handleFavoriteToggle = async () => {
+    if (!profile) return;
+    const nextState = !isFavorited;
+    setIsFavorited(nextState);
+
+    const currentNum = parseInt(String(profile.favoritesCount).replace(/,/g, ""), 10) || 0;
+    const newNum = Math.max(0, nextState ? currentNum + 1 : currentNum - 1);
+    setBackendProfile(prev => prev ? { ...prev, favoritesCount: newNum.toLocaleString() } : prev);
+
+    if (/^[0-9a-fA-F-]{36}$/.test(profile.id)) {
+      try {
+        const endpoint = nextState ? "/artists/favorite_artist" : "/artists/unfavorite_artist";
+        await apiFetch(endpoint, {
+          method: "POST",
+          body: JSON.stringify({ artist_id: profile.id }),
+        });
+      } catch (e) {
+        console.warn("Failed to update favorite status on backend:", e);
+      }
+    }
+  };
+
   const parsedTheme = useMemo(() => {
     if (profile?.colorTheme) {
       return parseColorTheme(profile.colorTheme);
@@ -370,6 +429,15 @@ const ProfilePage: React.FC = () => {
     return GRID_ITEMS.filter((w) => w.artistId === profile.id);
   }, [profile, backendWorks]);
 
+  const mappedWallPosts = useMemo<WallPost[]>(() => {
+    if (backendWallPosts.length > 0) {
+      // Map raw backend WallPostItem shapes to the frontend WallPost type
+      return backendWallPosts.map(mapBackendWallPost);
+    }
+    // Fallback to mock wall posts for non-UUID artist profiles (stars, makers, mocks)
+    return getWallPostsByArtist(profileId ?? "");
+  }, [backendWallPosts, profileId]);
+
   const currentArtistId = profileId || "fh-001";
 
   const artistOriginals = useMemo(() => {
@@ -386,6 +454,7 @@ const ProfilePage: React.FC = () => {
       return hasLedger || hasRec || hasWork;
     });
   }, [currentArtistId, userWorks]);
+
 
   if (isInitialLoading) return <ProfileSkeleton />;
 
@@ -491,7 +560,7 @@ const ProfilePage: React.FC = () => {
         favoritesCount={profile.favoritesCount}
         theme={heroTheme}
         isFavorited={isFavorited}
-        onFavorite={() => setIsFavorited(!isFavorited)}
+        onFavorite={handleFavoriteToggle}
         socials={profile.socials}
         className="pt-16 md:pt-32 pb-8"
       />
@@ -575,11 +644,12 @@ const ProfilePage: React.FC = () => {
             {activeTab === "WALL" && (
               <div className="mt-4 -mx-8 md:mx-0">
                 <WallFeed
-                  posts={backendWallPosts.length > 0 ? backendWallPosts : getWallPostsByArtist(profileId ?? "")}
+                  posts={mappedWallPosts}
                   themeGradient={[parsedTheme.themeTextColor, parsedTheme.themeTextColor]}
                 />
               </div>
             )}
+
 
             {activeTab === "LIBRARY" && (
               <>

@@ -19,6 +19,30 @@ interface SourceStepProps {
   onBack: () => void;
 }
 
+export function validateSourceUrl(url: string, platform: UploadPlatform): string | null {
+  if (!url || !url.trim()) return null;
+  const trimmed = url.trim();
+
+  if (platform === "youtube") {
+    const matchV = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    const matchPath = trimmed.match(/(?:youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+    const isDirectId = /^[a-zA-Z0-9_-]{11}$/.test(trimmed);
+
+    if (!matchV && !matchPath && !isDirectId) {
+      return "Invalid YouTube link. Please provide a valid YouTube video URL or 11-character video ID.";
+    }
+  } else if (platform === "twitter") {
+    const matchStatus = trimmed.match(/(?:twitter\.com|x\.com)\/[^/]+\/status\/(\d+)/i);
+    const isDirectNumeric = /^\d{10,22}$/.test(trimmed);
+
+    if (!matchStatus && !isDirectNumeric) {
+      return "Invalid Twitter/X link. Please provide a valid tweet status URL (e.g. x.com/user/status/123...) or status ID.";
+    }
+  }
+
+  return null;
+}
+
 export function SourceStep({ 
   category,
   platform, 
@@ -69,7 +93,10 @@ export function SourceStep({
     setFormData({ storyboardPages: updated });
   };
 
-  const canProceed = isStoryboard ? storyboardPages.length > 0 : !!contentUrl;
+  const urlError = !isPoster && !isStoryboard ? validateSourceUrl(contentUrl, platform) : null;
+  const canProceed = isStoryboard
+    ? storyboardPages.length > 0
+    : !!contentUrl.trim() && !urlError;
 
   return (
     <motion.div
@@ -117,15 +144,28 @@ export function SourceStep({
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2">
               <input 
                 type="url"
-                placeholder={platform === 'youtube' ? "Paste YouTube link..." : "Paste Twitter/X status link..."}
+                placeholder={platform === 'youtube' ? "Paste YouTube link (e.g. youtube.com/watch?v=...)" : "Paste Twitter/X status link (e.g. x.com/user/status/...)"}
                 autoFocus
                 value={contentUrl}
                 onChange={(e) => setFormData({ contentUrl: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-base font-mono focus:ring-2 focus:ring-white/20 focus:border-white outline-none transition-all placeholder:text-white/10"
+                className={`w-full bg-white/5 border rounded-2xl p-6 text-base font-mono outline-none transition-all placeholder:text-white/10 ${
+                  urlError
+                    ? "border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                    : "border-white/10 focus:border-white focus:ring-2 focus:ring-white/20"
+                }`}
               />
+              {urlError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs font-medium text-red-400 pl-2 tracking-wide"
+                >
+                  ⚠️ {urlError}
+                </motion.p>
+              )}
             </div>
           </>
         ) : isPoster ? (

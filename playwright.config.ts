@@ -74,8 +74,9 @@ export default defineConfig({
       //   - Seeds user_roles
       //   - Binds Axum to port 8080
       //   - Prints "E2E_SERVER_READY" on startup
-      command: 'cd ../tars && APP_ENV=test cargo run --bin e2e_server',
+      command: 'cd ../tars && APP_ENV=test cargo run',
       url: 'http://localhost:8080/health_check',
+
       reuseExistingServer: !process.env.CI,
       // 120s timeout: accommodates cold Rust compilation on first run.
       // Subsequent runs are fast due to incremental build cache (target/).

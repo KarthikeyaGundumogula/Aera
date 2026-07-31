@@ -42,3 +42,5 @@
 9. **Image Alignment**: Always ensure images (`img` tags) use `object-cover object-top`. Images must be attached to the top of their container, and any necessary cropping should happen only at the bottom. This is a platform-wide cinematic design requirement.
 10. **Global Dark Theme**: Never hardcode `bg-[#050505]` for deep black backgrounds. Always use the semantic token `bg-surface-deep` globally across the application.
 11. **Committing Changes**: When writing commit messages, read the codebase context to write a highly appropriate and meaningful message. Never automatically commit changes after an operation—only commit when explicitly asked to do so.
+12. **Database Schema & Migrations**: The user handles 100% of the database schema design and migrations. **NEVER** create, modify, alter, delete, or generate any database migration files (`tars/migrations/*`) or attempt database schema modifications.
+

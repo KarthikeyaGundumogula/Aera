@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, memo } from "react";
-import { Pencil, Check, X, Film, FileText, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Pencil, Check, X, Film, FileText, Image as ImageIcon, Sparkles, Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 import { getYoutubeFallbackThumbnail } from "../../../utils/embed";
@@ -7,16 +7,22 @@ import { ModalWrapper } from "../../shared/modals/ModalWrapper";
 
 interface StudioWorkCardProps {
   item: TheatreItem;
-  onRename: (newTitle: string) => void;
+  onRename: (newTitle: string) => Promise<boolean> | void;
+  onDelete?: () => Promise<boolean> | void;
 }
 
-export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename }: StudioWorkCardProps) {
+export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename, onDelete }: StudioWorkCardProps) {
   const { openWork } = useWorkNavigation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(item.title || "");
   const [isLoaded, setIsLoaded] = useState(false);
   const [imgSrc, setImgSrc] = useState(item.image);
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
+  const [titleSaveStatus, setTitleSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
 
   // Sync title from parent if it changes
   useEffect(() => {
@@ -36,22 +42,52 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename }: S
     setIsEditing(true);
   };
 
-  const handleSave = (e?: React.FormEvent | React.MouseEvent) => {
+  const handleSave = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
     if (editedTitle.trim() && editedTitle !== item.title) {
-      onRename(editedTitle.trim());
+      setIsSavingTitle(true);
+      setTitleSaveStatus("idle");
+      const result = await onRename(editedTitle.trim());
+      setIsSavingTitle(false);
+      if (result === false) {
+        setTitleSaveStatus("error");
+        setTimeout(() => setTitleSaveStatus("idle"), 3000);
+      } else {
+        setTitleSaveStatus("success");
+        setTimeout(() => setTitleSaveStatus("idle"), 2000);
+        setIsEditing(false);
+        return;
+      }
+    } else {
+      setIsEditing(false);
     }
-    setIsEditing(false);
   };
+
 
   const handleCancel = (e: React.MouseEvent) => {
     e.stopPropagation();
     setEditedTitle(item.title || "");
     setIsEditing(false);
+    setTitleSaveStatus("idle");
   };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onDelete) return;
+    setIsDeleting(true);
+    await onDelete();
+    setIsDeleting(false);
+    setIsDeleteConfirmOpen(false);
+  };
+
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -142,6 +178,19 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename }: S
             <span className="text-[9px] font-black uppercase tracking-wider">EDIT</span>
           </button>
         )}
+
+        {/* Delete Button (Bottom Right) - visible on hover or always on mobile */}
+        {!isEditing && onDelete && (
+          <button
+            onClick={handleDeleteClick}
+            className="absolute bottom-2 right-2 z-20 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-950/80 border border-red-500/30 text-red-400 hover:bg-red-600 hover:text-white active:scale-95 transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+            aria-label="Delete work"
+          >
+            <Trash2 className="w-3 h-3" />
+            <span className="text-[8px] font-black uppercase tracking-wider hidden md:inline">DEL</span>
+          </button>
+        )}
+
       </div>
 
       {/* Spacious Modal Overlay for renaming */}
@@ -165,25 +214,69 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename }: S
               onKeyDown={handleKeyDown}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-sm font-bold text-white focus:border-white/30 focus:bg-white/10 outline-none transition-all"
               placeholder="New work title"
+              disabled={isSavingTitle}
             />
+            {titleSaveStatus === "error" && (
+              <p className="text-[9px] font-bold text-red-400 uppercase tracking-wider pl-1 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" /> Failed to save title. Try again.
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3 justify-end mt-2">
             <button
               onClick={(e) => handleCancel(e)}
-              className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white/60 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+              disabled={isSavingTitle}
+              className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white/60 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all disabled:opacity-40"
             >
               Cancel
             </button>
             <button
               onClick={(e) => handleSave(e)}
-              className="px-6 py-3 rounded-xl bg-white text-black hover:bg-white/90 text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+              disabled={isSavingTitle}
+              className="px-6 py-3 rounded-xl bg-white text-black hover:bg-white/90 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2 disabled:opacity-40"
             >
-              Save Title
+              {isSavingTitle ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+              {isSavingTitle ? "Saving..." : "Save Title"}
             </button>
           </div>
         </div>
       </ModalWrapper>
+
+      {/* Delete Confirmation Modal */}
+      {onDelete && (
+        <ModalWrapper isOpen={isDeleteConfirmOpen} onClose={() => !isDeleting && setIsDeleteConfirmOpen(false)}>
+          <div className="w-full max-w-sm bg-[#0b0c10] border border-red-500/20 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+                <h3 className="text-base font-black uppercase tracking-tight text-white/80">Delete Release?</h3>
+              </div>
+              <p className="text-[10px] text-white/40 font-medium leading-relaxed">
+                This will permanently remove <span className="text-white/70 font-bold">&ldquo;{item.title || "Untitled Work"}&rdquo;</span> from your studio. This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsDeleteConfirmOpen(false); }}
+                disabled={isDeleting}
+                className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white/60 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all disabled:opacity-40"
+              >
+                Keep
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2 disabled:opacity-60"
+              >
+                {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </ModalWrapper>
+      )}
+
 
       {/* ─── Metadata Strip ─── */}
       <div className="flex flex-col p-3 border-t border-white/5 gap-1">

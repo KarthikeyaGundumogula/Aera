@@ -14,6 +14,7 @@ import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { ARTISTS_MOCK } from "../../../mock";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
+import { apiFetch } from "@/lib/api";
 
 // Simple deterministic stat generator based on ID
 function generateStat(id: string | number, multiplier: number, offset: number = 0): number {
@@ -108,6 +109,14 @@ export function ViewerFrame({
     setDoubleTapFlash(true);
     starTimeout.current = setTimeout(() => setStaring(false), 420);
     flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 1000);
+
+    const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
+    if (isUuid) {
+      apiFetch("/artists/star_work", {
+        method: "POST",
+        body: JSON.stringify({ entity_id: item.id }),
+      }).catch((e) => console.warn("[ViewerFrame] fireStar backend error:", e));
+    }
   };
 
   const handleStarBtn = () => {
@@ -121,6 +130,16 @@ export function ViewerFrame({
       flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 1000);
     }
     starTimeout.current = setTimeout(() => setStaring(false), 420);
+
+    const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
+    if (isUuid) {
+      const endpoint = next ? "/artists/star_work" : "/artists/unstar_work";
+      const method = next ? "POST" : "DELETE";
+      apiFetch(endpoint, {
+        method,
+        body: JSON.stringify({ entity_id: item.id }),
+      }).catch((e) => console.warn("[ViewerFrame] star_work error:", e));
+    }
   };
 
   const triggerDoubleTap = () => {
@@ -137,6 +156,33 @@ export function ViewerFrame({
     if (next) {
       setToastMsg("Pinned to Wall");
       setTimeout(() => setToastMsg(null), 3000);
+
+      const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
+      if (isUuid) {
+        apiFetch("/artists/new/wall_post", {
+          method: "POST",
+          body: JSON.stringify({ work_id: item.id }),
+        }).catch((e) => console.warn("[ViewerFrame] pin wall_post error:", e));
+      }
+    }
+  };
+
+  const handleSaveToggle = () => {
+    const next = !saved;
+    setSaved(next);
+    if (next) {
+      setToastMsg("Saved to Library");
+      setTimeout(() => setToastMsg(null), 2500);
+    }
+
+    const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
+    if (isUuid) {
+      const endpoint = next ? "/artists/save_work" : "/artists/unsave_work";
+      const method = next ? "POST" : "DELETE";
+      apiFetch(endpoint, {
+        method,
+        body: JSON.stringify({ entity_id: item.id }),
+      }).catch((e) => console.warn("[ViewerFrame] save_work error:", e));
     }
   };
 
@@ -303,7 +349,7 @@ export function ViewerFrame({
                     
                     <SaveAction
                       isActive={saved}
-                      onClick={() => setSaved((s) => !s)}
+                      onClick={handleSaveToggle}
                       count={formatStat(saved ? savesCount + 1 : savesCount)}
                       variant="viewer"
                     />

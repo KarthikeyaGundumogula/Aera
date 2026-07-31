@@ -1,18 +1,66 @@
 import { motion } from "motion/react";
-import { Sparkles, Clapperboard } from "lucide-react";
+import { Sparkles, Clapperboard, AlertTriangle, RotateCcw } from "lucide-react";
 import { WorkPreview } from "../WorkPreview";
 import type { Original } from "../../../../types";
 import type { UploadFormData } from "../../types";
 
 interface ReviewStepProps {
   isSubmitting: boolean;
+  uploadError?: string | null;
   formData: UploadFormData;
   currentOriginal?: Original;
   onRelease: () => void;
+  onRetry?: () => void;
   onBack: () => void;
 }
 
-export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease, onBack }: ReviewStepProps) {
+export function ReviewStep({ isSubmitting, uploadError, formData, currentOriginal, onRelease, onRetry, onBack }: ReviewStepProps) {
+  // ── Error state after a failed upload attempt ──────────────────────────────
+  if (uploadError) {
+    return (
+      <div className="text-center py-20">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="space-y-10 max-w-sm mx-auto"
+        >
+          <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
+            <div className="absolute inset-0 rounded-xl bg-red-500/10 border border-red-500/30" />
+            <AlertTriangle className="w-14 h-14 text-red-400" />
+          </div>
+
+          <div className="space-y-3">
+            <h1 className="text-2xl font-black uppercase tracking-[0.15em] text-white">
+              Release Failed
+            </h1>
+            <p className="text-white/50 text-xs leading-relaxed font-medium">
+              {uploadError}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="w-full py-5 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
+              >
+                <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+                Try Again
+              </button>
+            )}
+            <button
+              onClick={onBack}
+              className="text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-widest py-2"
+            >
+              ← Go Back
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ── Submission in-progress animation ──────────────────────────────────────
   if (isSubmitting) {
     return (
       <div className="text-center py-20">
@@ -55,6 +103,7 @@ export function ReviewStep({ isSubmitting, formData, currentOriginal, onRelease,
     );
   }
 
+  // ── Idle review form ───────────────────────────────────────────────────────
   return (
     <motion.div
       key="step-review"

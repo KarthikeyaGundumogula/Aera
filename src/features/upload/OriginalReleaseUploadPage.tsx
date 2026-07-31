@@ -19,6 +19,7 @@ export default function OriginalReleaseUploadPage() {
       onComplete={() => navigate(`/originals/${id}`)}
       originals={[original]}
       initialOriginalIds={id ? [id] : []}
+      uploadTargetUrl={id && /^[0-9a-fA-F-]{36}$/.test(id) ? `/originals/${id}/new_release/EDIT` : undefined}
     />
   );
 }

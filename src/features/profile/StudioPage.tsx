@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Film, Plus, X, Shield, ShieldCheck, Check, AlertCircle } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, formatColorTheme } from "../../context/AuthContext";
 import { StudioWorkCard } from "./components/StudioWorkCard";
 import { LiveStagePreview } from "./components/LiveStagePreview";
 import { Logo } from "../../components/Logo";
@@ -12,9 +12,11 @@ import ArtistSetupPage from "./ArtistSetupPage";
 import { PasswordResetModal } from "./components/PasswordResetModal";
 import { UnsavedChangesModal } from "./components/UnsavedChangesModal";
 import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
+import { FHLoader } from "../../components/FHLoader";
 
 export default function StudioPage() {
-  const { currentArtist, userWorks, updateProfile, updateWorkTitle } = useAuth();
+  const { currentArtist, userWorks, updateProfile, updateWorkTitle, deleteWork, refreshProfile } = useAuth();
+
   const navigate = useNavigate();
 
   // Profile Form States
@@ -59,16 +61,23 @@ export default function StudioPage() {
     }
   }, [currentArtist]);
 
+  const normalizeHex = (hex?: string, defaultHex = "#FAC107") => {
+    if (!hex) return defaultHex.toUpperCase();
+    let clean = hex.trim();
+    if (!clean.startsWith("#")) clean = `#${clean}`;
+    return clean.toUpperCase();
+  };
+
   const isDirty = 
     stageName.trim() !== (currentArtist?.name || "").trim() ||
     tagline.trim() !== (currentArtist?.bio || "").trim() ||
     (portraitPreview || null) !== (currentArtist?.image || null) ||
     imagePosition !== (currentArtist?.imagePosition || "50% 0%") ||
-    socials.instagram !== (currentArtist?.socials?.instagram || "") ||
-    socials.twitter !== (currentArtist?.socials?.twitter || "") ||
-    socials.youtube !== (currentArtist?.socials?.youtube || "") ||
-    themeTextColor.toLowerCase() !== (currentArtist?.themeTextColor || "#fac107").toLowerCase() ||
-    themeBgColor.toLowerCase() !== (currentArtist?.themeBgColor || "#0f1a42").toLowerCase();
+    socials.instagram.trim() !== (currentArtist?.socials?.instagram || "").trim() ||
+    socials.twitter.trim() !== (currentArtist?.socials?.twitter || "").trim() ||
+    socials.youtube.trim() !== (currentArtist?.socials?.youtube || "").trim() ||
+    normalizeHex(themeTextColor, "#FAC107") !== normalizeHex(currentArtist?.themeTextColor, "#FAC107") ||
+    normalizeHex(themeBgColor, "#0F1A42") !== normalizeHex(currentArtist?.themeBgColor, "#0F1A42");
 
   useEffect(() => {
     if (isDirty && !trapActiveRef.current) {
@@ -143,8 +152,10 @@ export default function StudioPage() {
   }
 
   const handleProfileSave = async () => {
+    if (isSaving) return;
     setIsSaving(true);
     setSaveStatus("idle");
+    const startTime = Date.now();
 
     const success = await updateProfile({
       name: stageName,
@@ -154,8 +165,32 @@ export default function StudioPage() {
       socials: socials,
       themeTextColor,
       themeBgColor,
-      color_theme: `${themeTextColor},${themeBgColor}`,
+      color_theme: formatColorTheme(themeTextColor, themeBgColor),
     });
+
+    if (success) {
+      const refreshed = await refreshProfile();
+      if (refreshed) {
+        setStageName(refreshed.name || "");
+        setTagline(refreshed.bio || "");
+        setPortraitPreview(refreshed.image || null);
+        setImagePosition(refreshed.imagePosition || "50% 0%");
+        setSocials({
+          instagram: refreshed.socials?.instagram || "",
+          twitter: refreshed.socials?.twitter || "",
+          youtube: refreshed.socials?.youtube || "",
+        });
+        setThemeTextColor(refreshed.themeTextColor || "#fac107");
+        setThemeBgColor(refreshed.themeBgColor || "#0f1a42");
+      }
+    }
+
+    // Ensure minimum smooth loader visibility for visual UX feedback
+    const elapsedTime = Date.now() - startTime;
+    const minLoaderTime = 750;
+    if (elapsedTime < minLoaderTime) {
+      await new Promise((r) => setTimeout(r, minLoaderTime - elapsedTime));
+    }
 
     setIsSaving(false);
     if (success) {
@@ -350,9 +385,20 @@ export default function StudioPage() {
             <button
               onClick={handleProfileSave}
               disabled={!isDirty || isSaving}
-              className="w-full py-3.5 bg-white text-black hover:bg-white/90 disabled:opacity-20 disabled:hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 shadow-lg"
+              className={`w-full py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 shadow-lg ${
+                isDirty && !isSaving
+                  ? "bg-white text-black hover:bg-white/90 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                  : "bg-white/10 text-white/30 border border-white/10 cursor-not-allowed"
+              }`}
             >
-              {isSaving ? "Saving Stage..." : "Save Stage"}
+              {isSaving ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  Saving...
+                </span>
+              ) : (
+                "Save Stage"
+              )}
             </button>
           </div>
         </section>
@@ -410,8 +456,10 @@ export default function StudioPage() {
                   key={work.id}
                   item={work}
                   onRename={(newTitle) => updateWorkTitle(work.id, newTitle)}
+                  onDelete={() => deleteWork(work.id)}
                 />
               ))}
+
             </div>
           ) : (
             <EmptyState
@@ -422,6 +470,21 @@ export default function StudioPage() {
           )}
         </section>
       </div>
+
+      <AnimatePresence>
+        {isSaving && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+          >
+            <div className="p-8 bg-[#0b0c10] border border-white/10 rounded-3xl shadow-2xl flex flex-col items-center">
+              <FHLoader label="Saving & Synchronizing Stage Profile..." />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <PasswordResetModal 
         isOpen={isPasswordModalOpen} 

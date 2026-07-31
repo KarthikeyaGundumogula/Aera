@@ -3,16 +3,19 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, Send, Pin, Star, BookPlus } from "lucide-react";
 import { TheatreItem } from "../types";
 
+import { apiFetch } from "@/lib/api";
+
 interface QuoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   item: TheatreItem;
   renderTop?: React.ReactNode;
+  onQuoteSubmit?: (quoteText: string, item: TheatreItem) => Promise<boolean | void>;
 }
 
 const AMBER_GLOW = "rgba(217,119,6,0.30)";
 
-export function QuoteModal({ isOpen, onClose, item, renderTop }: QuoteModalProps) {
+export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: QuoteModalProps) {
   const [quoteText, setQuoteText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [peakFlash, setPeakFlash] = useState(false);
@@ -49,12 +52,35 @@ export function QuoteModal({ isOpen, onClose, item, renderTop }: QuoteModalProps
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, onClose]);
 
-  const canSubmit = quoteText.trim().length > 0;
+  const canSubmit = quoteText.trim().length > 0 && quoteText.trim().length <= 500;
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
+  const handleSubmit = async () => {
+    const cleanQuote = quoteText.trim();
+    if (!cleanQuote) return;
+
     setSubmitted(true);
     setPeakFlash(true);
+
+    if (onQuoteSubmit) {
+      await onQuoteSubmit(cleanQuote, item);
+    } else {
+      const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
+      const payload: Record<string, unknown> = {
+        text_line: cleanQuote,
+      };
+      if (isUuid) {
+        payload.work_id = item.id;
+      }
+      try {
+        await apiFetch("/artists/new/wall_post", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+      } catch (e) {
+        console.warn("[QuoteModal] Failed to post wall quote:", e);
+      }
+    }
+
     setTimeout(() => onClose(), 1000);
   };
 

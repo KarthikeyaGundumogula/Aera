@@ -33,4 +33,5 @@ export interface UploadFlowConfig {
   initialOriginalIds?: string[];
   festivalId?: string;
   setId?: string;
+  uploadTargetUrl?: string;
 }
