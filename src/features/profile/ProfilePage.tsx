@@ -20,7 +20,7 @@ import {
 import { mockLedger } from "../../mock/ledger";
 import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { OriginalPosterCard } from "../originals/components/OriginalPosterCard";
-import { MiniDossierSheet } from "./components/MiniDossierSheet";
+import { LibraryItemSheet } from "./components/LibraryItemSheet";
 import { AnimatePresence } from "motion/react";
 import { FeedRecommendationCard } from "../../components/FeedRecommendationCard";
 import { buildClusters } from "../theatre/engine/clusterBuilder";
@@ -105,7 +105,13 @@ const ProfilePage: React.FC = () => {
   const setActiveTab = (tab: "THEATRE" | "WALL" | "LIBRARY") => {
     setSearchParams({ tab: tab.toLowerCase() }, { replace: true });
   };
-  const [dossierOriginalId, setDossierOriginalId] = useState<string | null>(null);
+  const [selectedOriginalId, setSelectedOriginalId] = useState<string | null>(null);
+  const rawOriginal = searchParams.get("original");
+  useEffect(() => {
+    if (rawOriginal) {
+      setSelectedOriginalId(rawOriginal);
+    }
+  }, [rawOriginal]);
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -478,17 +484,17 @@ const ProfilePage: React.FC = () => {
                       makers={MAKERS_MOCK}
                       stars={STARS_MOCK}
                       index={index}
-                      onClick={() => setDossierOriginalId(original.id)}
+                      onClick={() => setSelectedOriginalId(original.id)}
                     />
                   ))}
                 </div>
 
                 <AnimatePresence>
-                  {dossierOriginalId && (
-                    <MiniDossierSheet
-                      originalId={dossierOriginalId}
+                  {selectedOriginalId && (
+                    <LibraryItemSheet
+                      originalId={selectedOriginalId}
                       profileId={profile?.id || CURRENT_USER_MOCK.id}
-                      onClose={() => setDossierOriginalId(null)}
+                      onClose={() => setSelectedOriginalId(null)}
                     />
                   )}
                 </AnimatePresence>

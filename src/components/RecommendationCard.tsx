@@ -4,13 +4,16 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Zap,
   BookOpen,
-  BookPlus,
+  Bookmark,
   Info,
   ChevronDown,
+  ChevronRight,
   Heart,
   ArrowUpRight,
 } from "lucide-react";
 import { Recommendation } from "../mock/recommendations";
+import { mockLedger } from "../mock/ledger";
+import { CURRENT_USER_MOCK } from "../mock";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { PosterImage } from "./PosterImage";
 import { SaveAction } from "./actions/SaveAction";
@@ -27,12 +30,26 @@ import { TheatreItem } from "../types";
 interface Props {
   rec: Recommendation;
   variant?: "default" | "modal";
+  compact?: boolean;
 }
 
 export const RecommendationCard = memo(function RecommendationCard({
   rec,
   variant = "default",
+  compact = false,
 }: Props) {
+  const navigate = useNavigate();
+
+  const hasBreakdown = React.useMemo(() => {
+    const ledgerEntry = mockLedger.find(
+      (l) =>
+        (l.artistId === rec.artist.id || (!l.artistId && (rec.artist.id === "fh-001" || rec.artist.id === CURRENT_USER_MOCK.id))) &&
+        l.originalId === rec.original.id &&
+        (Boolean(l.afterThoughts) || Boolean(l.preThoughts) || l.status === "watched")
+    );
+    return Boolean(ledgerEntry || rec.notes);
+  }, [rec]);
+
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [boosted, setBoosted] = useState(false);
   const [inLedger, setInLedger] = useState(false);
@@ -107,8 +124,6 @@ export const RecommendationCard = memo(function RecommendationCard({
 
     openWork(theatreItem);
   };
-
-  const navigate = useNavigate();
 
   const highestScore = rec.artist.highestScore || 4500;
   const isHighestRated = rec.score >= highestScore;
@@ -281,11 +296,27 @@ export const RecommendationCard = memo(function RecommendationCard({
               >
                 {rec.original.title}
               </h3>
-              {rec.postedAt && (
-                <span className="text-[9px] font-medium tracking-wide text-white/20 shrink-0 pt-1">
-                  {formatRelativeTime(rec.postedAt)}
-                </span>
-              )}
+              <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+                {hasBreakdown && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile/${rec.artist.id}/recommendations/${rec.original.id}`);
+                    }}
+                    className="flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-white/40 hover:text-amber-400 hover:bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/10 transition-colors cursor-pointer"
+                    title="View Breakdown"
+                  >
+                    <BookOpen className="w-2.5 h-2.5 text-amber-500/70" />
+                    <span>Breakdown</span>
+                    <ChevronRight className="w-2.5 h-2.5 opacity-60" />
+                  </button>
+                )}
+                {rec.postedAt && (
+                  <span className="text-[9px] font-medium tracking-wide text-white/20">
+                    {formatRelativeTime(rec.postedAt)}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* NOTES — flex-1 fills all remaining space so footer+action are pinned to bottom.
@@ -501,7 +532,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                   }}
                   aria-label={saved ? "Saved" : "Save"}
                 >
-                  <BookPlus
+                  <Bookmark
                     className="w-[18px] h-[18px] sm:w-5 sm:h-5"
                     fill={saved ? "currentColor" : "none"}
                   />

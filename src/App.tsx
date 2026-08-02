@@ -50,6 +50,8 @@ import {
   CenterPage,
   RecommendationsPage,
   TaggedWorksPage,
+  LedgerPage,
+  LedgerViewer,
   // Misc
   ContactPage,
   AdminPage,
@@ -158,8 +160,8 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
-            <Route path="/ledger" element={<Navigate to="/profile/fh-001?tab=library" replace />} />
-            <Route path="/ledger/:id" element={<Navigate to="/profile/fh-001?tab=library" replace />} />
+            <Route path="/ledger" element={<LedgerPage />} />
+            <Route path="/ledger/:id" element={<LedgerViewer />} />
             <Route path="/tagged-works/:id" element={<TaggedWorksPage />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}
