@@ -15,11 +15,15 @@ import {
   Clock,
   BookPlus,
   ChevronLeft,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { ORIGINALS } from "../../../mock";
 import { mockLedger, LedgerItem } from "../../../mock/ledger";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
+import { useSearchQuery } from "@/lib/search";
+import { apiFetch } from "@/lib/api";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 const AMBER = "#D97706";
@@ -89,20 +93,39 @@ function OriginalsSearch({
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const { results: liveResults, loading: isSearching } = useSearchQuery("originals", query);
+
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
 
   const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
     const pool = ORIGINALS.filter((o) => !existingIds.includes(o.id));
-    if (!query.trim()) {
+    if (!q) {
       return [...pool]
         .sort((a, b) => (b.stats?.presence ?? 0) - (a.stats?.presence ?? 0))
         .slice(0, 5);
     }
-    const q = query.toLowerCase();
-    return pool.filter((o) => o.title.toLowerCase().includes(q)).slice(0, 5);
-  }, [query, existingIds]);
+
+    const remoteMapped: Original[] = liveResults.originals
+      .filter((h) => !existingIds.includes(h.id))
+      .map((h) => ({
+        id: h.id,
+        title: h.title,
+        description: "",
+        coverImage: h.coverImg || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+        stats: { presence: 0, members: 0, releases: 0 },
+        topArtists: [],
+        works: [],
+      }));
+
+    const map = new Map<string, Original>();
+    pool.filter((o) => o.title.toLowerCase().includes(q)).forEach((o) => map.set(o.id, o));
+    remoteMapped.forEach((o) => map.set(o.id, o));
+
+    return Array.from(map.values()).slice(0, 8);
+  }, [query, existingIds, liveResults.originals]);
 
   return (
     <div className="flex flex-col h-full">
@@ -279,30 +302,66 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, isSearchOpen, onClose]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   // ── Submit ──────────────────────────────────────────────────────────────────
 
-  const handleConfirm = useCallback(() => {
-    if (!selectedOriginal) return;
-    const newEntry: LedgerItem = {
-      id: `wl_${Date.now()}`,
-      originalId: selectedOriginal.id,
-      originalName: selectedOriginal.title,
-      originalPosterUrl: selectedOriginal.coverImage,
-      status,
-      preThoughts:
-        status === "want_to_watch"
-          ? expectations || "On the radar."
-          : expectations || "Experienced.",
-      afterThoughts:
-        status === "watched" ? afterThoughts || undefined : undefined,
-      taggedWorks: [],
-      addedAt: new Date().toISOString(),
+  const handleConfirm = useCallback(async () => {
+    if (!selectedOriginal || isSubmitting) return;
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    const isUuid = /^[0-9a-fA-F-]{36}$/.test(selectedOriginal.id);
+
+    const payload = {
+      original_id: isUuid ? selectedOriginal.id : undefined,
+      status: status === "watched" ? "WATCHED" : "WANT_TO_WATCH",
+      visibility: true,
+      entry_type: "MOVIE",
+      pre_thought: expectations.trim() || undefined,
+      post_impression: status === "watched" ? afterThoughts.trim() || undefined : undefined,
+      surge_score: surgeScore || 0,
     };
-    setIsAdded(true);
-    mockLedger.unshift(newEntry);
-    window.dispatchEvent(new CustomEvent("ledgerUpdated"));
-    setTimeout(() => onClose(), 1300);
-  }, [selectedOriginal, status, expectations, afterThoughts, onClose]);
+
+    try {
+      const res = await apiFetch("/library/new", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setIsAdded(true);
+
+        const newEntry: LedgerItem = {
+          id: `wl_${Date.now()}`,
+          originalId: selectedOriginal.id,
+          originalName: selectedOriginal.title,
+          originalPosterUrl: selectedOriginal.coverImage,
+          status,
+          preThoughts:
+            status === "want_to_watch"
+              ? expectations || "On the radar."
+              : expectations || "Experienced.",
+          afterThoughts:
+            status === "watched" ? afterThoughts || undefined : undefined,
+          taggedWorks: [],
+          addedAt: new Date().toISOString(),
+        };
+        mockLedger.unshift(newEntry);
+        window.dispatchEvent(new CustomEvent("ledgerUpdated"));
+        window.dispatchEvent(new CustomEvent("libraryUpdated"));
+        setTimeout(() => onClose(), 1300);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setErrorMsg(errData.message || `Failed to log entry (HTTP ${res.status}). Verify profile login.`);
+      }
+    } catch (err) {
+      setErrorMsg("Network error. Unable to log entry to server.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [selectedOriginal, status, expectations, afterThoughts, surgeScore, isSubmitting, onClose]);
 
   const canSubmit = selectedOriginal !== null;
   const submitLabel =
@@ -610,6 +669,13 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                   </div>
                 </div>
               </div>
+
+              {errorMsg && (
+                <div className="mx-6 my-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
 
               {/* Divider */}
               <div className="h-px mx-6 mt-2 bg-white/[0.04]" />

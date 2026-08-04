@@ -4,14 +4,14 @@ import { Recommendation } from "../mock/recommendations";
 import { LedgerItem } from "../mock/ledger";
 import { WallPost } from "./wall";
 
-export type AnnouncementType = 
+type AnnouncementType = 
   | "NEW_WORK" 
   | "NEW_ORIGINAL" 
   | "WALL_POST" 
   | "RECOMMENDATION" 
   | "LEDGER_UPDATE";
 
-export interface Announcement {
+interface Announcement {
   id: string;
   creatorId: string;
   creatorName: string;

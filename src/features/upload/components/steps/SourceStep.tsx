@@ -19,7 +19,7 @@ interface SourceStepProps {
   onBack: () => void;
 }
 
-export function validateSourceUrl(url: string, platform: UploadPlatform): string | null {
+function validateSourceUrl(url: string, platform: UploadPlatform): string | null {
   if (!url || !url.trim()) return null;
   const trimmed = url.trim();
 

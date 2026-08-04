@@ -29,7 +29,7 @@
  *
  * Falls back to empty string if not set (relative URLs — useful for proxy setups).
  */
-export const API_BASE_URL: string =
+const API_BASE_URL: string =
   (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 
 /**
@@ -42,7 +42,7 @@ export const API_BASE_URL: string =
  * apiUrl('/auth/me')         // → "http://localhost:8000/auth/me"
  * apiUrl('/works/new/film')  // → "http://localhost:8000/works/new/film"
  */
-export function apiUrl(path: string): string {
+function apiUrl(path: string): string {
   const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${base}${normalizedPath}`;

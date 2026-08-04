@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { OriginalSearchInput } from "./OriginalSearchInput";
 
 interface AdminOriginalModalProps {
   onSuccess?: () => void;
@@ -57,7 +58,6 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
   const [releaseType, setReleaseType] = useState<"EDIT" | "POSTER" | "SCRIPT">("EDIT");
   const [releaseTitle, setReleaseTitle] = useState("");
   const [releaseSrcId, setReleaseSrcId] = useState("");
-  const [releasePlatform, setReleasePlatform] = useState<"youtube" | "twitter">("youtube");
   const [releaseFormat, setReleaseFormat] = useState("IMAX");
 
   // ── 4. CAST & CREW ROLES FORM STATE ────────────────────────────────────────
@@ -89,7 +89,13 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
     setMessage(null);
 
     const parsedGenres = genres.split(",").map((g) => g.trim()).filter(Boolean);
-    const associatedUuid = isValidUuid(associatedWith.trim()) ? associatedWith.trim() : undefined;
+    const targetAssociated = associatedWith.trim() || currentArtist?.id || "";
+
+    if (!isValidUuid(targetAssociated)) {
+      setMessage({ text: "Please enter or select a valid 36-character Associated Production House Profile UUID.", type: "error" });
+      setIsSubmitting(false);
+      return;
+    }
 
     const payload: Record<string, unknown> = {
       title: title.trim(),
@@ -99,15 +105,12 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
       category: "MOVIE",
       genres: parsedGenres.length > 0 ? parsedGenres : ["Action", "Drama"],
       password: password.trim() || "kApten@1023",
+      associated_with: targetAssociated,
       duration: duration.trim() || undefined,
       certification: certification.trim() || undefined,
       stars: [],
       makers: [],
     };
-
-    if (associatedUuid) {
-      payload.associated_with = associatedUuid;
-    }
 
     try {
       const res = await apiFetch("/originals/new", {
@@ -208,23 +211,25 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
     setIsSubmitting(true);
     setMessage(null);
 
+    const cleanTitle = releaseTitle.trim().replace(/[^a-zA-Z\s]/g, "").trim();
+
     let payload: Record<string, unknown>;
     if (releaseType === "EDIT") {
       payload = {
-        title: releaseTitle.trim() || undefined,
+        title: cleanTitle || undefined,
         src_id: releaseSrcId.trim(),
-        platform: releasePlatform,
-        format: releaseFormat,
+        platform: "YOUTUBE",
+        format: releaseFormat || "IMAX",
       };
     } else if (releaseType === "POSTER") {
       payload = {
-        title: releaseTitle.trim() || undefined,
+        title: cleanTitle || undefined,
         src_id: releaseSrcId.trim(),
-        format: releaseFormat,
+        format: releaseFormat || "CANVAS",
       };
     } else {
       payload = {
-        title: releaseTitle.trim() || undefined,
+        title: cleanTitle || undefined,
         src_ids: [releaseSrcId.trim()],
         thoughts: ["Official Storyboard Release"],
       };
@@ -239,12 +244,13 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         setMessage({ text: `Official ${releaseType} release launched for Original! ID: ${data.OrignalReleaseCreated || 'OK'}`, type: "success" });
-        setReleaseOriginalId("");
         setReleaseTitle("");
         setReleaseSrcId("");
         if (onSuccess) onSuccess();
       } else {
-        setMessage({ text: "Failed to upload official release. Ensure Admin session is active.", type: "error" });
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.message || `Failed to upload official release (HTTP ${res.status}). Ensure Admin session is active.`;
+        setMessage({ text: errMsg, type: "error" });
       }
     } catch (err) {
       setMessage({ text: "Network error during release upload.", type: "error" });
@@ -461,14 +467,31 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Associated Banner UUID (Optional)</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-amber-300">
+                  Associated Production House Profile ID *
+                </label>
+                {currentArtist?.id && (
+                  <button
+                    type="button"
+                    onClick={() => setAssociatedWith(currentArtist.id)}
+                    className="text-[9px] font-bold text-amber-400 hover:underline uppercase tracking-wider"
+                  >
+                    Use My Profile ID
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
+                required
                 placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
                 value={associatedWith}
                 onChange={(e) => setAssociatedWith(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-xs font-mono outline-none focus:border-white transition-all placeholder:text-white/20"
+                className="bg-white/5 border border-amber-500/30 rounded-2xl py-3 px-4 text-xs font-mono font-bold text-white outline-none focus:border-amber-400 transition-all placeholder:text-white/20"
               />
+              <p className="text-[9px] text-white/40">
+                Mandatory: Official releases (trailers, key art) under this Original will be published under this Production House Profile.
+              </p>
             </div>
 
             <div className="flex flex-col gap-2 md:col-span-2">
@@ -531,15 +554,14 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
       {/* ── TAB 2: UPDATE ORIGINAL METADATA ── */}
       {activeSubTab === "UPDATE" && (
         <form onSubmit={handleUpdateOriginal} className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-amber-300">Target Original UUID *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+          <div className="md:col-span-2">
+            <OriginalSearchInput
               value={updateOriginalId}
-              onChange={(e) => setUpdateOriginalId(e.target.value)}
-              className="bg-white/5 border border-amber-500/30 rounded-2xl py-3 px-4 text-xs font-mono font-bold text-white outline-none focus:border-amber-400 transition-all placeholder:text-white/20"
+              onChange={(id) => setUpdateOriginalId(id)}
+              label="Target Original *"
+              placeholder="Search Original by title (e.g. OG, Salaar) or enter UUID..."
+              required
+              labelColorClass="text-amber-300"
             />
           </div>
 
@@ -615,16 +637,19 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
       {/* ── TAB 3: UPLOAD OFFICIAL RELEASE ── */}
       {activeSubTab === "RELEASE" && (
         <form onSubmit={handleUploadRelease} className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-amber-300">Target Original UUID *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+          <div className="md:col-span-2 flex flex-col gap-2">
+            <OriginalSearchInput
               value={releaseOriginalId}
-              onChange={(e) => setReleaseOriginalId(e.target.value)}
-              className="bg-white/5 border border-amber-500/30 rounded-2xl py-3 px-4 text-xs font-mono font-bold text-white outline-none focus:border-amber-400 transition-all placeholder:text-white/20"
+              onChange={(id) => setReleaseOriginalId(id)}
+              label="Target Original *"
+              placeholder="Search Original by title to attach release..."
+              required
+              labelColorClass="text-amber-300"
             />
+            <p className="text-[10px] text-amber-400/80 font-medium flex items-center gap-1.5 pt-1">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>Official releases will be published under the Associated Production House Profile of the selected Original.</span>
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -664,33 +689,35 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
           </div>
 
           {releaseType === "EDIT" && (
-            <>
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Platform</label>
-                <select
-                  value={releasePlatform}
-                  onChange={(e) => setReleasePlatform(e.target.value as "youtube" | "twitter")}
-                  className="bg-zinc-900 border border-white/10 rounded-2xl py-3 px-4 text-xs font-bold uppercase outline-none focus:border-white transition-all text-white"
-                >
-                  <option value="youtube">YouTube</option>
-                  <option value="twitter">Twitter / X</option>
-                </select>
-              </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Edit Format</label>
+              <select
+                value={releaseFormat}
+                onChange={(e) => setReleaseFormat(e.target.value)}
+                className="bg-zinc-900 border border-white/10 rounded-2xl py-3 px-4 text-xs font-bold uppercase outline-none focus:border-white transition-all text-white"
+              >
+                <option value="IMAX">IMAX (16:9)</option>
+                <option value="ACADEMY">Academy (4:3)</option>
+                <option value="SQUARE">Square (1:1)</option>
+                <option value="VERTICAL">Vertical (9:16)</option>
+              </select>
+            </div>
+          )}
 
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Format</label>
-                <select
-                  value={releaseFormat}
-                  onChange={(e) => setReleaseFormat(e.target.value)}
-                  className="bg-zinc-900 border border-white/10 rounded-2xl py-3 px-4 text-xs font-bold uppercase outline-none focus:border-white transition-all text-white"
-                >
-                  <option value="IMAX">IMAX (16:9)</option>
-                  <option value="ACADEMY">Academy (4:3)</option>
-                  <option value="SQUARE">Square (1:1)</option>
-                  <option value="VERTICAL">Vertical (9:16)</option>
-                </select>
-              </div>
-            </>
+          {releaseType === "POSTER" && (
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Poster Format</label>
+              <select
+                value={releaseFormat}
+                onChange={(e) => setReleaseFormat(e.target.value)}
+                className="bg-zinc-900 border border-white/10 rounded-2xl py-3 px-4 text-xs font-bold uppercase outline-none focus:border-white transition-all text-white"
+              >
+                <option value="CANVAS">Canvas (2.35:1)</option>
+                <option value="STANDARD">Standard (2:3)</option>
+                <option value="SQUARE">Square (1:1)</option>
+                <option value="VERTICAL">Vertical (9:16)</option>
+              </select>
+            </div>
           )}
 
           <div className="md:col-span-2 pt-2">
@@ -712,17 +739,14 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
       {activeSubTab === "ROLES" && (
         <div className="flex flex-col gap-6 pt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-amber-300">Target Original UUID *</label>
-              <input
-                type="text"
-                required
-                placeholder="Original UUID"
-                value={roleOriginalId}
-                onChange={(e) => setRoleOriginalId(e.target.value)}
-                className="bg-white/5 border border-amber-500/30 rounded-2xl py-3 px-4 text-xs font-mono font-bold text-white outline-none focus:border-amber-400 transition-all placeholder:text-white/20"
-              />
-            </div>
+            <OriginalSearchInput
+              value={roleOriginalId}
+              onChange={(id) => setRoleOriginalId(id)}
+              label="Target Original *"
+              placeholder="Search Original by title to manage roles..."
+              required
+              labelColorClass="text-amber-300"
+            />
 
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-bold uppercase tracking-widest text-amber-300">Target Profile UUID *</label>

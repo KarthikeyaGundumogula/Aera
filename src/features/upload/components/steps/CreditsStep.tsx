@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, CheckCircle2, Search, X, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Search, X, Users, Loader2 } from "lucide-react";
 import { Original } from "../../../../types";
 import { OWN_RELEASE_ORIGINAL } from "../../../../constants/originals";
 import type { UpdateUploadFormData } from "../../types";
+import { useSearchQuery } from "@/lib/search";
 
 interface CreditsStepProps {
   originals: Original[];
@@ -16,23 +17,47 @@ interface CreditsStepProps {
 export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBack }: CreditsStepProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const selectedOriginals = useMemo(() => 
-    originals.filter(o => selectedIds.includes(o.id)),
-  [originals, selectedIds]);
+  // Scoped originals search — delegates all debounce, abort, and caching
+  // to the shared useSearchQuery hook from @/lib/search.
+  const { results: searchResults, loading: isSearching } = useSearchQuery('originals', searchQuery);
 
-  const allAvailable = useMemo(() => [OWN_RELEASE_ORIGINAL, ...originals], [originals]);
+  // Map OriginalHit → Original so they merge cleanly with static props
+  const remoteOriginals = useMemo<Original[]>(() =>
+    searchResults.originals.map((h) => ({
+      id: h.id,
+      title: h.title,
+      description: "",
+      coverImage: h.coverImg || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+      stats: { presence: 0, members: 0, releases: 0 },
+      topArtists: [],
+      works: [],
+    })),
+  [searchResults.originals]);
+
+  // Merge static prop originals with remote search hits (dedup by id)
+  const mergedOriginals = useMemo(() => {
+    const map = new Map<string, Original>();
+    originals.forEach((o) => map.set(o.id, o));
+    remoteOriginals.forEach((o) => map.set(o.id, o));
+    return Array.from(map.values());
+  }, [originals, remoteOriginals]);
+
+  const selectedOriginals = useMemo(() =>
+    mergedOriginals.filter((o) => selectedIds.includes(o.id)),
+  [mergedOriginals, selectedIds]);
+
+  const allAvailable = useMemo(() => [OWN_RELEASE_ORIGINAL, ...mergedOriginals], [mergedOriginals]);
 
   const filteredResults = useMemo(() => {
     if (!searchQuery.trim()) {
-      // Display ONLY OWN RELEASE by default
-      return [OWN_RELEASE_ORIGINAL];
+      return [OWN_RELEASE_ORIGINAL, ...originals];
     }
     const query = searchQuery.toLowerCase();
-    return allAvailable.filter(o => 
-      o.title.toLowerCase().includes(query) || 
+    return allAvailable.filter(o =>
+      o.title.toLowerCase().includes(query) ||
       o.id.toLowerCase().includes(query)
     );
-  }, [allAvailable, searchQuery]);
+  }, [allAvailable, originals, searchQuery]);
 
   const toggleSelection = (id: string) => {
     const newIds = selectedIds.includes(id)
@@ -61,11 +86,11 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
         {/* ─── Search Interface ──────────────────────────────────────── */}
         <div className="relative group">
           <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-white/60 transition-colors">
-            <Search className="w-5 h-5" />
+            {isSearching ? <Loader2 className="w-5 h-5 animate-spin text-purple-400" /> : <Search className="w-5 h-5" />}
           </div>
           <input 
             type="text"
-            placeholder="Search local archives by title..."
+            placeholder="Search ParadeDB originals archive by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-6 pl-16 pr-6 text-base font-medium focus:ring-2 focus:ring-white/20 focus:bg-white/[0.05] outline-none transition-all placeholder:text-white/10"
@@ -156,7 +181,7 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
               );
             })}
             
-            {searchQuery.trim() && filteredResults.length === 0 && (
+            {searchQuery.trim() && filteredResults.length === 0 && !isSearching && (
               <div className="col-span-full flex flex-col items-center justify-center py-12 text-white/20 border-2 border-dashed border-white/5 rounded-2xl">
                 <Search className="w-8 h-8 mb-4 opacity-20" />
                 <p className="text-[10px] font-black uppercase tracking-widest">No matching artifacts found</p>

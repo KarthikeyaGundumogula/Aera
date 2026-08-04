@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
-import { useSearch } from './useSearch';
+import { useSearchQuery } from '@/lib/search';
 import { SearchDropdown } from './SearchDropdown';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -13,9 +13,14 @@ export function GlobalSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  const { debouncedQuery, results, loading, error } = useSearch(query);
+  const { debouncedQuery, results, loading, error } = useSearchQuery('all', query);
 
-  const totalResults = results.films.length + results.artists.length;
+  const worksCount = results.works?.length || 0;
+  const originalsCount = results.originals?.length || 0;
+  const setsCount = results.sets?.length || 0;
+  const artistsCount = results.artists?.length || 0;
+  const totalResults = worksCount + originalsCount + setsCount + artistsCount;
+
   // Always visible when the modal is open
   const isVisible = true; 
 
@@ -27,7 +32,6 @@ export function GlobalSearch() {
   // Focus input automatically when overlay opens
   useEffect(() => {
     if (isOpen) {
-      // Small timeout to allow animation to start
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
@@ -52,20 +56,25 @@ export function GlobalSearch() {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (focusedIndex >= 0 && focusedIndex < totalResults) {
-        // Navigate based on selected item
-        const isFilm = focusedIndex < results.films.length;
-        if (isFilm) {
-          navigate(`/works/${results.films[focusedIndex].id}`);
+        if (focusedIndex < worksCount) {
+          const item = results.works[focusedIndex];
+          if (item) navigate(`/works/${item.id}`);
+        } else if (focusedIndex < worksCount + originalsCount) {
+          const item = results.originals[focusedIndex - worksCount];
+          if (item) navigate(`/originals/${item.id}`);
+        } else if (focusedIndex < worksCount + originalsCount + setsCount) {
+          const item = results.sets[focusedIndex - worksCount - originalsCount];
+          if (item) navigate(`/sets/${item.id}`);
         } else {
-          const artistIndex = focusedIndex - results.films.length;
-          navigate(`/profile/${results.artists[artistIndex].id}`);
+          const item = results.artists[focusedIndex - worksCount - originalsCount - setsCount];
+          if (item) navigate(`/profile/${item.userName}`);
         }
         handleClose();
       }
     } else if (e.key === 'Escape') {
       handleClose();
     }
-  }, [isOpen, totalResults, focusedIndex, results, navigate, handleClose]);
+  }, [isOpen, totalResults, focusedIndex, worksCount, originalsCount, setsCount, results, navigate, handleClose]);
 
   return (
     <>

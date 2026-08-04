@@ -43,4 +43,6 @@
 10. **Global Dark Theme**: Never hardcode `bg-[#050505]` for deep black backgrounds. Always use the semantic token `bg-surface-deep` globally across the application.
 11. **Committing Changes**: When writing commit messages, read the codebase context to write a highly appropriate and meaningful message. Never automatically commit changes after an operation—only commit when explicitly asked to do so.
 12. **Database Schema & Migrations**: The user handles 100% of the database schema design and migrations. **NEVER** create, modify, alter, delete, or generate any database migration files (`tars/migrations/*`) or attempt database schema modifications.
+13. **Backend Payload Minimalism (tars)**: In every `sqlx::query!` / `sqlx::query_as!` block, `SELECT` **only the exact columns** required by the response DTO or handler logic. Never `SELECT *`, never pull extra columns speculatively, and never JOIN tables whose data is not serialised into the response. Violating this rule inflates network payloads, wastes DB I/O, and increases serialisation latency. When reading `tars` tests or routes to understand what fields are needed, use them as the source of truth for which columns to project.
+
 

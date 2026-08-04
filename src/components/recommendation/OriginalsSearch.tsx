@@ -5,8 +5,9 @@
  * Shows trending originals by default; filters by title query on input.
  */
 import { useState, useRef, useEffect, useMemo } from "react";
-import { X, Film, Search } from "lucide-react";
+import { X, Film, Search, Loader2 } from "lucide-react";
 import { ORIGINALS } from "@/mock";
+import { useSearchQuery } from "@/lib/search";
 
 type Original = (typeof ORIGINALS)[0];
 
@@ -19,29 +20,48 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const { results: liveResults, loading: isSearching } = useSearchQuery('originals', query);
+
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
 
   const results = useMemo(() => {
-    if (!query.trim()) {
+    const q = query.trim().toLowerCase();
+    if (!q) {
       return [...ORIGINALS]
         .sort((a, b) => (b.stats?.presence ?? 0) - (a.stats?.presence ?? 0))
         .slice(0, 5);
     }
-    const q = query.toLowerCase();
-    return ORIGINALS.filter((o) => o.title.toLowerCase().includes(q)).slice(0, 5);
-  }, [query]);
+
+    // Convert live hits to Original format
+    const remoteMapped: Original[] = liveResults.originals.map((h) => ({
+      id: h.id,
+      title: h.title,
+      description: "",
+      coverImage: h.coverImg || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+      stats: { presence: 0, members: 0, releases: 0 },
+      topArtists: [],
+      works: [],
+    }));
+
+    // Merge static + live, deduplicating by ID
+    const map = new Map<string, Original>();
+    ORIGINALS.filter((o) => o.title.toLowerCase().includes(q)).forEach((o) => map.set(o.id, o));
+    remoteMapped.forEach((o) => map.set(o.id, o));
+
+    return Array.from(map.values()).slice(0, 8);
+  }, [query, liveResults.originals]);
 
   return (
     <div className="flex flex-col h-full">
       {/* Search bar */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06]">
-        <Search className="w-3.5 h-3.5 text-white/20 flex-shrink-0" />
+        {isSearching ? <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin flex-shrink-0" /> : <Search className="w-3.5 h-3.5 text-white/20 flex-shrink-0" />}
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search originals…"
+          placeholder="Search ParadeDB originals archive…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/20 outline-none font-light"

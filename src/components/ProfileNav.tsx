@@ -58,10 +58,10 @@ export function ProfileNav({
           description: "Manage your stage",
         },
         {
-          label: "Ledger",
-          icon: <BookPlus className="w-4 h-4" />,
-          path: "/ledger",
-          description: "Your cinematic ledger",
+          label: "View Profile",
+          icon: <UserCircle className="w-4 h-4" />,
+          path: `/profile/${currentArtist.userName || currentArtist.id}`,
+          description: "Your public stage profile",
         },
         {
           label: "Contact Founder",

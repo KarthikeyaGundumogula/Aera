@@ -1,11 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
-import { X, Sparkles, ChevronLeft, Infinity, Film, Search } from "lucide-react";
+import { X, Sparkles, ChevronLeft, Infinity, Film, Search, AlertCircle } from "lucide-react";
 import { SurgeInputSection } from "./surge/SurgeInputSection";
 import { GrainOverlay } from "./effects/GrainOverlay";
 import { CinematicInput } from "./recommendation/CinematicInput";
 import { OriginalsSearch } from "./recommendation/OriginalsSearch";
 import { ORIGINALS } from "@/mock";
+import { apiFetch } from "@/lib/api";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 // Amber: cinematic projection light — the colour of the reel burning through.
@@ -39,6 +40,8 @@ export function CreateRecommendationModal({
   const [score, setScore] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [peakFlash, setPeakFlash] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Reset on open
   useEffect(() => {
@@ -48,6 +51,8 @@ export function CreateRecommendationModal({
       setNotes("");
       setScore(0);
       setSubmitted(false);
+      setIsSubmitting(false);
+      setErrorMsg(null);
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -83,10 +88,34 @@ export function CreateRecommendationModal({
 
   const canSubmit = selectedOriginal !== null && score > 0;
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
-    setSubmitted(true);
-    setTimeout(() => onClose(), 1400);
+  const handleSubmit = async () => {
+    if (!canSubmit || isSubmitting || submitted) return;
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await apiFetch("/library/recommendations/new", {
+        method: "POST",
+        body: JSON.stringify({
+          original_id: selectedOriginal.id,
+          score,
+          lines: notes.trim() || "Recommended Title",
+        }),
+      });
+
+      if (res.ok) {
+        setSubmitted(true);
+        setPeakFlash(true);
+        setTimeout(() => onClose(), 1400);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setErrorMsg(errData.message || `Failed to post recommendation (HTTP ${res.status}). Verify profile login.`);
+      }
+    } catch (err) {
+      setErrorMsg("Network error. Unable to submit recommendation.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -285,6 +314,13 @@ export function CreateRecommendationModal({
 
                 </div>
               </div>
+
+              {errorMsg && (
+                <div className="mx-6 my-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
 
               {/* ── Divider ────────────────────────────────────────────── */}
               <div className="h-px w-full bg-white/[0.04]" />

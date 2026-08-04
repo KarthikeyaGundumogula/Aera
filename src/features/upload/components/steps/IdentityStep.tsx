@@ -10,7 +10,7 @@ interface IdentityStepProps {
   onNext: () => void;
 }
 
-export function validateWorkTitle(title: string): string | null {
+function validateWorkTitle(title: string): string | null {
   if (!title) return null;
   if (title.length > 100) {
     return "Title cannot be more than 100 characters.";

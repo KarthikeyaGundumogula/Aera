@@ -470,7 +470,7 @@ const ProgressDots: React.FC<{ total: number; current: number }> = ({
 
 // ─── FoyerSwiper ───────────────────────────────────────────────────────────────
 
-export interface FoyerSwiperEntry {
+interface FoyerSwiperEntry {
   post: WallPost;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;

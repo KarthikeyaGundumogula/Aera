@@ -3,7 +3,7 @@
  * Empty in E2E branch to enforce strict real backend data.
  */
 
-export interface RecommendationArtist {
+interface RecommendationArtist {
   id: string;
   name: string;
   stageName: string;
@@ -13,7 +13,7 @@ export interface RecommendationArtist {
   highestScore?: number;
 }
 
-export interface RecommendationOriginal {
+interface RecommendationOriginal {
   id: string;
   title: string;
   coverImage: string;

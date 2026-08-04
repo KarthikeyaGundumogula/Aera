@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Clapperboard, X, BookPlus, Sparkles, Quote } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { RecommendationModal } from "./RecommendationModal";
 import { CreateRecommendationModal } from "./CreateRecommendationModal";
 import { LedgerEntryModal } from "@/features/ledger/components/LedgerEntryModal";
@@ -39,6 +41,8 @@ const iEnd = { x: Math.cos(sweepEnd) * innerR, y: Math.sin(sweepEnd) * innerR };
 const innerPath = `M ${iStart.x} ${iStart.y} A ${innerR} ${innerR} 0 0 0 ${iEnd.x} ${iEnd.y}`;
 
 export function GlobalActionFAB() {
+  const navigate = useNavigate();
+  const { currentArtist } = useAuth();
   const {
     isOpen: isModalOpen,
     startIndex: recStartIndex,

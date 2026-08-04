@@ -30,7 +30,7 @@ import { WallFeed } from "./components/WallFeed";
 import { getWallPostsByArtist } from "../../mock/wall";
 import { useAuth, parseColorTheme } from "../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
-import type { TheatreItem } from "../../types";
+import type { TheatreItem, Original } from "../../types";
 import type { WallPost } from "../../types/wall";
 
 
@@ -150,12 +150,12 @@ const ProfilePage: React.FC = () => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const rawTab = searchParams.get("tab")?.toUpperCase();
-  const activeTab: "THEATRE" | "WALL" | "LIBRARY" = 
+  const activeTab: "LIBRARY" | "WALL" | "THEATRE" = 
     (rawTab === "THEATRE" || rawTab === "WALL" || rawTab === "LIBRARY") 
       ? rawTab 
-      : "THEATRE";
+      : "LIBRARY";
 
-  const setActiveTab = (tab: "THEATRE" | "WALL" | "LIBRARY") => {
+  const setActiveTab = (tab: "LIBRARY" | "WALL" | "THEATRE") => {
     setSearchParams({ tab: tab.toLowerCase() }, { replace: true });
   };
   const [dossierOriginalId, setDossierOriginalId] = useState<string | null>(null);
@@ -166,6 +166,7 @@ const ProfilePage: React.FC = () => {
   const [backendProfile, setBackendProfile] = useState<ProfileDisplayData | null>(null);
   const [backendWorks, setBackendWorks] = useState<TheatreItem[]>([]);
   const [backendWallPosts, setBackendWallPosts] = useState<any[]>([]);
+  const [backendOriginals, setBackendOriginals] = useState<Original[]>([]);
 
   // Tab orb tracking
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -266,6 +267,26 @@ const ProfilePage: React.FC = () => {
               },
               colorTheme: stage.colorTheme || "#fac107,#0f1a42",
             });
+
+            const rawOriginals = stage.originals || json.originals || [];
+            if (Array.isArray(rawOriginals) && rawOriginals.length > 0) {
+              const mapped: Original[] = rawOriginals.map((og: any) => ({
+                id: og.id,
+                title: og.title || "Untitled Original",
+                description: og.description || "",
+                coverImage: og.coverImage || og.cover_image || "",
+                releaseDate: og.releaseDate || og.release_date || "",
+                stats: {
+                  presence: 100,
+                  members: 0,
+                  releases: 0,
+                },
+                topArtists: [],
+                works: [],
+              }));
+              setBackendOriginals(mapped);
+            }
+
             setIsInitialLoading(false);
             return;
           }
@@ -441,6 +462,7 @@ const ProfilePage: React.FC = () => {
   const currentArtistId = profileId || "fh-001";
 
   const artistOriginals = useMemo(() => {
+    if (backendOriginals.length > 0) return backendOriginals;
     return ORIGINALS.filter((org) => {
       const hasLedger = mockLedger.some(
         (l) => l.originalId === org.id && (l.artistId === currentArtistId || (!l.artistId && (currentArtistId === "fh-001" || currentArtistId === CURRENT_USER_MOCK.id)))
@@ -453,7 +475,7 @@ const ProfilePage: React.FC = () => {
       );
       return hasLedger || hasRec || hasWork;
     });
-  }, [currentArtistId, userWorks]);
+  }, [backendOriginals, currentArtistId, userWorks]);
 
 
   if (isInitialLoading) return <ProfileSkeleton />;
@@ -510,10 +532,10 @@ const ProfilePage: React.FC = () => {
         >
           {(
             [
+              "LIBRARY",
               "THEATRE",
               "WALL",
-              "LIBRARY",
-            ] as ("THEATRE" | "WALL" | "LIBRARY")[]
+            ] as ("LIBRARY" | "THEATRE" | "WALL")[]
           ).map((tab) => (
             <button
               key={tab}

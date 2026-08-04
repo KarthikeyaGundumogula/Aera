@@ -31,6 +31,8 @@ export default function ArtistSetupPage() {
 
 
   const { formData, updateField, updateSocial, setPortrait, clearPortrait } = useProfileForm();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleIdentityChange = useCallback(
     (field: "username" | "name" | "bio", value: string) => {
@@ -77,22 +79,47 @@ export default function ArtistSetupPage() {
   const isReadyToSave = isStep1Ready && (formData.password?.length ?? 0) > 0;
 
   const handleClaim = useCallback(async () => {
-    if (!isReadyToSave) return;
-    setIsSaved(true);
+    if (!isReadyToSave) {
+      setErrorMessage("Please complete all required fields and ensure password matches criteria.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
 
     const avatarSeed = formData.username || formData.name || "artist";
     const artistDetails: OriginalArtist = {
       id: `profile-${formData.username}`,
-      name: formData.name || "Artist",
-      bio: formData.bio || "Cinematic Visionary",
-      image: `boring-avatar:${avatarSeed}`,
+      name: formData.name.trim(),
+      userName: formData.username.trim().toLowerCase(),
+      bio: formData.bio.trim() || "Cinematic Visionary",
+      image: formData.portraitPreview || `boring-avatar:${avatarSeed}`,
       spirit: 0,
       works: 0,
       themeBgColor: formData.themeBgColor || "#0f1a42",
       themeTextColor: formData.themeTextColor || "#fac107",
+      socials: {
+        instagram: formData.socials.instagram.trim() || undefined,
+        twitter: formData.socials.twitter.trim() || undefined,
+        youtube: formData.socials.youtube.trim() || undefined,
+      },
     };
-    await register(artistDetails, formData.password);
-    setSuccessArtist(artistDetails);
+
+    try {
+      const success = await register(artistDetails, formData.password);
+      if (success) {
+        setIsSaved(true);
+        setSuccessArtist(artistDetails);
+      } else {
+        setErrorMessage("Registration failed. Handle may already be taken or server unavailable.");
+        setIsSaved(false);
+      }
+    } catch (err) {
+      setErrorMessage("Network error during profile creation. Please try again.");
+      setIsSaved(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   }, [isReadyToSave, formData, register]);
 
 
@@ -246,6 +273,16 @@ export default function ArtistSetupPage() {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="flex flex-col items-center gap-5"
                 >
+                  {errorMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center tracking-wide max-w-md"
+                    >
+                      {errorMessage}
+                    </motion.div>
+                  )}
+
                   <AnimatePresence mode="wait">
                     {isSaved ? (
                       <motion.div
@@ -269,7 +306,7 @@ export default function ArtistSetupPage() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.97 }}
                         onClick={handleClaim}
-                        disabled={!isReadyToSave}
+                        disabled={!isReadyToSave || isSubmitting}
                         id="claim-identity-btn"
                         className="
                           px-12 py-4 bg-white text-black rounded-xl
@@ -278,7 +315,7 @@ export default function ArtistSetupPage() {
                           transition-all duration-200 shadow-[0_0_40px_rgba(255,255,255,0.08)]
                         "
                       >
-                        create
+                        {isSubmitting ? "Creating Profile..." : "Create"}
                       </motion.button>
                     )}
                   </AnimatePresence>

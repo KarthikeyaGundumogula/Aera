@@ -4,7 +4,7 @@ interface PasswordRulesChecklistProps {
   password: string;
 }
 
-export function validatePasswordRules(password: string) {
+function validatePasswordRules(password: string) {
   return {
     minLength: password.length >= 8,
     hasUppercase: /[A-Z]/.test(password),

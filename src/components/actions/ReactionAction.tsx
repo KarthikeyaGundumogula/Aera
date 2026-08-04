@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { SmilePlus, Plus } from "lucide-react";
-import EmojiPicker, { Theme, EmojiClickData } from "emoji-picker-react";
+import type { EmojiClickData } from "emoji-picker-react";
 import { useLongPress } from "../../hooks/useLongPress";
 import { DEFAULT_QUICK_REACTIONS, ReactionId } from "../../types/reactions";
+
+const EmojiPicker = React.lazy(() => import("emoji-picker-react"));
 
 interface ReactionActionProps {
   activeReaction: ReactionId | null;
@@ -72,12 +74,14 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
 
   const renderOverlappedMetrics = (sizeClass = "w-[18px] h-[18px] text-[9px]") => {
     if (count === undefined || count <= 0) return null;
+
+    const visibleMetrics = [activeReaction, ...recentEmojis.slice(0, 3)]
+      .filter((r, i, arr) => r && arr.indexOf(r) === i)
+      .slice(0, 3);
+
     return (
       <div className="flex -space-x-1.5 items-center">
-        {[activeReaction, ...recentEmojis.slice(0, 3)]
-          .filter((r, i, arr) => r && arr.indexOf(r) === i)
-          .slice(0, 3)
-          .map((r, i) => (
+        {visibleMetrics.map((r, i) => (
             <div 
               key={r} 
               className={`${sizeClass} rounded-full bg-[#1A1A1A] border border-white/10 flex items-center justify-center shadow-sm relative`}
@@ -228,16 +232,18 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
-            <EmojiPicker
-              theme={Theme.DARK}
-              onEmojiClick={(emojiData: EmojiClickData) => {
-                const emoji = emojiData.emoji;
-                onReact(emoji);
-                setShowFullPicker(false);
-                setRecentEmojis(prev => [emoji, ...prev.filter(e => e !== emoji)]);
-              }}
-              autoFocusSearch={true}
-            />
+            <Suspense fallback={<div className="p-4 bg-[#222222] rounded-xl text-white/50 text-sm">Loading emojis...</div>}>
+              <EmojiPicker
+                theme={"dark" as any}
+                onEmojiClick={(emojiData: EmojiClickData) => {
+                  const emoji = emojiData.emoji;
+                  onReact(emoji);
+                  setShowFullPicker(false);
+                  setRecentEmojis(prev => [emoji, ...prev.filter(e => e !== emoji)]);
+                }}
+                autoFocusSearch={true}
+              />
+            </Suspense>
           </div>
         </div>,
         document.body

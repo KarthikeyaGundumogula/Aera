@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send } from "lucide-react";
+import { X, Send, AlertCircle } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 interface PostLineModalProps {
   isOpen: boolean;
@@ -13,12 +14,16 @@ export function PostLineModal({ isOpen, onClose }: PostLineModalProps) {
   const [lineText, setLineText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [peakFlash, setPeakFlash] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setLineText("");
       setSubmitted(false);
       setPeakFlash(false);
+      setIsSubmitting(false);
+      setErrorMsg(null);
     }
   }, [isOpen]);
 
@@ -48,11 +53,32 @@ export function PostLineModal({ isOpen, onClose }: PostLineModalProps) {
 
   const canSubmit = lineText.trim().length > 0;
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
-    setSubmitted(true);
-    setPeakFlash(true);
-    setTimeout(() => onClose(), 1000);
+  const handleSubmit = async () => {
+    if (!canSubmit || isSubmitting || submitted) return;
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await apiFetch("/artists/new/wall_post", {
+        method: "POST",
+        body: JSON.stringify({
+          text_line: lineText.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        setSubmitted(true);
+        setPeakFlash(true);
+        setTimeout(() => onClose(), 1000);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setErrorMsg(errData.message || `Failed to post line (HTTP ${res.status}). Verify profile login.`);
+      }
+    } catch (err) {
+      setErrorMsg("Network error. Unable to connect to server.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -139,6 +165,13 @@ export function PostLineModal({ isOpen, onClose }: PostLineModalProps) {
                     {lineText.length} / 280
                   </div>
                 </div>
+
+                {errorMsg && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
 
                 <div className="pt-2 flex justify-end">
                   <button
