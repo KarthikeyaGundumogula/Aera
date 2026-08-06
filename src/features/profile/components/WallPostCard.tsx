@@ -55,6 +55,7 @@ interface CardLayoutProps {
   text?: string;
   quoteHeader?: string;
   themeGradient?: [string, string];
+  hideReactions?: boolean;
   children?: React.ReactNode;
 }
 
@@ -67,6 +68,7 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   text,
   quoteHeader,
   themeGradient,
+  hideReactions = false,
   children,
 }) => {
   const [activeReaction, setActiveReaction] = useState<ReactionId | null>(null);
@@ -151,37 +153,39 @@ const CardLayout: React.FC<CardLayoutProps> = ({
         </div>
       )}
 
-      {/* Single Unified Action Row: Reaction + Save + Share */}
-      <div className="flex items-center gap-2 mt-4 mb-1 w-full">
-        <div className="flex-1 min-w-0">
-          <ReactionAction 
-            activeReaction={activeReaction}
-            onReact={setActiveReaction}
-            count={reactionsCount}
-            variant="comment-bar"
+      {/* Single Unified Action Row: Reaction + Save + Share — omitted when hideReactions is true */}
+      {!hideReactions && (
+        <div className="flex items-center gap-2 mt-4 mb-1 w-full">
+          <div className="flex-1 min-w-0">
+            <ReactionAction 
+              activeReaction={activeReaction}
+              onReact={setActiveReaction}
+              count={reactionsCount}
+              variant="comment-bar"
+            />
+          </div>
+
+          <button 
+            onClick={(e) => { e.stopPropagation(); setSaved(!saved); }}
+            className={`h-11 px-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shrink-0 active:scale-95 ${
+              saved 
+                ? "bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.15)]" 
+                : "bg-white/[0.03] border-white/10 text-white/70 hover:text-white hover:bg-white/[0.06]"
+            }`}
+            aria-label={saved ? "Unsave post" : "Save post"}
+          >
+            <Bookmark className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
+            <span className="hidden sm:inline">{saved ? "Saved" : "Save"}</span>
+          </button>
+
+          <ShareAction
+            title={`${artistName} on Aera`}
+            text={`See this post by ${artistName}`}
+            url={`${window.location.origin}/wall/${artistId}/${postId}`}
+            variant="button"
           />
         </div>
-
-        <button 
-          onClick={(e) => { e.stopPropagation(); setSaved(!saved); }}
-          className={`h-11 px-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shrink-0 active:scale-95 ${
-            saved 
-              ? "bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.15)]" 
-              : "bg-white/[0.03] border-white/10 text-white/70 hover:text-white hover:bg-white/[0.06]"
-          }`}
-          aria-label={saved ? "Unsave post" : "Save post"}
-        >
-          <Bookmark className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
-          <span className="hidden sm:inline">{saved ? "Saved" : "Save"}</span>
-        </button>
-
-        <ShareAction
-          title={`${artistName} on Aera`}
-          text={`See this post by ${artistName}`}
-          url={`${window.location.origin}/wall/${artistId}/${postId}`}
-          variant="button"
-        />
-      </div>
+      )}
     </div>
   </div>
   );
@@ -231,6 +235,7 @@ interface PinMediaPreviewProps {
   themeGradient?: [string, string];
   pinnedWorkId?: string;
   pinnedOriginalId?: string;
+  hideReactions?: boolean;
 }
 
 const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
@@ -242,6 +247,7 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
   themeGradient,
   pinnedWorkId,
   pinnedOriginalId,
+  hideReactions = false,
 }) => {
   const navigate = useNavigate();
   const { openWork } = useWorkNavigation();
@@ -296,10 +302,12 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
         </div>
       )}
 
-      {/* Pin icon — top-left corner, wrapped in a glass badge for high visibility */}
-      <div className="absolute top-2 left-2 z-20 w-[22px] h-[22px] rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.5)] flex items-center justify-center">
-        <Camera size={10} className="text-amber-500 fill-amber-500 [&>circle]:fill-black" aria-hidden="true" />
-      </div>
+      {/* Pin icon — top-left corner, omitted when hideReactions is true */}
+      {!hideReactions && (
+        <div className="absolute top-2 left-2 z-20 w-[22px] h-[22px] rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.5)] flex items-center justify-center">
+          <Camera size={10} className="text-amber-500 fill-amber-500 [&>circle]:fill-black" aria-hidden="true" />
+        </div>
+      )}
 
       {/* Work title overlay at bottom — highly visible */}
       {title && (
@@ -330,6 +338,7 @@ interface PinVariantProps {
   themeGradient?: [string, string];
   pinnedWorkId?: string;
   pinnedOriginalId?: string;
+  hideReactions?: boolean;
 }
 
 const PinVariant: React.FC<PinVariantProps> = ({
@@ -347,6 +356,7 @@ const PinVariant: React.FC<PinVariantProps> = ({
   themeGradient,
   pinnedWorkId,
   pinnedOriginalId,
+  hideReactions,
 }) => (
   <CardLayout
     artistName={artistName}
@@ -356,6 +366,7 @@ const PinVariant: React.FC<PinVariantProps> = ({
     artistId={artistId}
     text={text}
     themeGradient={themeGradient}
+    hideReactions={hideReactions}
   >
     <PinMediaPreview
       image={image}
@@ -366,6 +377,7 @@ const PinVariant: React.FC<PinVariantProps> = ({
       themeGradient={themeGradient}
       pinnedWorkId={pinnedWorkId}
       pinnedOriginalId={pinnedOriginalId}
+      hideReactions={hideReactions}
     />
   </CardLayout>
 );
@@ -430,12 +442,13 @@ interface WallPostCardProps {
   resolvedLedgerEntry?: LedgerItem;
   themeGradient?: [string, string];
   className?: string;
+  hideReactions?: boolean;
   /** Called when the card is tapped — parent opens the swiper */
   onClick?: () => void;
 }
 
 export const WallPostCard = memo<WallPostCardProps>(
-  ({ post, resolvedWork, resolvedOriginal, resolvedRecommendation, resolvedLedgerEntry, themeGradient, className, onClick }) => {
+  ({ post, resolvedWork, resolvedOriginal, resolvedRecommendation, resolvedLedgerEntry, themeGradient, className, hideReactions, onClick }) => {
     const isMobile = useMediaQuery();
 
     const pinnedImage: string | undefined =
@@ -488,6 +501,7 @@ export const WallPostCard = memo<WallPostCardProps>(
             themeGradient={themeGradient}
             pinnedWorkId={post.pinnedWorkId}
             pinnedOriginalId={post.pinnedOriginalId}
+            hideReactions={hideReactions}
           />
         )}
         {post.type === "RECOMMENDATION" && resolvedRecommendation && (

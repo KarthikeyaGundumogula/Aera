@@ -9,6 +9,7 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { MobileNavBar } from "@/features/navigation/MobileNavBar";
@@ -47,12 +48,12 @@ import {
   SetDetailPage,
   DiscussionPage,
   FestivalDetailPage,
-  // Ledger
-  LedgerPage,
-  LedgerViewer,
   // Center
   CenterPage,
   RecommendationsPage,
+  TaggedWorksPage,
+  LedgerPage,
+  LedgerViewer,
   // Misc
   ContactPage,
   AdminPage,
@@ -163,6 +164,7 @@ function AppRoutes() {
             <Route path="/works/:id" element={<WorkPage />} />
             <Route path="/ledger" element={<LedgerPage />} />
             <Route path="/ledger/:id" element={<LedgerViewer />} />
+            <Route path="/tagged-works/:id" element={<TaggedWorksPage />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}
             <Route

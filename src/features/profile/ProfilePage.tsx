@@ -19,7 +19,7 @@ import {
 import { mockLedger } from "../../mock/ledger";
 import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { OriginalPosterCard } from "../originals/components/OriginalPosterCard";
-import { MiniDossierSheet } from "./components/MiniDossierSheet";
+import { LibraryItemSheet } from "./components/LibraryItemSheet";
 import { AnimatePresence } from "motion/react";
 import { UnifiedTheatre } from "../theatre/components/UnifiedTheatre";
 import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
@@ -158,10 +158,17 @@ const ProfilePage: React.FC = () => {
   const setActiveTab = (tab: "LIBRARY" | "WALL" | "THEATRE") => {
     setSearchParams({ tab: tab.toLowerCase() }, { replace: true });
   };
-  const [dossierOriginalId, setDossierOriginalId] = useState<string | null>(null);
+  const [selectedOriginalId, setSelectedOriginalId] = useState<string | null>(null);
+  const rawOriginal = searchParams.get("original");
+  useEffect(() => {
+    if (rawOriginal) {
+      setSelectedOriginalId(rawOriginal);
+    }
+  }, [rawOriginal]);
   const deferredProfileId = useDeferredValue(profileId);
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showHeaderTabs, setShowHeaderTabs] = useState(false);
 
   const [backendProfile, setBackendProfile] = useState<ProfileDisplayData | null>(null);
   const [backendWorks, setBackendWorks] = useState<TheatreItem[]>([]);
@@ -179,8 +186,13 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+      if (tabsRowRef.current) {
+        const top = tabsRowRef.current.getBoundingClientRect().top;
+        setShowHeaderTabs(top <= 65);
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -525,7 +537,7 @@ const ProfilePage: React.FC = () => {
         {/* Center Tab Switcher */}
         <div
           className={`flex items-center gap-6 md:gap-12 transition-all duration-300 ${
-            isScrolled
+            showHeaderTabs
               ? "opacity-100 translate-y-0 pointer-events-auto"
               : "opacity-0 -translate-y-2 pointer-events-none"
           }`}
@@ -684,7 +696,7 @@ const ProfilePage: React.FC = () => {
                         makers={MAKERS_MOCK}
                         stars={STARS_MOCK}
                         index={index}
-                        onClick={() => setDossierOriginalId(original.id)}
+                        onClick={() => setSelectedOriginalId(original.id)}
                       />
                     ))}
                   </div>
@@ -694,11 +706,11 @@ const ProfilePage: React.FC = () => {
                   </div>
                 )}
                 <AnimatePresence>
-                  {dossierOriginalId && (
-                    <MiniDossierSheet
-                      originalId={dossierOriginalId}
+                  {selectedOriginalId && (
+                    <LibraryItemSheet
+                      originalId={selectedOriginalId}
                       profileId={profile?.id || CURRENT_USER_MOCK.id}
-                      onClose={() => setDossierOriginalId(null)}
+                      onClose={() => setSelectedOriginalId(null)}
                     />
                   )}
                 </AnimatePresence>

@@ -6,7 +6,7 @@ import { BookPlus, ChevronRight } from "lucide-react";
 import { FHLoader } from "../../../components/FHLoader";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { mockLedger } from "../../../mock/ledger";
-import { GRID_ITEMS } from "../../../mock";
+import { GRID_ITEMS, CURRENT_USER_MOCK } from "../../../mock";
 import { LedgerSection } from "./LedgerSection";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
 
@@ -77,10 +77,10 @@ export function LedgerTabsZone() {
           </div>
 
           <button
-            onClick={() => navigate("/ledger")}
-            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors hidden sm:flex"
+            onClick={() => navigate(`/profile/${CURRENT_USER_MOCK.id}?tab=library`)}
+            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors hidden sm:flex cursor-pointer"
           >
-            Full Ledger <ChevronRight className="w-3 h-3" />
+            Full Library <ChevronRight className="w-3 h-3" />
           </button>
         </div>
       </div>

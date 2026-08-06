@@ -26,7 +26,7 @@ const FALLBACK_CAPTIONS = [
  * viewer as the media slot. All chrome lives in ViewerFrame.
  */
 export function StoryboardViewer({ item }: StoryboardViewerProps) {
-  const [pageIndex, setPageIndex] = useState(0);
+  const [{ pageIndex, direction }, setPageState] = useState({ pageIndex: 0, direction: 1 });
   const [isFlipped, setIsFlipped] = useState(false);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -39,11 +39,28 @@ export function StoryboardViewer({ item }: StoryboardViewerProps) {
 
   const goTo = (idx: number) => {
     setIsFlipped(false);
-    setPageIndex(idx);
     setImgAspect(null);
+    setPageState((prev) => ({
+      pageIndex: idx,
+      direction: idx > prev.pageIndex ? 1 : -1,
+    }));
   };
-  const prev = () => goTo((pageIndex - 1 + total) % total);
-  const next = () => goTo((pageIndex + 1) % total);
+  const prev = () => {
+    setIsFlipped(false);
+    setImgAspect(null);
+    setPageState((prev) => ({
+      pageIndex: (prev.pageIndex - 1 + total) % total,
+      direction: -1,
+    }));
+  };
+  const next = () => {
+    setIsFlipped(false);
+    setImgAspect(null);
+    setPageState((prev) => ({
+      pageIndex: (prev.pageIndex + 1) % total,
+      direction: 1,
+    }));
+  };
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -91,18 +108,33 @@ export function StoryboardViewer({ item }: StoryboardViewerProps) {
             <div className="relative inline-block max-w-full">
               {/* Base Layer: Image */}
               <div
-                className="overflow-hidden rounded-none border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] relative flex justify-center"
+                className="overflow-hidden rounded-none border-[1.5px] border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] relative grid place-items-center"
               >
-                <AnimatePresence mode="wait">
+                <AnimatePresence custom={direction} mode="popLayout">
                   <motion.img
                     key={pageIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    custom={direction}
+                    variants={{
+                      enter: (d: number) => ({
+                        x: d > 0 ? "100%" : "-100%",
+                        zIndex: 10,
+                      }),
+                      center: {
+                        x: 0,
+                        zIndex: 10,
+                      },
+                      exit: (d: number) => ({
+                        x: d > 0 ? "-100%" : "100%",
+                        zIndex: 0,
+                      })
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     src={displayPages[pageIndex]}
                     alt={`Page ${pageIndex + 1}`}
-                    className="w-auto h-auto max-w-full max-h-[70vh] lg:max-h-[calc(100vh-320px)] block select-none object-contain"
+                    className="row-start-1 col-start-1 w-auto h-auto max-w-full max-h-[70vh] lg:max-h-[calc(100vh-320px)] block select-none object-contain"
                     loading="eager"
                     fetchPriority="high"
                     decoding="async"

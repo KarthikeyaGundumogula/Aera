@@ -93,6 +93,14 @@ export const WorkPage = lazy(() =>
 
 export const UploadPage = lazy(() => import("@/features/upload/UploadPage"));
 
+export const LedgerPage = lazy(() =>
+  import("@/features/ledger/LedgerPage").then((m) => ({ default: m.LedgerPage }))
+);
+
+export const LedgerViewer = lazy(() =>
+  import("@/features/ledger/LedgerViewer").then((m) => ({ default: m.LedgerViewer }))
+);
+
 export const OriginalReleaseUploadPage = lazy(
   () => import("@/features/upload/OriginalReleaseUploadPage"),
 );
@@ -116,19 +124,6 @@ export const FestivalDetailPage = lazy(() =>
   })),
 );
 
-// ─── Ledger ───────────────────────────────────────────────────────────────────
-export const LedgerPage = lazy(() =>
-  import("@/features/ledger/ledger-index").then((m) => ({
-    default: m.LedgerPage,
-  })),
-);
-
-export const LedgerViewer = lazy(() =>
-  import("@/features/ledger/LedgerViewer").then((m) => ({
-    default: m.LedgerViewer,
-  })),
-);
-
 // ─── Center ───────────────────────────────────────────────────────────────────
 export const CenterPage = lazy(() =>
   import("@/features/center").then((m) => ({ default: m.CenterPage })),
@@ -138,6 +133,12 @@ export const CenterPage = lazy(() =>
 export const RecommendationsPage = lazy(() =>
   import("@/features/recommendations").then((m) => ({
     default: m.RecommendationsPage,
+  })),
+);
+
+export const TaggedWorksPage = lazy(() =>
+  import("@/features/tagged-works/TaggedWorksPage").then((m) => ({
+    default: m.TaggedWorksPage,
   })),
 );
 
