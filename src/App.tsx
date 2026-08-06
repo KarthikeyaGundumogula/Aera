@@ -16,6 +16,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import { RecommendationProvider } from "@/context/RecommendationContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { GlobalActionFAB } from "@/components/GlobalActionFAB";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { SEOHead } from "@/components/SEOHead";
 
 import {
   // Hall
@@ -195,8 +197,10 @@ export default function App() {
     <AuthProvider>
       <RecommendationProvider>
         <BrowserRouter>
+          <SEOHead />
           <AppRoutes />
           <GlobalActionFAB />
+          <PWAInstallPrompt />
         </BrowserRouter>
       </RecommendationProvider>
     </AuthProvider>

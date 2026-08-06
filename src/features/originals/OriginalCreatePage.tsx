@@ -52,7 +52,7 @@ export default function OriginalCreatePage() {
 
     const payload: Record<string, unknown> = {
       title: formData.title.trim(),
-      release_date: formData.releaseDate || new Date().toISOString(),
+      release_date: formData.releaseDate.trim() || undefined,
       description: formData.description.trim() || "Cinematic Original Masterpiece",
       cover_img: formData.coverImage.trim() || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
       category: "MOVIE",

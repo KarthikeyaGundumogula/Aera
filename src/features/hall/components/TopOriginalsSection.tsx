@@ -88,16 +88,18 @@ export function TopOriginalsSection() {
 
                   {/* Bottom Fixed Section */}
                   <div className="shrink-0 mt-auto pt-2">
-                    <div className="flex items-end gap-4 mb-2 sm:mb-3">
-                      <div className="text-[6px] sm:text-[7px] text-white/40 uppercase tracking-[0.2em] font-bold leading-[1.1]">
-                        RELEASING
-                        <br />
-                        ON
+                    {orig.releaseDate && (
+                      <div className="flex items-end gap-4 mb-2 sm:mb-3">
+                        <div className="text-[6px] sm:text-[7px] text-white/40 uppercase tracking-[0.2em] font-bold leading-[1.1]">
+                          RELEASING
+                          <br />
+                          ON
+                        </div>
+                        <div className="text-[7px] sm:text-[8px] text-white uppercase tracking-widest font-mono">
+                          {orig.releaseDate}
+                        </div>
                       </div>
-                      <div className="text-[7px] sm:text-[8px] text-white uppercase tracking-widest font-mono">
-                        {orig.releaseDate || "Q4 2026"}
-                      </div>
-                    </div>
+                    )}
 
                     <div className="flex items-center">
                       {originalStars.map((star, i) => (

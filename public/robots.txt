@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://framehouse-casa.vercel.app/sitemap.xml

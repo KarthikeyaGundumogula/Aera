@@ -44,9 +44,28 @@ export const OriginalPosterCard = memo(
     }, [stars, makers, original.id]);
 
     const year = useMemo(() => {
-      if (!original.releaseDate) return null;
-      const parts = original.releaseDate.split("-");
-      return parts.length === 3 ? parts[2].slice(-2) : null;
+      if (!original.releaseDate || typeof original.releaseDate !== "string") return null;
+      const trimmed = original.releaseDate.trim();
+      if (!trimmed || trimmed.startsWith("0000") || trimmed.startsWith("1970-01-01")) return null;
+
+      // Extract 4-digit year (19xx or 20xx)
+      const match = trimmed.match(/\b(19|20)\d{2}\b/);
+      if (match) {
+        const fullYear = parseInt(match[0], 10);
+        if (!isNaN(fullYear) && fullYear > 1900 && fullYear < 2100) {
+          return match[0].slice(-2);
+        }
+      }
+
+      const d = new Date(trimmed);
+      if (!isNaN(d.getTime())) {
+        const fullYear = d.getFullYear();
+        if (fullYear > 1900 && fullYear < 2100) {
+          return String(fullYear).slice(-2);
+        }
+      }
+
+      return null;
     }, [original.releaseDate]);
 
     return (

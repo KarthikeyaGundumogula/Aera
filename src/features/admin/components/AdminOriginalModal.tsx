@@ -36,7 +36,7 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
 
   // ── 1. CREATE FORM STATE ───────────────────────────────────────────────────
   const [title, setTitle] = useState("");
-  const [releaseDate, setReleaseDate] = useState("2026-07-27T00:00:00Z");
+  const [releaseDate, setReleaseDate] = useState("");
   const [description, setDescription] = useState("");
   const [coverImgPreview, setCoverImgPreview] = useState<string | null>(null);
   const [associatedWith, setAssociatedWith] = useState("");
@@ -99,7 +99,7 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
 
     const payload: Record<string, unknown> = {
       title: title.trim(),
-      release_date: releaseDate,
+      release_date: releaseDate.trim() || undefined,
       description: description.trim() || "Cinematic Original Masterpiece",
       cover_img: DEFAULT_COVER_PLACEHOLDER,
       category: "MOVIE",

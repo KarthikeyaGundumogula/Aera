@@ -12,6 +12,7 @@ import {
   Upload,
   LogOut,
   MessageSquare,
+  Loader2,
 } from "lucide-react";
 import {
   SETS,
@@ -29,6 +30,7 @@ import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { SectionHeader } from "../../components/SectionHeader";
 import { UpdateSetModal } from "./components/UpdateSetModal";
 import { CreateFestivalModal } from "./components/CreateFestivalModal";
+import { apiFetch } from "@/lib/api";
 
 /**
  * SetDetailPage — /sets/:id
@@ -48,7 +50,59 @@ export function SetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const set = useMemo(() => SETS.find((s) => s.id === id), [id]);
+  const [localSet, setLocalSet] = useState<any>(id ? SETS.find((s) => s.id === id) || null : null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    let isMounted = true;
+    setLoading(true);
+
+    const staticFallback = SETS.find((s) => s.id === id) || null;
+
+    apiFetch(`/sets/${id}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const remote = json.data || json;
+          if (remote && isMounted) {
+            const mappedSet = {
+              id: remote.id,
+              title: remote.title || "Untitled Set",
+              description: remote.description || "",
+              captainId: remote.captainId || remote.captain_id || "c1",
+              coverImage: remote.coverImage || remote.cover_img || "https://images.unsplash.com/photo-1579783902614-a3fb3927b675",
+              accentColor: remote.accentColor || remote.accent_color || "#D97706",
+              themeLine: remote.themeLine || remote.theme_line || "",
+              members: (remote.members || []).map((m: any) => ({
+                profileId: m.profileId || m.profile_id,
+                role: m.role || "Member",
+                joinedAt: m.joinedAt || m.joined_at || new Date().toISOString(),
+              })),
+              activeFestivalId: remote.activeFestivalId || remote.active_festival_id,
+              festivalStatus: remote.festivalStatus || remote.festival_status,
+              tickerText: remote.tickerText || remote.ticker_text,
+            };
+            setLocalSet(mappedSet);
+          }
+        } else if (staticFallback && isMounted) {
+          setLocalSet(staticFallback);
+        }
+      })
+      .catch(() => {
+        if (staticFallback && isMounted) setLocalSet(staticFallback);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  const set = localSet;
+
   const allFestivals = useMemo(
     () => FESTIVALS.filter((f) => f.setId === id),
     [id],
@@ -74,7 +128,7 @@ export function SetDetailPage() {
   );
 
   const [isJoined, setIsJoined] = useState(false);
-  const memberCount = (set?.members.length ?? 0) + (isJoined ? 1 : 0);
+  const memberCount = (set?.members?.length ?? 0) + (isJoined ? 1 : 0);
   const festivalCount = allFestivals.length;
   const worksCount = (((id?.length ?? 0) * 31 + memberCount * 7) % 150) + 12;
 
@@ -83,12 +137,7 @@ export function SetDetailPage() {
   const [isCreateFestivalModalOpen, setIsCreateFestivalModalOpen] =
     useState(false);
 
-  // Local state for immediate updates
-  const [localSet, setLocalSet] = useState(set);
 
-  useEffect(() => {
-    setLocalSet(set);
-  }, [set]);
 
   const setCommandItems: CommandItem[] = useMemo(
     () => [
@@ -127,6 +176,17 @@ export function SetDetailPage() {
     ],
     [isJoined, id, navigate],
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+        <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">
+          Loading Set Details…
+        </span>
+      </div>
+    );
+  }
 
   if (!localSet) {
     return (
@@ -342,7 +402,7 @@ export function SetDetailPage() {
           set={localSet}
           onClose={() => setIsUpdateModalOpen(false)}
           onSave={(updates) =>
-            setLocalSet((prev) => (prev ? { ...prev, ...updates } : prev))
+            setLocalSet((prev: any) => (prev ? { ...prev, ...updates } : prev))
           }
         />
       )}

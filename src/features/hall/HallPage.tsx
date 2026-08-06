@@ -35,6 +35,7 @@ import { OriginalSpotlightSection } from "./components/OriginalSpotlightSection"
 import { ArtistRecommendationsSection } from "./components/ArtistRecommendationsSection";
 import { FoyerSection } from "./components/FoyerSection";
 import { TopOriginalsSection } from "./components/TopOriginalsSection";
+import { SEOHead } from "../../components/SEOHead";
 
 /**
  * Hall — The app's personalized curation for the user.
@@ -101,6 +102,7 @@ export default function HallPage() {
 
   return (
     <div className="min-h-screen bg-surface-deep text-white pb-28">
+      <SEOHead title="The Hall" description="Step into curated cinema dispatches, festival showcases, and artist walls on Framehouse." />
       <MobileTopHeader />
       <DesktopHeader />
 

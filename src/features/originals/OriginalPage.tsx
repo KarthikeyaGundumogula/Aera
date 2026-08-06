@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowRight, BookPlus, Settings, Plus } from "lucide-react";
+import { ArrowRight, BookPlus, Settings, Plus, Loader2 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
-import { ArtistProfile, PersonProfile, MakerProfile } from "../shared/profile";
+import { PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
 import { CinematicPageHeader } from "../../components/CinematicPageHeader";
+import { apiFetch } from "@/lib/api";
 
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
@@ -28,8 +29,8 @@ export function OriginalPage() {
   const [showToast, setShowToast] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
   const isMobile = useMediaQuery();
-  const baseOriginal = id ? ORIGINALS_DATA[id] : null;
-  const [localOriginal, setLocalOriginal] = useState(baseOriginal);
+  const [localOriginal, setLocalOriginal] = useState<any>(id ? ORIGINALS_DATA[id] || null : null);
+  const [loading, setLoading] = useState(true);
 
   const userClaims: OriginalClaims = {
     canUpdateMeta: true,
@@ -37,9 +38,76 @@ export function OriginalPage() {
   };
 
   useEffect(() => {
-    setLocalOriginal(baseOriginal);
-    setShowManagement(false);
-  }, [baseOriginal]);
+    if (!id) return;
+    let isMounted = true;
+    setLoading(true);
+
+    const staticFallback = ORIGINALS_DATA[id] || null;
+
+    apiFetch(`/originals/${id}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const remote = json.data || json;
+          if (remote && isMounted) {
+            const mappedOriginal = {
+              id: remote.id,
+              title: remote.title,
+              description: remote.description || "",
+              coverImage: remote.coverImage || remote.cover_img || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+              releaseDate: remote.releaseDate || remote.release_date || undefined,
+              genre: remote.genre || [],
+              stats: {
+                presence: remote.stats?.presence || 0,
+                members: remote.stats?.members || 0,
+                releases: remote.stats?.releases || 0,
+              },
+              resonanceSignature: remote.resonanceSignature || remote.resonance_signature || undefined,
+              stars: (remote.stars || []).map((s: any) => ({
+                actorName: s.actorName || s.actor_name || "Cast Member",
+                characterName: s.characterName || s.character_name || "Star",
+                imageUrl: s.imageUrl || s.image_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+                originalId: remote.id,
+              })),
+              makers: (remote.makers || []).map((m: any) => ({
+                actorName: m.actorName || m.actor_name || "Filmmaker",
+                characterName: m.characterName || m.character_name || "Maker",
+                imageUrl: m.imageUrl || m.image_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+                originalId: remote.id,
+              })),
+              topArtists: (remote.topArtists || remote.top_artists || []).map((a: any) => ({
+                id: a.id,
+                name: a.name || a.stage_name || "Artist",
+                image: a.image || a.profile_picture || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+                spirit: a.spirit || 0,
+                works: a.works || 0,
+              })),
+              works: (remote.works || []).map((w: any) => ({
+                id: w.id,
+                title: w.title || "Untitled Work",
+                category: w.workType || w.work_type || "Edit",
+                image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+                platform: "youtube",
+                srcId: w.id,
+              })),
+            };
+            setLocalOriginal(mappedOriginal);
+          }
+        } else if (staticFallback && isMounted) {
+          setLocalOriginal(staticFallback);
+        }
+      })
+      .catch(() => {
+        if (staticFallback && isMounted) setLocalOriginal(staticFallback);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   const original = localOriginal;
 
@@ -84,19 +152,26 @@ export function OriginalPage() {
   const deferredOriginal = useDeferredValue(original);
 
   const artistStripItems = useMemo(() => {
-    if (!deferredOriginal) return [];
-    return Array.from(
-      { length: Math.max(15, deferredOriginal.topArtists.length) },
-      (_, index) =>
-        deferredOriginal.topArtists[index % deferredOriginal.topArtists.length],
-    );
+    if (!deferredOriginal || !deferredOriginal.topArtists?.length) return [];
+    return deferredOriginal.topArtists;
   }, [deferredOriginal]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+        <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">
+          Loading Original Details…
+        </span>
+      </div>
+    );
+  }
 
   if (!original) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Original not found</h1>
+          <h1 className="text-2xl font-bold mb-4 text-white">Original not found</h1>
           <button
             onClick={() => navigate("/")}
             className="px-6 py-2 bg-white text-black rounded-xl font-bold"
@@ -188,48 +263,54 @@ export function OriginalPage() {
       <RecentReleasesSection />
 
       {/* Star Spotlight */}
-      <section className="px-8 pt-10 pb-4">
-        <SectionHeader title="Stars" containerClassName="mb-6" />
+      {original.stars && original.stars.length > 0 && (
+        <section className="px-8 pt-10 pb-4">
+          <SectionHeader title="Stars" containerClassName="mb-6" />
 
-        <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
-          <div className="flex gap-4 sm:gap-6 w-max">
-            {STARS_MOCK.map((star, index) => (
-              <PersonProfile
-                key={star.actorName}
-                person={star}
-                delay={index * 0.15}
-                type="Star"
-              />
-            ))}
+          <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
+            <div className="flex gap-4 sm:gap-6 w-max">
+              {original.stars.map((star: any, index: number) => (
+                <PersonProfile
+                  key={`${star.actorName}-${index}`}
+                  person={star}
+                  delay={index * 0.15}
+                  type="Star"
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Makers Spotlight */}
-      <section className="px-8 pt-6 pb-4">
-        <SectionHeader title="Makers" containerClassName="mb-6" />
+      {original.makers && original.makers.length > 0 && (
+        <section className="px-8 pt-6 pb-4">
+          <SectionHeader title="Makers" containerClassName="mb-6" />
 
-        <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
-          <div className="flex gap-4 sm:gap-6 w-max">
-            {MAKERS_MOCK.map((maker, index) => (
-              <MakerProfile
-                key={maker.actorName}
-                person={maker}
-                delay={index * 0.15}
-              />
-            ))}
+          <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
+            <div className="flex gap-4 sm:gap-6 w-max">
+              {original.makers.map((maker: any, index: number) => (
+                <MakerProfile
+                  key={`${maker.actorName}-${index}`}
+                  person={maker}
+                  delay={index * 0.15}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Top Artists */}
-      <ArtistSpotlightGrid
-        title="Artist Spotlight"
-        artists={artistStripItems}
-        rows={3}
-        variant="default"
-        containerClassName="pt-4 pb-4"
-      />
+      {artistStripItems.length > 0 && (
+        <ArtistSpotlightGrid
+          title="Artist Spotlight"
+          artists={artistStripItems}
+          rows={2}
+          variant="default"
+          containerClassName="pt-4 pb-4"
+        />
+      )}
 
       {/* Originals Theatre Section */}
       <TheatrePreviewSection
@@ -298,7 +379,7 @@ export function OriginalPage() {
             original={original}
             onClose={() => setShowManagement(false)}
             onSave={(updated) =>
-              setLocalOriginal((prev) =>
+              setLocalOriginal((prev: any) =>
                 prev ? { ...prev, ...updated } : prev,
               )
             }

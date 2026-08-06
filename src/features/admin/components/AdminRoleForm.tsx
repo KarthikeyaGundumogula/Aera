@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { ShieldCheck, UserCheck, Key, CheckCircle2, AlertCircle, UserPlus, Trash2, LogIn, Lock } from "lucide-react";
+import { ShieldCheck, UserCheck, Key, CheckCircle2, AlertCircle, UserPlus, Trash2, LogIn, Lock, Search, Crown, Loader2, X } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { PasswordRulesChecklist } from "@/components/PasswordRulesChecklist";
 import { useAuth } from "@/context/AuthContext";
+import { useSearchQuery } from "@/lib/search";
 
 export function AdminRoleForm() {
   const { currentArtist, updateProfile } = useAuth();
@@ -26,6 +27,11 @@ export function AdminRoleForm() {
   const [newRole, setNewRole] = useState<"organizer" | "artist">("organizer");
   const [roleMessage, setRoleMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+
+  // Live Artist Search State for Role Assignment
+  const [artistSearchQuery, setArtistSearchQuery] = useState("");
+  const [selectedArtist, setSelectedArtist] = useState<{ id: string; name: string; username: string; image?: string } | null>(null);
+  const { results: searchResults, loading: isSearching } = useSearchQuery("artists", artistSearchQuery);
 
   // New Role / Permission State
   const [roleName, setRoleName] = useState("");
@@ -183,6 +189,38 @@ export function AdminRoleForm() {
         } else if (res.status === 401) {
           message = "Unauthorized: Active Admin login session is required to perform role updates.";
         }
+        setRoleMessage({ text: message, type: "error" });
+      }
+    } catch (err) {
+      setRoleMessage({ text: `Network error: ${String(err)}`, type: "error" });
+    } finally {
+      setIsUpdatingRole(false);
+    }
+  };
+
+  // Direct 1-Click Role Assignment Handler for Search Results
+  const handleAssignRoleDirect = async (targetId: string, roleToSet: "organizer" | "artist", nameForMsg?: string) => {
+    setIsUpdatingRole(true);
+    setRoleMessage(null);
+
+    try {
+      const res = await apiFetch("/admin/update_user_role", {
+        method: "POST",
+        body: JSON.stringify({
+          profile_id: targetId,
+          new_role: roleToSet,
+        }),
+      });
+
+      if (res.ok) {
+        const displayName = nameForMsg || targetId;
+        setRoleMessage({ text: `Successfully updated '${displayName}' role to '${roleToSet.toUpperCase()}'!`, type: "success" });
+        if (currentArtist && (currentArtist.id === targetId || currentArtist.id.includes(targetId))) {
+          updateProfile({ role: roleToSet });
+        }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        let message = errData.message || `Failed to update profile role (HTTP ${res.status})`;
         setRoleMessage({ text: message, type: "error" });
       }
     } catch (err) {
@@ -434,9 +472,130 @@ export function AdminRoleForm() {
           </div>
         )}
 
+        {/* Live Artist Search Combobox */}
+        <div className="flex flex-col gap-3 p-5 rounded-2xl bg-white/5 border border-white/10">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-amber-400 flex items-center gap-2">
+            <Search className="w-3.5 h-3.5" /> Search Artist to Assign Role
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Type stage name, username, or tagline..."
+              value={artistSearchQuery}
+              onChange={(e) => setArtistSearchQuery(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-2xl py-3 pl-10 pr-10 text-xs font-bold text-white outline-none focus:border-amber-500/50 transition-all placeholder:text-white/30"
+            />
+            <Search className="w-4 h-4 text-white/30 absolute left-3.5 top-3.5" />
+            {isSearching ? (
+              <Loader2 className="w-4 h-4 text-amber-500 animate-spin absolute right-3.5 top-3.5" />
+            ) : artistSearchQuery ? (
+              <button
+                type="button"
+                onClick={() => setArtistSearchQuery("")}
+                className="text-white/40 hover:text-white absolute right-3.5 top-3.5"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            ) : null}
+          </div>
+
+          {/* Live Search Results */}
+          {artistSearchQuery.trim().length >= 2 && (
+            <div className="flex flex-col gap-2 max-h-60 overflow-y-auto no-scrollbar pt-2">
+              {searchResults.artists && searchResults.artists.length > 0 ? (
+                searchResults.artists.map((artist) => (
+                  <div
+                    key={artist.id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        src={artist.profilePicture || "https://images.unsplash.com/photo-1534528741775-53994a69daeb"}
+                        alt={artist.stageName || artist.userName}
+                        className="w-9 h-9 rounded-full object-cover border border-white/10 shrink-0"
+                      />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-white truncate">
+                          {artist.stageName || artist.userName}
+                        </span>
+                        <span className="text-[10px] text-white/40 font-mono truncate">
+                          @{artist.userName} &bull; {artist.id}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        disabled={isUpdatingRole}
+                        onClick={() => {
+                          setProfileId(artist.id);
+                          setSelectedArtist({
+                            id: artist.id,
+                            name: artist.stageName || artist.userName,
+                            username: artist.userName,
+                            image: artist.profilePicture,
+                          });
+                          handleAssignRoleDirect(artist.id, "organizer", artist.stageName || artist.userName);
+                        }}
+                        className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/40 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5"
+                      >
+                        <Crown className="w-3 h-3" /> Make Organizer
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isUpdatingRole}
+                        onClick={() => {
+                          setProfileId(artist.id);
+                          setSelectedArtist({
+                            id: artist.id,
+                            name: artist.stageName || artist.userName,
+                            username: artist.userName,
+                            image: artist.profilePicture,
+                          });
+                          handleAssignRoleDirect(artist.id, "artist", artist.stageName || artist.userName);
+                        }}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all"
+                      >
+                        Make Artist
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : !isSearching ? (
+                <span className="text-[11px] text-white/30 italic px-2">
+                  No artist profiles found matching &quot;{artistSearchQuery}&quot;
+                </span>
+              ) : null}
+            </div>
+          )}
+
+          {/* Selected Artist Card */}
+          {selectedArtist && (
+            <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 mt-1">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Crown className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="text-xs font-bold truncate">
+                  Selected: <span className="text-white">{selectedArtist.name}</span> (@{selectedArtist.username})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedArtist(null);
+                  setProfileId("");
+                }}
+                className="text-white/40 hover:text-white text-xs shrink-0"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
+
         <form onSubmit={handleUpdateUserRole} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div className="flex flex-col gap-2 md:col-span-1">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Profile ID or UUID</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Manual Profile ID or UUID</label>
             <input
               type="text"
               required

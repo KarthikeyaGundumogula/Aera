@@ -9,21 +9,25 @@ export default defineConfig({
     react(), 
     tailwindcss(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Framehouse',
-        short_name: 'FH',
-        description: 'Where the art matters',
+        id: '/',
+        name: 'FrameHouse | Living Cinema',
+        short_name: 'FrameHouse',
+        description: 'FrameHouse is a premium platform celebrating cinema and everything around it.',
         theme_color: '#050505',
         background_color: '#050505',
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
             src: 'icon-192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'icon-512.png',
