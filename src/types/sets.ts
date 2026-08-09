@@ -15,6 +15,10 @@ export interface Set {
   accentColor: string;
   themeLine: string;
   members: SetMember[];
+  memberCount?: number;
+  totalFestivals?: number;
+  liveFestivals?: number;
+  isMember?: boolean;
   activeFestivalId?: string;
   festivalStatus?: 'ONGOING' | 'ARCHIVED';
   tickerText?: string; // Custom marquee text for active festivals

@@ -77,7 +77,7 @@ export default defineConfig({
       command: 'cd ../tars && APP_ENV=test cargo run',
       url: 'http://localhost:8080/health_check',
 
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       // 120s timeout: accommodates cold Rust compilation on first run.
       // Subsequent runs are fast due to incremental build cache (target/).
       timeout: 120 * 1000,
@@ -85,6 +85,8 @@ export default defineConfig({
       stderr: 'pipe',
       env: {
         RUST_LOG: 'info,sqlx=warn',
+        FIRST_ADMIN_USERNAME: 'superadmin',
+        FIRST_ADMIN_PASSWORD: 'Admin@12345',
       },
     },
     {

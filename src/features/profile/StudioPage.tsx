@@ -15,7 +15,7 @@ import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 import { FHLoader } from "../../components/FHLoader";
 
 export default function StudioPage() {
-  const { currentArtist, userWorks, updateProfile, updateWorkTitle, deleteWork, refreshProfile } = useAuth();
+  const { currentArtist, userWorks, fetchUserWorks, updateProfile, updateWorkTitle, deleteWork, refreshProfile } = useAuth();
 
   const navigate = useNavigate();
 
@@ -44,7 +44,7 @@ export default function StudioPage() {
   const isNavigatingRef = useRef(false);
   const trapActiveRef = useRef(false);
 
-  // Sync profile details when loaded
+  // Sync profile details and fetch works on-demand when Studio mounts
   useEffect(() => {
     if (currentArtist) {
       setStageName(currentArtist.name || "");
@@ -58,8 +58,11 @@ export default function StudioPage() {
       });
       setThemeTextColor(currentArtist.themeTextColor || "#fac107");
       setThemeBgColor(currentArtist.themeBgColor || "#0f1a42");
+
+      // On-demand fetch of creator works only when Studio is active
+      fetchUserWorks(currentArtist.id);
     }
-  }, [currentArtist]);
+  }, [currentArtist, fetchUserWorks]);
 
   const normalizeHex = (hex?: string, defaultHex = "#FAC107") => {
     if (!hex) return defaultHex.toUpperCase();

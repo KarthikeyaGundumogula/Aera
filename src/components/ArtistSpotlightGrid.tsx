@@ -22,7 +22,8 @@ export const ArtistSpotlightGrid = memo(function ArtistSpotlightGrid({
 }: ArtistSpotlightGridProps) {
   if (!artists || artists.length === 0) return null;
 
-  const rowsClass = rows === 2 ? 'grid-rows-2' : 'grid-rows-3';
+  const effectiveRows = Math.min(artists.length, rows);
+  const rowsClass = effectiveRows === 1 ? 'grid-rows-1' : effectiveRows === 2 ? 'grid-rows-2' : 'grid-rows-3';
   const colsClass = variant === 'featured' ? 'auto-cols-[200px] md:auto-cols-[320px]' : 'auto-cols-[250px] md:auto-cols-[300px]';
 
   return (

@@ -13,11 +13,12 @@ import {
   LogOut,
   MessageSquare,
   Loader2,
+  Globe,
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import {
   SETS,
   FESTIVALS,
-  GRID_ITEMS,
   PROFILES_DIRECTORY,
   THOUGHTS_MOCK,
 } from "../../mock";
@@ -49,9 +50,13 @@ import { apiFetch } from "@/lib/api";
 export function SetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
 
   const [localSet, setLocalSet] = useState<any>(id ? SETS.find((s) => s.id === id) || null : null);
   const [loading, setLoading] = useState(true);
+  const [discussions, setDiscussions] = useState<any[]>([]);
+  const [theatreWorks, setTheatreWorks] = useState<any[]>([]);
+  const [fetchedFestivals, setFetchedFestivals] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -60,33 +65,89 @@ export function SetDetailPage() {
 
     const staticFallback = SETS.find((s) => s.id === id) || null;
 
-    apiFetch(`/sets/${id}`)
-      .then(async (res) => {
-        if (res.ok) {
-          const json = await res.json();
+    Promise.all([
+      apiFetch(`/sets/${id}`),
+      apiFetch(`/sets/${id}/discussions`),
+      apiFetch(`/sets/${id}/theatre`),
+      apiFetch(`/festivals`),
+    ])
+      .then(async ([setRes, discRes, theatreRes, festRes]) => {
+        if (setRes.ok) {
+          const json = await setRes.json();
           const remote = json.data || json;
           if (remote && isMounted) {
+            const mappedMembers = (remote.members || []).map((m: any) => ({
+              profileId: m.profileId || m.profile_id,
+              role: m.role || "Member",
+              joinedAt: m.joinedAt || m.joined_at || new Date().toISOString(),
+            }));
+
             const mappedSet = {
               id: remote.id,
-              title: remote.title || "Untitled Set",
-              description: remote.description || "",
-              captainId: remote.captainId || remote.captain_id || "c1",
-              coverImage: remote.coverImage || remote.cover_img || "https://images.unsplash.com/photo-1579783902614-a3fb3927b675",
-              accentColor: remote.accentColor || remote.accent_color || "#D97706",
+              title: remote.title,
+              description: remote.description,
+              captainId: remote.captainId || remote.captain_id,
+              coverImage: remote.coverImage || remote.cover_image || "",
+              accentColor: remote.accentColor || remote.accent_color,
               themeLine: remote.themeLine || remote.theme_line || "",
-              members: (remote.members || []).map((m: any) => ({
-                profileId: m.profileId || m.profile_id,
-                role: m.role || "Member",
-                joinedAt: m.joinedAt || m.joined_at || new Date().toISOString(),
-              })),
+              members: mappedMembers,
+              memberCount: remote.memberCount ?? remote.member_count ?? mappedMembers.length,
+              totalFestivals: remote.totalFestivals ?? remote.total_festivals,
+              liveFestivals: remote.liveFestivals ?? remote.live_festivals,
+              isMember: remote.isMember ?? remote.is_member,
               activeFestivalId: remote.activeFestivalId || remote.active_festival_id,
               festivalStatus: remote.festivalStatus || remote.festival_status,
               tickerText: remote.tickerText || remote.ticker_text,
             };
             setLocalSet(mappedSet);
+
+            if (currentArtist?.id) {
+              const userInMembers = mappedMembers.some(
+                (m: any) => String(m.profileId) === String(currentArtist.id)
+              );
+              if (userInMembers || remote.isMember || remote.is_member) {
+                setIsJoined(true);
+              }
+            }
           }
         } else if (staticFallback && isMounted) {
           setLocalSet(staticFallback);
+        }
+
+        if (discRes.ok) {
+          const json = await discRes.json();
+          const list = json.data || json;
+          if (Array.isArray(list) && isMounted) {
+            setDiscussions(list);
+          }
+        }
+
+        if (theatreRes && theatreRes.ok) {
+          const json = await theatreRes.json();
+          const list = json.data || json;
+          if (Array.isArray(list) && isMounted) {
+            setTheatreWorks(list);
+          }
+        }
+
+        if (festRes && festRes.ok) {
+          const json = await festRes.json();
+          const list = json.data || json;
+          if (Array.isArray(list) && isMounted) {
+            const mappedFestivals = list.map((f: any) => ({
+              id: f.id,
+              setId: f.setId || f.set_id,
+              title: f.title || f.name,
+              description: f.description || "",
+              rules: Array.isArray(f.rules) ? f.rules : f.rules ? [f.rules] : [],
+              startDate: f.startDate || f.start_date || new Date().toISOString(),
+              endDate: f.endDate || f.end_date || new Date().toISOString(),
+              coverImage: f.coverImage || f.cover_image || "",
+              status: f.status || "LIVE",
+              presenceLeader: f.presenceLeader || f.presence_leader,
+            }));
+            setFetchedFestivals(mappedFestivals);
+          }
         }
       })
       .catch(() => {
@@ -99,45 +160,195 @@ export function SetDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, currentArtist?.id]);
 
   const set = localSet;
 
-  const allFestivals = useMemo(
-    () => FESTIVALS.filter((f) => f.setId === id),
-    [id],
-  );
-  const activeFestival = useMemo(
-    () =>
-      allFestivals.find(
-        (f) => f.status === "LIVE" || f.status === "UPCOMING",
-      ) ?? null,
-    [allFestivals],
-  );
+  const allFestivals = useMemo(() => {
+    const realForSet = fetchedFestivals.filter((f) => String(f.setId) === String(id));
+    if (realForSet.length > 0) return realForSet;
+    return FESTIVALS.filter((f) => String(f.setId) === String(id));
+  }, [fetchedFestivals, id]);
+
+  const activeFestival = useMemo(() => {
+    if (!set) return null;
+    if (set.activeFestivalId) {
+      const match = allFestivals.find((f) => String(f.id) === String(set.activeFestivalId));
+      if (match) return match;
+    }
+    return (
+      allFestivals.find((f) => f.status === "LIVE" || f.status === "UPCOMING") ||
+      allFestivals[0] ||
+      null
+    );
+  }, [set, allFestivals]);
   const captain = useMemo(
     () => (set ? PROFILES_DIRECTORY.find((p) => p.id === set.captainId) : null),
     [set],
   );
-  // Works filtered for this set — using all works as proxy since mock works don't have setId yet
-  // In production this will be a real backend filter
-  const setWorks = useMemo(() => GRID_ITEMS.slice(0, 18), []);
+  const setWorks = useMemo(() => {
+    if (!theatreWorks || !Array.isArray(theatreWorks)) return [];
+    return theatreWorks.map((w: any) => ({
+      id: w.id,
+      title: w.title || "Untitled",
+      type: (w.workType || w.work_type || w.category || "EDIT").toLowerCase() as any,
+      thumbnail: w.thumbnail || "",
+      artistId: w.artistId || w.artist_id || "",
+      artistName: w.artistName || w.artist_name || "",
+    }));
+  }, [theatreWorks]);
 
-  const setThoughts = useMemo(
-    () => THOUGHTS_MOCK.filter((t) => t.setId === id),
-    [id],
-  );
+  const setThoughts = useMemo(() => {
+    const staticThoughts = THOUGHTS_MOCK.filter((t) => t.setId === id);
+    const liveThoughts = discussions.map((d: any) => ({
+      id: d.id,
+      authorId: d.author_id || "artist-1",
+      hits: d.comment_count || 0,
+      text: d.title ? `${d.title}\n\n${d.body}` : d.body,
+      authorName: d.author_name || "Artist",
+      authorAvatar: d.author_avatar || "",
+      setId: id || "",
+      timestamp: d.created_at ? new Date(d.created_at).toLocaleDateString() : "Just now",
+    }));
+    return [...liveThoughts, ...staticThoughts];
+  }, [id, discussions]);
 
   const [isJoined, setIsJoined] = useState(false);
-  const memberCount = (set?.members?.length ?? 0) + (isJoined ? 1 : 0);
-  const festivalCount = allFestivals.length;
-  const worksCount = (((id?.length ?? 0) * 31 + memberCount * 7) % 150) + 12;
+  const memberCount = set?.memberCount ?? ((set?.members?.length ?? 0) + (isJoined ? 1 : 0));
+  const festivalCount = set?.totalFestivals ?? allFestivals.length;
+  const liveFestivalsCount = set?.liveFestivals ?? (activeFestival ? 1 : 0);
+
+  const isCreator = useMemo(() => {
+    if (!currentArtist?.id || !set?.captainId) return false;
+    return String(currentArtist.id) === String(set.captainId);
+  }, [currentArtist?.id, set?.captainId]);
 
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("As you are the creator, you can't leave the set");
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3500);
+  };
+
+  const handleToggleJoin = async () => {
+    if (!id) return;
+    if (!isJoined) {
+      try {
+        const res = await apiFetch("/sets/join", {
+          method: "POST",
+          body: JSON.stringify({ set_id: id }),
+        });
+        if (res.ok) setIsJoined(true);
+      } catch {
+        setIsJoined(true);
+      }
+    } else {
+      if (isCreator) {
+        triggerToast("As you are the creator, you can't leave the set");
+        return;
+      }
+
+      try {
+        const res = await apiFetch(`/sets/${id}/leave`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          setIsJoined(false);
+        } else {
+          const json = await res.json().catch(() => ({}));
+          const errMsg = json.error || json.message || "As you are the creator, you can't leave the set";
+          triggerToast(errMsg);
+        }
+      } catch {
+        triggerToast("As you are the creator, you can't leave the set");
+      }
+    }
+  };
   const [isCreateFestivalModalOpen, setIsCreateFestivalModalOpen] =
     useState(false);
 
+  const handleCreateFestival = async (data: {
+    title: string;
+    description: string;
+    rulesText: string;
+    startDate: string;
+    endDate: string;
+    panelists: string[];
+  }) => {
+    if (!id) return;
+    try {
+      const payload = {
+        name: data.title,
+        description: data.description,
+        rules: data.rulesText.trim() || null,
+        start_date: data.startDate
+          ? new Date(data.startDate).toISOString()
+          : new Date().toISOString(),
+        end_date: data.endDate
+          ? new Date(data.endDate).toISOString()
+          : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        set_id: id,
+        panelists: data.panelists,
+      };
 
+      const res = await apiFetch(`/sets/${id}/new_festival`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        triggerToast("Festival created successfully!");
+        setIsCreateFestivalModalOpen(false);
+
+        // Re-fetch set details & festivals
+        Promise.all([apiFetch(`/sets/${id}`), apiFetch(`/festivals`)]).then(
+          async ([setRes, festRes]) => {
+            if (setRes.ok) {
+              const json = await setRes.json();
+              const remote = json.data || json;
+              if (remote) {
+                setLocalSet((prev: any) => ({
+                  ...prev,
+                  activeFestivalId: remote.activeFestivalId || remote.active_festival_id || prev?.activeFestivalId,
+                  festivalStatus: remote.festivalStatus || remote.festival_status || prev?.festivalStatus,
+                  totalFestivals: (prev?.totalFestivals || 0) + 1,
+                  liveFestivals: (prev?.liveFestivals || 0) + 1,
+                }));
+              }
+            }
+            if (festRes.ok) {
+              const json = await festRes.json();
+              const list = json.data || json;
+              if (Array.isArray(list)) {
+                const mappedFestivals = list.map((f: any) => ({
+                  id: f.id,
+                  setId: f.setId || f.set_id,
+                  title: f.title || f.name,
+                  description: f.description || "",
+                  rules: Array.isArray(f.rules) ? f.rules : f.rules ? [f.rules] : [],
+                  startDate: f.startDate || f.start_date || new Date().toISOString(),
+                  endDate: f.endDate || f.end_date || new Date().toISOString(),
+                  coverImage: f.coverImage || f.cover_image || "",
+                  status: f.status || "LIVE",
+                  presenceLeader: f.presenceLeader || f.presence_leader,
+                }));
+                setFetchedFestivals(mappedFestivals);
+              }
+            }
+          }
+        );
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        const msg = errJson.error || errJson.message || "Failed to create festival";
+        triggerToast(msg);
+      }
+    } catch {
+      triggerToast("Failed to create festival");
+    }
+  };
 
   const setCommandItems: CommandItem[] = useMemo(
     () => [
@@ -146,7 +357,7 @@ export function SetDetailPage() {
         icon: <Settings className="w-4 h-4" />,
         action: () => setIsUpdateModalOpen(true),
         description: "Curation & Rules",
-        visible: true, // In real app, check if user is curator
+        visible: isCreator,
       },
       {
         label: "Upload Work",
@@ -156,42 +367,28 @@ export function SetDetailPage() {
         visible: true,
       },
       {
-        label: "Leave Set",
-        icon: <LogOut className="w-4 h-4 text-red-500" />,
-        action: () => {
-          if (window.confirm("Are you sure you want to leave this set?")) {
-            setIsJoined(false);
-          }
-        },
-        description: "Exit Collective",
-        visible: isJoined,
-      },
-      {
         label: "Create Festival",
         icon: <Plus className="w-4 h-4" />,
         action: () => setIsCreateFestivalModalOpen(true),
         description: "Start New Festival (Curator)",
-        visible: true, // In real app, check if user is curator
+        visible: isCreator,
       },
     ],
-    [isJoined, id, navigate],
+    [isJoined, id, navigate, isCreator],
   );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
-        <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">
-          Loading Set Details…
-        </span>
+      <div className="min-h-screen bg-surface-deep flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!localSet) {
     return (
-      <div className="min-h-screen bg-surface-deep flex flex-col items-center justify-center gap-4 text-white">
-        <p className="text-[11px] uppercase tracking-[0.4em] text-white/30">
+      <div className="min-h-screen bg-surface-deep flex flex-col items-center justify-center gap-4">
+        <p className="text-white/40 text-xs font-mono tracking-widest uppercase">
           Set Not Found
         </p>
         <button
@@ -206,7 +403,6 @@ export function SetDetailPage() {
 
   return (
     <div className="min-h-screen bg-surface-deep text-white overflow-x-hidden pt-[68px] md:pt-[72px]">
-      {/* ─── Sticky Header ───────────────────────────────────────────────────── */}
       <CinematicPageHeader
         title={localSet.title}
         onBack={() => navigate("/sets")}
@@ -217,29 +413,23 @@ export function SetDetailPage() {
         }
       />
 
-      {/* Visual Hit Toast */}
       <AnimatePresence>
         {showToast && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-xl z-[200] flex items-center gap-2 pointer-events-none"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-950/90 border border-red-500/30 text-red-200 rounded-xl z-[200] flex items-center gap-2 pointer-events-none shadow-2xl backdrop-blur-md"
           >
-            <BookPlus size={14} className="fill-current" />
+            <BookPlus size={14} className="fill-current text-red-400" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
-              Added to Library
+              {toastMessage}
             </span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ─── Layer I: Atmos Header ────────────────────────────────────────────── */}
       <div className="relative overflow-hidden w-full min-h-[35vh] flex flex-col justify-center items-center pt-8 pb-8 md:pt-10 md:pb-6 bg-[#030303] border-b border-white/[0.02]">
-        {/* Cinematic Background Design */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" />
-
-        {/* Massive SVG Typography Container */}
         <div className="w-full max-w-[1400px] flex items-center justify-center px-4 md:px-8 relative z-10 pointer-events-none mt-8">
           <svg
             className="w-full"
@@ -263,27 +453,24 @@ export function SetDetailPage() {
           </svg>
         </div>
 
-        {/* Central Identity Dock */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="relative z-10 flex flex-col items-center gap-6 mt-2 max-w-2xl px-6 text-center"
         >
-          {/* Theme Line */}
           {localSet.themeLine && (
             <p className="text-[12px] md:text-[15px] font-medium italic text-white/50 tracking-[0.25em] uppercase drop-shadow-md">
               "{localSet.themeLine}"
             </p>
           )}
 
-          {/* Captain Pill */}
           {captain && (
             <button
               onClick={() => navigate(`/profile/${captain.id}`)}
               className="flex items-center gap-2 px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.04] hover:border-white/10 rounded-xl transition-all duration-300 group"
             >
-              {captain.profilePicture && (
+              {captain.profilePicture && (captain.profilePicture.startsWith('http') || captain.profilePicture.startsWith('/') || captain.profilePicture.startsWith('data:')) && (
                 <img
                   src={captain.profilePicture}
                   alt={captain.name}
@@ -296,21 +483,19 @@ export function SetDetailPage() {
             </button>
           )}
 
-          {/* Dynamic Join Button */}
           <div className="flex items-center pt-2">
             <button
-              onClick={() => setIsJoined(!isJoined)}
+              onClick={handleToggleJoin}
               className={`px-8 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${
                 isJoined
-                  ? "bg-white/5 text-white/40 border border-white/5"
+                  ? "bg-white/5 text-white/40 border border-white/5 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30"
                   : "bg-white text-black hover:bg-white/90 hover:scale-105"
               }`}
             >
-              {isJoined ? "Joined" : "Join"}
+              {isJoined ? "LEAVE SET" : "JOIN SET"}
             </button>
           </div>
 
-          {/* Stats Row */}
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 pt-4">
             {[
               {
@@ -324,9 +509,9 @@ export function SetDetailPage() {
                 label: festivalCount === 1 ? "Festival" : "Festivals",
               },
               {
-                icon: <Film className="w-3.5 h-3.5" />,
-                value: worksCount,
-                label: "Works",
+                icon: <Globe className="w-3.5 h-3.5" />,
+                value: liveFestivalsCount,
+                label: liveFestivalsCount === 1 ? "Live Festival" : "Live Festivals",
               },
             ].map(({ icon, value, label }, idx) => (
               <div key={label} className="flex items-center gap-2">
@@ -412,7 +597,7 @@ export function SetDetailPage() {
           setId={localSet.id}
           isOpen={isCreateFestivalModalOpen}
           onClose={() => setIsCreateFestivalModalOpen(false)}
-          onCreate={() => undefined}
+          onCreate={handleCreateFestival}
         />
       )}
     </div>

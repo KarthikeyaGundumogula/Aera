@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, Upload, Image as ImageIcon, X, Plus, Link } from "lucide-react";
-import { useRef } from "react";
+import { ChevronLeft, ChevronRight, Upload, Image as ImageIcon, X, Plus, Link, Youtube, Twitter, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 import type {
   UpdateUploadFormData,
   UploadCategory,
@@ -17,6 +17,18 @@ interface SourceStepProps {
   setFormData: UpdateUploadFormData;
   onNext: () => void;
   onBack: () => void;
+  isOriginalRelease?: boolean;
+}
+
+function extractYoutubeId(url: string): string | null {
+  if (!url || !url.trim()) return null;
+  const trimmed = url.trim();
+  const matchV = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (matchV) return matchV[1];
+  const matchPath = trimmed.match(/(?:youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+  if (matchPath) return matchPath[1];
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  return null;
 }
 
 function validateSourceUrl(url: string, platform: UploadPlatform): string | null {
@@ -24,19 +36,16 @@ function validateSourceUrl(url: string, platform: UploadPlatform): string | null
   const trimmed = url.trim();
 
   if (platform === "youtube") {
-    const matchV = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-    const matchPath = trimmed.match(/(?:youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-    const isDirectId = /^[a-zA-Z0-9_-]{11}$/.test(trimmed);
-
-    if (!matchV && !matchPath && !isDirectId) {
-      return "Invalid YouTube link. Please provide a valid YouTube video URL or 11-character video ID.";
+    const ytId = extractYoutubeId(trimmed);
+    if (!ytId) {
+      return "Invalid YouTube link format. Please provide a valid YouTube video URL or 11-character video ID.";
     }
   } else if (platform === "twitter") {
     const matchStatus = trimmed.match(/(?:twitter\.com|x\.com)\/[^/]+\/status\/(\d+)/i);
     const isDirectNumeric = /^\d{10,22}$/.test(trimmed);
 
     if (!matchStatus && !isDirectNumeric) {
-      return "Invalid Twitter/X link. Please provide a valid tweet status URL (e.g. x.com/user/status/123...) or status ID.";
+      return "Invalid Twitter/X link format. Please provide a valid tweet status URL (e.g. x.com/user/status/123...) or status ID.";
     }
   }
 
@@ -51,11 +60,75 @@ export function SourceStep({
   originalIds, 
   setFormData, 
   onNext, 
-  onBack 
+  onBack,
+  isOriginalRelease
 }: SourceStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isPoster = category === "Poster";
   const isStoryboard = category === "Storyboard";
+
+  const activePlatform = isOriginalRelease ? "youtube" : platform;
+
+  // ─── Async Remote Validation State (oEmbed API) ───────────────────────────
+  const [isValidating, setIsValidating] = useState(false);
+  const [remoteError, setRemoteError] = useState<string | null>(null);
+  const [verifiedUrl, setVerifiedUrl] = useState<string>("");
+
+  const formatError = !isPoster && !isStoryboard ? validateSourceUrl(contentUrl, activePlatform) : null;
+
+  useEffect(() => {
+    if (isPoster || isStoryboard || !contentUrl.trim() || formatError) {
+      setRemoteError(null);
+      setIsValidating(false);
+      return;
+    }
+
+    if (contentUrl.trim() === verifiedUrl) {
+      return;
+    }
+
+    let isMounted = true;
+    const timer = setTimeout(async () => {
+      setIsValidating(true);
+      setRemoteError(null);
+
+      try {
+        if (activePlatform === "youtube") {
+          const ytId = extractYoutubeId(contentUrl.trim());
+          const targetUrl = ytId ? `https://www.youtube.com/watch?v=${ytId}` : contentUrl.trim();
+          const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(targetUrl)}&format=json`);
+          if (!isMounted) return;
+
+          if (res.status === 404 || !res.ok) {
+            setRemoteError("Video not found on YouTube. Please check the URL/ID or privacy settings.");
+          } else {
+            setVerifiedUrl(contentUrl.trim());
+            setRemoteError(null);
+          }
+        } else if (activePlatform === "twitter") {
+          const res = await fetch(`https://publish.twitter.com/oembed?url=${encodeURIComponent(contentUrl.trim())}`);
+          if (!isMounted) return;
+
+          if (res.status === 404 || !res.ok) {
+            setRemoteError("Tweet not found on Twitter/X. Please check the status URL.");
+          } else {
+            setVerifiedUrl(contentUrl.trim());
+            setRemoteError(null);
+          }
+        }
+      } catch (e) {
+        // If CORS or network issue, don't hard block valid-formatted URLs
+        if (isMounted) setRemoteError(null);
+      } finally {
+        if (isMounted) setIsValidating(false);
+      }
+    }, 450);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [contentUrl, activePlatform, formatError, isPoster, isStoryboard, verifiedUrl]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -93,10 +166,10 @@ export function SourceStep({
     setFormData({ storyboardPages: updated });
   };
 
-  const urlError = !isPoster && !isStoryboard ? validateSourceUrl(contentUrl, platform) : null;
+  const activeError = formatError || remoteError;
   const canProceed = isStoryboard
     ? storyboardPages.length > 0
-    : !!contentUrl.trim() && !urlError;
+    : !!contentUrl.trim() && !activeError && !isValidating;
 
   return (
     <motion.div
@@ -127,44 +200,78 @@ export function SourceStep({
           <>
             <div className="flex gap-4">
               <button 
+                type="button"
                 onClick={() => setFormData({ platform: "youtube" })}
-                className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
-                  platform === "youtube" ? "bg-red-500/10 border-red-500/50 text-red-500" : "bg-white/5 text-white border-white/10 hover:border-white/20"
+                className={`flex-1 p-5 rounded-2xl border transition-all duration-300 flex items-center justify-center gap-3 ${
+                  activePlatform === "youtube"
+                    ? "bg-red-500/10 border-red-500/50 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.15)]"
+                    : "bg-white/5 text-white/40 border-white/10 hover:border-white/20 hover:text-white"
                 }`}
               >
-                <div className="text-xs font-black uppercase tracking-widest text-center">Youtube</div>
+                <Youtube className="w-5 h-5 text-red-500" />
+                <div className="text-xs font-black uppercase tracking-widest">
+                  YouTube {isOriginalRelease ? "(Official Source)" : ""}
+                </div>
               </button>
-              <button 
-                onClick={() => setFormData({ platform: "twitter" })}
-                className={`flex-1 p-6 rounded-2xl border transition-all duration-300 ${
-                  platform === "twitter" ? "bg-blue-500/10 border-blue-500/50 text-blue-500" : "bg-white/5 text-white border-white/10 hover:border-white/20"
-                }`}
-              >
-                <div className="text-xs font-black uppercase tracking-widest text-center">Twitter / X</div>
-              </button>
+              
+              {!isOriginalRelease && (
+                <button 
+                  type="button"
+                  onClick={() => setFormData({ platform: "twitter" })}
+                  className={`flex-1 p-5 rounded-2xl border transition-all duration-300 flex items-center justify-center gap-3 ${
+                    activePlatform === "twitter"
+                      ? "bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "bg-white/5 text-white/40 border-white/10 hover:border-white/20 hover:text-white"
+                  }`}
+                >
+                  <Twitter className="w-5 h-5 text-blue-400" />
+                  <div className="text-xs font-black uppercase tracking-widest">Twitter / X</div>
+                </button>
+              )}
             </div>
 
             <div className="space-y-2">
-              <input 
-                type="url"
-                placeholder={platform === 'youtube' ? "Paste YouTube link (e.g. youtube.com/watch?v=...)" : "Paste Twitter/X status link (e.g. x.com/user/status/...)"}
-                autoFocus
-                value={contentUrl}
-                onChange={(e) => setFormData({ contentUrl: e.target.value })}
-                className={`w-full bg-white/5 border rounded-2xl p-6 text-base font-mono outline-none transition-all placeholder:text-white/10 ${
-                  urlError
-                    ? "border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
-                    : "border-white/10 focus:border-white focus:ring-2 focus:ring-white/20"
-                }`}
-              />
-              {urlError && (
+              <div className="relative group">
+                <input 
+                  type="url"
+                  placeholder={activePlatform === 'youtube' ? "Paste YouTube link or Video ID (e.g. youtube.com/watch?v=...)" : "Paste Twitter/X status link (e.g. x.com/user/status/...)"}
+                  autoFocus
+                  value={contentUrl}
+                  onChange={(e) => setFormData({ contentUrl: e.target.value })}
+                  className={`w-full bg-white/5 border rounded-2xl p-6 pr-14 text-base font-mono outline-none transition-all placeholder:text-white/20 ${
+                    activeError
+                      ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                      : verifiedUrl && contentUrl.trim() === verifiedUrl
+                      ? "border-emerald-500/60 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      : "border-white/10 focus:border-white focus:ring-2 focus:ring-white/20"
+                  }`}
+                />
+                
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {isValidating ? (
+                    <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
+                  ) : activeError ? (
+                    <AlertCircle className="w-5 h-5 text-red-400 animate-pulse" />
+                  ) : verifiedUrl && contentUrl.trim() === verifiedUrl ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  ) : null}
+                </div>
+              </div>
+
+              {activeError && (
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs font-medium text-red-400 pl-2 tracking-wide"
+                  className="text-xs font-medium text-red-400 pl-2 tracking-wide flex items-center gap-1.5"
                 >
-                  ⚠️ {urlError}
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{activeError}</span>
                 </motion.p>
+              )}
+              {isValidating && (
+                <p className="text-[10px] font-bold text-yellow-400/80 pl-2 tracking-widest uppercase animate-pulse">
+                  Verifying Media Existence on {activePlatform === "youtube" ? "YouTube" : "Twitter"}…
+                </p>
               )}
             </div>
           </>

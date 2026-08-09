@@ -1,44 +1,78 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { GRID_ITEMS } from "../../mock";
 import { useAuth } from "../../context/AuthContext";
+import { apiFetch } from "@/lib/api";
+import type { TheatreItem } from "../../types";
 import { EditViewer } from "./layouts/EditViewer";
 import { PosterViewer } from "./layouts/PosterViewer";
 import { StoryboardViewer } from "./layouts/StoryboardViewer";
 import { RecommendationViewer } from "./layouts/RecommendationViewer";
+import { FHLoader } from "@/components/FHLoader";
 
-/**
- * WorkPage — The Viewer Screen at /works/:id
- *
- * Rendering modes:
- *
- * 1. IN-APP NAVIGATION (state.item present):
- *    - The item is passed directly from useWorkNavigation for instant render.
- *    - No data fetch needed.
- *
- * 2. DIRECT LINK / REFRESH / SHARED URL:
- *    - No state.item — look up by id in userWorks then GRID_ITEMS.
- *    - Shows a not-found screen if the id doesn't match anything.
- *
- * The format-specific layout is determined by item.category:
- *   Edit         → EditViewer (cinematic video)
- *   Poster       → PosterViewer (gallery split-screen)
- *   Storyboard       → StoryboardViewer (filmstrip/magazine)
- *   Recommendation → RecommendationViewer (resonance card)
- *   default      → EditViewer
- */
 export default function WorkPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { userWorks } = useAuth();
+  const [fetchedItem, setFetchedItem] = useState<TheatreItem | null>(null);
+  const [isLoadingBackend, setIsLoadingBackend] = useState<boolean>(false);
 
-  // Resolve item: state (instant) → userWorks → GRID_ITEMS
+  // Resolve item: state (instant) → userWorks → GRID_ITEMS → fetchedItem
   const stateItem = location.state?.item;
-  const item =
+  const localItem =
     stateItem ||
-    userWorks.find((w) => w.id === id) ||
+    userWorks.find((w) => String(w.id) === id) ||
     GRID_ITEMS.find((w) => String(w.id) === id) ||
+    fetchedItem ||
     null;
+
+  // On direct URL load for UUID works, fetch on-demand if not present locally
+  useEffect(() => {
+    if (localItem || !id) return;
+    const isUuid = /^[0-9a-fA-F-]{36}$/.test(id);
+    if (!isUuid) return;
+
+    let isMounted = true;
+    (async () => {
+      setIsLoadingBackend(true);
+      try {
+        const res = await apiFetch(`/works/${id}`);
+        if (res.ok && isMounted) {
+          const raw = await res.json();
+          const itemData = raw.data || raw;
+          setFetchedItem({
+            id: itemData.id,
+            title: itemData.title || undefined,
+            category: itemData.work_type || itemData.category || "Edit",
+            image: itemData.thumbnail || itemData.image || undefined,
+            srcId: itemData.src_id || itemData.srcId || undefined,
+            platform: itemData.platform || undefined,
+            artist: itemData.artist_name || itemData.artist || undefined,
+            artistAvatar: itemData.artist_avatar || itemData.artistAvatar || undefined,
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to fetch work directly from backend:", e);
+      } finally {
+        if (isMounted) setIsLoadingBackend(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, localItem]);
+
+  if (isLoadingBackend) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#080807]">
+        <FHLoader label="Retrieving Work Scene..." />
+      </div>
+    );
+  }
+
+  const item = localItem;
 
   // Not found
   if (!item) {

@@ -106,7 +106,7 @@ export default function HallPage() {
       <MobileTopHeader />
       <DesktopHeader />
 
-      <main className="pt-[61px]">
+      <main className="pt-20 md:pt-24">
         {/* ══════════════════════════════════════════════════════
             HERO — Walls of Artists
         ══════════════════════════════════════════════════════ */}

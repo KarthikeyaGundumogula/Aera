@@ -17,67 +17,115 @@ interface SetResponseItem {
   theme_line?: string;
   memberCount?: number;
   member_count?: number;
+  totalFestivals?: number;
+  total_festivals?: number;
+  liveFestivals?: number;
+  live_festivals?: number;
+  isMember?: boolean;
+  is_member?: boolean;
   activeFestivalId?: string;
   active_festival_id?: string;
   festivalStatus?: string;
   festival_status?: string;
 }
 
+interface PaginationMeta {
+  page: number;
+  limit: number;
+  totalCount?: number;
+  total_count?: number;
+  hasMore?: boolean;
+  has_more?: boolean;
+}
+
 export function usePaginatedSets(pageSize = 10) {
   const [sets, setSets] = useState<Set[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const fetchSets = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await apiFetch("/sets");
-      if (res.ok) {
-        const json = await res.json();
-        const rawList: SetResponseItem[] = json.data || json.items || json.sets || (Array.isArray(json) ? json : []);
-        const mapped: Set[] = rawList.map((s) => ({
-          id: s.id,
-          title: s.title || "Untitled Set",
-          description: s.description || "",
-          captainId: s.captainId || s.captain_id || "c1",
-          coverImage: s.coverImage || s.cover_image || "https://images.unsplash.com/photo-1579783902614-a3fb3927b675",
-          accentColor: s.accentColor || s.accent_color || "#D97706",
-          themeLine: s.themeLine || s.theme_line || "",
-          members: [],
-          activeFestivalId: s.activeFestivalId || s.active_festival_id,
-          festivalStatus: (s.festivalStatus || s.festival_status) === "LIVE" ? "ONGOING" : undefined,
-        }));
-
-        setSets(mapped.length > 0 ? mapped : SETS);
+  const fetchPage = useCallback(
+    async (pageToFetch: number, append = false) => {
+      if (append) {
+        setLoadingMore(true);
       } else {
-        setSets(SETS);
+        setLoading(true);
       }
-    } catch {
-      setSets(SETS);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+
+      try {
+        const res = await apiFetch(`/sets?page=${pageToFetch}&limit=${pageSize}`);
+        if (res.ok) {
+          const json = await res.json();
+          const rawList: SetResponseItem[] = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
+
+          const mapped: Set[] = rawList.map((s) => ({
+            id: s.id, // Preserved for user action routing to /sets/:id
+            title: s.title || "Untitled Set",
+            description: s.description || "",
+            captainId: s.captainId || s.captain_id || "c1",
+            coverImage: s.coverImage || s.cover_image || "https://images.unsplash.com/photo-1579783902614-a3fb3927b675",
+            accentColor: s.accentColor || s.accent_color || "#D97706",
+            themeLine: s.themeLine || s.theme_line || "",
+            members: [],
+            memberCount: s.memberCount ?? s.member_count ?? 0,
+            totalFestivals: s.totalFestivals ?? s.total_festivals ?? 0,
+            liveFestivals: s.liveFestivals ?? s.live_festivals ?? 0,
+            isMember: s.isMember ?? s.is_member ?? false,
+            activeFestivalId: s.activeFestivalId || s.active_festival_id,
+            festivalStatus: (s.festivalStatus || s.festival_status) === "LIVE" ? "ONGOING" : undefined,
+          }));
+
+          const meta: PaginationMeta | undefined = json.meta;
+          const serverHasMore = meta ? (meta.hasMore ?? meta.has_more ?? false) : rawList.length >= pageSize;
+          const serverTotal = meta ? (meta.totalCount ?? meta.total_count ?? mapped.length) : mapped.length;
+
+          setHasMore(serverHasMore);
+          setTotalCount(serverTotal);
+          setSets((prev) => (append ? [...prev, ...mapped] : mapped));
+        } else {
+          setSets(SETS);
+          setHasMore(false);
+        }
+      } catch {
+        setSets(SETS);
+        setHasMore(false);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [pageSize]
+  );
 
   useEffect(() => {
-    fetchSets();
-  }, [fetchSets]);
-
-  const paginatedSets = sets.slice(0, page * pageSize);
-  const hasMore = paginatedSets.length < sets.length;
+    fetchPage(1, false);
+    setPage(1);
+  }, [fetchPage]);
 
   const loadMore = useCallback(() => {
-    if (hasMore) {
-      setPage((prev) => prev + 1);
+    if (hasMore && !loadingMore && !loading) {
+      setPage((prevPage) => {
+        const nextPage = prevPage + 1;
+        fetchPage(nextPage, true);
+        return nextPage;
+      });
     }
-  }, [hasMore]);
+  }, [hasMore, loadingMore, loading, fetchPage]);
+
+  const refresh = useCallback(() => {
+    setPage(1);
+    fetchPage(1, false);
+  }, [fetchPage]);
 
   return {
-    sets: paginatedSets,
+    sets,
     loading,
+    loadingMore,
     hasMore,
-    totalCount: sets.length,
+    totalCount,
     loadMore,
-    refresh: fetchSets,
+    refresh,
   };
 }

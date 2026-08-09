@@ -119,7 +119,7 @@ export function FoyerSection() {
   if (artistGroups.length === 0) return null;
 
   return (
-    <section className="mb-6 pt-6">
+    <section className="mb-6 pt-2">
       
       <div className="overflow-x-auto no-scrollbar pb-6 w-full">
         <div className="flex gap-4 sm:gap-6 w-max px-6 md:px-12 mx-auto">

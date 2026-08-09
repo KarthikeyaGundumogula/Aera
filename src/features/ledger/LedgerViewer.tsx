@@ -634,7 +634,7 @@ export function LedgerViewer() {
 
   const handleSaveInPlace = () => {
     entry.status = entryStatus;
-    entry.preThoughts = preThoughts || null;
+    entry.preThoughts = preThoughts || undefined;
     entry.afterThoughts = entryStatus === "watched" ? (afterThoughts || undefined) : undefined;
     entry.surgeScore = entryStatus === "watched" ? surgeScore : undefined;
     if (entryStatus === "watched" && !entry.watchedAt) {

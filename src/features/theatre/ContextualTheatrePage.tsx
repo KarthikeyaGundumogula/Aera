@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from "react";
 import { ORIGINALS_DATA, SETS, FESTIVALS, GRID_ITEMS } from "../../mock";
 import { UnifiedTheatre } from "./components/UnifiedTheatre";
 import { TheatreItem } from "../../types";
+import { apiFetch } from "@/lib/api";
 
 export interface ContextualTheatrePageProps {
   type: "original" | "set" | "festival";
@@ -12,82 +13,96 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Resolve context
-  const getContext = () => {
-    if (!id) return null;
-    switch (type) {
-      case "original": {
-        const original = ORIGINALS_DATA[id];
-        return original ? { 
-          title: "Originals Theatre", 
-          subtitle: original.title, 
-          works: original.works || [], 
-          backUrl: `/originals/${id}` 
-        } : null;
-      }
-      case "set": {
-        const set = SETS.find((s) => s.id === id);
-        return set ? {
-          title: "Sets Theatre",
-          subtitle: set.title,
-          works: GRID_ITEMS.filter((item) => item.srcId === id),
-          backUrl: `/sets/${id}`
-        } : null;
-      }
-      case "festival": {
-        const festival = FESTIVALS.find((f) => f.id === id);
-        return festival ? {
-          title: "Festival Archive",
-          subtitle: festival.title,
-          works: GRID_ITEMS, // Mock fallback
-          backUrl: `/festivals/${id}`
-        } : null;
-      }
-    }
-  };
-
-  const context = getContext();
-  // Safe default for works
-  const initialWorks = context?.works || [];
-
+  const [subtitle, setSubtitle] = useState<string>("");
   const [visibleWorks, setVisibleWorks] = useState<TheatreItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore] = useState(initialWorks.length > 0);
+  const [hasMore, setHasMore] = useState(false);
 
-  // Initialize works once context is resolved
+  // Initialize & fetch context data
   useEffect(() => {
-    setVisibleWorks(initialWorks);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!id) return;
+    let isMounted = true;
+
+    if (type === "original") {
+      const staticOriginal = ORIGINALS_DATA[id];
+      if (staticOriginal) {
+        setSubtitle(staticOriginal.title);
+        setVisibleWorks(staticOriginal.works || []);
+        setHasMore((staticOriginal.works || []).length > 0);
+      }
+
+      // Fetch dynamic details for subtitle
+      apiFetch(`/originals/${id}`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const remote = json.data || json;
+            if (remote?.title && isMounted) {
+              setSubtitle(remote.title);
+            }
+          }
+        })
+        .catch(() => undefined);
+
+      // Fetch dynamic theatre works from GET /originals/{id}/theatre
+      setIsLoading(true);
+      apiFetch(`/originals/${id}/theatre?limit=30`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const theatreCards = json.data || json;
+            if (Array.isArray(theatreCards) && isMounted) {
+              const mappedWorks: TheatreItem[] = theatreCards.map((w: any) => ({
+                id: w.id,
+                title: w.title || "Untitled Work",
+                category: w.workType || w.work_type || w.category || "Edit",
+                image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+                platform: "youtube",
+                srcId: w.id,
+              }));
+              setVisibleWorks(mappedWorks);
+              setHasMore(mappedWorks.length >= 30);
+            }
+          }
+        })
+        .catch((err) => console.warn("[ContextualTheatrePage] Failed to fetch theatre:", err))
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+    } else if (type === "set") {
+      const set = SETS.find((s) => s.id === id);
+      if (set) {
+        setSubtitle(set.title);
+        const works = GRID_ITEMS.filter((item) => item.srcId === id);
+        setVisibleWorks(works);
+        setHasMore(works.length > 0);
+      }
+    } else if (type === "festival") {
+      const festival = FESTIVALS.find((f) => f.id === id);
+      if (festival) {
+        setSubtitle(festival.title);
+        setVisibleWorks(GRID_ITEMS);
+        setHasMore(true);
+      }
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [id, type]);
 
-  const loadMore = useCallback(() => {
-    if (isLoading || !initialWorks.length) return;
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setVisibleWorks(prev => [
-        ...prev, 
-        ...initialWorks.map(w => ({ ...w, id: `${w.id}-clone-${Math.random().toString(36).substr(2, 9)}` }))
-      ]);
-      setIsLoading(false);
-    }, 800);
-  }, [isLoading, initialWorks]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  if (!context) return null;
+  const backUrl = type === "original" ? `/originals/${id}` : type === "set" ? `/sets/${id}` : `/festivals/${id}`;
+  const title = type === "original" ? "Originals Theatre" : type === "set" ? "Sets Theatre" : "Festival Archive";
 
   return (
     <UnifiedTheatre 
       works={visibleWorks}
       variant="full"
-      title={context.title}
-      subtitle={context.subtitle}
-      onExit={() => navigate(context.backUrl)}
+      title={title}
+      subtitle={subtitle}
+      onExit={() => navigate(backUrl)}
       isLoading={isLoading}
-      onLoadMore={loadMore}
+      onLoadMore={() => undefined}
       hasMore={hasMore}
     />
   );

@@ -13,6 +13,7 @@ import { getWorkKind } from "../../../shared/work/types";
 interface DesktopCanvasCardProps {
   slot: ClusterSlot;
   item: TheatreItem;
+  className?: string;
 }
 
 /**
@@ -22,6 +23,7 @@ interface DesktopCanvasCardProps {
 export const DesktopCanvasCard = memo(function DesktopCanvasCard({
   slot,
   item,
+  className = "",
 }: DesktopCanvasCardProps) {
   const kind = getWorkKind(item);
   const isPosterOrScript = kind === "poster" || kind === "storyboard";
@@ -70,7 +72,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
       whileHover={{
         zIndex: 20,
       }}
-      className={`relative group overflow-hidden bg-zinc-900/20 ${isPosterOrScript ? 'rounded-none' : 'rounded-sm'} transition-all duration-500`}
+      className={`relative group w-full h-full overflow-hidden bg-zinc-900/20 ${isPosterOrScript ? 'rounded-none' : 'rounded-sm'} transition-all duration-500 ${className}`}
       style={{
         gridColumn: `${slot.x + 1} / span ${slot.w}`,
         gridRow: `${slot.y + 1} / span ${slot.h}`,

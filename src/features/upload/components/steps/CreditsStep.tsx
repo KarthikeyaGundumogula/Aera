@@ -46,11 +46,11 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
     mergedOriginals.filter((o) => selectedIds.includes(o.id)),
   [mergedOriginals, selectedIds]);
 
-  const allAvailable = useMemo(() => [OWN_RELEASE_ORIGINAL, ...mergedOriginals], [mergedOriginals]);
+  const allAvailable = useMemo(() => mergedOriginals, [mergedOriginals]);
 
   const filteredResults = useMemo(() => {
     if (!searchQuery.trim()) {
-      return [OWN_RELEASE_ORIGINAL, ...originals];
+      return originals;
     }
     const query = searchQuery.toLowerCase();
     return allAvailable.filter(o =>

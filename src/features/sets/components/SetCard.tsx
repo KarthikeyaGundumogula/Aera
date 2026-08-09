@@ -19,10 +19,9 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
   const festival = set.activeFestivalId ? FESTIVALS.find(f => f.id === set.activeFestivalId) : null;
   const hasFestival = !!festival;
 
-  const memberCount = set.members.length;
-  const festivalCount = FESTIVALS.filter(f => f.setId === set.id).length;
-  const globalPresence = ((set.id.length * 17 + memberCount * 43) % 80) + 20;
-  const worksCount = ((set.id.length * 31 + memberCount * 7) % 150) + 12;
+  const memberCount = set.memberCount ?? set.members.length;
+  const festivalCount = set.totalFestivals ?? FESTIVALS.filter(f => f.setId === set.id).length;
+  const liveFestivalsCount = set.liveFestivals ?? (hasFestival ? 1 : 0);
 
   const gradientId = `setCardGradient-${useId()}`;
   const accentColor = set.accentColor || '#ffffff';
@@ -53,11 +52,11 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
         </button>
 
         {/* Top-left Indicator for Live Festival */}
-        {hasFestival && (
+        {(hasFestival || liveFestivalsCount > 0) && (
           <div className="absolute top-5 left-5 z-20 flex items-center gap-2">
              <div className="w-1.5 h-1.5 rounded-xl bg-red-600 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/70">
-               {festival.title}
+               {festival?.title || `${liveFestivalsCount} LIVE FESTIVAL`}
              </span>
           </div>
         )}
@@ -96,10 +95,10 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
         {/* Bottom subtle stats row */}
         <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between z-10">
            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
-             {memberCount} Members
+             {memberCount} {memberCount === 1 ? 'Member' : 'Members'}
            </span>
            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
-             {worksCount} Works
+             {festivalCount} {festivalCount === 1 ? 'Festival' : 'Festivals'}
            </span>
         </div>
       </div>
@@ -125,7 +124,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
                 <div className="flex items-center gap-2">
                   <Users className="w-3.5 h-3.5 text-white/20" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40">
-                    {memberCount}
+                    {memberCount} {memberCount === 1 ? 'Member' : 'Members'}
                   </span>
                 </div>
 
@@ -134,16 +133,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-white/20" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40">
-                    {festivalCount}
-                  </span>
-                </div>
-
-                <div className="h-3 w-px bg-white/10" />
-
-                <div className="flex items-center gap-2">
-                  <Film className="w-3.5 h-3.5 text-white/20" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40">
-                    {worksCount}
+                    {festivalCount} {festivalCount === 1 ? 'Festival' : 'Festivals'}
                   </span>
                 </div>
 
@@ -152,7 +142,7 @@ export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
                 <div className="flex items-center gap-2">
                   <Globe className="w-3.5 h-3.5 text-white/20" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40">
-                    {globalPresence}
+                    {liveFestivalsCount > 0 ? `${liveFestivalsCount} Live Festival` : '0 Live Festivals'}
                   </span>
                 </div>
               </div>

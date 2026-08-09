@@ -27,6 +27,9 @@ export const MobileCard = memo(function MobileCard({
 }: MobileCardProps) {
   const { item } = slot;
 
+  // Slot has no item — return null (no empty box)
+  if (!item) return null;
+
   // Compute once per render — used for both the bg class and the render switch.
   const kind = getWorkKind(item);
 

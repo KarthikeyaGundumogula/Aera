@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
+import { extractSrcId } from "../../../utils/embed";
 
 
 import { THEATRE_FORMATS } from "../../../constants/formats";
@@ -44,6 +45,8 @@ export function UploadStudioFlow({
   festivalId,
   setId,
   uploadTargetUrl,
+  isOriginalRelease,
+  originalId,
 }: UploadFlowConfig) {
   const [step, setStep] = useState<UploadStep>("IDENTITY");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,10 +123,6 @@ export function UploadStudioFlow({
    * Maps front-end platform string to TARS SupportedPlatforms enum value.
    * TARS SupportedPlatforms: YOUTUBE | TWITTER | NATIVE
    */
-  /**
-   * Maps front-end platform string to TARS SupportedPlatforms enum value.
-   * TARS SupportedPlatforms: YOUTUBE | TWITTER | NATIVE
-   */
   function getTarsPlatform(platform: string): string {
     if (platform.toLowerCase() === "youtube") return "YOUTUBE";
     if (platform.toLowerCase() === "twitter") return "TWITTER";
@@ -157,25 +156,6 @@ export function UploadStudioFlow({
     return validUuids.length > 0 ? validUuids : undefined;
   }
 
-  /**
-   * Extracts clean 11-char YouTube ID or video ID from raw input URL/string.
-   */
-  function extractSrcId(url: string, platform: string): string {
-    if (!url) return "GG1_DsScm6U";
-    const trimmed = url.trim();
-    if (platform.toLowerCase() === "youtube") {
-      const matchV = trimmed.match(/[?&]v=([^&]+)/);
-      if (matchV) return matchV[1].split("&")[0];
-      const matchPath = trimmed.match(/(?:youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-      if (matchPath) return matchPath[1];
-      if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
-      const last = trimmed.split("/").pop() || trimmed;
-      return last.split("?")[0] || "GG1_DsScm6U";
-    }
-    const lastSegment = trimmed.split("/").pop() || trimmed;
-    return lastSegment.split("?")[0] || "1234567890";
-  }
-
   const handleRelease = useCallback(async () => {
     setIsSubmitting(true);
     setUploadError(null);
@@ -189,7 +169,8 @@ export function UploadStudioFlow({
     const workTypeEndpoint = categoryEndpointMap[formData.category] || "EDIT";
 
     try {
-      let backendSrcId = extractSrcId(formData.contentUrl, formData.platform || "youtube");
+      const activePlatform = isOriginalRelease ? "youtube" : (formData.platform || "youtube");
+      let backendSrcId = extractSrcId(formData.contentUrl, activePlatform);
       let backendSrcIds: string[] = [];
 
       if (formData.category === "Poster") {
@@ -208,14 +189,16 @@ export function UploadStudioFlow({
       if (formData.category === "Edit") {
         payload = {
           title: cleanTitle,
+          work_type: "EDIT",
           src_id: backendSrcId,
-          platform: getTarsPlatform(formData.platform || "youtube"),
+          platform: getTarsPlatform(activePlatform),
           format: getEditFormat(formData.aspectRatio),
           originals: cleanOriginals,
         };
       } else if (formData.category === "Poster") {
         payload = {
           title: cleanTitle,
+          work_type: "POSTER",
           src_id: backendSrcId,
           format: getPosterFormat(formData.aspectRatio),
           originals: cleanOriginals,
@@ -223,13 +206,30 @@ export function UploadStudioFlow({
       } else {
         payload = {
           title: cleanTitle,
+          work_type: "SCRIPT",
           src_ids: backendSrcIds,
           thoughts: formData.storyboardPages.map((p) => (p.text || "").slice(0, 5000)),
           originals: cleanOriginals,
         };
       }
 
-      const targetEndpoint = uploadTargetUrl || `/works/new/${workTypeEndpoint}`;
+      const targetOrgId = originalId || formData.originalIds[0] || initialOriginalIds[0];
+      const validOrgUuid = targetOrgId && /^[0-9a-fA-F-]{36}$/.test(targetOrgId) ? targetOrgId : undefined;
+
+      // Ensure original_id is present in payload.originals when uploading an original release
+      if (validOrgUuid) {
+        const existingOriginals = (payload.originals as string[]) || [];
+        if (!existingOriginals.includes(validOrgUuid)) {
+          payload.originals = [...existingOriginals, validOrgUuid];
+        }
+      }
+
+      // Target endpoint: if uploading for a set, hit POST /sets/{setId}/new/work/{workTypeEndpoint}
+      const targetEndpoint =
+        uploadTargetUrl ||
+        (setId && /^[0-9a-fA-F-]{36}$/.test(setId)
+          ? `/sets/${setId}/new/work/${workTypeEndpoint}`
+          : `/works/new/${workTypeEndpoint}`);
 
       const uploadRes = await apiFetch(targetEndpoint, {
         method: "POST",
@@ -409,6 +409,7 @@ export function UploadStudioFlow({
                 setFormData={updateFormData}
                 onNext={handleNext}
                 onBack={handleBack}
+                isOriginalRelease={isOriginalRelease}
               />
             )}
             {step === "FORMAT" && (

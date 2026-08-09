@@ -14,7 +14,7 @@ type MobileClusterType = 'A' | 'B' | 'C' | 'D' | 'E';
 type MobileSlotType = 'Wide' | 'Vertical' | 'Square';
 
 export interface MobileSlot {
-  item: TheatreItem;
+  item: TheatreItem | null;
   type: MobileSlotType;
 }
 
@@ -108,7 +108,7 @@ function pickBestItem(
   pools: MasterPools,
   rng: () => number,
   clusterState: { sinceLastRec: number; placedRecThisCluster: boolean }
-): TheatreItem {
+): TheatreItem | null {
   const getAspect = (i: TheatreItem) => i.aspectRatio || 1;
   let found: TheatreItem | null = null;
 
@@ -150,22 +150,7 @@ function pickBestItem(
     }
   }
 
-  // ── Secondary pass: deterministic duplication from pre-built pools ────────
-  if (!found) {
-    const pool =
-      slotType === 'Wide'     ? pools.wide :
-      slotType === 'Vertical' ? pools.vertical :
-                                pools.square;
-
-    const src = pool.length > 0 ? pool : pools.any;
-    if (src.length > 0) {
-      const base = src[Math.floor(rng() * src.length)];
-      // Give duplicate a unique ID to prevent React key collisions
-      found = { ...base, id: `${base.id}-mdup-${rng().toString(36).substring(2, 9)}` };
-    }
-  }
-
-  return found!;
+  return found;
 }
 
 // ─── Public builder ──────────────────────────────────────────────────────────
@@ -181,9 +166,8 @@ export function buildMobileClusters(items: TheatreItem[]): MobileCluster[] {
 
   const clusterState = { sinceLastRec: 0, placedRecThisCluster: false };
 
-  // Produce clusters until the available pool is empty AND we have at least 5
-  // (minimum cinematic rhythm requirement).
-  while (availableItems.length > 0 || clusters.length < 5) {
+  // Produce clusters only while real items remain in the pool.
+  while (availableItems.length > 0) {
     clusterState.placedRecThisCluster = false;
     const clusterType = SEQUENCE[seqIndex % SEQUENCE.length];
     const template    = TEMPLATES[clusterType];
@@ -193,10 +177,10 @@ export function buildMobileClusters(items: TheatreItem[]): MobileCluster[] {
       item: pickBestItem(tmpl.type, availableItems, pools, rng, clusterState),
     }));
 
-    // Bail if any slot couldn't be filled (should only happen on empty pool)
-    if (slots.some(s => !s.item)) break;
+    // Skip the cluster entirely if no real items were placed.
+    const hasRealItems = slots.some(s => s.item !== null);
+    if (!hasRealItems) break;
 
-    // Use a deterministic ID: no Math.random() here either
     clusters.push({
       id: `mc-${clusters.length}-${clusterType}-${rng().toString(36).substring(2, 7)}`,
       type: clusterType,
@@ -214,4 +198,39 @@ export function buildMobileClusters(items: TheatreItem[]): MobileCluster[] {
   }
 
   return clusters;
+}
+
+export function getMobileClusterHeight(cluster: MobileCluster): string {
+  const [s0, s1, s2] = cluster.slots;
+  const hasItem = (s?: MobileSlot) => !!s?.item;
+
+  let topOccupied = false;
+  let bottomOccupied = false;
+
+  switch (cluster.type) {
+    case "A":
+      topOccupied = hasItem(s0);
+      bottomOccupied = hasItem(s1) || hasItem(s2);
+      break;
+    case "B":
+      topOccupied = hasItem(s0) || hasItem(s1);
+      bottomOccupied = hasItem(s0) || hasItem(s2);
+      break;
+    case "C":
+      topOccupied = hasItem(s0) || hasItem(s1);
+      bottomOccupied = hasItem(s2) || hasItem(s1);
+      break;
+    case "D":
+      topOccupied = hasItem(s0) || hasItem(s1);
+      bottomOccupied = hasItem(s2);
+      break;
+    case "E":
+      topOccupied = hasItem(s0) || hasItem(s1);
+      bottomOccupied = hasItem(s0) || hasItem(s1);
+      break;
+  }
+
+  if (topOccupied && bottomOccupied) return "40dvh";
+  if (topOccupied || bottomOccupied) return "22dvh";
+  return "0px";
 }

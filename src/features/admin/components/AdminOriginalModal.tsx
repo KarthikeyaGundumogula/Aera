@@ -15,6 +15,7 @@ import {
   X
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { extractSrcId } from "@/utils/embed";
 import { useAuth } from "@/context/AuthContext";
 import { OriginalSearchInput } from "./OriginalSearchInput";
 
@@ -22,7 +23,7 @@ interface AdminOriginalModalProps {
   onSuccess?: () => void;
 }
 
-type OriginalAdminTab = "CREATE" | "UPDATE" | "RELEASE" | "ROLES";
+type OriginalAdminTab = "CREATE" | "UPDATE" | "ROLES" | "RELEASE";
 
 const DEFAULT_COVER_PLACEHOLDER = "https://images.unsplash.com/photo-1536440136628-849c177e76a1";
 
@@ -212,31 +213,35 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
     setMessage(null);
 
     const cleanTitle = releaseTitle.trim().replace(/[^a-zA-Z\s]/g, "").trim();
+    const cleanSrcId = extractSrcId("youtube", releaseSrcId.trim());
 
     let payload: Record<string, unknown>;
     if (releaseType === "EDIT") {
       payload = {
         title: cleanTitle || undefined,
-        src_id: releaseSrcId.trim(),
+        src_id: cleanSrcId,
         platform: "YOUTUBE",
         format: releaseFormat || "IMAX",
+        originals: [targetId],
       };
     } else if (releaseType === "POSTER") {
       payload = {
         title: cleanTitle || undefined,
-        src_id: releaseSrcId.trim(),
+        src_id: cleanSrcId,
         format: releaseFormat || "CANVAS",
+        originals: [targetId],
       };
     } else {
       payload = {
         title: cleanTitle || undefined,
-        src_ids: [releaseSrcId.trim()],
+        src_ids: [cleanSrcId],
         thoughts: ["Official Storyboard Release"],
+        originals: [targetId],
       };
     }
 
     try {
-      const res = await apiFetch(`/originals/${targetId}/new_release/${releaseType}`, {
+      const res = await apiFetch(`/works/new/${releaseType}`, {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -341,7 +346,6 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
   const subTabs: { id: OriginalAdminTab; label: string; icon: React.ReactNode }[] = [
     { id: "CREATE", label: "Initiate Original", icon: <PlusCircle className="w-4 h-4" /> },
     { id: "UPDATE", label: "Update Metadata", icon: <Edit3 className="w-4 h-4" /> },
-    { id: "RELEASE", label: "Official Release", icon: <Video className="w-4 h-4" /> },
     { id: "ROLES", label: "Cast & Crew Roles", icon: <UserCheck className="w-4 h-4" /> },
   ];
 

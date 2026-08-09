@@ -22,14 +22,27 @@ export const MobileClusterView = memo(function MobileClusterView({
   cluster,
 }: MobileClusterViewProps) {
   const [s0, s1, s2] = cluster.slots;
+  const activeSlots = cluster.slots.filter(s => !!s?.item);
+
+  // Single item in mobile cluster -> render as a clean 16:9 cinematic banner tile
+  if (activeSlots.length === 1) {
+    const singleSlot = activeSlots[0];
+    return (
+      <div className="w-full aspect-[16/9] relative overflow-hidden rounded-sm">
+        <MobileCard slot={singleSlot} className="w-full h-full" />
+      </div>
+    );
+  }
 
   // Render a card that fills its grid cell exactly.
-  // The `relative` wrapper gives the `absolute inset-0` card a sizing context.
-  const cell = (slot: typeof s0, spanClass: string) => (
-    <div className={`relative ${spanClass}`}>
-      <MobileCard slot={slot} className="absolute inset-0" />
-    </div>
-  );
+  const cell = (slot: typeof s0, spanClass: string) => {
+    if (!slot || !slot.item) return null;
+    return (
+      <div className={`relative w-full h-full overflow-hidden ${spanClass}`}>
+        <MobileCard slot={slot} className="w-full h-full" />
+      </div>
+    );
+  };
 
   switch (cluster.type) {
     // ── A: Feature Presentation ──────────────────────────────────────────────

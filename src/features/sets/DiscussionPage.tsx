@@ -5,6 +5,7 @@ import { THOUGHTS_MOCK, MOCK_DISCUSSION_REPLIES, DiscussionReply, GRID_ITEMS, AR
 import { DesktopHeader } from "../navigation/DesktopHeader";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { ArtistProfile } from "../shared/profile";
+import { apiFetch } from "@/lib/api";
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
 
@@ -321,7 +322,7 @@ export function DiscussionPage() {
   const [rootText, setRootText] = useState("");
 
   /** Called from any ThreadNode when user submits an inline reply */
-  const handleSubmitReply = (parentId: string, text: string) => {
+  const handleSubmitReply = async (parentId: string, text: string) => {
     const newReply: DiscussionReply = {
       id: `rep-user-${Date.now()}`,
       authorId: "user-current",
@@ -329,6 +330,21 @@ export function DiscussionPage() {
       text,
       timestamp: "Just now",
     };
+
+    if (setId && discussionId) {
+      try {
+        await apiFetch(`/sets/${setId}/new/comment`, {
+          method: "POST",
+          body: JSON.stringify({
+            discussion_id: discussionId,
+            parent_id: parentId.startsWith("rep-") ? null : parentId,
+            content: text,
+          }),
+        });
+      } catch {
+        // Fallback state update
+      }
+    }
 
     const addReplyRecursively = (nodes: DiscussionReply[]): DiscussionReply[] =>
       nodes.map((node) => {
@@ -345,16 +361,33 @@ export function DiscussionPage() {
   };
 
   /** Root-level new thought submit */
-  const handleRootSubmit = (e: React.FormEvent) => {
+  const handleRootSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rootText.trim()) return;
+    const textToPost = rootText.trim();
     const newReply: DiscussionReply = {
       id: `rep-user-${Date.now()}`,
       authorId: "user-current",
       authorName: "YOU (ARTIST)",
-      text: rootText.trim(),
+      text: textToPost,
       timestamp: "Just now",
     };
+
+    if (setId && discussionId) {
+      try {
+        await apiFetch(`/sets/${setId}/new/comment`, {
+          method: "POST",
+          body: JSON.stringify({
+            discussion_id: discussionId,
+            parent_id: null,
+            content: textToPost,
+          }),
+        });
+      } catch {
+        // Fallback state update
+      }
+    }
+
     setReplies((prev) => [...prev, newReply]);
     setRootText("");
   };

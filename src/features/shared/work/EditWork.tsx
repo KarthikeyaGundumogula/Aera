@@ -15,13 +15,16 @@ export function EditWork({
   showHoverOverlay,
   priority = "lazy",
 }: BaseWorkProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const { openWork } = useWorkNavigation();
   
   const shouldShowHoverOverlay = useMemo(
     () => showHoverOverlay ?? variant !== "theatre-mobile",
     [showHoverOverlay, variant],
   );
+
+  const fallbackImage = "https://images.unsplash.com/photo-1536440136628-849c177e76a1";
+  const imageSrc = item.image && item.image.trim() !== "" ? item.image : fallbackImage;
 
   return (
     <>
@@ -32,27 +35,29 @@ export function EditWork({
       <img
         onLoad={(e) => {
           const img = e.currentTarget;
-          // YouTube returns a 120x90 placeholder if maxresdefault is missing
-          if (img.naturalWidth === 120 && img.src.includes("maxresdefault")) {
-            if (item.platform === "youtube" && item.srcId) {
-              img.src = getYoutubeFallbackThumbnail(item.srcId);
-            }
+          const isRealYoutubeId = !!item.srcId && !item.srcId.includes("-") && item.srcId.length === 11;
+          if (img.naturalWidth === 120 && img.src.includes("maxresdefault") && item.platform === "youtube" && isRealYoutubeId) {
+            img.src = getYoutubeFallbackThumbnail(item.srcId!);
           } else {
             setIsLoaded(true);
           }
         }}
         onError={(e) => {
           const target = e.currentTarget;
-          if (item.platform === "youtube" && item.srcId) {
-            target.src = getYoutubeFallbackThumbnail(item.srcId);
+          const isRealYoutubeId = !!item.srcId && !item.srcId.includes("-") && item.srcId.length === 11;
+          if (item.platform === "youtube" && isRealYoutubeId && !target.src.includes("hqdefault")) {
+            target.src = getYoutubeFallbackThumbnail(item.srcId!);
+          } else if (target.src !== fallbackImage) {
+            target.src = fallbackImage;
           }
+          setIsLoaded(true);
         }}
-        src={item.image}
+        src={imageSrc}
         alt={item.title}
         loading={priority}
         decoding="async"
         className={`h-full w-full object-cover object-top transition-all duration-700 ${
-          isLoaded ? "opacity-100" : "opacity-0"
+          isLoaded ? "opacity-100" : "opacity-90"
         } ${
           variant === "feed"
             ? "group-hover:scale-105"

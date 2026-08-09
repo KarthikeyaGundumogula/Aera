@@ -3,12 +3,37 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft } from "lucide-react";
 import { TheatreItem } from "../../../types";
 import { buildClusters, Cluster } from "../engine/clusterBuilder";
-import { buildMobileClusters, MobileCluster } from "../engine/mobileClusterBuilder";
+import { buildMobileClusters, MobileCluster, getMobileClusterHeight } from "../engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "./desktop/StaticDesktopCluster";
 import { MobileClusterView } from "./mobile/MobileClusterView";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { FeedContext } from "../../../context/FeedContext";
 import { EmptyState, EMPTY_PRESETS } from "../../../components/EmptyState";
+import {
+  EditWork,
+  PosterWork,
+  StoryboardWork,
+  RecommendationWork,
+  getWorkKind,
+} from "../../shared/work";
+
+const RenderPartialWork = ({ item, isMobile }: { item: TheatreItem; isMobile: boolean }) => {
+  const kind = getWorkKind(item);
+  const variant = isMobile ? "theatre-mobile" : "theatre-desktop";
+
+  let aspectStyle = "aspect-[16/9]";
+  if (kind === "poster") aspectStyle = "aspect-[2/3] max-w-[340px] mx-auto";
+  if (kind === "storyboard") aspectStyle = "aspect-[3/4] max-w-[340px] mx-auto";
+
+  return (
+    <div className={`relative w-full overflow-hidden rounded-sm ${aspectStyle}`}>
+      {kind === "recommendation" && <RecommendationWork item={item} variant={variant} />}
+      {kind === "storyboard" && <StoryboardWork item={item} variant={variant} />}
+      {kind === "poster" && <PosterWork item={item} variant={variant} />}
+      {kind === "edit" && <EditWork item={item} variant={variant} />}
+    </div>
+  );
+};
 
 interface UnifiedTheatreProps {
   works: TheatreItem[];
@@ -125,26 +150,56 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
 
       {/* THEATRE CANVAS */}
       <main className={isFull && !disablePadding ? "pt-24 pb-20" : ""}>
-        <div className="flex flex-col" style={{ gap: "0px" }}>
-          {isMobile ? (
-            <FeedContext.Provider value={mobileFlatItems}>
-              {allClusters.mobile.map((cluster) => (
-                <div
-                  key={cluster.id}
-                  style={{ height: "40dvh" }}
-                >
-                  <MobileClusterView cluster={cluster} />
-                </div>
+        {isMobile ? (
+          works.length < 3 ? (
+            /* ── Partial Mobile: Clean Stacked Feed with Natural Aspect Ratios ── */
+            <div className="flex flex-col gap-6 w-full max-w-xl mx-auto px-4">
+              {works.map((item) => (
+                <RenderPartialWork key={item.id} item={item} isMobile={true} />
               ))}
-            </FeedContext.Provider>
+            </div>
           ) : (
-            <FeedContext.Provider value={desktopFlatItems}>
+            /* ── Full Mobile Clusters ── */
+            <FeedContext.Provider value={mobileFlatItems}>
+              <div className="flex flex-col" style={{ gap: "0px" }}>
+                {allClusters.mobile.map((cluster) => {
+                  const activeCount = cluster.slots.filter(s => s.item !== null).length;
+                  if (activeCount === 0) return null;
+
+                  const containerClass = activeCount === 1
+                    ? "w-full relative"
+                    : activeCount === 2
+                      ? "w-full h-[26dvh] min-h-[200px] relative"
+                      : "w-full h-[40dvh] min-h-[260px] relative";
+
+                  return (
+                    <div key={cluster.id} className={containerClass}>
+                      <MobileClusterView cluster={cluster} />
+                    </div>
+                  );
+                })}
+              </div>
+            </FeedContext.Provider>
+          )
+        ) : works.length < 4 ? (
+          /* ── Partial Desktop: Masonry Staggered Grid ── */
+          <div className="columns-1 sm:columns-2 gap-6 space-y-6 w-full max-w-5xl mx-auto px-4 md:px-8">
+            {works.map((item) => (
+              <div key={item.id} className="break-inside-avoid">
+                <RenderPartialWork item={item} isMobile={false} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* ── Full Desktop Clusters ── */
+          <FeedContext.Provider value={desktopFlatItems}>
+            <div className="flex flex-col" style={{ gap: "0px" }}>
               {allClusters.desktop.map((cluster, idx) => (
                 <StaticDesktopCluster key={cluster.id || idx} cluster={cluster} />
               ))}
-            </FeedContext.Provider>
-          )}
-        </div>
+            </div>
+          </FeedContext.Provider>
+        )}
 
         {/* LOADING / SENTINEL */}
         {isFull && (onLoadMore || isLoading) && (

@@ -204,10 +204,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!currentArtist) {
       setUserWorks([]);
-      return;
     }
-    fetchUserWorks(currentArtist.id);
-  }, [currentArtist, fetchUserWorks]);
+  }, [currentArtist]);
 
 
   const login = useCallback(async (username: string, password?: string): Promise<boolean> => {

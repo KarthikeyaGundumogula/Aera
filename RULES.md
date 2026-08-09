@@ -18,6 +18,10 @@
 - Ship code without checking the relevant test suite.
 - Test anything using browser sub agent unless i tell you to do so
 - Stage or commit changes (`git add`, `git commit`) without explicit user permission.
+- Touch, edit, modify, or refactor any backend code in `tars/` (`tars/src/*`, `tars/Cargo.toml`, etc.) without explicit prior permission from the user.
+
+## Must Always
+- Use the backend integration test suite in `tars/tests/*` as the canonical documentation and single source of truth for API endpoint contracts (request DTOs, response schemas, and status codes).
 
 ## Agent Format
 - Agents live in `.agents/*.md`.

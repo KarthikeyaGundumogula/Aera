@@ -119,12 +119,19 @@ export function CenterFeedLayout() {
   const [isLoadingDown, setIsLoadingDown] = useState(false);
   const bottomObserverTarget = useRef<HTMLDivElement>(null);
 
+  const safeHeroItem = useMemo(() => {
+    if (!ORIGINALS || ORIGINALS.length === 0) return null;
+    const safeIdx = ((heroIndex % ORIGINALS.length) + ORIGINALS.length) % ORIGINALS.length;
+    return ORIGINALS[safeIdx] || ORIGINALS[0] || null;
+  }, [heroIndex]);
+
   const SLIDE_DURATION = 5000;
   const PROGRESS_INTERVAL = 50;
 
   // Timer logic: heroIndex is the single source of truth.
   // We use a time-based approach to ensure precision and prevent skipping.
   useEffect(() => {
+    if (!ORIGINALS || ORIGINALS.length === 0) return;
     setProgress(0);
     const startTime = Date.now();
 
@@ -229,124 +236,125 @@ export function CenterFeedLayout() {
       {/* Desktop Header */}
       <DesktopHeader />
 
-      <main className="pt-[61px] px-0 w-full max-w-full overflow-x-hidden">
+      <main className="pt-20 md:pt-24 px-0 w-full max-w-full overflow-x-hidden">
         {/* HERO - UPCOMING RELEASES */}
-        <section className="px-0 mb-0">
-          <div className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-black">
-            {/* Background Color Glow */}
-            <div className="absolute inset-0 z-0 overflow-hidden">
-              <AnimatePresence mode="popLayout">
-                <motion.img
-                  key={`bg-${heroIndex}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.3 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                  src={ORIGINALS[heroIndex].coverImage}
-                  className="absolute inset-0 w-full h-full object-cover object-top blur-[72px] scale-125"
-                />
-              </AnimatePresence>
-            </div>
-
-            <AnimatePresence mode="popLayout">
-              <OriginalLink
-                key={heroIndex}
-                // Mock a TheatreItem format for the OriginalLink component
-                item={{
-                  id: ORIGINALS[heroIndex].id,
-                  originalIds: [ORIGINALS[heroIndex].id],
-                  category: "Original",
-                }}
-                className="absolute inset-0 z-10"
-              >
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.0, ease: "easeInOut" }}
-                  className="w-full h-full"
-                >
-                  <img
-                    loading="lazy"
-                    src={ORIGINALS[heroIndex].coverImage}
-                    className="w-full h-full object-cover object-top"
-                    decoding="async"
+        {safeHeroItem && (
+          <section className="px-0 mb-0">
+            <div className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-black">
+              {/* Background Color Glow */}
+              <div className="absolute inset-0 z-0 overflow-hidden">
+                <AnimatePresence mode="popLayout">
+                  <motion.img
+                    key={`bg-${heroIndex}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.3 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                    src={safeHeroItem.coverImage}
+                    className="absolute inset-0 w-full h-full object-cover object-top blur-[72px] scale-125"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                  <div className="absolute bottom-0 left-0 p-6 w-full">
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                    >
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
-                          Original
-                        </span>
-                        <span className="px-2 py-0.5 bg-yellow-400/20 backdrop-blur-md text-yellow-400 text-[8px] font-bold uppercase tracking-widest rounded-sm border border-yellow-400/20">
-                          Coming Soon
-                        </span>
-                      </div>
-                      <h2
-                        className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
-                        style={{
-                          fontSize: `clamp(2rem, ${Math.max(4, 12 - ORIGINALS[heroIndex].title.length * 0.3)}vw, 4rem)`,
-                        }}
+                </AnimatePresence>
+              </div>
+
+              <AnimatePresence mode="popLayout">
+                <OriginalLink
+                  key={heroIndex}
+                  // Mock a TheatreItem format for the OriginalLink component
+                  item={{
+                    id: safeHeroItem.id,
+                    originalIds: [safeHeroItem.id],
+                    category: "Original",
+                  }}
+                  className="absolute inset-0 z-10"
+                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.0, ease: "easeInOut" }}
+                    className="w-full h-full"
+                  >
+                    <img
+                      loading="lazy"
+                      src={safeHeroItem.coverImage}
+                      className="w-full h-full object-cover object-top"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                    <div className="absolute bottom-0 left-0 p-6 w-full">
+                      <motion.div
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
                       >
-                        {ORIGINALS[heroIndex].title}
-                      </h2>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2 mb-1">
-                            <StageIcon className="w-3 h-3 text-white/80" />
-                            <span className="text-lg font-bold drop-shadow-2xl">
-                              {ORIGINALS[heroIndex].stats.presence}
-                            </span>
-                          </div>
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
-                            Stage
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded-sm border border-white/10">
+                            Original
+                          </span>
+                          <span className="px-2 py-0.5 bg-yellow-400/20 backdrop-blur-md text-yellow-400 text-[8px] font-bold uppercase tracking-widest rounded-sm border border-yellow-400/20">
+                            Coming Soon
                           </span>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-white/20" />
-                      </div>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              </OriginalLink>
-            </AnimatePresence>
+                        <h2
+                          className="font-black tracking-tighter mb-4 uppercase leading-[0.82] break-words"
+                          style={{
+                            fontSize: `clamp(2rem, ${Math.max(4, 12 - (safeHeroItem.title?.length || 10) * 0.3)}vw, 4rem)`,
+                          }}
+                        >
+                          {safeHeroItem.title}
+                        </h2>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 mb-1">
+                              <StageIcon className="w-3 h-3 text-white/80" />
+                              <span className="text-lg font-bold drop-shadow-2xl">
+                                {safeHeroItem.stats?.presence ?? 0}
+                              </span>
+                            </div>
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
+                              Stage
+                            </span>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-white/20" />
+                        </div>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                </OriginalLink>
+              </AnimatePresence>
 
-            {/* Carousel Indicators */}
-            <div className="absolute top-1/2 -translate-y-1/2 right-6 flex flex-col gap-3 z-40">
-              {ORIGINALS.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleIndicatorClick(idx);
-                  }}
-                  className="group relative w-1 h-10 rounded-xl bg-white/10 overflow-hidden transition-all duration-300 hover:w-1.5"
-                >
-                  <div className="relative w-full h-full">
-                    {/* Previous bars: faded white */}
-                    {idx < heroIndex && (
-                      <div className="absolute inset-0 bg-white/30" />
-                    )}
-                    {/* Active progress bar: solid white animating */}
-                    {idx === heroIndex && (
-                      <motion.div
-                        className="absolute bottom-0 left-0 right-0 bg-white"
-                        style={{ height: `${progress}%` }}
-                        transition={{ ease: "linear", duration: 0.05 }}
-                      />
-                    )}
-                    {/* Future bars: remain bg-white/10 from parent */}
-                  </div>
-                </button>
-              ))}
+              {/* Carousel Indicators */}
+              <div className="absolute top-1/2 -translate-y-1/2 right-6 flex flex-col gap-3 z-40">
+                {ORIGINALS.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleIndicatorClick(idx);
+                    }}
+                    className="group relative w-1 h-10 rounded-xl bg-white/10 overflow-hidden transition-all duration-300 hover:w-1.5"
+                  >
+                    <div className="relative w-full h-full">
+                      {/* Previous bars: faded white */}
+                      {idx < heroIndex && (
+                        <div className="absolute inset-0 bg-white/30" />
+                      )}
+                      {/* Active progress bar: solid white animating */}
+                      {idx === heroIndex && (
+                        <motion.div
+                          className="absolute bottom-0 left-0 right-0 bg-white"
+                          style={{ height: `${progress}%` }}
+                          transition={{ ease: "linear", duration: 0.05 }}
+                        />
+                      )}
+                      {/* Future bars: remain bg-white/10 from parent */}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-
+          </section>
+        )}
 
         <RollingTicker />
 

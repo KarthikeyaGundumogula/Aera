@@ -192,28 +192,7 @@ function chooseCluster(
   return "B";
 }
 
-function createFallback(id: string, w: number, h: number, rng: () => number): TheatreItem {
-  const isSquare3x3 = w === 3 && h === 3;
-  if (isSquare3x3) {
-    return {
-      id: `fallback-script-${id}`,
-      title: "THE VOID: A Cinematic Reflection",
-      artist: "FRAMEHOUSE SYSTEM",
-      category: "Storyboard" as const,
-      image: `https://picsum.photos/seed/${id}/800/1200`,
-      aspectRatio: 0.75,
-      credits: 1.0,
-    };
-  }
-  return {
-    id: `fallback-media-${id}`,
-    title: "FRAMEHOUSE SYSTEM // ARCHIVE",
-    artist: "FRAMEHOUSE SYSTEM",
-    category: "Edit" as const,
-    image: `https://picsum.photos/seed/${id}/${w * 200}/${h * 200}`,
-    aspectRatio: w / h,
-  };
-}
+
 
 interface ClusterState {
   sinceLastRec: number;
@@ -304,36 +283,8 @@ function fillCluster(
     clusterState.sinceLastRec++;
   }
 
-  // PASS 4: Strategic Duplication
-  // Pre-compute fallback pools once — avoids re-spreading large arrays on every empty slot.
-  const fallbackEdits = [...masterBucket.imax, ...masterBucket.wide, ...masterBucket.vertical, ...masterBucket.square];
-  const fallbackAll   = [...fallbackEdits, ...masterBucket.poster, ...masterBucket.storyboard];
-
-  const getRandom = (arr: TheatreItem[]) => arr.length > 0 ? arr[Math.floor(rng() * arr.length)] : undefined;
-
-  for (let i = 0; i < slots.length; i++) {
-    const slot = slots[i];
-    if (slot.item) continue;
-
-    let repeatedItem: TheatreItem | undefined = undefined;
-
-    switch (slot.type) {
-      case "IMAX":     repeatedItem = getRandom(masterBucket.imax);     break;
-      case "WIDE":     repeatedItem = getRandom(masterBucket.wide);     break;
-      case "VERTICAL": repeatedItem = getRandom(masterBucket.vertical); break;
-      case "SQUARE":   repeatedItem = getRandom(masterBucket.square);   break;
-    }
-
-    if (!repeatedItem) repeatedItem = getRandom(fallbackEdits);
-    if (!repeatedItem) repeatedItem = getRandom(fallbackAll);
-
-    if (repeatedItem) {
-      slots[i].item = { ...repeatedItem, id: `${repeatedItem.id}-dup-${i}-${rng().toString(36).substring(2, 11)}` };
-    } else {
-      slots[i].item = createFallback(`${type}-${i}-${rng()}`, slots[i].w, slots[i].h, rng);
-    }
-  }
-
+  // No duplication or fallback — unfilled slots intentionally remain undefined.
+  // Only real uploaded items appear in the grid.
   return { type, slots: slots as ClusterSlot[] };
 }
 
@@ -382,15 +333,17 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
   const clusterState: ClusterState = { sinceLastRec: 0 };
 
   while (hasContent(bucket)) {
-    const isFirst      = clusters.length === 0;
-    // Direct sum on 2-element window — no reduce() overhead.
+    const isFirst       = clusters.length === 0;
     const imaxWindowSum = imaxPrev + imaxCurr;
     const type    = chooseCluster(bucket, imaxWindowSum, isFirst, mode, rng);
     const cluster = fillCluster(type, bucket, masterBucket, rng, clusterState);
 
-    clusters.push(cluster);
+    // Only add the cluster if at least one slot was filled with a real item.
+    const hasRealItems = cluster.slots.some(s => !!s.item);
+    if (hasRealItems) {
+      clusters.push(cluster);
+    }
 
-    // Slide the IMAX window forward.
     imaxPrev = imaxCurr;
     imaxCurr = cluster.slots.filter(s => s.type === 'IMAX' && s.item && isEditWork(s.item)).length;
 

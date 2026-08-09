@@ -16,12 +16,13 @@ export type EmbedPlatform = "youtube" | "twitter";
  * - Twitter: https://twitter.com/i/web/status/{id}  (canonical tweet URL for blockquote)
  */
 export function buildEmbedUrl(platform: EmbedPlatform, srcId: string): string {
+  if (!srcId) return "";
+  const cleanId = extractSrcId(platform, srcId) || srcId.trim();
   switch (platform) {
     case "youtube":
-      return `https://www.youtube.com/embed/${srcId}?enablejsapi=1`;
+      return `https://www.youtube.com/embed/${cleanId}?enablejsapi=1`;
     case "twitter":
-      // Twitter oEmbed / widgets.js uses canonical status URL
-      return `https://twitter.com/i/web/status/${srcId}`;
+      return `https://twitter.com/i/web/status/${cleanId}`;
     default:
       return "";
   }
@@ -69,25 +70,36 @@ export function getYoutubeFallbackThumbnail(srcId: string): string {
  *   https://x.com/[user]/status/TWEET_ID
  */
 export function extractSrcId(
-  platform: EmbedPlatform,
+  platform: EmbedPlatform | string,
   url: string
-): string | null {
-  if (!url) return null;
+): string {
+  if (!url) return "";
+  const trimmed = url.trim();
+  const plat = (platform || "youtube").toString().toLowerCase();
 
-  switch (platform) {
-    case "youtube": {
-      // Hardened regex for YouTube to handle watch?, embed/, shorts/, youtu.be, and additional params
-      const match = url.match(
-        /^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:v\/|e\/|embed\/|watch\?v=|shorts\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-      );
-      return match?.[1] ?? null;
-    }
-    case "twitter": {
-      // Robust regex for Twitter/X status links
-      const match = url.match(/^(?:https?:\/\/)?(?:www\.|mobile\.)?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
-      return match?.[1] ?? null;
-    }
-    default:
-      return null;
+  if (plat === "youtube" || plat === "edit") {
+    const match = trimmed.match(
+      /^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:v\/|e\/|embed\/|watch\?v=|shorts\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    if (match?.[1]) return match[1];
+
+    const matchV = trimmed.match(/[?&]v=([^&]+)/);
+    if (matchV) return matchV[1].split("&")[0];
+
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+
+    const last = (trimmed.split("/").pop() || "").split("?")[0];
+    if (last.length === 11) return last;
+    return trimmed;
   }
+
+  if (plat === "twitter") {
+    const match = trimmed.match(/^(?:https?:\/\/)?(?:www\.|mobile\.)?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+    if (match?.[1]) return match[1];
+    if (/^\d+$/.test(trimmed)) return trimmed;
+    const last = (trimmed.split("/").pop() || "").split("?")[0];
+    return last || trimmed;
+  }
+
+  return trimmed;
 }

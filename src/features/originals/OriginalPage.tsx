@@ -8,6 +8,7 @@ import { SectionHeader } from "../../components/SectionHeader";
 import { CinematicPageHeader } from "../../components/CinematicPageHeader";
 import { apiFetch } from "@/lib/api";
 
+import { useAuth } from "../../context/AuthContext";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
 import { ArtistSpotlightGrid } from "../../components/ArtistSpotlightGrid";
@@ -25,17 +26,17 @@ interface OriginalClaims {
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
 
   const [showToast, setShowToast] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
   const isMobile = useMediaQuery();
   const [localOriginal, setLocalOriginal] = useState<any>(id ? ORIGINALS_DATA[id] || null : null);
+  const [officialReleases, setOfficialReleases] = useState<any[]>([]);
+  const [theatreWorks, setTheatreWorks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const userClaims: OriginalClaims = {
-    canUpdateMeta: true,
-    canCreateRelease: true,
-  };
+  const original = localOriginal;
 
   useEffect(() => {
     if (!id) return;
@@ -82,14 +83,7 @@ export function OriginalPage() {
                 spirit: a.spirit || 0,
                 works: a.works || 0,
               })),
-              works: (remote.works || []).map((w: any) => ({
-                id: w.id,
-                title: w.title || "Untitled Work",
-                category: w.workType || w.work_type || "Edit",
-                image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
-                platform: "youtube",
-                srcId: w.id,
-              })),
+              works: staticFallback?.works || [],
             };
             setLocalOriginal(mappedOriginal);
           }
@@ -104,12 +98,77 @@ export function OriginalPage() {
         if (isMounted) setLoading(false);
       });
 
+    // Separately fetch lightweight theatre cards (GET /originals/{id}/theatre)
+    apiFetch(`/originals/${id}/theatre?limit=20`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const theatreCards = json.data || json;
+          if (Array.isArray(theatreCards) && isMounted && theatreCards.length > 0) {
+            const mappedWorks = theatreCards.map((w: any) => ({
+              id: w.id,
+              title: w.title || "Untitled Work",
+              category: w.workType || w.work_type || w.category || "Edit",
+              image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+              platform: "youtube",
+              srcId: w.id,
+            }));
+            setTheatreWorks(mappedWorks);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("[OriginalPage] Separate theatre fetch failed:", err);
+      });
+
+    // Separately fetch official releases (GET /originals/{id}/releases)
+    apiFetch(`/originals/${id}/releases`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const rels = json.data || json;
+          if (Array.isArray(rels) && isMounted) {
+            setOfficialReleases(rels);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("[OriginalPage] Separate releases fetch failed:", err);
+      });
+
     return () => {
       isMounted = false;
     };
   }, [id]);
 
-  const original = localOriginal;
+  const isAssociatedArtist = useMemo(() => {
+    if (!currentArtist || !original) return false;
+    const userId = (currentArtist.id || "").toLowerCase();
+    const userName = (currentArtist.userName || currentArtist.name || "").toLowerCase();
+
+    // 1. Check topArtists list on the Original
+    const inTopArtists = (original.topArtists || []).some((a: any) => {
+      const aId = (a.id || "").toLowerCase();
+      const aName = (a.name || a.stage_name || a.userName || "").toLowerCase();
+      return aId === userId || (aId && userId.includes(aId)) || (aName && aName === userName);
+    });
+
+    // 2. Check makers/creators list
+    const inMakers = (original.makers || []).some((m: any) => {
+      const mName = (m.actorName || m.name || "").toLowerCase();
+      return mName === userName;
+    });
+
+    // 3. Organizer / Admin role fallback
+    const isOrganizer = currentArtist.role === "organizer" || currentArtist.role === "admin";
+
+    return inTopArtists || inMakers || isOrganizer;
+  }, [currentArtist, original]);
+
+  const userClaims: OriginalClaims = {
+    canUpdateMeta: isAssociatedArtist,
+    canCreateRelease: isAssociatedArtist,
+  };
 
   const commandItems: CommandItem[] = useMemo(
     () => [
@@ -260,7 +319,7 @@ export function OriginalPage() {
       </motion.div>
 
       {/* RECENT RELEASES */}
-      <RecentReleasesSection />
+      <RecentReleasesSection releases={officialReleases} />
 
       {/* Star Spotlight */}
       {original.stars && original.stars.length > 0 && (
@@ -315,7 +374,7 @@ export function OriginalPage() {
       {/* Originals Theatre Section */}
       <TheatrePreviewSection
         title="Theatre"
-        works={original.works}
+        works={theatreWorks.length > 0 ? theatreWorks : (original.works || [])}
         enterUrl={`/originals/${original.id}/theatre`}
       />
 

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { TheatreItem } from "../../../types";
 import { buildClusters } from "../../theatre/engine/clusterBuilder";
-import { buildMobileClusters } from "../../theatre/engine/mobileClusterBuilder";
+import { buildMobileClusters, getMobileClusterHeight } from "../../theatre/engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDesktopCluster";
 import { MobileClusterView } from "../../theatre/components/mobile/MobileClusterView";
 import { FeedContext } from "../../../context/FeedContext";
@@ -37,7 +37,7 @@ export function HorizontalClusterSection({ items, compact = false }: HorizontalC
 
   // Flat item lists for FeedContext (needed by card-level detail navigation)
   const mobileFlat = useMemo(
-    () => mobileClusters.flatMap((c) => c.slots.map((s) => s.item)),
+    () => mobileClusters.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean)) as TheatreItem[],
     [mobileClusters]
   );
   const desktopFlat = useMemo(
@@ -70,7 +70,6 @@ export function HorizontalClusterSection({ items, compact = false }: HorizontalC
             }}
           >
             {mobileClusters.map((cluster) => (
-              // Same fixed height as Theatre mobile wrappers → perfectly consistent
               <div
                 key={cluster.id}
                 style={{
