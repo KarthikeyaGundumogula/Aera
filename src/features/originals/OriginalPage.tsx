@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, BookPlus, Settings, Plus, Loader2 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useDeferredValue } from "react";
-import { ORIGINALS_DATA, STARS_MOCK, MAKERS_MOCK } from "../../mock";
 import { PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
 import { CinematicPageHeader } from "../../components/CinematicPageHeader";
@@ -31,7 +30,7 @@ export function OriginalPage() {
   const [showToast, setShowToast] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
   const isMobile = useMediaQuery();
-  const [localOriginal, setLocalOriginal] = useState<any>(id ? ORIGINALS_DATA[id] || null : null);
+  const [localOriginal, setLocalOriginal] = useState<any>(null);
   const [officialReleases, setOfficialReleases] = useState<any[]>([]);
   const [theatreWorks, setTheatreWorks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,8 +41,6 @@ export function OriginalPage() {
     if (!id) return;
     let isMounted = true;
     setLoading(true);
-
-    const staticFallback = ORIGINALS_DATA[id] || null;
 
     apiFetch(`/originals/${id}`)
       .then(async (res) => {
@@ -83,17 +80,13 @@ export function OriginalPage() {
                 spirit: a.spirit || 0,
                 works: a.works || 0,
               })),
-              works: staticFallback?.works || [],
+              works: [],
             };
             setLocalOriginal(mappedOriginal);
           }
-        } else if (staticFallback && isMounted) {
-          setLocalOriginal(staticFallback);
         }
       })
-      .catch(() => {
-        if (staticFallback && isMounted) setLocalOriginal(staticFallback);
-      })
+      .catch(() => {})
       .finally(() => {
         if (isMounted) setLoading(false);
       });
@@ -319,7 +312,7 @@ export function OriginalPage() {
       </motion.div>
 
       {/* RECENT RELEASES */}
-      <RecentReleasesSection releases={officialReleases} />
+      <RecentReleasesSection customReleases={officialReleases} />
 
       {/* Star Spotlight */}
       {original.stars && original.stars.length > 0 && (

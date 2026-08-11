@@ -5,8 +5,6 @@ import { SectionHeader } from "../../../components/SectionHeader";
 import { FHLoader } from "../../../components/FHLoader";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
-import { ORIGINALS, GRID_ITEMS } from "../../../mock";
-
 import { TheatreItem, Original } from "../../../types";
 
 interface OriginalSpotlightSectionProps {

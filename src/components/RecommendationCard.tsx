@@ -11,9 +11,7 @@ import {
   Heart,
   ArrowUpRight,
 } from "lucide-react";
-import { Recommendation } from "../mock/recommendations";
-import { mockLedger } from "../mock/ledger";
-import { CURRENT_USER_MOCK } from "../mock";
+import type { Recommendation } from "@/types/recommendations";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { PosterImage } from "./PosterImage";
 import { SaveAction } from "./actions/SaveAction";
@@ -24,12 +22,12 @@ import { LedgerAction } from "./actions/LedgerAction";
 import { CameraAction } from "./actions/CameraAction";
 import { SurgeBars } from "./SurgeBars";
 import { formatRelativeTime } from "../utils/time";
-import { useWorkNavigation } from "../hooks/useWorkNavigation";
-import { TheatreItem } from "../types";
+import { useWorkNavigation } from "@/hooks/useWorkNavigation";
+import type { TheatreItem } from "../types/theatre";
 
 interface Props {
   rec: Recommendation;
-  variant?: "default" | "modal";
+  variant?: "default" | "modal" | "wall-embed";
   compact?: boolean;
 }
 
@@ -41,13 +39,7 @@ export const RecommendationCard = memo(function RecommendationCard({
   const navigate = useNavigate();
 
   const hasBreakdown = React.useMemo(() => {
-    const ledgerEntry = mockLedger.find(
-      (l) =>
-        (l.artistId === rec.artist.id || (!l.artistId && (rec.artist.id === "fh-001" || rec.artist.id === CURRENT_USER_MOCK.id))) &&
-        l.originalId === rec.original.id &&
-        (Boolean(l.afterThoughts) || Boolean(l.preThoughts) || l.status === "watched")
-    );
-    return Boolean(ledgerEntry || rec.notes);
+    return Boolean(rec.notes);
   }, [rec]);
 
   const [notesExpanded, setNotesExpanded] = useState(false);
@@ -126,8 +118,8 @@ export const RecommendationCard = memo(function RecommendationCard({
   };
 
   const highestScore = rec.artist.highestScore || 4500;
-  const isHighestRated = rec.score >= highestScore;
-  const ratio = rec.score / highestScore;
+  const isHighestRated = (rec.score || 0) >= highestScore;
+  const ratio = (rec.score || 0) / highestScore;
 
   // Hiding the score row frees up ~43px of space (row height + gap + padding adjustments).
   // Hiding the artist row frees up an additional ~28px of space.
@@ -152,7 +144,7 @@ export const RecommendationCard = memo(function RecommendationCard({
 
           {/* Right: Genre Tags */}
           <div className="flex items-center gap-1.5">
-            {rec.original.genres.slice(0, 2).map((g) => (
+            {rec.original.genres?.slice(0, 2).map((g: any) => (
               <span
                 key={g}
                 className="text-[8px] font-black uppercase tracking-[0.2em] text-white/60 border border-white/20 px-2.5 py-1 rounded-xl bg-black/10 backdrop-blur-md"
@@ -259,7 +251,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                     Stars
                   </p>
                   <div className="flex flex-col gap-1">
-                    {rec.original.stars.slice(0, 3).map((star) => (
+                    {rec.original.stars.slice(0, 3).map((star: any) => (
                       <div
                         key={star}
                         className="group/star flex items-center gap-0.5 cursor-pointer"
@@ -399,7 +391,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 >
                   <img
                     src={rec.artist.profilePicture}
-                    alt={rec.artist.name}
+                    alt={rec.artist.name || rec.artist.stageName}
                     className="w-7 h-7 rounded-lg border border-white/[0.1] object-cover object-top"
                   />
                 </button>
@@ -408,7 +400,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/85 leading-none truncate">
-                      {rec.artist.name}
+                      {rec.artist.name || rec.artist.stageName}
                     </span>
                     {/* Artist's own liked status on this original */}
                     {rec.artistLiked && (
@@ -513,7 +505,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                         Personal Score
                       </span>
                       <p className="text-[10px] text-white/75 leading-relaxed font-medium">
-                        How strongly {rec.artist.name} recommends this —
+                        How strongly {rec.artist.name || rec.artist.stageName} recommends this —
                         measured against their personal all-time peak.
                       </p>
                     </div>
@@ -575,9 +567,9 @@ export const RecommendationCard = memo(function RecommendationCard({
         <ArtistProfile
           artist={{
             id: rec.artist.id,
-            name: rec.artist.name,
+            name: rec.artist.name || rec.artist.stageName,
             image: rec.artist.profilePicture,
-            spirit: rec.artist.spirit,
+            spirit: Number(rec.artist.spirit) || 0,
             works: rec.artist.works ?? 0,
             socials: {
               instagram: "artist_ig",

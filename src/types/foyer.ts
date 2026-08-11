@@ -1,7 +1,7 @@
 import { TheatreItem } from "./theatre";
 import { Original } from "./originals";
-import { Recommendation } from "../mock/recommendations";
-import { LedgerItem } from "../mock/ledger";
+import { Recommendation } from "./recommendations";
+import { LedgerItem } from "./ledger";
 import { WallPost } from "./wall";
 
 type AnnouncementType = 
@@ -18,14 +18,12 @@ interface Announcement {
   creatorImage: string;
   type: AnnouncementType;
   
-  // The announcement will resolve to one of these concrete items depending on its type
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
-  resolvedWallPost?: WallPost; // The underlying Wall Post (LINE, PIN, etc.) if it's a WALL_POST
+  resolvedWallPost?: WallPost;
   resolvedRecommendation?: Recommendation;
   resolvedLedgerEntry?: LedgerItem;
   
-  // Optional announcement text (e.g., "Just released!")
   text?: string;
   postedAt: string;
 }

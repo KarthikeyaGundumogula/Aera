@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RefreshCcw } from "lucide-react";
 import { CINEMATIC_QUOTES } from "../../../constants/quotes";
-import { CURRENT_USER_MOCK } from "../../../mock";
 
 export function CenterQuotes() {
   const [quoteIdx, setQuoteIdx] = useState(() => Math.floor(Math.random() * CINEMATIC_QUOTES.length));
@@ -55,7 +54,7 @@ export function CenterQuotes() {
           <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:24px_24px]" />
           
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500/70 mb-6 relative z-10">
-            ✧ {CURRENT_USER_MOCK.name.toUpperCase()}!! The Matter is ... ✧
+            ✧ The Matter is ... ✧
           </p>
 
           <AnimatePresence mode="wait">

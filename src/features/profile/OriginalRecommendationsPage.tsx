@@ -1,17 +1,25 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { FeedRecommendationCard } from "../../components/FeedRecommendationCard";
+import { apiFetch } from "@/lib/api";
+import type { Recommendation } from "@/types/recommendations";
 
 export default function OriginalRecommendationsPage() {
   const { profileId, originalId } = useParams<{ profileId: string; originalId: string }>();
   const navigate = useNavigate();
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
-  const recommendations = useMemo(() => {
-    return MOCK_RECOMMENDATIONS.filter(
-      (r) => r.artist.id === profileId && r.original.id === originalId
-    );
+  useEffect(() => {
+    if (!profileId || !originalId) return;
+    apiFetch(`/library/recommendations?profile_id=${profileId}&original_id=${originalId}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setRecommendations(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
   }, [profileId, originalId]);
 
   return (

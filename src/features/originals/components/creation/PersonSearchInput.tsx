@@ -1,7 +1,16 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, UserPlus, X, User } from "lucide-react";
-import { PROFILES_DIRECTORY, ProfileEntry } from "../../../../mock";
+import { apiFetch } from "@/lib/api";
+
+export interface ProfileEntry {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  profilePicture?: string;
+  profileType?: "STAR" | "MAKER";
+  tagline?: string;
+}
 
 export interface CastMember {
   profileId: string;
@@ -31,8 +40,24 @@ export function PersonSearchInput({
   const [role, setRole] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<ProfileEntry | null>(null);
+  const [profiles, setProfiles] = useState<ProfileEntry[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setProfiles([]);
+      return;
+    }
+    apiFetch(`/profiles?query=${encodeURIComponent(query)}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setProfiles(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, [query]);
 
   // Focus the search input on mount
   useEffect(() => {
@@ -50,31 +75,15 @@ export function PersonSearchInput({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Fuzzy search profiles
+  // Filter profiles
   const results = useMemo(() => {
     if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    return PROFILES_DIRECTORY.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) &&
-        (type === "STAR"
-          ? p.profileType === "STAR"
-          : p.profileType === "MAKER")
-    ).slice(0, 5);
-  }, [query, type]);
+    return profiles.slice(0, 5);
+  }, [query, profiles]);
 
-  // Also search across ALL types as secondary results
   const crossResults = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    return PROFILES_DIRECTORY.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) &&
-        (type === "STAR"
-          ? p.profileType !== "STAR"
-          : p.profileType !== "MAKER")
-    ).slice(0, 3);
-  }, [query, type]);
+    return [] as ProfileEntry[];
+  }, []);
 
   const allResults = [...results, ...crossResults];
   const hasExactMatch = allResults.some(

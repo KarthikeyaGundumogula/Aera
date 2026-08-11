@@ -1,5 +1,15 @@
 import { motion } from "motion/react";
-import type { LedgerTaggedWork } from "../../../mock/ledger";
+export interface LedgerTaggedWork {
+  id: string;
+  title: string;
+  coverImage?: string;
+  artist?: string;
+  authorName?: string;
+  type?: string;
+  thumbnailUrl?: string;
+  platform?: string;
+  srcId?: string;
+}
 import type { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 

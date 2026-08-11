@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { GRID_ITEMS } from "../../mock";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { TheatreItem } from "../../types";
@@ -18,12 +17,11 @@ export default function WorkPage() {
   const [fetchedItem, setFetchedItem] = useState<TheatreItem | null>(null);
   const [isLoadingBackend, setIsLoadingBackend] = useState<boolean>(false);
 
-  // Resolve item: state (instant) → userWorks → GRID_ITEMS → fetchedItem
+  // Resolve item: state (instant) → userWorks → fetchedItem
   const stateItem = location.state?.item;
   const localItem =
     stateItem ||
     userWorks.find((w) => String(w.id) === id) ||
-    GRID_ITEMS.find((w) => String(w.id) === id) ||
     fetchedItem ||
     null;
 

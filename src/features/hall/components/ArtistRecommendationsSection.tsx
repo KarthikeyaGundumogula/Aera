@@ -1,32 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Sparkles, ArrowRight, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { RecommendationCard } from "../../../components/RecommendationCard";
 import { FeedContext } from "../../../context/FeedContext";
 import { TheatreItem } from "../../../types";
+import { apiFetch } from "@/lib/api";
 
 export function ArtistRecommendationsSection() {
   const navigate = useNavigate();
-  if (!MOCK_RECOMMENDATIONS || MOCK_RECOMMENDATIONS.length === 0) return null;
+  const [recommendations, setRecommendations] = useState<any[]>([]);
 
-  const displayRecs = MOCK_RECOMMENDATIONS.slice(0, 5);
+  useEffect(() => {
+    apiFetch("/library/recommendations")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setRecommendations(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const displayRecs = React.useMemo(() => {
+    return (recommendations || []).slice(0, 5);
+  }, [recommendations]);
 
   const feedContextItems = React.useMemo(() => {
-    return displayRecs.map((rec) => ({
+    return displayRecs.map((rec: any) => ({
       id: `rec-${rec.id}`,
       category: "Recommendation",
       recId: rec.id,
-      image: rec.original.coverImage,
-      title: rec.original.title,
-      artist: rec.artist.name,
-      artistId: rec.artist.id,
-      artistAvatar: rec.artist.profilePicture,
-      originalIds: [rec.original.id],
+      image: rec.original?.coverImage || "",
+      title: rec.original?.title || "",
+      artist: rec.artist?.stageName || rec.artist?.name || "",
+      artistId: rec.artist?.id || "",
+      artistAvatar: rec.artist?.profilePicture,
+      originalIds: rec.original?.id ? [rec.original.id] : [],
     } as TheatreItem));
   }, [displayRecs]);
+
+  if (!recommendations || recommendations.length === 0) return null;
 
   return (
     <div className="relative">
@@ -51,12 +66,12 @@ export function ArtistRecommendationsSection() {
             layout
             className="flex gap-4 w-max px-6 md:px-12 items-start"
           >
-            {displayRecs.map((rec) => (
+            {displayRecs.map((rec: any) => (
               <RecommendationCard key={rec.id} rec={rec} />
             ))}
 
           {/* Aesthetic View All Card */}
-          {MOCK_RECOMMENDATIONS.length >= 5 && (
+          {recommendations.length >= 5 && (
             <button
               onClick={() => navigate("/recommendations")}
               className="flex-shrink-0 h-[310px] w-[140px] sm:w-[160px] flex flex-col items-center justify-center gap-4 transition-all hover:opacity-80 active:scale-[0.98] group"

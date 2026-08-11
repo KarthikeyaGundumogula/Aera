@@ -4,12 +4,11 @@
  * Searchable panel for selecting an Original within the recommendation modal.
  * Shows trending originals by default; filters by title query on input.
  */
-import { useState, useRef, useEffect, useMemo } from "react";
-import { X, Film, Search, Loader2 } from "lucide-react";
-import { ORIGINALS } from "@/mock";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Search, Loader2, X, Film } from "lucide-react";
+import type { Original } from "@/types/originals";
 import { useSearchQuery } from "@/lib/search";
-
-type Original = (typeof ORIGINALS)[0];
+import { apiFetch } from "@/lib/api";
 
 interface OriginalsSearchProps {
   onSelect: (original: Original) => void;
@@ -18,7 +17,20 @@ interface OriginalsSearchProps {
 
 export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
   const [query, setQuery] = useState("");
+  const [originals, setOriginals] = useState<Original[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    apiFetch("/originals")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const items = json.items || json.data || [];
+          setOriginals(items);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const { results: liveResults, loading: isSearching } = useSearchQuery('originals', query);
 
@@ -29,7 +41,7 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) {
-      return [...ORIGINALS]
+      return [...originals]
         .sort((a, b) => (b.stats?.presence ?? 0) - (a.stats?.presence ?? 0))
         .slice(0, 5);
     }
@@ -47,8 +59,8 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
 
     // Merge static + live, deduplicating by ID
     const map = new Map<string, Original>();
-    ORIGINALS.filter((o) => o.title.toLowerCase().includes(q)).forEach((o) => map.set(o.id, o));
-    remoteMapped.forEach((o) => map.set(o.id, o));
+    originals.filter((o: Original) => o.title.toLowerCase().includes(q)).forEach((o: Original) => map.set(o.id, o));
+    remoteMapped.forEach((o: Original) => map.set(o.id, o));
 
     return Array.from(map.values()).slice(0, 8);
   }, [query, liveResults.originals]);
@@ -89,7 +101,7 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
       {/* Results */}
       <div className="overflow-y-auto flex-1">
         {results.length > 0 ? (
-          results.map((original) => (
+          results.map((original: Original) => (
             <button
               key={original.id}
               onClick={() => onSelect(original)}

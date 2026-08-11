@@ -1,4 +1,3 @@
-import { ORIGINALS } from "../../mock";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { UploadStudioFlow } from "./components/UploadStudioFlow";
 
@@ -36,7 +35,7 @@ export default function UploadPage() {
       title={"Initiate\nRelease"}
       onExit={handleExit}
       onComplete={handleComplete}
-      originals={ORIGINALS}
+      originals={[]}
       festivalId={festivalId}
       setId={setId}
     />

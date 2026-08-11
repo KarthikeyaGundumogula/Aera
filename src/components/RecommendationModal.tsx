@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { Film, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ModalWrapper } from "../features/shared/modals/ModalWrapper";
-import { MOCK_RECOMMENDATIONS } from "../mock/recommendations";
 import { RecommendationCard } from "./RecommendationCard";
+import type { Recommendation } from "@/types/recommendations";
+import { apiFetch } from "@/lib/api";
 
 interface RecommendationModalProps {
   isOpen: boolean;
@@ -46,7 +47,21 @@ export function RecommendationModal({
   startIndex = 0,
 }: RecommendationModalProps) {
   const navigate = useNavigate();
-  const recs = MOCK_RECOMMENDATIONS;
+  const [recs, setRecs] = useState<Recommendation[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      apiFetch("/library/recommendations")
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const items = json.items || json.data || [];
+            setRecs(items);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -164,7 +179,7 @@ export function RecommendationModal({
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                    {rec.original.genres.slice(0, 2).map((genre) => (
+                    {rec.original.genres?.slice(0, 2).map((genre: string) => (
                       <span
                         key={genre}
                         className="text-[7px] font-black uppercase tracking-[0.25em] px-2 py-0.5 rounded-xl border border-white/[0.08] text-white/28 bg-white/[0.02]"

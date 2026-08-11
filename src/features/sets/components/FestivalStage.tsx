@@ -1,13 +1,25 @@
-import { memo } from "react";
+import { useState, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Activity, ArrowRight } from "lucide-react";
-import { FESTIVALS, SETS } from "../../../mock";
+import { apiFetch } from "@/lib/api";
 
 export const FestivalStage = memo(function FestivalStage() {
   const navigate = useNavigate();
-  const activeFestivals = FESTIVALS.filter(
-    (f) => f.status === "LIVE" || f.status === "UPCOMING",
-  );
+  const [activeFestivals, setActiveFestivals] = useState<any[]>([]);
+
+  useEffect(() => {
+    apiFetch("/festivals")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const items = json.items || json.data || [];
+          setActiveFestivals(
+            items.filter((f: any) => f.status === "LIVE" || f.status === "UPCOMING")
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   if (activeFestivals.length === 0) {
     return (
@@ -43,9 +55,8 @@ export const FestivalStage = memo(function FestivalStage() {
       </div>
 
       <div className="w-full overflow-x-auto no-scrollbar snap-x snap-mandatory flex gap-4 px-6 pb-4">
-        {activeFestivals.map((festival) => {
-          const hostSet = SETS.find((s) => s.id === festival.setId);
-          const accentColor = hostSet?.accentColor || "#ef4444";
+        {activeFestivals.map((festival: any) => {
+          const accentColor = festival.accentColor || "#ef4444";
 
           return (
             <article
@@ -70,7 +81,7 @@ export const FestivalStage = memo(function FestivalStage() {
                         style={{ color: accentColor }}
                       />
                       <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/80">
-                        {hostSet?.title || "Unknown Source"}
+                        {(festival as any).hostSetTitle || "Unknown Source"}
                       </span>
                     </div>
                     <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-2 drop-shadow-lg">

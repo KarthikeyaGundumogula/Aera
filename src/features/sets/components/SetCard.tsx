@@ -2,7 +2,6 @@ import React, { memo, useState, useId } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Users, Globe, Film } from 'lucide-react';
-import { FESTIVALS } from '../../../mock';
 import type { Set } from '../../../types';
 
 interface SetCardProps {
@@ -16,11 +15,11 @@ interface SetCardProps {
 export const SetCard = memo(function SetCard({ set, index }: SetCardProps) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
-  const festival = set.activeFestivalId ? FESTIVALS.find(f => f.id === set.activeFestivalId) : null;
-  const hasFestival = !!festival;
+  const festival: any = null;
+  const hasFestival = !!set.festivalStatus;
 
   const memberCount = set.memberCount ?? set.members.length;
-  const festivalCount = set.totalFestivals ?? FESTIVALS.filter(f => f.setId === set.id).length;
+  const festivalCount = set.totalFestivals ?? 0;
   const liveFestivalsCount = set.liveFestivals ?? (hasFestival ? 1 : 0);
 
   const gradientId = `setCardGradient-${useId()}`;

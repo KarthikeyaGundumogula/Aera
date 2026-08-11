@@ -13,8 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
 import { Original } from "../../../types/originals";
-import { Recommendation } from "../../../mock/recommendations";
-import { ARTISTS_MOCK } from "../../../mock";
+import type { Recommendation } from "@/types/recommendations";
 import { ModalWrapper } from "../../shared/modals/ModalWrapper";
 import { ArtistProfile } from "../../shared/profile/ArtistProfile";
 import { buildEmbedUrl } from "../../../utils/embed";
@@ -23,7 +22,7 @@ import { SaveAction } from "../../../components/actions/SaveAction";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
-import { LedgerItem } from "../../../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
 import { LedgerWallCard } from "../../profile/components/LedgerWallCard";
 import { ReactionAction } from "../../../components/actions/ReactionAction";
 import { ReactionId } from "../../../types/reactions";
@@ -377,7 +376,7 @@ const RecommendationFull: React.FC<{
     <div className="w-full flex flex-col gap-6 px-4 max-w-[680px] mx-auto pointer-events-none">
       {/* Use the exact Feed recommendation card but visually isolate it */}
       <div className="pointer-events-none bg-[#0d0d0d] rounded-2xl border border-white/10 shadow-2xl p-1.5 overflow-hidden">
-        <FeedRecommendationCard rec={rec} variant="wall-embed" />
+        <FeedRecommendationCard rec={rec} />
       </div>
 
       {post.text && (
@@ -398,7 +397,7 @@ const RecommendationFull: React.FC<{
             recId: rec.id,
             image: rec.original.coverImage,
             title: rec.original.title,
-            artist: rec.artist.name,
+            artist: rec.artist.stageName || rec.artist.name,
             artistId: rec.artist.id,
             artistAvatar: rec.artist.profilePicture,
             originalIds: [rec.original.id],
@@ -1069,20 +1068,16 @@ const SlideContent = React.memo(function SlideContent({
   const isOlderCard = postIndex === group.entries.length;
   const entry = group.entries[postIndex];
 
-  // Find full artist details for the inline ArtistProfile modal
   const artistProfile = React.useMemo(() => {
     if (!isOlderCard) return null;
-    return (
-      ARTISTS_MOCK.find((a) => a.id === group.artistId) ||
-      ({
-        id: group.artistId,
-        name: group.artistName,
-        image: group.artistImage,
-        spirit: 0,
-        works: 0,
-        bio: "Creator on FrameHouse",
-      } as any)
-    );
+    return {
+      id: group.artistId,
+      name: group.artistName,
+      image: group.artistImage,
+      spirit: 0,
+      works: 0,
+      bio: "Creator on FrameHouse",
+    } as any;
   }, [isOlderCard, group.artistId, group.artistName, group.artistImage]);
 
   return (

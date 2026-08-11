@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../../components/SectionHeader';
 import { FHLoader } from '../../../components/FHLoader';
 import { buildEmbedUrl } from '../../../utils/embed';
-import { GRID_ITEMS, ORIGINALS } from '../../../mock';
 
 export interface OriginalReleaseItem {
   id: string;
@@ -18,39 +17,34 @@ interface RecentReleasesSectionProps {
   icon?: ElementType;
   className?: string;
   headerClassName?: string;
-  releases?: OriginalReleaseItem[];
+  customReleases?: OriginalReleaseItem[];
 }
 
 export const RecentReleasesSection = memo(function RecentReleasesSection({ 
-  title = "Releases",
+  title = "Recent Original Releases",
   icon,
-  className = "pt-8 pb-12",
-  headerClassName = "mb-8",
-  releases: customReleases,
+  className = "",
+  headerClassName = "",
+  customReleases,
 }: RecentReleasesSectionProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isIntersecting, setIsIntersecting] = useState(false);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+  const [isIntersecting, setIsIntersecting] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
-  // Filter top 5 YouTube releases based on credits or use custom releases
   const recentReleases = useMemo(() => {
     if (customReleases && customReleases.length > 0) {
-      return customReleases.map((r) => ({
+      return customReleases.map(r => ({
         id: r.id,
         title: r.title,
-        platform: "youtube",
-        srcId: r.src || "GG1_DsScm6U",
+        srcId: r.src,
         category: r.releaseType || "EDIT",
         originalIds: [r.id],
         artist: "Official Release",
       }));
     }
-    return GRID_ITEMS
-      .filter(w => w.platform === 'youtube')
-      .sort((a, b) => (b.credits || 0) - (a.credits || 0))
-      .slice(0, 5);
+    return [];
   }, [customReleases]);
 
   useEffect(() => {
@@ -64,7 +58,6 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
   const currentWork = recentReleases[currentIndex];
 
-  // Reset iframe loading state when switching videos and clear loader with fallback timer
   useEffect(() => {
     setIsIframeLoaded(false);
     const timer = setTimeout(() => {
@@ -73,10 +66,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
     return () => clearTimeout(timer);
   }, [currentIndex, currentWork?.id]);
 
-  const currentOriginal = useMemo(() => {
-    if (!currentWork) return null;
-    return ORIGINALS.find(o => currentWork.originalIds?.includes(o.id)) || null;
-  }, [currentWork]);
+  const currentOriginal: any = null;
 
   if (!recentReleases.length) return null;
 

@@ -20,6 +20,8 @@ export interface OriginalArtist {
   themeBgColor?: string;
   color_theme?: string;
   imagePosition?: string;
+  currentPeakLibrary?: number;
+  currentPeakRecommendations?: number;
 }
 
 export interface OriginalStar {
@@ -34,6 +36,7 @@ export interface OriginalMaker extends OriginalStar {}
 
 export interface Original {
   id: string;
+  libraryEntryId?: string;
   title: string;
   description: string;
   coverImage: string;
@@ -44,6 +47,8 @@ export interface Original {
   };
   topArtists: OriginalArtist[];
   works: TheatreItem[];
+  stars?: OriginalStar[];
+  makers?: OriginalMaker[];
   heroHighlights?: TheatreItem[];
   releaseDate?: string;
   genre?: string[];

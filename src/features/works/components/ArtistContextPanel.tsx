@@ -1,29 +1,34 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { TheatreItem } from "../../../types";
-import { GRID_ITEMS, ARTISTS_MOCK } from "../../../mock";
 import { buildMobileClusters } from "../../theatre/engine/mobileClusterBuilder";
 import { MobileClusterView } from "../../theatre/components/mobile/MobileClusterView";
 import { FeedContext } from "../../../context/FeedContext";
 import { SectionHeader } from "../../../components/SectionHeader";
+import { apiFetch } from "@/lib/api";
 
 interface ArtistContextPanelProps {
   item: TheatreItem;
 }
 
-/**
- * ArtistContextPanel — Dedicated side panel for artist context.
- * Now simplified to only show the artist's other works in the Theatre.
- */
 export function ArtistContextPanel({ item }: ArtistContextPanelProps) {
-  const artistData = ARTISTS_MOCK.find((a) => a.name === item.artist);
-  const artistId = item.artistId ?? artistData?.id ?? item.artist ?? "";
+  const [artistWorks, setArtistWorks] = useState<TheatreItem[]>([]);
+  const artistId = item.artistId ?? item.artist ?? "";
 
-  // Get other works by this artist
-  const otherWorks = GRID_ITEMS.filter(
-    (w) =>
-      String(w.id) !== String(item.id) &&
-      (w.artist === item.artist || w.artistId === artistId)
+  useEffect(() => {
+    if (!artistId) return;
+    apiFetch(`/artists/${artistId}/works`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setArtistWorks(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, [artistId]);
+
+  const otherWorks = artistWorks.filter(
+    (w) => String(w.id) !== String(item.id)
   );
 
   const otherWorksClusters = React.useMemo(() => {

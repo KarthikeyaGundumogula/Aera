@@ -11,94 +11,40 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  GRID_ITEMS,
-  ORIGINALS,
-  FESTIVALS,
-  THOUGHTS_MOCK,
-  CURRENT_USER_MOCK,
-} from "../../mock";
-import { mockLedger } from "../../mock/ledger";
-import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
-
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { DesktopHeader } from "../navigation/DesktopHeader";
-import { SectionHeader } from "../../components/SectionHeader";
-import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
-import { HorizontalClusterSection } from "./components/HorizontalClusterSection";
-import { FestivalsSection } from "./components/FestivalsSection";
-import { DiscussionsSection } from "./components/DiscussionsSection";
+import { SEOHead } from "../../components/SEOHead";
 import { RecommendationsSection } from "./components/RecommendationsSection";
-import { LedgerTabsZone } from "./components/LedgerTabsZone";
+import { DiscussionsSection } from "./components/DiscussionsSection";
 import { YoutubeReleasesSection } from "./components/YoutubeReleasesSection";
-import { OriginalSpotlightSection } from "./components/OriginalSpotlightSection";
-import { ArtistRecommendationsSection } from "./components/ArtistRecommendationsSection";
 import { FoyerSection } from "./components/FoyerSection";
 import { TopOriginalsSection } from "./components/TopOriginalsSection";
-import { SEOHead } from "../../components/SEOHead";
+import { ArtistRecommendationsSection } from "./components/ArtistRecommendationsSection";
+import { FestivalsSection } from "./components/FestivalsSection";
+import { SectionHeader } from "../../components/SectionHeader";
+import { EmptyState } from "../../components/EmptyState";
 
-/**
- * Hall — The app's personalized curation for the user.
- *
- * Not a generic feed — a series of cinematic scenes the user steps into.
- * Works cluster is the hero at the top. Everything below is contextual.
- */
 export default function HallPage() {
   const navigate = useNavigate();
 
-  // ── Scroll anchor refs ───────────────────────────────────────────────
   const originalsRef = useRef<HTMLElement>(null);
   const festivalsRef = useRef<HTMLElement>(null);
   const recommendationsRef = useRef<HTMLElement>(null);
   const ledgerRef = useRef<HTMLElement>(null);
 
-  // ── Works from Favorited Originals ────────────────────────────────────────
-  const favIds = useMemo(
-    () => new Set(CURRENT_USER_MOCK.favoritedOriginalIds),
-    [],
-  );
-
-  const favoritedWorks = useMemo(
-    () =>
-      GRID_ITEMS.filter((item) =>
-        item.originalIds?.some((id) => favIds.has(id)),
-      ),
-    [favIds],
-  );
-
-  const favoritedOriginals = useMemo(
-    () => ORIGINALS.filter((o) => favIds.has(o.id)),
-    [favIds],
-  );
+  // ── Works & Originals ────────────────────────────────────────────────
+  const favoritedWorks = useMemo(() => [], []);
+  const favoritedOriginals = useMemo(() => [], []);
 
   // ── Ledger ────────────────────────────────────────────────────────────────
-  const ledgerItems = useMemo(() => mockLedger, []);
+  const ledgerItems = useMemo(() => [], []);
 
-  // ── Festivals from member Sets ────────────────────────────────────────────
-  const memberSetIds = useMemo(
-    () => new Set(CURRENT_USER_MOCK.memberSetIds),
-    [],
-  );
+  // ── Festivals ─────────────────────────────────────────────────────────────
+  const memberFestivals = useMemo(() => [], []);
+  const liveFestivals = useMemo(() => [], []);
 
-  const memberFestivals = useMemo(
-    () =>
-      FESTIVALS.filter((f) => memberSetIds.has(f.setId)).sort((a, b) => {
-        const order = { LIVE: 0, UPCOMING: 1, CONCLUDED: 2 };
-        return (
-          (order[a.status as keyof typeof order] ?? 2) -
-          (order[b.status as keyof typeof order] ?? 2)
-        );
-      }),
-    [memberSetIds],
-  );
-
-  const liveFestivals = memberFestivals.filter((f) => f.status === "LIVE");
-
-  // ── Discussions from member Sets ──────────────────────────────────────────
-  const memberDiscussions = useMemo(
-    () => THOUGHTS_MOCK.filter((t) => t.setId && memberSetIds.has(t.setId)),
-    [memberSetIds],
-  );
+  // ── Discussions ───────────────────────────────────────────────────────────
+  const memberDiscussions = useMemo(() => [], []);
 
   return (
     <div className="min-h-screen bg-surface-deep text-white pb-28">
@@ -228,19 +174,7 @@ export default function HallPage() {
           )}
         </motion.section>
 
-        {/* ══════════════════════════════════════════════════════
-            SCENE 4 — YOUR LEDGER
-        ══════════════════════════════════════════════════════ */}
-        <motion.section
-          ref={ledgerRef}
-          id="section-ledger"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-6 scroll-mt-24"
-        >
-          <LedgerTabsZone />
-        </motion.section>
+
 
         {/* ══════════════════════════════════════════════════════
             SCENE 5 — TOP RELEASES THIS WEEK
@@ -254,32 +188,7 @@ export default function HallPage() {
           <YoutubeReleasesSection />
         </motion.section>
 
-        {/* ══════════════════════════════════════════════════════
-            SCENE 6 — ORIGINAL SPOTLIGHT FEED
-        ══════════════════════════════════════════════════════ */}
-        {ORIGINALS.slice(0, 4).map((original, idx) => (
-          <motion.section
-            ref={idx === 0 ? originalsRef : undefined}
-            id={idx === 0 ? "section-originals" : undefined}
-            key={`spotlight-${original.id}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.3 + idx * 0.05,
-              duration: 0.6,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            className={`mb-6 ${idx === 0 ? "scroll-mt-24" : ""}`}
-          >
-            <OriginalSpotlightSection
-              original={original}
-              works={GRID_ITEMS.filter((w) => w.category === "Edit").slice(
-                0,
-                10,
-              )}
-            />
-          </motion.section>
-        ))}
+
 
         {/* Empty state */}
         {!favoritedWorks.length &&

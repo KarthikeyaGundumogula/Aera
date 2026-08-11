@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ARTISTS_MOCK, PROFILES_DIRECTORY } from "../../../mock";
 
 import { DesktopCanvas } from "../components/desktop/DesktopCanvas";
 import { MobileCanvas } from "../components/mobile/MobileCanvas";
@@ -19,7 +18,7 @@ interface TheatreLayoutProps {
   isMobile?: boolean;
 }
 
-export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
+export function TheatreLayout({ isMobile = false }: TheatreLayoutProps) {
   const { isHeaderVisible, isScrolled, handleScroll } = useHeaderVisibility();
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,14 +30,6 @@ export function TheatreLayout({ isMobile }: TheatreLayoutProps) {
   const profileName = useMemo(() => {
     if (!artistId) return null;
     
-    // Check Artists
-    const artist = ARTISTS_MOCK.find(a => a.id === artistId);
-    if (artist) return artist.name;
-
-    // Check Stars/Makers via Profiles Directory
-    const profile = PROFILES_DIRECTORY.find(p => p.id === artistId);
-    if (profile) return profile.name;
-
     // Fallback to formatted ID
     return artistId.replace("profile-", "").replace(/-/g, " ").toUpperCase();
   }, [artistId]);

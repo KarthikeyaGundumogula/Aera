@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Tag } from "lucide-react";
-import { ORIGINALS } from "../../../mock";
 import { OWN_RELEASE_ORIGINAL } from "../../../constants/originals";
 import { LedgerAction } from "../../../components/actions/LedgerAction";
+import { apiFetch } from "@/lib/api";
 
 interface CurateOverlayProps {
   isOpen: boolean;
@@ -26,7 +26,6 @@ export function CurateOverlay({
   // Only show the originals that this fragment is related to
   const relatedOriginals = [
     ...(originalIds.includes("own-release") ? [OWN_RELEASE_ORIGINAL] : []),
-    ...ORIGINALS.filter((item) => originalIds.includes(item.id)),
   ];
 
   const handleAddToLedger = (id: string) => {

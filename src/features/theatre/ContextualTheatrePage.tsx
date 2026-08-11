@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useCallback, useEffect } from "react";
-import { ORIGINALS_DATA, SETS, FESTIVALS, GRID_ITEMS } from "../../mock";
 import { UnifiedTheatre } from "./components/UnifiedTheatre";
 import { TheatreItem } from "../../types";
 import { apiFetch } from "@/lib/api";
@@ -24,14 +23,6 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
     let isMounted = true;
 
     if (type === "original") {
-      const staticOriginal = ORIGINALS_DATA[id];
-      if (staticOriginal) {
-        setSubtitle(staticOriginal.title);
-        setVisibleWorks(staticOriginal.works || []);
-        setHasMore((staticOriginal.works || []).length > 0);
-      }
-
-      // Fetch dynamic details for subtitle
       apiFetch(`/originals/${id}`)
         .then(async (res) => {
           if (res.ok) {
@@ -44,7 +35,6 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         })
         .catch(() => undefined);
 
-      // Fetch dynamic theatre works from GET /originals/{id}/theatre
       setIsLoading(true);
       apiFetch(`/originals/${id}/theatre?limit=30`)
         .then(async (res) => {
@@ -70,20 +60,25 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
           if (isMounted) setIsLoading(false);
         });
     } else if (type === "set") {
-      const set = SETS.find((s) => s.id === id);
-      if (set) {
-        setSubtitle(set.title);
-        const works = GRID_ITEMS.filter((item) => item.srcId === id);
-        setVisibleWorks(works);
-        setHasMore(works.length > 0);
-      }
+      apiFetch(`/sets/${id}`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const data = json.data || json;
+            if (isMounted && data.title) setSubtitle(data.title);
+          }
+        })
+        .catch(() => {});
     } else if (type === "festival") {
-      const festival = FESTIVALS.find((f) => f.id === id);
-      if (festival) {
-        setSubtitle(festival.title);
-        setVisibleWorks(GRID_ITEMS);
-        setHasMore(true);
-      }
+      apiFetch(`/festivals/${id}`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const data = json.data || json;
+            if (isMounted && data.title) setSubtitle(data.title);
+          }
+        })
+        .catch(() => {});
     }
 
     return () => {

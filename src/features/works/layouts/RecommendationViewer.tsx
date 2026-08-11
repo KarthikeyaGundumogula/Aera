@@ -1,23 +1,28 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { TheatreItem } from "../../../types";
 import { ViewerFrame } from "./ViewerFrame";
-import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { RecommendationCard } from "../../../components/RecommendationCard";
+import { apiFetch } from "@/lib/api";
 
 interface RecommendationViewerProps {
   item: TheatreItem;
 }
 
-/**
- * RecommendationViewer — wraps ViewerFrame with RecommendationCard as
- * the media slot. The identity block is suppressed because RecommendationCard
- * has its own artist/title display built in.
- */
 export function RecommendationViewer({ item }: RecommendationViewerProps) {
-  const rec = item.recId
-    ? MOCK_RECOMMENDATIONS.find((r) => r.id === item.recId) ?? null
-    : null;
+  const [rec, setRec] = useState<any>(null);
+
+  useEffect(() => {
+    if (!item.recId) return;
+    apiFetch(`/library/recommendations/${item.recId}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setRec(json.data || json);
+        }
+      })
+      .catch(() => {});
+  }, [item.recId]);
 
   return (
     <ViewerFrame

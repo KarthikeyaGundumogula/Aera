@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Users, Calendar, Info, Trash2, Plus, Check, Shield, User, Briefcase } from "lucide-react";
 import { Original } from "../../../types";
-import { STARS_MOCK, MAKERS_MOCK } from "../../../mock";
 import { PersonSearchInput, CastMember } from "./creation/PersonSearchInput";
 
 interface OriginalManagementModalProps {
@@ -26,21 +25,21 @@ export function OriginalManagementModal({
   const [description, setDescription] = useState(original.description);
   const [releaseDate, setReleaseDate] = useState(original.releaseDate || "");
 
-  // Cast State — hydrate from existing mock data into CastMember shape
+  // Cast State — hydrate from original props into CastMember shape
   const [stars, setStars] = useState<CastMember[]>(
-    STARS_MOCK.filter(s => s.originalId === original.id).map(s => ({
-      profileId: `profile-${s.actorName.toLowerCase().replace(/[\s.]+/g, '-')}`,
-      actorName: s.actorName,
-      characterName: s.characterName,
-      profilePicture: s.imageUrl,
+    (original.stars || []).map((s: any) => ({
+      profileId: s.profileId || `profile-${(s.actorName || '').toLowerCase().replace(/[\s.]+/g, '-')}`,
+      actorName: s.actorName || '',
+      characterName: s.characterName || '',
+      profilePicture: s.imageUrl || s.profilePicture || '',
     }))
   );
   const [makers, setMakers] = useState<CastMember[]>(
-    MAKERS_MOCK.filter(m => m.originalId === original.id).map(m => ({
-      profileId: `profile-${m.actorName.toLowerCase().replace(/[\s.]+/g, '-')}`,
-      actorName: m.actorName,
-      characterName: m.characterName,
-      profilePicture: m.imageUrl,
+    (original.makers || []).map((m: any) => ({
+      profileId: m.profileId || `profile-${(m.actorName || '').toLowerCase().replace(/[\s.]+/g, '-')}`,
+      actorName: m.actorName || '',
+      characterName: m.characterName || '',
+      profilePicture: m.imageUrl || m.profilePicture || '',
     }))
   );
 

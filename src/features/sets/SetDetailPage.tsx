@@ -16,12 +16,6 @@ import {
   Globe,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  SETS,
-  FESTIVALS,
-  PROFILES_DIRECTORY,
-  THOUGHTS_MOCK,
-} from "../../mock";
 import { ThoughtCard } from "../shared/thoughts/ThoughtCard";
 import { ActiveFestivalSpotlight } from "./components/ActiveFestivalSpotlight";
 import { FestivalArchive } from "./components/FestivalArchive";
@@ -31,28 +25,18 @@ import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { SectionHeader } from "../../components/SectionHeader";
 import { UpdateSetModal } from "./components/UpdateSetModal";
 import { CreateFestivalModal } from "./components/CreateFestivalModal";
+import { NotFoundOverlay } from "../../components/NotFoundOverlay";
 import { apiFetch } from "@/lib/api";
 
 /**
  * SetDetailPage — /sets/:id
- *
- * Layer Architecture:
- * ┌─────────────────────────────────────────────────────────────┐
- * │ I   — Atmos Header (Identity + Captain + Stats)             │
- * ├─────────────────────────────────────────────────────────────┤
- * │ II  — Active Festival Spotlight (Bento + Countdown)         │
- * ├─────────────────────────────────────────────────────────────┤
- * │ III — Festival Archive (Horizontal scroll, CONCLUDED only)  │
- * ├─────────────────────────────────────────────────────────────┤
- * │ IV  — Set Theatre (Y-axis, cluster-based, filtered works)   │
- * └─────────────────────────────────────────────────────────────┘
  */
 export function SetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentArtist } = useAuth();
 
-  const [localSet, setLocalSet] = useState<any>(id ? SETS.find((s) => s.id === id) || null : null);
+  const [localSet, setLocalSet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [discussions, setDiscussions] = useState<any[]>([]);
   const [theatreWorks, setTheatreWorks] = useState<any[]>([]);
@@ -62,8 +46,6 @@ export function SetDetailPage() {
     if (!id) return;
     let isMounted = true;
     setLoading(true);
-
-    const staticFallback = SETS.find((s) => s.id === id) || null;
 
     Promise.all([
       apiFetch(`/sets/${id}`),
@@ -110,8 +92,6 @@ export function SetDetailPage() {
               }
             }
           }
-        } else if (staticFallback && isMounted) {
-          setLocalSet(staticFallback);
         }
 
         if (discRes.ok) {
@@ -150,9 +130,7 @@ export function SetDetailPage() {
           }
         }
       })
-      .catch(() => {
-        if (staticFallback && isMounted) setLocalSet(staticFallback);
-      })
+      .catch(() => {})
       .finally(() => {
         if (isMounted) setLoading(false);
       });
@@ -165,27 +143,24 @@ export function SetDetailPage() {
   const set = localSet;
 
   const allFestivals = useMemo(() => {
-    const realForSet = fetchedFestivals.filter((f) => String(f.setId) === String(id));
-    if (realForSet.length > 0) return realForSet;
-    return FESTIVALS.filter((f) => String(f.setId) === String(id));
+    return fetchedFestivals.filter((f: any) => String(f.setId) === String(id));
   }, [fetchedFestivals, id]);
 
   const activeFestival = useMemo(() => {
     if (!set) return null;
     if (set.activeFestivalId) {
-      const match = allFestivals.find((f) => String(f.id) === String(set.activeFestivalId));
+      const match = allFestivals.find((f: any) => String(f.id) === String(set.activeFestivalId));
       if (match) return match;
     }
     return (
-      allFestivals.find((f) => f.status === "LIVE" || f.status === "UPCOMING") ||
+      allFestivals.find((f: any) => f.status === "LIVE" || f.status === "UPCOMING") ||
       allFestivals[0] ||
       null
     );
   }, [set, allFestivals]);
-  const captain = useMemo(
-    () => (set ? PROFILES_DIRECTORY.find((p) => p.id === set.captainId) : null),
-    [set],
-  );
+
+  const captain: any = useMemo(() => null, []);
+
   const setWorks = useMemo(() => {
     if (!theatreWorks || !Array.isArray(theatreWorks)) return [];
     return theatreWorks.map((w: any) => ({
@@ -199,18 +174,20 @@ export function SetDetailPage() {
   }, [theatreWorks]);
 
   const setThoughts = useMemo(() => {
-    const staticThoughts = THOUGHTS_MOCK.filter((t) => t.setId === id);
-    const liveThoughts = discussions.map((d: any) => ({
+    return discussions.map((d: any) => ({
       id: d.id,
-      authorId: d.author_id || "artist-1",
+      artistId: d.author_id || "artist-1",
+      originalId: "",
+      originalTitle: "",
+      thoughtText: d.body || "",
+      createdAt: d.created_at || new Date().toISOString(),
       hits: d.comment_count || 0,
       text: d.title ? `${d.title}\n\n${d.body}` : d.body,
-      authorName: d.author_name || "Artist",
-      authorAvatar: d.author_avatar || "",
+      artistName: d.author_name || "Artist",
+      artistPicture: d.author_avatar || "",
       setId: id || "",
       timestamp: d.created_at ? new Date(d.created_at).toLocaleDateString() : "Just now",
     }));
-    return [...liveThoughts, ...staticThoughts];
   }, [id, discussions]);
 
   const [isJoined, setIsJoined] = useState(false);
@@ -387,17 +364,11 @@ export function SetDetailPage() {
 
   if (!localSet) {
     return (
-      <div className="min-h-screen bg-surface-deep flex flex-col items-center justify-center gap-4">
-        <p className="text-white/40 text-xs font-mono tracking-widest uppercase">
-          Set Not Found
-        </p>
-        <button
-          onClick={() => navigate("/sets")}
-          className="text-[10px] uppercase tracking-[0.3em] text-white/20 hover:text-white transition-colors"
-        >
-          ← Back to Sets
-        </button>
-      </div>
+      <NotFoundOverlay
+        title="SET NOT FOUND"
+        subtitle="This Set micro-community or timeline does not exist or is currently being curated. Stay in-touch with the Framehouse collective while we build."
+        mode="page"
+      />
     );
   }
 

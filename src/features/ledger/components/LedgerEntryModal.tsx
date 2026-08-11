@@ -18,12 +18,12 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { ORIGINALS } from "../../../mock";
-import { mockLedger, LedgerItem } from "../../../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
 import { useSearchQuery } from "@/lib/search";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 const AMBER = "#D97706";
@@ -36,7 +36,7 @@ interface LedgerEntryModalProps {
 }
 
 type EntryStatus = "want_to_watch" | "watched";
-type Original = (typeof ORIGINALS)[0];
+import type { Original } from "@/types/originals";
 
 // ─── Resonance colour helpers (module-level, not recreated on render) ─────────
 
@@ -100,14 +100,6 @@ function OriginalsSearch({
   }, []);
 
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const pool = ORIGINALS.filter((o) => !existingIds.includes(o.id));
-    if (!q) {
-      return [...pool]
-        .sort((a, b) => (b.stats?.presence ?? 0) - (a.stats?.presence ?? 0))
-        .slice(0, 5);
-    }
-
     const remoteMapped: Original[] = liveResults.originals
       .filter((h) => !existingIds.includes(h.id))
       .map((h) => ({
@@ -120,12 +112,8 @@ function OriginalsSearch({
         works: [],
       }));
 
-    const map = new Map<string, Original>();
-    pool.filter((o) => o.title.toLowerCase().includes(q)).forEach((o) => map.set(o.id, o));
-    remoteMapped.forEach((o) => map.set(o.id, o));
-
-    return Array.from(map.values()).slice(0, 8);
-  }, [query, existingIds, liveResults.originals]);
+    return remoteMapped.slice(0, 8);
+  }, [existingIds, liveResults.originals]);
 
   return (
     <div className="flex flex-col h-full">
@@ -236,9 +224,10 @@ function CinematicTextarea({
 // ─── Main modal ───────────────────────────────────────────────────────────────
 
 export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
-  const [existingIds] = useState<string[]>(() =>
-    mockLedger.map((l) => l.originalId),
-  );
+  const { currentArtist } = useAuth();
+  const peakLibraryScore = currentArtist?.currentPeakLibrary || 1000;
+
+  const [existingIds] = useState<string[]>([]);
   const [selectedOriginal, setSelectedOriginal] = useState<Original | null>(
     null,
   );
@@ -321,7 +310,8 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
       entry_type: "MOVIE",
       pre_thought: expectations.trim() || undefined,
       post_impression: status === "watched" ? afterThoughts.trim() || undefined : undefined,
-      surge_score: surgeScore || 0,
+      surge_score: status === "watched" ? (surgeScore || null) : null,
+
     };
 
     try {
@@ -344,11 +334,15 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
               ? expectations || "On the radar."
               : expectations || "Experienced.",
           afterThoughts:
-            status === "watched" ? afterThoughts || undefined : undefined,
+            status === "watched" ? (afterThoughts || "") : "",
+          surgeScore: status === "watched" ? surgeScore : 0,
+          genre: [],
+          starName: "",
+          artistId: "fh-001",
+          releaseYear: "",
           taggedWorks: [],
           addedAt: new Date().toISOString(),
         };
-        mockLedger.unshift(newEntry);
         window.dispatchEvent(new CustomEvent("ledgerUpdated"));
         window.dispatchEvent(new CustomEvent("libraryUpdated"));
         setTimeout(() => onClose(), 1300);
@@ -363,7 +357,10 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
     }
   }, [selectedOriginal, status, expectations, afterThoughts, surgeScore, isSubmitting, onClose]);
 
-  const canSubmit = selectedOriginal !== null;
+  const canSubmit =
+    selectedOriginal !== null &&
+    (status !== "watched" || surgeScore > 0);
+
   const submitLabel =
     status === "watched" ? "Seal the Verdict" : "Log to Ledger";
 
@@ -530,7 +527,7 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                             </span>
                           </div>
 
-                          {surgeScore >= 4200 && (
+                          {surgeScore >= Math.round(peakLibraryScore * 0.42) && (
                             <div className="absolute top-2 left-2 z-20 -rotate-[8deg] pointer-events-none opacity-95 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]">
                               <div className="inline-block text-[7px] font-mono font-black uppercase tracking-[0.2em] text-[#EF4444] bg-[#050302]/40 border-[1.5px] border-[#EF4444]/90 px-1.5 py-0.5 rounded-[2px] backdrop-blur-md whitespace-nowrap">
                                 PEAK EXP.
@@ -656,13 +653,13 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                             onChange={setAfterThoughts}
                           />
 
-                          {/* ── Surge Score (watched only) ─────────── */}
                           <SurgeInputSection
                             score={surgeScore}
-                            peak={4200}
+                            peak={peakLibraryScore}
                             onChange={setSurgeScore}
                             withDivider
                           />
+
                         </motion.div>
                       )}
                     </AnimatePresence>

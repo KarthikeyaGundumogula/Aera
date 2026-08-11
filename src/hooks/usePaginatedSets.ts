@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
-import { SETS } from "@/mock";
 import { Set } from "@/types";
 
 interface SetResponseItem {
@@ -61,7 +60,7 @@ export function usePaginatedSets(pageSize = 10) {
           const rawList: SetResponseItem[] = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
 
           const mapped: Set[] = rawList.map((s) => ({
-            id: s.id, // Preserved for user action routing to /sets/:id
+            id: s.id,
             title: s.title || "Untitled Set",
             description: s.description || "",
             captainId: s.captainId || s.captain_id || "c1",
@@ -85,11 +84,11 @@ export function usePaginatedSets(pageSize = 10) {
           setTotalCount(serverTotal);
           setSets((prev) => (append ? [...prev, ...mapped] : mapped));
         } else {
-          setSets(SETS);
+          setSets([]);
           setHasMore(false);
         }
       } catch {
-        setSets(SETS);
+        setSets([]);
         setHasMore(false);
       } finally {
         setLoading(false);
@@ -101,23 +100,15 @@ export function usePaginatedSets(pageSize = 10) {
 
   useEffect(() => {
     fetchPage(1, false);
-    setPage(1);
   }, [fetchPage]);
 
   const loadMore = useCallback(() => {
-    if (hasMore && !loadingMore && !loading) {
-      setPage((prevPage) => {
-        const nextPage = prevPage + 1;
-        fetchPage(nextPage, true);
-        return nextPage;
-      });
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchPage(nextPage, true);
     }
-  }, [hasMore, loadingMore, loading, fetchPage]);
-
-  const refresh = useCallback(() => {
-    setPage(1);
-    fetchPage(1, false);
-  }, [fetchPage]);
+  }, [fetchPage, hasMore, loadingMore, page]);
 
   return {
     sets,
@@ -126,6 +117,9 @@ export function usePaginatedSets(pageSize = 10) {
     hasMore,
     totalCount,
     loadMore,
-    refresh,
+    refresh: () => {
+      setPage(1);
+      fetchPage(1, false);
+    },
   };
 }

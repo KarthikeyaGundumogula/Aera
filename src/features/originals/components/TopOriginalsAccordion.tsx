@@ -1,6 +1,6 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { StageIcon } from "../../../components/icons/AppIcons";
-import { ORIGINALS } from "../../../mock";
+import { apiFetch } from "@/lib/api";
 
 export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
   navigate,
@@ -8,12 +8,19 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
   navigate: (path: string) => void;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [topOriginals, setTopOriginals] = useState<any[]>([]);
 
-  // Top originals by presence (repeated to mock 15 items for layout testing)
-  const baseOriginals = [...ORIGINALS].sort(
-    (a, b) => b.stats.presence - a.stats.presence,
-  );
-  const topOriginals = Array.from({ length: 15 }, (_, i) => baseOriginals[i % baseOriginals.length]);
+  useEffect(() => {
+    apiFetch("/originals")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const items = json.items || json.data || [];
+          setTopOriginals(items);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="flex h-[300px] md:h-[400px] w-full gap-2 px-6 md:px-12 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">

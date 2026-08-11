@@ -4,7 +4,7 @@ import { Camera, Star, Bookmark, Eye, Heart } from "lucide-react";
 import { WallPost } from "../../../types/wall";
 import { TheatreItem } from "../../../types/theatre";
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
-import { Recommendation } from "../../../mock/recommendations";
+import type { Recommendation } from "@/types/recommendations";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { Original } from "../../../types/originals";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
@@ -13,10 +13,9 @@ import { ReactionId } from "../../../types/reactions";
 import { useNavigate } from "react-router-dom";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 import { ShareAction } from "../../../components/actions/ShareAction";
-import { LedgerItem } from "../../../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
 import { LedgerWallCard } from "./LedgerWallCard";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
-import { ARTISTS_MOCK } from "../../../mock";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -77,9 +76,8 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   const viewsCount = (artistName.length * 142) + 340;
   const reactionsCount = (artistName.length * 12) + 15;
 
-  const artistObj = ARTISTS_MOCK.find((a) => a.id === artistId || a.name === artistName);
-  const followersCount = (artistObj as any)?.followersCount ?? generateStat(artistId || artistName || "a", 30000, 5000);
-  const spiritCount = artistObj?.spirit ?? generateStat(artistId || artistName || "a", 2000, 500);
+  const followersCount = generateStat(artistId || artistName || "a", 30000, 5000);
+  const spiritCount = generateStat(artistId || artistName || "a", 2000, 500);
 
   return (
   <div className="flex flex-col px-4 pt-4 pb-4 gap-3">
@@ -426,7 +424,7 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
       )}
 
       <div className="pointer-events-auto bg-[#0d0d0d] rounded-xl border border-white/5 shadow-sm overflow-hidden mb-3">
-        <FeedRecommendationCard rec={rec} variant="wall-embed" />
+        <FeedRecommendationCard rec={rec} />
       </div>
     </CardLayout>
   );

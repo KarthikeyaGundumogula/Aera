@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Trophy, Clock, Zap } from "lucide-react";
 import { Festival } from "../../../types";
-import { ARTISTS_MOCK } from "../../../mock";
 
 interface FestivalsSectionProps {
   festivals: Festival[];
@@ -91,10 +90,7 @@ function FestivalCard({ festival }: { festival: Festival }) {
         <div className="flex items-center justify-between mt-1 pt-3 border-t border-white/[0.04]">
           <div className="flex items-center gap-2.5">
             <div className="flex -space-x-1.5">
-              {ARTISTS_MOCK.slice(
-                festival.id.charCodeAt(festival.id.length - 1) % 3, 
-                (festival.id.charCodeAt(festival.id.length - 1) % 3) + 3
-              ).map((artist, i) => (
+              {[].map((artist: any, i: number) => (
                 <div 
                   key={i} 
                   className="relative w-5 h-5 rounded-xl border border-[#111] bg-[#222] overflow-hidden shadow-sm" 

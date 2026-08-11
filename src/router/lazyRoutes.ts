@@ -93,11 +93,7 @@ export const WorkPage = lazy(() =>
 
 export const UploadPage = lazy(() => import("@/features/upload/UploadPage"));
 
-export const LedgerPage = lazy(() =>
-  import("@/features/ledger/LedgerPage").then((m) => ({ default: m.LedgerPage }))
-);
-
-export const LedgerViewer = lazy(() =>
+export const BreakdownViewer = lazy(() =>
   import("@/features/ledger/LedgerViewer").then((m) => ({ default: m.LedgerViewer }))
 );
 

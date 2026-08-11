@@ -5,17 +5,11 @@ import { BookPlus, ChevronRight } from "lucide-react";
 
 import { FHLoader } from "../../../components/FHLoader";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { mockLedger } from "../../../mock/ledger";
-import { GRID_ITEMS, CURRENT_USER_MOCK } from "../../../mock";
 import { LedgerSection } from "./LedgerSection";
 import { HorizontalClusterSection } from "./HorizontalClusterSection";
+import { apiFetch } from "@/lib/api";
 
-// Grab some works to simulate chronological ledger works
-const LEDGER_WORKS = GRID_ITEMS.filter((w) =>
-  mockLedger.some((l) => w.originalIds?.includes(l.originalId)),
-)
-  .slice(0, 15)
-  .reverse(); // Reverse for mock "chronological"
+const LEDGER_WORKS: any[] = [];
 
 export function LedgerTabsZone() {
   const navigate = useNavigate();
@@ -23,6 +17,18 @@ export function LedgerTabsZone() {
     "originals",
   );
   const [isPending, setIsPending] = useState(false);
+  const [ledgerItems, setLedgerItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    apiFetch("/library")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setLedgerItems(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setIsPending(true);
@@ -77,7 +83,7 @@ export function LedgerTabsZone() {
           </div>
 
           <button
-            onClick={() => navigate(`/profile/${CURRENT_USER_MOCK.id}?tab=library`)}
+            onClick={() => navigate(`/profile/fh-001?tab=library`)}
             className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors hidden sm:flex cursor-pointer"
           >
             Full Library <ChevronRight className="w-3 h-3" />
@@ -106,7 +112,7 @@ export function LedgerTabsZone() {
               transition={{ duration: 0.3 }}
             >
               {activeTab === "originals" ? (
-                <LedgerSection items={mockLedger} />
+                <LedgerSection items={ledgerItems} />
               ) : (
                 <HorizontalClusterSection items={LEDGER_WORKS} compact />
               )}

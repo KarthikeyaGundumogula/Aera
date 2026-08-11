@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
-import { LedgerItem } from "../../../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
 
 interface LedgerSectionProps {
   items: LedgerItem[];
@@ -24,7 +24,7 @@ const STATUS_MAP = {
 
 function LedgerCard({ item }: { item: LedgerItem }) {
   const navigate = useNavigate();
-  const statusCfg = STATUS_MAP[item.status];
+  const statusCfg = (STATUS_MAP as any)[item.status] || STATUS_MAP.want_to_watch;
   const StatusIcon = statusCfg.icon;
 
   return (

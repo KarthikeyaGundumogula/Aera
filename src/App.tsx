@@ -52,8 +52,7 @@ import {
   CenterPage,
   RecommendationsPage,
   TaggedWorksPage,
-  LedgerPage,
-  LedgerViewer,
+  BreakdownViewer,
   // Misc
   ContactPage,
   AdminPage,
@@ -72,25 +71,10 @@ function RouteFallback() {
   );
 }
 
-// ─── 404 fallback ─────────────────────────────────────────────────────────────
+import { NotFoundOverlay } from "@/components/NotFoundOverlay";
 
 function NotFoundPage() {
-  return (
-    <div className="min-h-screen bg-surface-deep text-white flex flex-col items-center justify-center gap-4">
-      <p className="text-[9px] font-black uppercase tracking-[0.5em] text-white/20">
-        Scene not found
-      </p>
-      <p className="text-[11px] text-white/15 font-mono">
-        The path you entered does not exist.
-      </p>
-      <a
-        href="/"
-        className="mt-4 text-[9px] font-black uppercase tracking-widest text-white/30 border border-white/10 px-4 py-2 rounded-xl hover:border-white/25 hover:text-white/60 transition-colors"
-      >
-        Return to Hall
-      </a>
-    </div>
-  );
+  return <NotFoundOverlay mode="page" />;
 }
 
 /**
@@ -162,8 +146,9 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
-            <Route path="/ledger" element={<LedgerPage />} />
-            <Route path="/ledger/:id" element={<LedgerViewer />} />
+            <Route path="/breakdowns/:id" element={<BreakdownViewer />} />
+            <Route path="/ledger" element={<Navigate to="/sets" replace />} />
+            <Route path="/ledger/:id" element={<Navigate to="/sets" replace />} />
             <Route path="/tagged-works/:id" element={<TaggedWorksPage />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}

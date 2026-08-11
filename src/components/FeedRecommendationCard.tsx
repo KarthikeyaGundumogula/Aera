@@ -11,9 +11,7 @@ import {
   ArrowUpRight,
   Heart,
 } from "lucide-react";
-import { Recommendation } from "../mock/recommendations";
-import { mockLedger } from "../mock/ledger";
-import { CURRENT_USER_MOCK } from "../mock";
+import type { Recommendation } from "@/types/recommendations";
 import { BoostAction } from "./actions/BoostAction";
 import { LedgerAction } from "./actions/LedgerAction";
 import { SaveAction } from "./actions/SaveAction";
@@ -23,28 +21,26 @@ import { SurgeBars } from "./SurgeBars";
 import { PosterImage } from "./PosterImage";
 import { QuoteModal } from "./QuoteModal";
 import { formatRelativeTime } from "../utils/time";
-import { useWorkNavigation } from "../hooks/useWorkNavigation";
-import { TheatreItem } from "../types";
+import { useWorkNavigation } from "@/hooks/useWorkNavigation";
+import type { TheatreItem } from "../types/theatre";
 
-interface Props {
+interface FeedRecommendationCardProps {
   rec: Recommendation;
-  variant?: "default" | "modal" | "wall-embed";
+  highestScore?: number;
+  variant?: string;
 }
 
 export const FeedRecommendationCard = memo(function FeedRecommendationCard({
   rec,
-  variant = "default",
-}: Props) {
+  highestScore = 10000,
+  variant,
+}: FeedRecommendationCardProps) {
   const navigate = useNavigate();
 
+  const isHighestRated = rec.isPeakRecorded || ((rec.surgeScore || 0) > 0 && (rec.surgeScore || 0) === highestScore);
+
   const hasBreakdown = React.useMemo(() => {
-    const ledgerEntry = mockLedger.find(
-      (l) =>
-        (l.artistId === rec.artist.id || (!l.artistId && (rec.artist.id === "fh-001" || rec.artist.id === CURRENT_USER_MOCK.id))) &&
-        l.originalId === rec.original.id &&
-        (Boolean(l.afterThoughts) || Boolean(l.preThoughts) || l.status === "watched")
-    );
-    return Boolean(ledgerEntry || rec.notes);
+    return Boolean(rec.notes);
   }, [rec]);
 
   const [notesExpanded, setNotesExpanded] = useState(false);
@@ -91,9 +87,9 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
     return () => window.removeEventListener("resize", checkOverflow);
   }, [rec.notes, notesExpanded]);
 
-  const highestScore = rec.artist.highestScore || 4500;
-  const isHighestRated = rec.score >= highestScore;
-  const ratio = rec.score / highestScore;
+  const artistPeak = rec.artist.highestScore || 4500;
+  const isArtistPeak = (rec.score || 0) >= artistPeak;
+  const ratio = (rec.score || 0) / artistPeak;
 
   return (
     <div className="flex flex-col gap-1.5 shrink-0 w-full">
@@ -455,9 +451,9 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
         <ArtistProfile
           artist={{
             id: rec.artist.id,
-            name: rec.artist.name,
+            name: rec.artist.name || rec.artist.stageName,
             image: rec.artist.profilePicture,
-            spirit: rec.artist.spirit,
+            spirit: Number(rec.artist.spirit) || 0,
             works: rec.artist.works ?? 0,
             socials: {
               instagram: "artist_ig",

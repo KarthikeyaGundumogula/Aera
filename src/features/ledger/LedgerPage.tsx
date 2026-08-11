@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
-import { mockLedger, LedgerItem } from "../../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
 import { LedgerItemCard } from "./components/LedgerItemCard";
 import { ArrowLeft, Plus } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 export function LedgerPage() {
-  const [ledger, setLedger] = useState<LedgerItem[]>(mockLedger);
+  const [ledger, setLedger] = useState<LedgerItem[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const filter = searchParams.get("filter") || "all";
 
-  // Listen for global ledger updates from the LedgerEntryModal
   useEffect(() => {
-    const handleUpdate = () => {
-      setLedger([...mockLedger]);
-    };
-    window.addEventListener("ledgerUpdated", handleUpdate);
-    return () => window.removeEventListener("ledgerUpdated", handleUpdate);
+    apiFetch("/library")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setLedger(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleUpdateItem = (updatedItem: LedgerItem) => {

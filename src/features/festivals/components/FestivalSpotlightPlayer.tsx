@@ -4,7 +4,6 @@ import { TheatreItem, OriginalArtist } from '../../../types';
 import { SectionHeader } from '../../../components/SectionHeader';
 import { FHLoader } from '../../../components/FHLoader';
 import { ArtistProfile } from '../../shared/profile';
-import { ARTISTS_MOCK } from '../../../mock';
 
 import { buildEmbedUrl } from '../../../utils/embed';
 import { useTwitterWidgets } from '../../../hooks/useTwitterWidgets';
@@ -51,11 +50,13 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({ w
 
   const handleArtistClick = () => {
     if (!currentWork?.artist) return;
-    const found = ARTISTS_MOCK.find(a => a.name.toLowerCase() === currentWork.artist?.toLowerCase()) || {
-      ...ARTISTS_MOCK[0],
-      name: currentWork.artist
-    };
-    setSelectedArtist(found);
+    setSelectedArtist({
+      id: currentWork.artistId || "artist-1",
+      name: currentWork.artist,
+      image: currentWork.artistAvatar || "",
+      spirit: 0,
+      works: 0,
+    } as any);
   };
 
   const isFullyLoaded = isYoutube ? isIframeLoaded : (isTwitter ? isTwitterLoaded : true);

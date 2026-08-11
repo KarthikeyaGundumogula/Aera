@@ -1,60 +1,27 @@
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getWallPostsByArtist } from "../../mock/wall";
-import { GRID_ITEMS, ORIGINALS } from "../../mock";
-import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { FoyerSwiper, FoyerArtistGroup } from "../hall/components/FoyerSwiper";
+import { apiFetch } from "@/lib/api";
 
-/**
- * WallPostPage — Deep-link landing page for shared wall posts.
- *
- * Route: /wall/:artistId/:postId
- *
- * When a recipient opens a shared link they land here. The page builds a
- * FoyerArtistGroup for the artist and opens the full-screen FoyerSwiper
- * positioned at the exact post that was shared. Closing navigates back or home.
- */
 export default function WallPostPage() {
   const { artistId, postId } = useParams<{ artistId: string; postId: string }>();
   const navigate = useNavigate();
+  const [group, setGroup] = useState<FoyerArtistGroup | null>(null);
 
-  const worksById = useMemo(
-    () => Object.fromEntries(GRID_ITEMS.map((w) => [String(w.id), w])),
-    []
-  );
-  const originalsById = useMemo(
-    () => Object.fromEntries(ORIGINALS.map((o) => [o.id, o])),
-    []
-  );
-  const recommendationsById = useMemo(
-    () => Object.fromEntries(MOCK_RECOMMENDATIONS.map((r) => [r.id, r])),
-    []
-  );
-
-  const group = useMemo<FoyerArtistGroup | null>(() => {
-    if (!artistId) return null;
-    const posts = getWallPostsByArtist(artistId);
-    if (posts.length === 0) return null;
-    const first = posts[0];
-    return {
-      artistId: first.artistId,
-      artistName: first.artistName,
-      artistImage: first.artistImage,
-      hasMore: false,
-      entries: posts.map((post) => ({
-        post,
-        resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
-        resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
-        resolvedRecommendation: post.pinnedRecommendationId
-          ? recommendationsById[post.pinnedRecommendationId]
-          : undefined,
-      })),
-    };
-  }, [artistId, worksById, originalsById, recommendationsById]);
-
+  useEffect(() => {
+    if (!artistId || !postId) return;
+    apiFetch(`/wall/${artistId}/${postId}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setGroup(json.data || json);
+        }
+      })
+      .catch(() => {});
+  }, [artistId, postId]);
   const initialPostIndices = useMemo(() => {
     if (!group || !postId) return {};
-    const idx = group.entries.findIndex((e) => e.post.id === postId);
+    const idx = (group.entries || []).findIndex((e: any) => e.post?.id === postId || e.id === postId);
     return { [group.artistId]: idx >= 0 ? idx : 0 };
   }, [group, postId]);
 

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ThoughtCard } from "../../shared/thoughts/ThoughtCard";
-import { ThoughtItem } from "../../../mock/thoughts";
+import type { Thought as ThoughtItem } from "@/types/thoughts";
 
 interface DiscussionsSectionProps {
   thoughts: ThoughtItem[];

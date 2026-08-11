@@ -22,7 +22,7 @@ import React, { memo } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, BookPlus, ChevronRight, Sparkles } from "lucide-react";
-import { LedgerItem } from "../../../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
 import { WallPost } from "../../../types/wall";
 import { SurgeBars } from "../../../components/SurgeBars";
 

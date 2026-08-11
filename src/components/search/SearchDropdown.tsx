@@ -3,6 +3,7 @@ import { SearchResults } from './useSearch';
 import { Film, User, Loader2, AlertCircle, Sparkles, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { ArtistAvatar } from "@/components/ArtistAvatar";
 
 interface SearchDropdownProps {
   query: string;
@@ -223,13 +224,12 @@ export const SearchDropdown = memo(function SearchDropdown({
                     className={`w-full text-left px-6 py-3.5 flex items-center gap-4 transition-colors ${isFocused ? 'bg-white/10' : 'hover:bg-white/5'}`}
                   >
                     <div className="w-11 h-11 rounded-xl bg-white/5 overflow-hidden shrink-0 border border-white/10">
-                      {artist.profilePicture ? (
-                        <img src={artist.profilePicture} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-emerald-400">
-                          <User size={18} />
-                        </div>
-                      )}
+                      <ArtistAvatar
+                        src={artist.profilePicture}
+                        name={artist.stageName || artist.userName}
+                        size={44}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="flex flex-col min-w-0">
                       <p className="text-xs font-bold text-white truncate">

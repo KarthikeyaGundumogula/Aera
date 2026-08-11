@@ -19,8 +19,8 @@ import {
   Youtube,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TheatreItem } from "../../../types";
-import { GRID_ITEMS, ORIGINALS, FESTIVALS } from "../../../mock";
+import type { TheatreItem, OriginalArtist } from "../../../types";
+import { apiFetch } from "@/lib/api";
 import { StageIcon } from "../../../components/icons/AppIcons";
 import { ProfileNav } from "../../../components/ProfileNav";
 
@@ -53,8 +53,6 @@ import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 import { DesktopHeader } from "../../navigation/DesktopHeader";
 import { FestivalsSection } from "../../hall/components/FestivalsSection";
 
-// HomeFeedLayoutProps empty for now
-
 const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
   const kind = getWorkKind(item);
   return (
@@ -75,24 +73,21 @@ const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
   );
 });
 
-// Simulate a global store/cache
-let cachedItems: TheatreItem[] | null = null;
-
 export function CenterFeedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [items, setItems] = useState<TheatreItem[] | null>(cachedItems);
+  const [items, setItems] = useState<TheatreItem[] | null>([]);
 
   useEffect(() => {
-    if (!items) {
-      // Simulate network request for data
-      const timer = setTimeout(() => {
-        cachedItems = [...GRID_ITEMS];
-        setItems(cachedItems);
-      }, 800); // Only runs when data is not cached
-      return () => clearTimeout(timer);
-    }
-  }, [items]);
+    apiFetch("/theatre")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setItems(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Defer heavy layout data so the hero/header paints immediately on mount
   const deferredItems = useDeferredValue(items || []);
@@ -119,11 +114,7 @@ export function CenterFeedLayout() {
   const [isLoadingDown, setIsLoadingDown] = useState(false);
   const bottomObserverTarget = useRef<HTMLDivElement>(null);
 
-  const safeHeroItem = useMemo(() => {
-    if (!ORIGINALS || ORIGINALS.length === 0) return null;
-    const safeIdx = ((heroIndex % ORIGINALS.length) + ORIGINALS.length) % ORIGINALS.length;
-    return ORIGINALS[safeIdx] || ORIGINALS[0] || null;
-  }, [heroIndex]);
+  const safeHeroItem: any = null;
 
   const SLIDE_DURATION = 5000;
   const PROGRESS_INTERVAL = 50;
@@ -131,7 +122,7 @@ export function CenterFeedLayout() {
   // Timer logic: heroIndex is the single source of truth.
   // We use a time-based approach to ensure precision and prevent skipping.
   useEffect(() => {
-    if (!ORIGINALS || ORIGINALS.length === 0) return;
+    return;
     setProgress(0);
     const startTime = Date.now();
 
@@ -141,7 +132,7 @@ export function CenterFeedLayout() {
 
       if (newProgress >= 100) {
         setDirection(1);
-        setHeroIndex((prev) => (prev + 1) % ORIGINALS.length);
+        setHeroIndex((prev) => (prev + 1) % 1);
       } else {
         setProgress(newProgress);
       }
@@ -156,61 +147,11 @@ export function CenterFeedLayout() {
     setHeroIndex(idx);
   };
 
-  // Cap DOM items to prevent memory blowout during long scroll sessions.
-  // When the user scrolls deep, old items at the head are evicted so the DOM
-  // stays roughly fixed in size. (Proper windowing can be added with react-virtuoso later.)
-  const MAX_DOM_ITEMS = 300;
 
-  const loadMoreDown = useCallback(() => {
-    if (isLoadingDown) return;
-    setIsLoadingDown(true);
 
-    setTimeout(() => {
-      const nextItems = GRID_ITEMS.map((item) => ({
-        ...item,
-        id: `down-${Math.random()}`,
-      }));
-      setItems((prev) => {
-        const combined = prev ? [...prev, ...nextItems] : nextItems;
-        // Trim from the head if we exceed the DOM cap
-        return combined.length > MAX_DOM_ITEMS
-          ? combined.slice(combined.length - MAX_DOM_ITEMS)
-          : combined;
-      });
-      setIsLoadingDown(false);
-    }, 800);
-  }, [isLoadingDown]);
-
-  useEffect(() => {
-    const bottomObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMoreDown();
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    if (bottomObserverTarget.current)
-      bottomObserver.observe(bottomObserverTarget.current);
-
-    return () => {
-      bottomObserver.disconnect();
-    };
-  }, [loadMoreDown]);
-
-  const deferredOriginals = useDeferredValue(ORIGINALS);
-
-  const baseGlobalArtists = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          deferredOriginals
-            .flatMap((org) => org.topArtists)
-            .map((a) => [a.id, a]),
-        ).values(),
-      ).sort((a, b) => b.spirit - a.spirit),
-    [deferredOriginals],
+  const baseGlobalArtists: OriginalArtist[] = useMemo(
+    () => [],
+    [],
   );
 
   const globalArtistStripItems = useMemo(
@@ -325,7 +266,7 @@ export function CenterFeedLayout() {
 
               {/* Carousel Indicators */}
               <div className="absolute top-1/2 -translate-y-1/2 right-6 flex flex-col gap-3 z-40">
-                {ORIGINALS.map((_, idx) => (
+                {[].map((_, idx: number) => (
                   <button
                     key={idx}
                     onClick={(e) => {
@@ -381,7 +322,7 @@ export function CenterFeedLayout() {
             title="Festivals"
             containerClassName="px-6 md:px-12 mb-6"
           />
-          <FestivalsSection festivals={FESTIVALS} />
+          <FestivalsSection festivals={[]} />
         </section>
 
         {/* TRENDING DISCUSSIONS */}

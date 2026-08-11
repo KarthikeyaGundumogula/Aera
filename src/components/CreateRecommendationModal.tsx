@@ -5,7 +5,6 @@ import { SurgeInputSection } from "./surge/SurgeInputSection";
 import { GrainOverlay } from "./effects/GrainOverlay";
 import { CinematicInput } from "./recommendation/CinematicInput";
 import { OriginalsSearch } from "./recommendation/OriginalsSearch";
-import { ORIGINALS } from "@/mock";
 import { apiFetch } from "@/lib/api";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
@@ -23,7 +22,7 @@ interface CreateRecommendationModalProps {
   onClose: () => void;
 }
 
-type Original = (typeof ORIGINALS)[0];
+import type { Original } from "@/types/originals";
 
 
 

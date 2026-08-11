@@ -1,15 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Instagram, Twitter, Youtube, X } from "lucide-react";
-import { ARTISTS_MOCK } from "../../mock";
 import { AnimatePresence, motion } from "motion/react";
 import { OriginalArtist } from "../../types";
+import { apiFetch } from "@/lib/api";
 
 export default function ReservedArtistsPage() {
   const navigate = useNavigate();
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
+  const [artists, setArtists] = useState<OriginalArtist[]>([]);
 
-  // Mocking one as already claimed
+  useEffect(() => {
+    apiFetch("/artists/reserved")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setArtists(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const claimedIds = ["fh-001"];
 
   const handleClaimClick = (artist: OriginalArtist) => {
@@ -49,7 +60,7 @@ export default function ReservedArtistsPage() {
       </div>
 
       <div className="w-full max-w-3xl px-6 flex flex-col gap-4">
-        {ARTISTS_MOCK.map((artist) => {
+        {artists.map((artist: OriginalArtist) => {
           const isClaimed = claimedIds.includes(artist.id);
           
           return (

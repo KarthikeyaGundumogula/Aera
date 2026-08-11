@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { LedgerItem, LedgerTaggedWork } from "../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
+
+export interface LedgerTaggedWork {
+  id: string;
+  title: string;
+  category?: string;
+  coverImage?: string;
+  type?: string;
+  authorName?: string;
+  thumbnailUrl?: string;
+  platform?: string;
+  srcId?: string;
+}
 import { WallPostCard } from "../features/profile/components/WallPostCard";
 import { WallPost } from "../types/wall";
 import { TheatreItem } from "../types/theatre";
+import { apiFetch } from "../lib/api";
 
 interface TaggedWorksModalProps {
   isOpen: boolean;
@@ -13,6 +26,7 @@ interface TaggedWorksModalProps {
   entry?: LedgerItem;
   originalName?: string;
   taggedWorks?: LedgerTaggedWork[];
+  libraryEntryId?: string;
 }
 
 export function TaggedWorksModal({
@@ -20,41 +34,50 @@ export function TaggedWorksModal({
   onClose,
   entry,
   originalName,
-  taggedWorks,
+  taggedWorks: initialTaggedWorks,
+  libraryEntryId,
 }: TaggedWorksModalProps) {
   const navigate = useNavigate();
+  const [remoteWorks, setRemoteWorks] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (!isOpen || !libraryEntryId) return;
+    let isMounted = true;
+    apiFetch(`/library/${libraryEntryId}/tagged_works`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.data || [];
+          if (isMounted) {
+            setRemoteWorks(data);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, libraryEntryId]);
 
   if (!isOpen) return null;
 
   const title = entry?.originalName || originalName || "Original";
   const worksList =
-    entry?.taggedWorks && entry.taggedWorks.length > 0
+    remoteWorks.length > 0
+      ? remoteWorks.map((w) => ({
+          id: w.id,
+          type: (w.category || "Edit").toLowerCase() === "script" ? "script" : (w.category || "Edit").toLowerCase() === "poster" ? "poster" : "hype_cut",
+          category: w.category || "Edit",
+          thumbnailUrl: w.image || (w.images && w.images.length > 0 ? w.images[0] : "/posters/og.jpeg"),
+          authorName: w.artist || "Artist",
+          platform: w.platform || "YouTube",
+          srcId: w.srcId || w.id,
+        }))
+      : entry?.taggedWorks && entry.taggedWorks.length > 0
       ? entry.taggedWorks
-      : taggedWorks && taggedWorks.length > 0
-      ? taggedWorks
-      : [
-          {
-            id: "tw-1",
-            type: "hype_cut" as const,
-            thumbnailUrl: entry?.originalPosterUrl || "/posters/og.jpeg",
-            authorName: "FireEdits",
-            platform: "YouTube",
-          },
-          {
-            id: "tw-2",
-            type: "poster" as const,
-            thumbnailUrl: entry?.originalPosterUrl || "/posters/rrr.jpeg",
-            authorName: "Studio CineArts",
-            platform: "Instagram",
-          },
-          {
-            id: "tw-3",
-            type: "hype_cut" as const,
-            thumbnailUrl: entry?.originalPosterUrl || "/posters/kgf.jpeg",
-            authorName: "Mass Cutz",
-            platform: "YouTube",
-          },
-        ];
+      : initialTaggedWorks && initialTaggedWorks.length > 0
+      ? initialTaggedWorks
+      : [];
 
   return (
     <AnimatePresence>
@@ -90,7 +113,7 @@ export function TaggedWorksModal({
 
           {/* Works Feed (Wall Post Cards Design) */}
           <div className="space-y-4 overflow-y-auto no-scrollbar pr-1 flex-1">
-            {worksList.map((work) => {
+            {worksList.map((work: any) => {
               const mockPost: WallPost = {
                 id: `post-tw-${work.id}`,
                 artistId: "fh-001",

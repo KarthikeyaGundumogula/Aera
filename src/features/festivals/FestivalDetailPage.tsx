@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, UserPlus, Share2, Settings, Upload, Plus } from 'lucide-react';
-import { FESTIVALS, SETS, ARTISTS_MOCK, GRID_ITEMS } from '../../mock';
 import { CinematicPageHeader } from '../../components/CinematicPageHeader';
 import { CommandCenter, CommandItem } from '../../components/CommandCenter';
 import { FestivalSpotlightPlayer } from './components/FestivalSpotlightPlayer';
@@ -10,28 +9,36 @@ import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSecti
 import { UpdateFestivalModal } from './components/UpdateFestivalModal';
 import { AddPanelistModal } from './components/AddPanelistModal';
 import { OriginalArtist } from '../../types';
+import { apiFetch } from '@/lib/api';
 
 export function FestivalDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const festival = useMemo(() => FESTIVALS.find(f => f.id === id), [id]);
-  const set = useMemo(() => festival ? SETS.find(s => s.id === festival.setId) : null, [festival]);
+  const [localFestival, setLocalFestival] = useState<any>(null);
+  const [set, setSet] = useState<any>({ id: "set-1", title: "Set" });
 
-  const [localFestival, setLocalFestival] = useState(festival);
   useEffect(() => {
-    setLocalFestival(festival);
-  }, [festival]);
+    if (!id) return;
+    apiFetch(`/festivals/${id}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.festival || json.data || json;
+          setLocalFestival(data);
+        }
+      })
+      .catch(() => {});
+  }, [id]);
 
-  const festivalWorks = useMemo(() => GRID_ITEMS.filter(w => (w.platform === 'youtube' || w.platform === 'twitter') && w.srcId).slice(0, 5), []);
+  const festivalWorks = useMemo(() => [], []);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isAddPanelistModalOpen, setIsAddPanelistModalOpen] = useState(false);
   const [addedPanelists, setAddedPanelists] = useState<OriginalArtist[]>([]);
 
-  const baseParticipants = useMemo(() => ARTISTS_MOCK.slice(0, 10), []);
   const participants = useMemo(() => {
-    return [...addedPanelists, ...baseParticipants];
-  }, [addedPanelists, baseParticipants]);
+    return [...addedPanelists];
+  }, [addedPanelists]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,11 +56,13 @@ export function FestivalDetailPage() {
 
   const handleAddPanelist = (handle: string) => {
     const cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
-    const found = ARTISTS_MOCK.find(a => a.name.toLowerCase() === cleanHandle.toLowerCase()) || {
-      ...ARTISTS_MOCK[0],
+    const found = {
       id: `p-${Date.now()}`,
       name: cleanHandle,
-    };
+      image: `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanHandle)}`,
+      spirit: 0,
+      works: 0,
+    } as any;
     setAddedPanelists(prev => [found, ...prev]);
   };
 
@@ -186,7 +195,7 @@ export function FestivalDetailPage() {
           isOpen={isUpdateModalOpen}
           festival={localFestival}
           onClose={() => setIsUpdateModalOpen(false)}
-          onSave={(updates) => setLocalFestival((prev) => (prev ? { ...prev, ...updates } : prev))}
+          onSave={(updates) => setLocalFestival((prev: any) => (prev ? { ...prev, ...updates } : prev))}
         />
       )}
 

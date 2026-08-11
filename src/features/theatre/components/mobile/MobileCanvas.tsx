@@ -1,22 +1,28 @@
 import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from "react";
 
-import { GRID_ITEMS } from "../../../../mock";
 import { buildMobileClusters, MobileCluster } from "../../engine/mobileClusterBuilder";
 import { MobileClusterView } from "./MobileClusterView";
 import { FeedContext } from "../../../../context/FeedContext";
+import { apiFetch } from "../../../../lib/api";
 import type { TheatreItem } from "../../../../types";
-
-// ─── Module-level cluster cache ───────────────────────────────────────────────
-// buildMobileClusters is pure and deterministic for the same GRID_ITEMS input.
-// Pre-computing it once at module load avoids blocking the first paint on mount.
-const INITIAL_CLUSTERS: MobileCluster[] = buildMobileClusters(GRID_ITEMS).map(
-  (c, i) => ({ ...c, id: `${c.id}-p0-${i}` }),
-);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function MobileCanvas() {
-  const [clusters, setClusters] = useState<MobileCluster[]>(INITIAL_CLUSTERS);
+  const [clusters, setClusters] = useState<MobileCluster[]>([]);
+
+  useEffect(() => {
+    apiFetch("/theatre")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const items: TheatreItem[] = json.items || json.data || [];
+          const built = buildMobileClusters(items).map((c, i) => ({ ...c, id: `${c.id}-p0-${i}` }));
+          setClusters(built);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // isLoadingRef: mutable flag that guards against sentinel firing twice
   // while a page is being appended. Using a ref (not state) avoids a re-render.
@@ -35,9 +41,7 @@ export function MobileCanvas() {
     const page = pageRef.current;
 
     timerRef.current = setTimeout(() => {
-      const next = buildMobileClusters(GRID_ITEMS).map(
-        (c, i) => ({ ...c, id: `${c.id}-p${page}-${i}` }),
-      );
+      const next: MobileCluster[] = [];
 
       // startTransition marks the append as non-urgent so the browser can
       // keep the current frame interactive while React schedules the update.

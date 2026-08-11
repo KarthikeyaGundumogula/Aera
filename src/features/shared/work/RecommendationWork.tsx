@@ -1,7 +1,6 @@
 import { memo, useState } from "react";
 import { TheatreItem } from "../../../types";
 import { BaseWorkProps } from "./types";
-import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 import { SurgeBars } from "../../../components/SurgeBars";
 
@@ -32,8 +31,7 @@ export const RecommendationWork = memo(function RecommendationWork({
   const [isLoaded, setIsLoaded] = useState(false);
   const { openWork } = useWorkNavigation();
 
-  // Look up full rec to get the score details
-  const rec = item.recId ? MOCK_RECOMMENDATIONS.find((r) => r.id === item.recId) : null;
+  const rec: any = null;
 
   return (
     <div

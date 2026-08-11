@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Trophy, Calendar } from 'lucide-react';
 import { Festival } from '../../../types';
-import { PROFILES_DIRECTORY } from '../../../mock';
 import { SectionHeader } from '../../../components/SectionHeader';
 
 interface FestivalArchiveProps {
@@ -37,9 +36,7 @@ export const FestivalArchive = memo(function FestivalArchive({ festivals }: Fest
       {/* Negative margin lets cards scroll edge-to-edge while staying aligned with section padding */}
       <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-4 md:-mx-8 px-4 md:px-8 pb-2">
         {concluded.map((festival, i) => {
-          const leader = festival.presenceLeader
-            ? PROFILES_DIRECTORY.find(p => p.id === festival.presenceLeader)
-            : null;
+          const leader: any = null;
 
           const start = new Date(festival.startDate);
           const end = new Date(festival.endDate);

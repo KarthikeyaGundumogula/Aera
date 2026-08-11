@@ -1,11 +1,21 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { X, MessageSquare, Minus, Plus } from "lucide-react";
-import { THOUGHTS_MOCK, MOCK_DISCUSSION_REPLIES, DiscussionReply, GRID_ITEMS, ARTISTS_MOCK } from "../../mock";
 import { DesktopHeader } from "../navigation/DesktopHeader";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { ArtistProfile } from "../shared/profile";
 import { apiFetch } from "@/lib/api";
+
+export interface DiscussionReply {
+  id: string;
+  authorName: string;
+  authorId?: string;
+  text: string;
+  createdAt: string;
+  timestamp?: string;
+  parentId?: string;
+  replies?: DiscussionReply[];
+}
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
 
@@ -15,24 +25,24 @@ function extractWorkCodes(text: string): string[] {
 }
 
 function getAuthorAvatar(name: string): string {
-  const artist = ARTISTS_MOCK.find(a => a.name.toLowerCase() === name.toLowerCase());
-  if (artist?.image) return artist.image;
-  
-  const mockImages = ARTISTS_MOCK.filter(a => a.image).map(a => a.image!);
-  if (mockImages.length > 0) {
-    const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return mockImages[hash % mockImages.length];
-  }
-  return "";
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D0D0D&color=fff`;
 }
 
 /* ─── Clickable Artist Name ──────────────────────────────────── */
 
 function ArtistName({ name, className }: { name: string; className?: string }) {
   const [showProfile, setShowProfile] = useState(false);
-  const artistData = ARTISTS_MOCK.find(
-    (a) => a.name.toLowerCase() === name.toLowerCase()
-  ) || ARTISTS_MOCK[0];
+  const artistData = {
+    id: "fh-001",
+    name: name,
+    image: getAuthorAvatar(name),
+    bio: "Artist",
+    spirit: 0,
+    works: 0,
+    role: "Artist",
+    socials: {},
+    colorTheme: "#fac107,#0f1a42",
+  };
 
   // OriginalArtist does not carry themeClasses in the data model — omit the branch
   const themeClasses = undefined;
@@ -68,8 +78,7 @@ function RichText({ text, glowClass }: { text: string; glowClass?: string }) {
       <p className={`font-mono text-sm leading-relaxed whitespace-pre-wrap transition-colors duration-500 ${glowClass || 'text-white/80'}`}>
         {parts.map((part, i) => {
           if (part.startsWith("#work-")) {
-            const workId = part.slice(1);
-            const work = GRID_ITEMS.find(w => w.id === workId);
+            const work: any = null;
             if (work) {
               return (
                 <button
@@ -90,20 +99,20 @@ function RichText({ text, glowClass }: { text: string; glowClass?: string }) {
       {workCodes.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {workCodes.map(code => {
-            const work = GRID_ITEMS.find(w => w.id === code);
+            const work: any = null;
             if (!work) return null;
             return (
-              <button
+              <div
                 key={code}
                 onClick={() => navigate(`/work/${work.id}`)}
-                className="flex items-center gap-2.5 p-1.5 pr-4 rounded-lg bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] transition-colors cursor-pointer"
               >
-                <img src={work.image} alt={work.title} className="w-8 h-8 rounded object-cover object-top" />
-                <div className="flex flex-col text-left">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-white/80">{work.title}</span>
-                  <span className="text-[8px] uppercase tracking-widest text-white/35">{work.category}</span>
+                <img src={work.image} alt={work.title} className="w-6 h-6 rounded-lg object-cover object-top" />
+                <div>
+                  <div className="text-[10px] font-bold uppercase text-white/90">{work.title}</div>
+                  <div className="text-[8px] font-mono text-white/40">{work.artist}</div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
@@ -112,28 +121,24 @@ function RichText({ text, glowClass }: { text: string; glowClass?: string }) {
   );
 }
 
-/* ─── Inline Reply Box ───────────────────────────────────────── */
+/* ─── Reply Input Form ───────────────────────────────────────── */
 
-function InlineReplyBox({
+function ReplyForm({
   onSubmit,
   onCancel,
+  placeholder = "Write a reply...",
 }: {
   onSubmit: (text: string) => void;
   onCancel: () => void;
+  placeholder?: string;
 }) {
   const [text, setText] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const tagged = extractWorkCodes(text);
-
-  // Auto-focus when it appears
-  useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    onSubmit(text.trim());
+    onSubmit(text);
     setText("");
   };
 
@@ -141,10 +146,9 @@ function InlineReplyBox({
     <div className="mt-2 mb-3 pl-1">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         <textarea
-          ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Hop in (#work-id to tag)"
+          placeholder={placeholder}
           rows={2}
           className="w-full bg-white/[0.04] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
           onKeyDown={(e) => {
@@ -155,7 +159,7 @@ function InlineReplyBox({
         <div className="flex justify-between items-center">
           <div className="flex flex-wrap gap-1.5">
             {tagged.map((code) => {
-              const work = GRID_ITEMS.find((w) => w.id === code);
+              const work: any = null;
               if (!work) return <span key={code} className="text-[9px] text-red-400/60 italic">#{code} not found</span>;
               return (
                 <div key={code} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/10">
@@ -270,7 +274,7 @@ function ThreadNode({
 
             {/* ── Inline reply box appears right here ── */}
             {replyOpen && (
-              <InlineReplyBox
+              <ReplyForm
                 onSubmit={(text) => {
                   onSubmitReply(reply.id, text);
                   setReplyOpen(false);
@@ -308,18 +312,24 @@ export function DiscussionPage() {
   const { setId, discussionId } = useParams<{ setId: string; discussionId: string }>();
   const navigate = useNavigate();
 
-  const thought = useMemo(
-    () => THOUGHTS_MOCK.find((t) => t.id === discussionId),
-    [discussionId]
-  );
-
-  const initialReplies = useMemo(
-    () => (discussionId ? MOCK_DISCUSSION_REPLIES[discussionId] || [] : []),
-    [discussionId]
-  );
-
-  const [replies, setReplies] = useState<DiscussionReply[]>(initialReplies);
+  const [thought, setThought] = useState<any>(null);
+  const [replies, setReplies] = useState<DiscussionReply[]>([]);
   const [rootText, setRootText] = useState("");
+
+  useEffect(() => {
+    if (setId && discussionId) {
+      apiFetch(`/sets/${setId}/discussions/${discussionId}`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const data = json.data || json;
+            setThought(data.discussion || data);
+            setReplies(data.comments || []);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [setId, discussionId]);
 
   /** Called from any ThreadNode when user submits an inline reply */
   const handleSubmitReply = async (parentId: string, text: string) => {
@@ -328,6 +338,7 @@ export function DiscussionPage() {
       authorId: "user-current",
       authorName: "YOU (ARTIST)",
       text,
+      createdAt: new Date().toISOString(),
       timestamp: "Just now",
     };
 
@@ -370,6 +381,7 @@ export function DiscussionPage() {
       authorId: "user-current",
       authorName: "YOU (ARTIST)",
       text: textToPost,
+      createdAt: new Date().toISOString(),
       timestamp: "Just now",
     };
 

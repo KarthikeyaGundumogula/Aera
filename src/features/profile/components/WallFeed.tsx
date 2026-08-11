@@ -2,9 +2,6 @@ import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import { WallPost } from "../../../types/wall";
 import { WallPostCard } from "./WallPostCard";
-import { GRID_ITEMS, ORIGINALS } from "../../../mock";
-import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
-import { mockLedger } from "../../../mock/ledger";
 import { EmptyState, EMPTY_PRESETS } from "../../../components/EmptyState";
 
 interface WallFeedProps {
@@ -26,23 +23,10 @@ interface WallFeedProps {
  */
 export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
 
-  // O(1) lookup maps — resolved once, never re-computed unless posts change
-  const worksById = useMemo(
-    () => Object.fromEntries(GRID_ITEMS.map((w) => [String(w.id), w])),
-    []
-  );
-  const originalsById = useMemo(
-    () => Object.fromEntries(ORIGINALS.map((o) => [o.id, o])),
-    []
-  );
-  const recommendationsById = useMemo(
-    () => Object.fromEntries(MOCK_RECOMMENDATIONS.map((r) => [r.id, r])),
-    []
-  );
-  const ledgerById = useMemo(
-    () => Object.fromEntries(mockLedger.map((l) => [l.id, l])),
-    []
-  );
+  const worksById = {};
+  const originalsById = {};
+  const recommendationsById = {};
+  const ledgerById = {};
 
 
 
@@ -59,12 +43,12 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
       {/* ── Responsive Layout: Twitter-like feed on mobile, Masonry on desktop ── */}
       <div className="flex flex-col md:block md:columns-3 lg:columns-4 md:gap-4">
         {posts.map((post, index) => {
-          const resolvedWork = post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined;
-          const resolvedOriginal = post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined;
+          const resolvedWork = post.pinnedWorkId ? (worksById as any)[post.pinnedWorkId] : undefined;
+          const resolvedOriginal = post.pinnedOriginalId ? (originalsById as any)[post.pinnedOriginalId] : undefined;
           const resolvedRecommendation = post.pinnedRecommendationId
-            ? recommendationsById[post.pinnedRecommendationId]
+            ? (recommendationsById as any)[post.pinnedRecommendationId]
             : undefined;
-          const resolvedLedgerEntry = post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined;
+          const resolvedLedgerEntry = post.ledgerEntryId ? (ledgerById as any)[post.ledgerEntryId] : undefined;
 
           // LEDGER_ENTRY posts span full width like LINE posts
           const isFullWidth = post.type === "LINE" || post.type === "LEDGER_ENTRY";

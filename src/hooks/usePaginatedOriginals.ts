@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
-import { ORIGINALS } from "@/mock";
 import { Original } from "@/types";
 
 export type OriginalItem = Original;
@@ -29,11 +28,10 @@ interface FetchOriginalsResponse {
     castPreview?: string | null;
     cast_preview?: string | null;
   }>;
-  meta: {
-    totalCount?: number;
-    total_count?: number;
-    nextCursor?: string | null;
+  pagination?: {
     next_cursor?: string | null;
+    has_more?: boolean;
+    total_count?: number;
   };
 }
 
@@ -42,7 +40,7 @@ export function usePaginatedOriginals(pageSize = 12) {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
 
   const fetchBatch = useCallback(async (cursor?: string) => {
@@ -54,50 +52,45 @@ export function usePaginatedOriginals(pageSize = 12) {
       const url = cursor
         ? `/originals?limit=${pageSize}&cursor=${encodeURIComponent(cursor)}`
         : `/originals?limit=${pageSize}`;
-
       const res = await apiFetch(url);
+
       if (res.ok) {
         const json: FetchOriginalsResponse = await res.json();
-        const rawList = json.data || json.items || [];
-        const metaTotal = json.meta?.totalCount ?? json.meta?.total_count ?? rawList.length;
-        const metaNext = json.meta?.nextCursor ?? json.meta?.next_cursor ?? null;
-
-        const mapped: OriginalItem[] = rawList.map((item) => ({
-          id: item.id,
-          title: item.title,
+        const rawList = json.items || json.data || [];
+        const mapped: OriginalItem[] = rawList.map((og) => ({
+          id: og.id,
+          title: og.title,
           description: "",
-          coverImage: item.coverImage || item.cover_image || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
-          releaseDate: item.releaseDate || item.release_date || undefined,
-          stats: { presence: 0, members: 0, releases: 0 },
+          coverImage: og.coverImage || og.cover_image || "",
+          releaseDate: og.releaseDate || og.release_date || "",
+          stats: {
+            presence: 100,
+            members: 0,
+            releases: 0,
+          },
           topArtists: [],
           works: [],
         }));
 
-        if (mapped.length > 0) {
-          setItems((prev) => (isInitial ? mapped : [...prev, ...mapped]));
-          setNextCursor(metaNext);
-          setHasMore(Boolean(metaNext));
-          setTotalCount(metaTotal);
-        } else {
-          // If backend returns empty array, fallback to static mock data in dev
-          if (isInitial) {
-            setItems(ORIGINALS.slice(0, pageSize));
-            setHasMore(ORIGINALS.length > pageSize);
-            setTotalCount(ORIGINALS.length);
-          }
-        }
+        if (isInitial) setItems(mapped);
+        else setItems((prev) => [...prev, ...mapped]);
+
+        const next = json.pagination?.next_cursor || null;
+        setNextCursor(next);
+        setHasMore(Boolean(json.pagination?.has_more ?? (next !== null)));
+        setTotalCount(json.pagination?.total_count ?? mapped.length);
       } else {
         if (isInitial) {
-          setItems(ORIGINALS.slice(0, pageSize));
-          setHasMore(ORIGINALS.length > pageSize);
-          setTotalCount(ORIGINALS.length);
+          setItems([]);
+          setHasMore(false);
+          setTotalCount(0);
         }
       }
     } catch {
       if (isInitial) {
-        setItems(ORIGINALS.slice(0, pageSize));
-        setHasMore(ORIGINALS.length > pageSize);
-        setTotalCount(ORIGINALS.length);
+        setItems([]);
+        setHasMore(false);
+        setTotalCount(0);
       }
     } finally {
       setLoading(false);

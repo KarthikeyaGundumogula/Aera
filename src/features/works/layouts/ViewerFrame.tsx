@@ -12,7 +12,6 @@ import { Pin, BookPlus, Heart } from "lucide-react";
 import { ShareAction } from "../../../components/actions/ShareAction";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
-import { ARTISTS_MOCK } from "../../../mock";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { apiFetch } from "@/lib/api";
 
@@ -89,16 +88,13 @@ export function ViewerFrame({
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleArtistClick = () => {
-    const a = ARTISTS_MOCK.find((a) => a.name === item.artist);
-    setSelectedArtist(
-      a || {
-        id: String(item.id),
-        name: item.artist || "Anonymous",
-        spirit: 0,
-        works: 0,
-        image: item.artistAvatar || item.image || "",
-      }
-    );
+    setSelectedArtist({
+      id: item.artistId || String(item.id),
+      name: item.artist || "Anonymous",
+      spirit: 0,
+      works: 0,
+      image: item.artistAvatar || item.image || "",
+    });
   };
 
   const fireStar = () => {
@@ -187,8 +183,7 @@ export function ViewerFrame({
   };
 
   const followersCount = generateStat(item.artist || item.id, 50000, 1000);
-  const artistObj = ARTISTS_MOCK.find((a) => a.name === item.artist);
-  const spiritCount = artistObj?.spirit || generateStat(item.id, 2000, 100);
+  const spiritCount = generateStat(item.id, 2000, 100);
   const starsCount = generateStat(item.id, 10000, 500);
   const pinsCount = generateStat(item.id, 5000, 50);
   const savesCount = generateStat(item.id, 20000, 200);

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ORIGINALS_DATA, ORIGINALS } from "../../mock";
+import { useParams, useNavigate } from "react-router-dom";
 import { UploadStudioFlow } from "./components/UploadStudioFlow";
 import { apiFetch } from "@/lib/api";
 import { FHLoader } from "@/components/FHLoader";
@@ -9,16 +8,13 @@ export default function OriginalReleaseUploadPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Look up initial static mock or fallback
-  const initialMock = id ? ORIGINALS_DATA[id] || ORIGINALS.find((o) => o.id === id) || null : null;
-  const [original, setOriginal] = useState<any>(initialMock);
-  const [loading, setLoading] = useState<boolean>(!initialMock && !!id);
+  const [original, setOriginal] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(!!id);
 
   useEffect(() => {
-    if (!id || original) return;
+    if (!id) return;
     let isMounted = true;
 
-    // Fetch dynamic Original from backend when id is a UUID or missing from mock
     apiFetch(`/originals/${id}`)
       .then(async (res) => {
         if (res.ok) {

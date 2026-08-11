@@ -153,4 +153,22 @@ test.describe('Profile & Studio E2E Integration Suite', () => {
     expect(Array.isArray(wallJson.data)).toBeTruthy();
   });
 
+  test('Step 6: Fetch Library Sheet Detail via GET /library/sheet/:profile_id/:original_id', async ({ request }) => {
+    const data = getUniqueProfileData('p6');
+    const regRes = await request.post(`${BACKEND_URL}/auth/register`, { data });
+    expect(regRes.ok(), `Registration failed: ${await regRes.text()}`).toBeTruthy();
+
+    const loginRes = await request.post(`${BACKEND_URL}/auth/login`, {
+      data: { handle: data.handle, password: data.password },
+    });
+    expect(loginRes.ok(), `Login failed: ${await loginRes.text()}`).toBeTruthy();
+
+    const profileRes = await request.get(`${BACKEND_URL}/profiles/me`);
+    const profile = (await profileRes.json()).data;
+
+    const mockOriginalId = '00000000-0000-0000-0000-000000000001';
+    const response = await request.get(`${BACKEND_URL}/library/sheet/${profile.id}/${mockOriginalId}`);
+    expect(response.status() === 200 || response.status() === 404).toBeTruthy();
+  });
+
 });

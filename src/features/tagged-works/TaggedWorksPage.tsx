@@ -1,42 +1,41 @@
-import React, { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ArrowLeft } from "lucide-react";
-import { ORIGINALS, GRID_ITEMS } from "@/mock";
-import { mockLedger } from "@/mock/ledger";
 import { WallPostCard } from "@/features/profile/components/WallPostCard";
 import { WallPost } from "@/types/wall";
 import { TheatreItem } from "@/types/theatre";
+import { apiFetch } from "@/lib/api";
 
 export function TaggedWorksPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [original, setOriginal] = useState<any>(null);
+  const [existingWorks, setExistingWorks] = useState<TheatreItem[]>([]);
 
-  // Find original or ledger item from real mock data
-  const original = useMemo(
-    () => ORIGINALS.find((o) => o.id === id || o.id === `og-${id}`),
-    [id]
-  );
+  useEffect(() => {
+    if (!id) return;
+    apiFetch(`/originals/${id}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setOriginal(json.data || json);
+        }
+      })
+      .catch(() => {});
 
-  const ledgerEntry = useMemo(
-    () => mockLedger.find((l) => l.originalId === id || l.id === id),
-    [id]
-  );
+    apiFetch(`/library/${id}/tagged_works`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setExistingWorks(json.data || json || []);
+        }
+      })
+      .catch(() => {});
+  }, [id]);
 
-  const title = original?.title || ledgerEntry?.originalName || "Original";
-  const posterUrl = original?.coverImage || ledgerEntry?.originalPosterUrl || "/posters/og.jpeg";
-
-  // Find existing real works from GRID_ITEMS tagged to this original
-  const existingWorks: TheatreItem[] = useMemo(() => {
-    const targetId = original?.id || id || "";
-    const matched = GRID_ITEMS.filter((w) =>
-      w.originalIds?.includes(targetId) ||
-      (targetId.startsWith("og-") && w.originalIds?.includes(targetId.replace("og-", "")))
-    );
-    if (matched.length > 0) return matched;
-    // Fallback to top existing works in GRID_ITEMS
-    return GRID_ITEMS.slice(0, 4);
-  }, [id, original]);
+  const title = original?.title || original?.name || "Original";
+  const posterUrl = original?.coverImage || original?.cover_image || "/posters/og.jpeg";
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pb-32">

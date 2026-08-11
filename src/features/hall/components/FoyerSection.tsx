@@ -1,12 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Pin, Quote, Film, Sparkles } from "lucide-react";
-import { SectionHeader } from "../../../components/SectionHeader";
-import { WALL_POSTS } from "../../../mock/wall";
-import { GRID_ITEMS, ORIGINALS } from "../../../mock";
-import { MOCK_RECOMMENDATIONS } from "../../../mock/recommendations";
+import { Quote, Film, Sparkles } from "lucide-react";
 import { FoyerSwiper, FoyerArtistGroup } from "./FoyerSwiper";
-import { mockLedger } from "../../../mock/ledger";
+import { apiFetch } from "@/lib/api";
 
 function AvatarFallback({ className }: { className: string }) {
   // Strip img-specific classes like object-cover to safely apply to the div
@@ -33,85 +29,23 @@ export function FoyerSection() {
   const [selectedSwiperIndex, setSelectedSwiperIndex] = useState<number | null>(null);
   const [artistGroups, setArtistGroups] = useState<FoyerArtistGroup[]>([]);
 
-  const worksById = useMemo(
-    () => Object.fromEntries(GRID_ITEMS.map((w) => [String(w.id), w])),
-    []
-  );
-  
-  const originalsById = useMemo(
-    () => Object.fromEntries(ORIGINALS.map((o) => [o.id, o])),
-    []
-  );
-
-  const recommendationsById = useMemo(
-    () => Object.fromEntries(MOCK_RECOMMENDATIONS.map((r) => [r.id, r])),
-    []
-  );
-
-  const ledgerById = useMemo(
-    () => Object.fromEntries(mockLedger.map((l) => [l.id, l])),
-    []
-  );
-
   useEffect(() => {
-    // Initial load: group WALL_POSTS by artist and take first 3 entries for each
-    const groupsMap = new Map<string, FoyerArtistGroup>();
-    for (const post of WALL_POSTS) {
-      if (!groupsMap.has(post.artistId)) {
-        groupsMap.set(post.artistId, {
-          artistId: post.artistId,
-          artistName: post.artistName,
-          artistImage: post.artistImage,
-          entries: [],
-          hasMore: true,
-        });
-      }
-      
-      const group = groupsMap.get(post.artistId)!;
-      if (group.entries.length < 3) {
-        group.entries.push({
-          post,
-          resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
-          resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
-          resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
-          resolvedLedgerEntry: post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined,
-        });
-      }
-    }
-    
-    // Determine if they actually have more than 3
-    for (const group of groupsMap.values()) {
-       const total = WALL_POSTS.filter(p => p.artistId === group.artistId).length;
-       group.hasMore = total > 3;
-    }
-    
-    setArtistGroups(Array.from(groupsMap.values()).slice(0, 10));
-  }, [worksById, originalsById, recommendationsById]);
+    apiFetch("/wall/foyer")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setArtistGroups(json.data || json.groups || []);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleFetchOlder = async (artistId: string) => {
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 600));
-    
     setArtistGroups(prev => prev.map(group => {
       if (group.artistId !== artistId) return group;
-      
-      // Find the next 5 posts for this artist in WALL_POSTS
-      const allArtistPosts = WALL_POSTS.filter(p => p.artistId === artistId);
-      const currentCount = group.entries.length;
-      
-      const nextPosts = allArtistPosts.slice(currentCount, currentCount + 5);
-      const nextEntries = nextPosts.map(post => ({
-        post,
-        resolvedWork: post.pinnedWorkId ? worksById[post.pinnedWorkId] : undefined,
-        resolvedOriginal: post.pinnedOriginalId ? originalsById[post.pinnedOriginalId] : undefined,
-        resolvedRecommendation: post.pinnedRecommendationId ? recommendationsById[post.pinnedRecommendationId] : undefined,
-        resolvedLedgerEntry: post.ledgerEntryId ? ledgerById[post.ledgerEntryId] : undefined,
-      }));
-      
       return {
         ...group,
-        entries: [...group.entries, ...nextEntries],
-        hasMore: currentCount + 5 < allArtistPosts.length
+        hasMore: false,
       };
     }));
   };

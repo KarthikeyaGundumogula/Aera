@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { GitCommit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ThoughtItem } from "../../../mock/thoughts";
-import { ARTISTS_MOCK } from "../../../mock";
+import type { Thought as ThoughtItem } from "@/types/thoughts";
 import { ArtistProfile } from "../profile";
 
 export function ThoughtCard({ 
@@ -15,10 +14,16 @@ export function ThoughtCard({
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
   
-  // Find artist data from mock pool
-  const artistData = ARTISTS_MOCK.find(
-    (a) => a.name.toLowerCase() === thought.authorName.toLowerCase()
-  ) || ARTISTS_MOCK[0];
+  const artistData = {
+    id: thought.artistId || "fh-001",
+    name: thought.artistName || thought.authorName || "Artist",
+    image: thought.artistPicture || "",
+    bio: "Artist",
+    spirit: 0,
+    works: 0,
+    socials: {},
+    colorTheme: "#fac107,#0f1a42",
+  };
 
 
   return (
@@ -32,7 +37,7 @@ export function ThoughtCard({
         <div className="relative z-10 p-6 flex flex-col h-full justify-between gap-4">
           {/* The Thought (Script Fragment as a quote) */}
           <p className="font-mono text-sm leading-relaxed text-white/90 whitespace-pre-wrap overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' }}>
-            "{thought.text}"
+            "{thought.text || thought.thoughtText}"
           </p>
           
           <div className="flex items-end justify-between mt-auto">
@@ -65,10 +70,10 @@ export function ThoughtCard({
                   }}
                   className="text-[11px] font-sans font-bold uppercase tracking-wider text-white/80 hover:text-white transition-colors duration-200 cursor-pointer"
                 >
-                  - {thought.authorName}
+                  - {thought.artistName || thought.authorName}
                 </button>
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">{thought.timestamp}</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">{thought.timestamp || thought.createdAt}</span>
             </div>
           </div>
         </div>

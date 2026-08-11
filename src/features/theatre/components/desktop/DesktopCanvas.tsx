@@ -1,7 +1,7 @@
 import { useMotionValue, useSpring, AnimatePresence } from "motion/react";
 import React, { useEffect, useRef, useMemo, useState } from "react";
 
-import { GRID_ITEMS } from "../../../../mock";
+import { apiFetch } from "@/lib/api";
 import { buildClusters } from "../../engine/clusterBuilder";
 import { DesktopCluster } from "./DesktopCluster";
 import { CLUSTER_WIDTH, CLUSTER_HEIGHT, CLUSTER_GAP } from "../../constants";
@@ -46,6 +46,7 @@ function clampOrigin(value: number) {
  */
 export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [items, setItems] = useState<TheatreItem[]>([]);
   
   // React state for sizing
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, w: 0, h: 0 });
@@ -54,8 +55,19 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
   const [cullingViewport, setCullingViewport] = useState<Viewport>({ x: 0, y: 0, w: 0, h: 0 });
   const lastCullingPos = useRef({ x: 0, y: 0 });
 
-  // Pre-compute cluster pool once from mock data
-  const clusterPool = useMemo(() => buildClusters(GRID_ITEMS), []);
+  useEffect(() => {
+    apiFetch("/theatre")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setItems(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Pre-compute cluster pool from live data
+  const clusterPool = useMemo(() => buildClusters(items), [items]);
   const flatItems = useMemo(
     () => clusterPool.flatMap((c) => c.slots.map((s) => s.item).filter((item): item is TheatreItem => item != null)),
     [clusterPool]

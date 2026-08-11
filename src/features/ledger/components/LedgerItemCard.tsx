@@ -10,7 +10,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
-import type { LedgerItem } from "../../../mock/ledger";
+import type { LedgerItem } from "@/types/ledger";
 import { LedgerTaggedWorksStack } from "./LedgerTaggedWorksStack";
 
 export const LedgerItemCard = memo(function LedgerItemCard({
@@ -30,9 +30,8 @@ export const LedgerItemCard = memo(function LedgerItemCard({
     e.stopPropagation();
     onUpdate({
       ...item,
-      status,
-      preThoughts,
-      afterThoughts: afterThoughts || undefined,
+      preThoughts: preThoughts || "",
+      afterThoughts: afterThoughts || "",
     });
     setIsEditing(false);
   };
@@ -279,7 +278,7 @@ export const LedgerItemCard = memo(function LedgerItemCard({
                   <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-4">
                     Works Ledger
                   </div>
-                  <LedgerTaggedWorksStack works={item.taggedWorks} />
+                  <LedgerTaggedWorksStack works={item.taggedWorks as any} />
                 </div>
               )}
             </div>

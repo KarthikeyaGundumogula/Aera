@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { Clapperboard, Loader2 } from "lucide-react";
-import { MAKERS_MOCK, STARS_MOCK } from "../../mock";
 import { OriginalPosterCard } from "./components/OriginalPosterCard";
 import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 import { usePaginatedOriginals } from "@/hooks/usePaginatedOriginals";
@@ -11,9 +10,8 @@ export function OriginalsListPage() {
   const navigate = useNavigate();
   const { items, loading, loadingMore, hasMore, totalCount, loadMore } = usePaginatedOriginals(12);
 
-  // Pass all makers and stars so each card can resolve its own cast/crew
-  const makers = useMemo(() => MAKERS_MOCK, []);
-  const stars = useMemo(() => STARS_MOCK, []);
+  const makers = useMemo(() => [], []);
+  const stars = useMemo(() => [], []);
 
   return (
     <div
