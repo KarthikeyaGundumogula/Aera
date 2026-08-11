@@ -1,88 +1,113 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { X, Eye, Clock, Edit3, Check, ArrowRight, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion } from "motion/react";
+import { X, Eye, Clock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { CURRENT_USER_MOCK, GRID_ITEMS, ORIGINALS } from "../../../mock";
-import { mockLedger, LedgerItem } from "../../../mock/ledger";
-import { MOCK_RECOMMENDATIONS, Recommendation } from "../../../mock/recommendations";
-import { SurgeBars } from "../../../components/SurgeBars";
-import { TaggedWorksModal } from "../../../components/TaggedWorksModal";
+import { SurgeScoreDisplay } from "../../../components/surge/SurgeScoreDisplay";
+
+
+import { apiFetch } from "@/lib/api";
 
 interface LibraryItemSheetProps {
   originalId: string;
   profileId: string;
+  libraryEntryId?: string;
+  originalData?: any;
   onClose: () => void;
 }
 
-export function LibraryItemSheet({ originalId, profileId, onClose }: LibraryItemSheetProps) {
+export function LibraryItemSheet({ originalId, profileId, libraryEntryId, originalData, onClose }: LibraryItemSheetProps) {
   const navigate = useNavigate();
-  const [showTaggedWorksModal, setShowTaggedWorksModal] = useState(false);
+  const [original, setOriginal] = useState<any>(originalData || null);
+  const [sheetDetail, setSheetDetail] = useState<any>(null);
 
-  const initialEntry = mockLedger.find(
-    (l) =>
-      l.originalId === originalId &&
-      (l.artistId === profileId || (!l.artistId && (profileId === "fh-001" || profileId === CURRENT_USER_MOCK.id)))
-  );
-  const original = ORIGINALS.find((o) => o.id === originalId);
 
-  const recommendation = MOCK_RECOMMENDATIONS.find(
-    (r: Recommendation) => r.original.id === originalId && r.artist.id === profileId
-  );
+  const [entryStatus, setEntryStatus] = useState<"watched" | "want_to_watch">("watched");
+  const [surgeScore, setSurgeScore] = useState<number>(0);
+  const [peakMagnitude, setPeakMagnitude] = useState<number>(1000);
+  const [currentPeakScore, setCurrentPeakScore] = useState<number>(1000);
+  const [preThoughts, setPreThoughts] = useState<string>("");
+  const [afterThoughts, setAfterThoughts] = useState<string>("");
+  const [creditedWorksCount, setCreditedWorksCount] = useState<number>(0);
 
-  const works = GRID_ITEMS.filter((w) => w.originalIds?.includes(originalId));
+  useEffect(() => {
+    let isMounted = true;
+    if (!originalId && !libraryEntryId) return;
 
-  const [entryStatus, setEntryStatus] = useState<"watched" | "want_to_watch">(
-    initialEntry?.status ?? "watched"
-  );
-  const [isEditing, setIsEditing] = useState(false);
-  const [surgeScore, setSurgeScore] = useState<number>(
-    initialEntry?.surgeScore ?? 7500
-  );
-  const [preThoughts, setPreThoughts] = useState<string>(
-    initialEntry?.preThoughts ?? ""
-  );
-  const [afterThoughts, setAfterThoughts] = useState<string>(
-    initialEntry?.afterThoughts ?? ""
-  );
-  const [savedSuccess, setSavedSuccess] = useState(false);
+    // 1. Fetch original metadata if not passed
+    if (!originalData) {
+      apiFetch(`/originals/${originalId}`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const data = json.data || json;
+            if (data && isMounted) {
+              setOriginal({
+                id: data.id,
+                title: data.title || data.name,
+                coverImage: data.coverImage || data.cover_image || data.cover_img || "",
+                releaseDate: data.releaseDate || data.release_date || "",
+                genre: data.genres || data.genre || [],
+                description: data.description || "",
+              });
+            }
+          }
+        })
+        .catch(() => {});
+    }
 
-  const isOwner = (profileId === CURRENT_USER_MOCK.id || profileId === "fh-001");
-  const peakMagnitude = original?.resonanceSignature?.peakMagnitude || 10000;
-  const pctScore = Math.min(Math.round((surgeScore / peakMagnitude) * 100), 100);
+    // 2. Fetch compact sheet detail strictly by libraryEntryId (lib.id) retrieved from get_user_library
+    const entryId = libraryEntryId || originalData?.libraryEntryId || originalData?.library_entry_id;
+
+    if (entryId) {
+      apiFetch(`/library/sheet/${entryId}`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const data = json.data || json;
+            if (data && isMounted) {
+              setSheetDetail(data);
+              const count = data.creditedWorksCount ?? data.credited_works_count;
+              if (typeof count === "number") setCreditedWorksCount(count);
+
+              const st = String(data.status || "").toLowerCase();
+              setEntryStatus(st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched");
+              if (typeof data.surgeScore === "number") setSurgeScore(data.surgeScore);
+
+              const snapPeak = data.peakSnapshot ?? data.peak_snapshot;
+              if (typeof snapPeak === "number") setPeakMagnitude(snapPeak);
+              const currPeak = data.currentPeakScore ?? data.current_peak_score;
+              if (typeof currPeak === "number") setCurrentPeakScore(currPeak);
+
+              const hype = data.userHypeThought || data.preThought || data.pre_thought;
+              if (hype) setPreThoughts(hype);
+              const after = data.userAfterThought || data.postImpression || data.post_impression;
+              if (after) setAfterThoughts(after);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+
+    return () => {
+      isMounted = false;
+    };
+  }, [originalId, profileId, libraryEntryId, originalData]);
 
   const handleStatusChange = (newStatus: "watched" | "want_to_watch") => {
     setEntryStatus(newStatus);
-    if (initialEntry) {
-      initialEntry.status = newStatus;
-      if (newStatus === "watched" && !initialEntry.watchedAt) {
-        initialEntry.watchedAt = new Date().toISOString();
-      }
-    }
   };
 
-  const handleOpenFullViewer = (openEdit = false) => {
+  const handleOpenFullViewer = () => {
+    const entryId = libraryEntryId || sheetDetail?.libraryEntryId || sheetDetail?.library_entry_id;
+    if (!entryId) return;
     onClose();
-    if (initialEntry) {
-      navigate(`/ledger/${initialEntry.id}${openEdit ? "?edit=true" : ""}`);
-    } else if (original) {
-      const newId = `wl_${Date.now()}`;
-      mockLedger.push({
-        id: newId,
-        artistId: profileId,
-        originalId: original.id,
-        originalName: original.title,
-        originalPosterUrl: original.coverImage || "",
-        releaseYear: original.releaseDate,
-        genre: original.genre,
-        status: entryStatus,
-        taggedWorks: [],
-        addedAt: new Date().toISOString(),
-        watchedAt: entryStatus === "watched" ? new Date().toISOString() : undefined,
-      });
-      navigate(`/ledger/${newId}${openEdit ? "?edit=true" : ""}`);
-    }
+    navigate(`/breakdowns/${entryId}`);
   };
+
+
+
 
   if (typeof document === "undefined") return null;
 
@@ -124,7 +149,7 @@ export function LibraryItemSheet({ originalId, profileId, onClose }: LibraryItem
             {/* Poster + Meta Row */}
             <div className="flex gap-4">
               <img
-                src={original.coverImage}
+                src={original.coverImage || original.cover_image || original.cover_img || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&auto=format&fit=crop&q=80"}
                 alt={original.title}
                 className="w-20 sm:w-24 aspect-[2/3] object-cover rounded-xl border border-white/10 shadow-lg shrink-0"
               />
@@ -134,87 +159,73 @@ export function LibraryItemSheet({ originalId, profileId, onClose }: LibraryItem
                     {original.title}
                   </h2>
                   <p className="text-[10px] font-mono text-white/40 mt-1">
-                    {original.releaseDate || "2024"} • {Array.isArray(original.genre) ? original.genre.join(", ") : original.genre}
+                    {(() => {
+                      if (!original?.releaseDate && !original?.release_date) return "2026";
+                      const raw = String(original.releaseDate || original.release_date).trim();
+                      if (/^\d{4}$/.test(raw)) return raw;
+                      const d = new Date(raw);
+                      if (isNaN(d.getTime())) return raw;
+                      return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                    })()} • {Array.isArray(original.genre) ? original.genre.join(", ") : original.genre || "Drama"}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Status Switcher Bar */}
-            {isOwner && (
-              <div className="flex items-center justify-between gap-3 p-1.5 rounded-2xl bg-white/[0.03] border border-white/[0.07]">
-                <div className="flex items-center gap-1 flex-1">
-                  <button
-                    onClick={() => handleStatusChange("watched")}
-                    className={`flex-1 py-2 px-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      entryStatus === "watched"
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm"
-                        : "text-white/40 hover:text-white/70"
-                    }`}
-                  >
-                    <Eye className="w-3 h-3" />
-                    Watched
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange("want_to_watch")}
-                    className={`flex-1 py-2 px-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      entryStatus === "want_to_watch"
-                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm"
-                        : "text-white/40 hover:text-white/70"
-                    }`}
-                  >
-                    <Clock className="w-3 h-3" />
-                    Plan to Watch
-                  </button>
-                </div>
+            <div className="flex items-center justify-between gap-3 p-1.5 rounded-2xl bg-white/[0.03] border border-white/[0.07]">
+              <div className="flex items-center gap-1 flex-1">
+                <button
+                  onClick={() => handleStatusChange("watched")}
+                  className={`flex-1 py-2 px-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    entryStatus === "watched"
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm"
+                      : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  <Eye className="w-3 h-3" />
+                  Watched
+                </button>
+                <button
+                  onClick={() => handleStatusChange("want_to_watch")}
+                  className={`flex-1 py-2 px-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    entryStatus === "want_to_watch"
+                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm"
+                      : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  <Clock className="w-3 h-3" />
+                  Plan to Watch
+                </button>
               </div>
-            )}
+            </div>
 
             {/* Display Area */}
             <div className="space-y-5">
               {entryStatus === "watched" ? (
                 /* WATCHED DISPLAY */
                 <div className="space-y-5">
-                  <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-baseline gap-3">
-                      <span
-                        className="text-4xl md:text-5xl font-black tabular-nums tracking-tighter"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #F59E0B 0%, #D97706 40%, #FBBF24 70%, #B45309 100%)",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                        }}
-                      >
-                        {pctScore}%
-                      </span>
-                      <span className="text-[10px] font-mono tracking-widest uppercase text-white/30">
-                        {surgeScore.toLocaleString()} / {peakMagnitude.toLocaleString()}
-                      </span>
-                    </div>
-
-                    <SurgeBars
-                      score={surgeScore}
-                      highestScore={peakMagnitude}
-                      colorVariant="amber"
-                      size="lg"
+                  <div className="pt-1">
+                    <SurgeScoreDisplay
+                      surgeScore={surgeScore}
+                      peakSnapshot={peakMagnitude}
+                      currentPeakScore={currentPeakScore}
+                      size="sm"
                     />
                   </div>
 
                   {/* Editorial Quote Block */}
-                  {(afterThoughts || preThoughts || initialEntry?.afterThoughts || initialEntry?.preThoughts) && (
-                    <button
-                      onClick={() => handleOpenFullViewer(false)}
-                      className="text-left w-full group cursor-pointer space-y-2 pt-1"
-                    >
-                      <p className="font-serif italic text-sm md:text-base text-white/85 leading-relaxed pl-3.5 border-l-2 border-[#D97706]/60 line-clamp-3 group-hover:text-white transition-colors">
-                        "{afterThoughts || preThoughts || initialEntry?.afterThoughts || initialEntry?.preThoughts}"
-                      </p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#D97706] group-hover:text-amber-400 pl-3.5 transition-colors flex items-center gap-1">
-                        Read Full Breakdown <ArrowRight className="w-3 h-3" />
-                      </p>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleOpenFullViewer()}
+                    className="text-left w-full group cursor-pointer space-y-2 pt-1"
+                  >
+                    <p className="font-serif italic text-sm md:text-base text-white/85 leading-relaxed pl-3.5 border-l-2 border-[#D97706]/60 line-clamp-3 group-hover:text-white transition-colors">
+                      "{afterThoughts || preThoughts || original?.description || "No thought notes recorded yet for this entry."}"
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#D97706] group-hover:text-amber-400 pl-3.5 transition-colors flex items-center gap-1">
+                      Read Full Breakdown <ArrowRight className="w-3 h-3" />
+                    </p>
+                  </button>
                 </div>
               ) : (
                 /* PLAN TO WATCH DISPLAY */
@@ -226,85 +237,57 @@ export function LibraryItemSheet({ originalId, profileId, onClose }: LibraryItem
                     </span>
                   </div>
 
-                  {preThoughts || initialEntry?.preThoughts ? (
-                    <p className="text-xs text-white/70 italic leading-relaxed pl-3 border-l-2 border-amber-500/40">
-                      "{preThoughts || initialEntry?.preThoughts}"
-                    </p>
-                  ) : (
-                    <p className="text-xs text-white/40 italic">
-                      Added to watchlist. Mark as watched to record your Surge score and write a breakdown.
-                    </p>
-                  )}
+                  <p className="text-xs text-white/70 italic leading-relaxed pl-3 border-l-2 border-amber-500/40">
+                    "{preThoughts || original?.description || "Added to watchlist. Mark as watched to record your Surge score and write a breakdown."}"
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* Collection Button */}
-            <div className="pt-2">
-              <button
-                onClick={() => {
-                  onClose();
-                  navigate(`/tagged-works/${originalId || initialEntry?.originalId || "og-original"}`);
-                }}
-                className="w-full py-3 px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-wider flex items-center justify-between cursor-pointer transition-all"
-              >
-                <span className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  Check Collection ({(initialEntry?.taggedWorks || []).length || 3})
-                </span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
 
             {/* Compact Side-by-Side Action Pills */}
             <div className="pt-2 space-y-3">
-              {(recommendation || works.length > 0) && (
-                <div className="flex items-center gap-2">
-                  {recommendation && (
-                    <button
-                      onClick={() => {
-                        onClose();
-                        navigate(`/profile/${profileId}/recommendations/${originalId}`);
-                      }}
-                      className="flex-1 py-3 px-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left flex justify-between items-center group cursor-pointer"
-                    >
-                      <span className="text-[9px] font-black uppercase tracking-wider text-[#D97706] group-hover:text-amber-400 transition-colors">
-                        Recommendations
-                      </span>
-                      <span className="text-white/40 text-xs font-bold group-hover:translate-x-0.5 transition-transform">→</span>
-                    </button>
-                  )}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate(`/profile/${profileId}/recommendations/${originalId}`);
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left flex justify-between items-center group cursor-pointer"
+                >
+                  <span className="text-[9px] font-black uppercase tracking-wider text-[#D97706] group-hover:text-amber-400 transition-colors">
+                    Recommendations
+                  </span>
+                  <span className="text-white/40 text-xs font-bold group-hover:translate-x-0.5 transition-transform">→</span>
+                </button>
 
-                  {works.length > 0 && (
-                    <button
-                      onClick={() => {
-                        onClose();
-                        navigate(`/works/${works[0].id}`);
-                      }}
-                      className="flex-1 py-3 px-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left flex justify-between items-center group cursor-pointer"
-                    >
-                      <span className="text-[9px] font-black uppercase tracking-wider text-white/80 group-hover:text-white transition-colors truncate">
-                        My Works ({works.length})
-                      </span>
-                      <span className="text-white/40 text-xs font-bold group-hover:translate-x-0.5 transition-transform">→</span>
-                    </button>
-                  )}
-                </div>
-              )}
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate(`/works/${originalId}`);
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left flex justify-between items-center group cursor-pointer"
+                >
+                  <span className="text-[9px] font-black uppercase tracking-wider text-white/80 group-hover:text-white transition-colors truncate">
+                    My Works ({creditedWorksCount})
+                  </span>
+                  <span className="text-white/40 text-xs font-bold group-hover:translate-x-0.5 transition-transform">→</span>
+                </button>
+              </div>
 
               {/* Primary Hero Action Button */}
               <button
-                onClick={() => handleOpenFullViewer(false)}
-                className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(245,158,11,0.25)] hover:shadow-[0_0_32px_rgba(245,158,11,0.4)] cursor-pointer"
+                onClick={() => handleOpenFullViewer()}
+                className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(245,158,11,0.25)] hover:shadow-[0_0_32px_rgba(245,158,11,0.4)] cursor-pointer font-extrabold"
               >
-                <span>Update Breakdown</span>
+                <span>Read Full Breakdown</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </>
         ) : (
           <div className="py-12 text-center text-white/40 text-sm">
-            Item not found.
+            Item details loading...
           </div>
         )}
       </motion.div>

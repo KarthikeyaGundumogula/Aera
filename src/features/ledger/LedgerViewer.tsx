@@ -32,10 +32,11 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "motion/react";
 import { ArrowLeft, Share2, Check, BookPlus, Eye, Clock, Edit3, Sparkles } from "lucide-react";
-import { mockLedger, LedgerItem, LedgerMakerCredit } from "../../mock/ledger";
-import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK, CURRENT_USER_MOCK } from "../../mock";
+import type { LedgerItem, LedgerMakerCredit } from "@/types/ledger";
 import { SurgeBars } from "../../components/SurgeBars";
+import { SurgeScoreDisplay } from "../../components/surge/SurgeScoreDisplay";
 import { SurgeInputSection } from "../../components/surge/SurgeInputSection";
+import { ArtistAvatar } from "@/components/ArtistAvatar";
 
 // ─── Easing constant (strong ease-out per Emil design-eng principles) ──────────
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -54,12 +55,11 @@ const PROFILE_NAME_GRADIENTS: Record<string, [string, string]> = {
 function getAuthorThemeGradient(artistId?: string): [string, string] {
   if (!artistId) return ["#334155", "#64748b"];
   if (PROFILE_NAME_GRADIENTS[artistId]) return PROFILE_NAME_GRADIENTS[artistId];
-
-  const artist = ARTISTS_MOCK.find((a) => a.id === artistId) as { themeClasses?: string } | undefined;
-  if (artist?.themeClasses?.includes("text-blue")) return ["#334155", "#64748b"];
-  if (artist?.themeClasses?.includes("text-amber")) return ["#78350f", "#f59e0b"];
-  if (artist?.themeClasses?.includes("text-red")) return ["#7f1d1d", "#ef4444"];
-
+  // If artistId is a raw color_theme string ("#hex1,#hex2"), parse it directly
+  if (artistId.includes(",")) {
+    const parts = artistId.split(",").map((s) => s.trim());
+    if (parts.length >= 2) return [parts[0], parts[1]] as [string, string];
+  }
   return ["#334155", "#64748b"];
 }
 
@@ -184,39 +184,21 @@ function MakerCardContent({ entry }: { entry: LedgerItem }) {
 interface MobileSurgeProps {
   surgeCount: number;
   surgeScore: number;
+  peakScore: number;
+  peakSnapshot?: number;
+  currentPeakScore?: number;
 }
 
-function MobileSurgeScore({ surgeCount, surgeScore }: MobileSurgeProps) {
-  const pct = Math.min(Math.round((surgeCount / 10000) * 100), 100);
-
+function MobileSurgeScore({ surgeCount, peakScore, peakSnapshot, currentPeakScore }: MobileSurgeProps) {
+  const effectiveSnapshotPeak = peakSnapshot || peakScore || 1000;
   return (
-    <div className="flex items-center justify-between pt-6 border-t border-white/[0.05]">
-      <div className="flex items-baseline gap-3">
-        <span
-          className="text-[40px] font-black leading-none tracking-tighter tabular-nums"
-          style={{
-            background:
-              "linear-gradient(135deg, #F59E0B 0%, #D97706 40%, #FBBF24 70%, #B45309 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            filter: "drop-shadow(0 0 16px rgba(217,119,6,0.4))",
-          }}
-        >
-          {pct}%
-        </span>
-        <span className="text-[10px] font-mono font-bold text-white/35">
-          {surgeCount.toLocaleString()} / 10,000
-        </span>
-      </div>
-
-      <div className="flex items-center h-[40px]">
-        <SurgeBars
-          score={surgeCount}
-          highestScore={10000}
-          colorVariant="amber"
-          size="xl"
-        />
-      </div>
+    <div className="pt-6 border-t border-white/[0.05]">
+      <SurgeScoreDisplay
+        surgeScore={surgeCount}
+        peakSnapshot={effectiveSnapshotPeak}
+        currentPeakScore={currentPeakScore}
+        size="sm"
+      />
     </div>
   );
 }
@@ -274,26 +256,12 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
   type PersonCard = { name: string; role: string; imageUrl?: string };
   const makersList: PersonCard[] = [];
 
-  // Add makers from entry.makers
-  entry.makers?.forEach((m) => {
-    if (!makersList.some((x) => x.name === m.name)) {
-      makersList.push({ name: m.name, role: m.role, imageUrl: m.imageUrl });
+  // Add makers from entry.makerCredits
+  entry.makerCredits?.forEach((m) => {
+    if (!makersList.some((x) => x.name === m.artistStageName)) {
+      makersList.push({ name: m.artistStageName || "", role: m.role, imageUrl: m.artistPic });
     }
   });
-
-  // Supplement with MAKERS_MOCK for this original
-  if (entry.originalId) {
-    const mockMakers = MAKERS_MOCK.filter((m) => m.originalId === entry.originalId);
-    mockMakers.forEach((m) => {
-      if (!makersList.some((x) => x.name === m.actorName)) {
-        makersList.push({
-          name: m.actorName,
-          role: m.characterName || "Maker",
-          imageUrl: m.imageUrl,
-        });
-      }
-    });
-  }
 
   // Build Stars List
   const starsList: PersonCard[] = [];
@@ -303,20 +271,6 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
       name: entry.starName,
       role: "Lead Star",
       imageUrl: entry.starImageUrl,
-    });
-  }
-
-  // Supplement with STARS_MOCK for this original
-  if (entry.originalId) {
-    const mockStars = STARS_MOCK.filter((s) => s.originalId === entry.originalId);
-    mockStars.forEach((s) => {
-      if (!starsList.some((x) => x.name === s.actorName)) {
-        starsList.push({
-          name: s.actorName,
-          role: s.characterName || "Star",
-          imageUrl: s.imageUrl,
-        });
-      }
     });
   }
 
@@ -457,7 +411,7 @@ function InPlaceBreakdownEditor({
   setIsEditing: (val: boolean) => void;
 }) {
   const peakMagnitude = 10000;
-  const pctScore = Math.min(Math.round((surgeScore / peakMagnitude) * 100), 100);
+  const pctScore = Math.round((surgeScore / peakMagnitude) * 100);
 
   return (
     <motion.div
@@ -572,13 +526,63 @@ function InPlaceBreakdownEditor({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+import { apiFetch } from "@/lib/api";
+
 export function LedgerViewer() {
   const { id } = useParams<{ id: string }>();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [copied, setCopied] = useState(false);
+  const [remoteEntry, setRemoteEntry] = useState<LedgerItem | null>(null);
 
-  const entry: LedgerItem | undefined = mockLedger.find((l) => l.id === id);
+  useEffect(() => {
+    if (!id) return;
+    let isMounted = true;
+
+    // Fetch full entry detail — GET /library/entry/:id
+    // The :id is the library entry UUID returned by GET /library/sheet/:profileId/:originalId
+    apiFetch(`/library/entry/${id}`)
+      .then(async (res) => {
+        if (!res.ok || !isMounted) return;
+        const json = await res.json().catch(() => ({}));
+        const item = json.data || json;
+        if (!item || !item.id) return;
+
+        const st = String(item.status || "").toLowerCase();
+        setRemoteEntry({
+          id: item.id,
+          artistId: item.originalId ? "" : "fh-001",
+          originalId: item.originalId,
+          originalName: item.originalName || "Original",
+          originalPosterUrl: item.originalPosterUrl || "",
+          releaseYear: item.releaseDate ? new Date(item.releaseDate).getFullYear().toString() : "2026",
+          genre: Array.isArray(item.genre) ? item.genre : [item.genre || "Drama"],
+          starName: "",
+          status: st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched",
+          preThoughts: item.userHypeThought || "",
+          afterThoughts: item.userAfterThought || "",
+          surgeScore: item.surgeScore || 0,
+          peakScore: item.peakScore || 1000,
+          peakSnapshot: item.peakSnapshot ?? item.peak_snapshot ?? item.peakScore ?? 1000,
+          currentPeakScore: item.currentPeakScore ?? item.current_peak_score ?? 1000,
+          taggedWorks: item.taggedWorks || [],
+          addedAt: item.addedAt || new Date().toISOString(),
+          artistStageName: item.artistStageName || "",
+          artistProfilePicture: item.artistProfilePicture || "",
+          artistColorTheme: item.artistColorTheme || "",
+        });
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+
+
+  const entry: LedgerItem | undefined = remoteEntry || undefined;
 
   const isOwner = true;
 
@@ -595,11 +599,37 @@ export function LedgerViewer() {
     entry?.afterThoughts ?? ""
   );
   const [surgeScore, setSurgeScore] = useState<number>(
-    entry?.surgeScore ?? 7500
+    entry?.surgeScore ?? 5000
   );
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (entry) {
+      setEntryStatus(entry.status === "watched" ? "watched" : "want_to_watch");
+      setPreThoughts(entry.preThoughts || "");
+      setAfterThoughts(entry.afterThoughts || "");
+      if (typeof entry.surgeScore === "number" && entry.surgeScore > 0) {
+        setSurgeScore(entry.surgeScore);
+      }
+    }
+  }, [entry?.id, entry?.status, entry?.preThoughts, entry?.afterThoughts, entry?.surgeScore]);
+
   const surgeCount = useSurgeCount(isEditing ? surgeScore : (entry?.surgeScore ?? 0), 1600);
+
+  const authorProfile = useMemo(() => {
+    if (!entry) return { name: "Original", image: "" };
+    if (entry.artistStageName) {
+      return { name: entry.artistStageName, image: entry.artistProfilePicture || "" };
+    }
+    if (entry.starName) {
+      return { name: entry.starName, image: entry.starImageUrl || "" };
+    }
+    return { name: entry.originalName, image: entry.originalPosterUrl };
+  }, [entry]);
+
+  const alreadyInUserLedger = false;
+
+  const [addedToLedger, setAddedToLedger] = useState(alreadyInUserLedger);
 
   if (!entry) {
     return (
@@ -626,20 +656,60 @@ export function LedgerViewer() {
       if (!entry.watchedAt) {
         entry.watchedAt = new Date().toISOString();
       }
-      setIsEditing(true); // ONLY when status is changed to watched, prompt user to add breakdown!
+      if (entry.preThoughts) setPreThoughts(entry.preThoughts);
+      if (entry.afterThoughts) setAfterThoughts(entry.afterThoughts);
+      if (typeof entry.surgeScore === "number" && entry.surgeScore > 0) setSurgeScore(entry.surgeScore);
+      setIsEditing(true);
     } else {
       setIsEditing(false);
     }
   };
 
-  const handleSaveInPlace = () => {
+  const handleSaveInPlace = async () => {
     entry.status = entryStatus;
-    entry.preThoughts = preThoughts || undefined;
-    entry.afterThoughts = entryStatus === "watched" ? (afterThoughts || undefined) : undefined;
-    entry.surgeScore = entryStatus === "watched" ? surgeScore : undefined;
+    entry.preThoughts = preThoughts || "";
+    entry.afterThoughts = entryStatus === "watched" ? (afterThoughts || "") : "";
+    entry.surgeScore = entryStatus === "watched" ? surgeScore : 0;
     if (entryStatus === "watched" && !entry.watchedAt) {
       entry.watchedAt = new Date().toISOString();
     }
+
+    const apiStatus = entryStatus === "watched" ? "WATCHED" : "WANT_TO_WATCH";
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(entry.id);
+    const isValidOriginalUuid = Boolean(
+      entry.originalId &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(entry.originalId)
+    );
+
+    try {
+      if (isValidUuid) {
+        await apiFetch(`/library/${entry.id}/update`, {
+          method: "POST",
+          body: JSON.stringify({
+            pre_thought: preThoughts.trim() || null,
+            post_impression: entryStatus === "watched" ? (afterThoughts.trim() || null) : null,
+            status: apiStatus,
+            surge_score: entryStatus === "watched" ? surgeScore : null,
+          }),
+        });
+      } else if (isValidOriginalUuid) {
+        await apiFetch(`/library/new`, {
+          method: "POST",
+          body: JSON.stringify({
+            original_id: entry.originalId,
+            visibility: true,
+            status: apiStatus,
+            entry_type: "MOVIE",
+            pre_thought: preThoughts.trim() || null,
+            post_impression: entryStatus === "watched" ? (afterThoughts.trim() || null) : null,
+            surge_score: entryStatus === "watched" ? surgeScore : null,
+          }),
+        });
+      }
+    } catch (err) {
+      console.warn("Failed to persist breakdown to backend library:", err);
+    }
+
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -689,49 +759,19 @@ export function LedgerViewer() {
   const hasAfterThoughts = Boolean(afterThoughts);
   const hasSurge = entryStatus === "watched" && Boolean(surgeScore);
 
-  const authorProfile = useMemo(() => {
-    if (entry.artistId) {
-      const found = ARTISTS_MOCK.find((a) => a.id === entry.artistId);
-      if (found) return { name: found.name, image: found.image };
-    }
-    if (entry.starName) {
-      return { name: entry.starName, image: entry.starImageUrl };
-    }
-    return { name: entry.originalName, image: entry.originalPosterUrl };
-  }, [entry]);
 
-  // Add to Ledger functionality
-  const alreadyInUserLedger = useMemo(() => {
-    return mockLedger.some(
-      (l) =>
-        l.originalId === entry.originalId &&
-        (l.artistId === CURRENT_USER_MOCK.id || l.artistId === "fh-001")
-    );
-  }, [entry.originalId]);
-
-  const [addedToLedger, setAddedToLedger] = useState(alreadyInUserLedger);
 
   const handleAddToLedger = () => {
-    if (addedToLedger) return;
-
-    mockLedger.push({
-      id: `wl_user_${Date.now()}`,
-      artistId: CURRENT_USER_MOCK.id || "fh-001",
-      originalId: entry.originalId,
-      originalName: entry.originalName,
-      originalPosterUrl: entry.originalPosterUrl,
-      releaseYear: entry.releaseYear,
-      genre: entry.genre,
-      starName: entry.starName,
-      starImageUrl: entry.starImageUrl,
-      makers: entry.makers,
-      status: "want_to_watch",
-      preThoughts: `Added from ${authorProfile.name}'s breakdown.`,
-      taggedWorks: [],
-      addedAt: new Date().toISOString(),
-    });
-
-    setAddedToLedger(true);
+    apiFetch(`/library/entry`, {
+      method: "POST",
+      body: JSON.stringify({
+        original_id: entry.originalId,
+        status: "want_to_watch",
+        pre_thoughts: `Added from ${authorProfile.name}'s breakdown.`,
+      }),
+    })
+      .then(() => setAddedToLedger(true))
+      .catch(() => setAddedToLedger(true));
   };
 
   return (
@@ -823,14 +863,15 @@ export function LedgerViewer() {
             transition={{ delay: 0.2, duration: 0.5, ease: EASE_OUT }}
             className="flex items-center gap-3 px-10 py-5 border-b border-white/[0.06]"
           >
-            <img
-              src={entry.starImageUrl ?? entry.originalPosterUrl}
-              alt={entry.starName ?? entry.originalName}
-              className="w-8 h-8 rounded-xl object-cover object-top border border-white/10"
+            <ArtistAvatar
+              src={entry.artistProfilePicture || entry.originalPosterUrl}
+              name={entry.artistStageName || entry.originalName}
+              size={32}
+              className="w-8 h-8 rounded-xl shrink-0"
             />
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90">
-                {entry.starName ?? entry.originalName}
+                {entry.artistStageName || entry.originalName}
               </p>
               {watchedDate && (
                 <p className="text-[9px] font-medium text-white/30 flex items-center gap-1 mt-0.5">
@@ -849,7 +890,7 @@ export function LedgerViewer() {
                 }`}
               >
                 <Edit3 className="w-3 h-3" />
-                {isEditing ? "Done" : "Update Breakdown"}
+                {isEditing ? "Done" : "Update"}
               </button>
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
@@ -949,31 +990,20 @@ export function LedgerViewer() {
                       Surge Score
                     </p>
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <span
-                        className="text-[72px] font-black leading-none tracking-tighter"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #F59E0B 0%, #D97706 40%, #FBBF24 70%, #B45309 100%)",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                          filter: "drop-shadow(0 0 24px rgba(217,119,6,0.4))",
-                        }}
-                      >
-                        {Math.min(Math.round((surgeCount / 10000) * 100), 100)}%
-                      </span>
-                      <span className="text-[18px] font-bold text-white/40 tracking-tight font-mono">
-                        {surgeCount.toLocaleString()} / 10,000
-                      </span>
+                    <SurgeScoreDisplay
+                      surgeScore={surgeCount}
+                      peakSnapshot={entry.peakSnapshot || entry.peakScore || 1000}
+                      currentPeakScore={entry.currentPeakScore || undefined}
+                      size="lg"
+                      label="Resonance at time of watching"
+                    />
                     </div>
-                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mt-2">
-                      Resonance at time of watching
-                    </p>
                   </div>
 
                   <div className="pb-2">
                     <SurgeBars
                       score={surgeCount}
-                      highestScore={10000}
+                      highestScore={entry.peakSnapshot || entry.peakScore || 1000}
                       colorVariant="amber"
                       size="lg"
                     />
@@ -1011,7 +1041,7 @@ export function LedgerViewer() {
             <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/20 mb-3">
               Makers
             </p>
-            {entry.makers?.map((m) => (
+            {entry.makers?.map((m: any) => (
               <CreditRow key={m.name} label={m.role} value={m.name} />
             ))}
           </div>
@@ -1061,17 +1091,12 @@ export function LedgerViewer() {
           className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]"
         >
           <div className="flex items-center gap-3">
-            {authorProfile.image ? (
-              <img
-                src={authorProfile.image}
-                alt={authorProfile.name}
-                className="w-8 h-8 rounded-xl object-cover object-top border border-white/10"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white/40 text-xs font-black">
-                {authorProfile.name.charAt(0)}
-              </div>
-            )}
+            <ArtistAvatar
+              src={authorProfile.image}
+              name={authorProfile.name}
+              size={32}
+              className="w-8 h-8 rounded-xl shrink-0"
+            />
             <div className="flex flex-col gap-0.5">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90">
                 {authorProfile.name}
@@ -1094,8 +1119,9 @@ export function LedgerViewer() {
               }`}
             >
               <Edit3 className="w-2.5 h-2.5" />
-              {isEditing ? "Done" : "Update Breakdown"}
+              {isEditing ? "Done" : "Update"}
             </button>
+
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
                 isWatched
@@ -1159,13 +1185,13 @@ export function LedgerViewer() {
                   (() => {
                     const { line1, rest } = splitHeadline(preThoughts);
                     return (
-                      <p className="text-[19px] font-black uppercase tracking-tight leading-[1.3] text-white/90 mb-4">
+                      <div className="text-[19px] font-black uppercase tracking-tight leading-[1.3] text-white/90 mb-4">
                         <span>{line1}</span>
                         <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
                           <MakerCardContent entry={entry} />
                         </span>
                         {rest && <span>{rest}</span>}
-                      </p>
+                      </div>
                     );
                   })()}
 
@@ -1176,20 +1202,22 @@ export function LedgerViewer() {
                     const firstChar = line1.charAt(0);
                     const line1AfterChar = line1.slice(1);
                     return (
-                      <p className="text-[15px] font-medium leading-[1.75] text-white/70">
-                        <DropCapSVG letter={firstChar} artistId={entry.artistId} />
+                      <div className="text-[15px] font-medium leading-[1.75] text-white/70">
+                        <DropCapSVG letter={firstChar} artistId={entry.artistColorTheme || entry.artistId} />
+
                         <span>{line1AfterChar}</span>
                         <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
                           <MakerCardContent entry={entry} />
                         </span>
                         {rest && <span>{rest}</span>}
-                      </p>
+                      </div>
                     );
                   })()}
 
                 {hasPreThoughts && hasAfterThoughts && (
                   <p className="text-[15px] font-medium leading-[1.75] text-white/70">
-                    <DropCapSVG letter={afterThoughts.charAt(0)} artistId={entry.artistId} />
+                    <DropCapSVG letter={afterThoughts.charAt(0)} artistId={entry.artistColorTheme || entry.artistId} />
+
                     {afterThoughts.slice(1)}
                   </p>
                 )}
@@ -1212,7 +1240,9 @@ export function LedgerViewer() {
                 <MobileSurgeScore
                   surgeCount={surgeCount}
                   surgeScore={surgeScore}
+                  peakScore={entry.peakScore || 10000}
                 />
+
               </motion.div>
             )}
           </motion.div>
