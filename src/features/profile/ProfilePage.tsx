@@ -8,16 +8,6 @@ import React, {
 } from "react";
 import { motion } from "motion/react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import {
-  ARTISTS_MOCK,
-  STARS_MOCK,
-  MAKERS_MOCK,
-  CURRENT_USER_MOCK,
-  GRID_ITEMS,
-  ORIGINALS,
-} from "../../mock";
-import { mockLedger } from "../../mock/ledger";
-import { MOCK_RECOMMENDATIONS } from "../../mock/recommendations";
 import { OriginalPosterCard } from "../originals/components/OriginalPosterCard";
 import { LibraryItemSheet } from "./components/LibraryItemSheet";
 import { AnimatePresence } from "motion/react";
@@ -27,7 +17,6 @@ import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
 import { ProfileHero } from "../shared/profile/ProfileHero";
 import { WallFeed } from "./components/WallFeed";
-import { getWallPostsByArtist } from "../../mock/wall";
 import { useAuth, parseColorTheme } from "../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { TheatreItem, Original } from "../../types";
@@ -231,7 +220,8 @@ const ProfilePage: React.FC = () => {
     (async () => {
       setIsInitialLoading(true);
 
-      // Check 1: If current logged-in user matches requested profile handle or ID
+      // Check 1: If current logged-in user matches, set profile display data from cached currentArtist.
+      // We still call get_profile_details below so originals are always fetched from the backend.
       if (
         currentArtist &&
         (currentArtist.name.toLowerCase() === cleanHandle ||
@@ -251,43 +241,56 @@ const ProfilePage: React.FC = () => {
             socials: currentArtist.socials,
             colorTheme: currentArtist.color_theme || `${currentArtist.themeTextColor || "#fac107"},${currentArtist.themeBgColor || "#0f1a42"}`,
           });
-          setIsInitialLoading(false);
         }
-        return;
+        // Fall through to fetch originals from backend
       }
 
       // Check 2: Call backend GET /profiles/get_profile_details/{username}
+      // Always called — even for own profile — to populate originals from the library.
+      const isOwnProfile = !!(
+        currentArtist &&
+        (currentArtist.name.toLowerCase() === cleanHandle ||
+          currentArtist.id.toLowerCase() === profileId.toLowerCase() ||
+          currentArtist.id.toLowerCase().includes(cleanHandle))
+      );
       try {
         const res = await apiFetch(`/profiles/get_profile_details/${cleanHandle}`);
         if (res.ok) {
           const json = await res.json();
           const stage = json.artist_stage || json.data || json;
           if (stage && isMounted) {
-            setBackendProfile({
-              id: stage.id || profileId,
-              name: stage.stageName || stage.userName || cleanHandle,
-              handle: stage.userName || cleanHandle,
-              tagline: stage.tagLine || "Visionary Artist",
-              image: stage.profilePicture || `boring-avatar:${stage.userName || cleanHandle}`,
-              spirit: (stage.spirit || 0).toLocaleString(),
-              favoritesCount: (stage.favoritesCount || 0).toLocaleString(),
-              type: "ARTIST",
-              socials: {
-                instagram: stage.instagramProfile || undefined,
-                twitter: stage.twitterProfile || undefined,
-                youtube: stage.youtubeProfile || undefined,
-              },
-              colorTheme: stage.colorTheme || "#fac107,#0f1a42",
-            });
+            // Only overwrite profile display data if we're NOT on the own profile
+            // (own profile was already set from currentArtist above)
+            if (!isOwnProfile) {
+              setBackendProfile({
+                id: stage.id || profileId,
+                name: stage.stageName || stage.userName || cleanHandle,
+                handle: stage.userName || cleanHandle,
+                tagline: stage.tagLine || "Visionary Artist",
+                image: stage.profilePicture || `boring-avatar:${stage.userName || cleanHandle}`,
+                spirit: (stage.spirit || 0).toLocaleString(),
+                favoritesCount: (stage.favoritesCount || 0).toLocaleString(),
+                type: "ARTIST",
+                socials: {
+                  instagram: stage.instagramProfile || undefined,
+                  twitter: stage.twitterProfile || undefined,
+                  youtube: stage.youtubeProfile || undefined,
+                },
+                colorTheme: stage.colorTheme || "#fac107,#0f1a42",
+              });
+            }
 
             const rawOriginals = stage.originals || json.originals || [];
             if (Array.isArray(rawOriginals) && rawOriginals.length > 0) {
               const mapped: Original[] = rawOriginals.map((og: any) => ({
                 id: og.id,
+                libraryEntryId: og.libraryEntryId || og.library_entry_id,
                 title: og.title || "Untitled Original",
                 description: og.description || "",
                 coverImage: og.coverImage || og.cover_image || "",
                 releaseDate: og.releaseDate || og.release_date || "",
+                director: og.director,
+                castPreview: og.castPreview || og.cast_preview,
                 stats: {
                   presence: 100,
                   members: 0,
@@ -304,80 +307,14 @@ const ProfilePage: React.FC = () => {
           }
         }
       } catch (e) {
-        console.warn("Backend get_profile_details failed, trying mock fallbacks:", e);
+        console.warn("Backend get_profile_details failed:", e);
       }
 
-      // Check 3: Mock Fallback
       if (isMounted) {
-        const artist = ARTISTS_MOCK.find(
-          (p) => p.id.toLowerCase() === profileId.toLowerCase() || p.id.toLowerCase().includes(cleanHandle)
-        );
-        if (artist) {
-          setBackendProfile({
-            id: artist.id,
-            name: artist.name,
-            handle: artist.name.toLowerCase().replace(/ /g, "_"),
-            tagline: artist.bio || "Artist",
-            image: artist.image,
-            spirit: artist.spirit.toLocaleString(),
-            favoritesCount: "18.4K",
-            type: "ARTIST",
-            socials: artist.socials,
-            colorTheme: `${artist.themeTextColor || "#fac107"},${artist.themeBgColor || "#0f1a42"}`,
-          });
-          setIsInitialLoading(false);
-          return;
+        // If it's own profile and backend failed, don't null out the profile we already set
+        if (!isOwnProfile) {
+          setBackendProfile(null);
         }
-
-        const star = STARS_MOCK.find(
-          (s) =>
-            `profile-${s.actorName.toLowerCase().replace(/ /g, "-").replace(/\./g, "")}` === profileId.toLowerCase() ||
-            s.actorName.toLowerCase().includes(cleanHandle)
-        );
-        if (star) {
-          setBackendProfile({
-            id: profileId,
-            name: star.actorName,
-            handle: star.actorName.toLowerCase().replace(/ /g, "_"),
-            tagline: star.characterName,
-            image: star.imageUrl,
-            spirit: "2,480",
-            favoritesCount: "142K",
-            type: "STAR",
-            socials: {
-              instagram: star.actorName.toLowerCase().replace(/ /g, ""),
-              twitter: star.actorName.toLowerCase().replace(/ /g, ""),
-            },
-          });
-          setIsInitialLoading(false);
-          return;
-        }
-
-        const maker = MAKERS_MOCK.find(
-          (m) =>
-            `profile-${m.actorName.toLowerCase().replace(/ /g, "-").replace(/\./g, "")}` === profileId.toLowerCase() ||
-            m.actorName.toLowerCase().includes(cleanHandle)
-        );
-        if (maker) {
-          setBackendProfile({
-            id: profileId,
-            name: maker.actorName,
-            handle: maker.actorName.toLowerCase().replace(/ /g, "_"),
-            tagline: maker.characterName,
-            image: maker.imageUrl,
-            spirit: "1,840",
-            favoritesCount: "82K",
-            type: "MAKER",
-            socials: {
-              instagram: maker.actorName.toLowerCase().replace(/ /g, ""),
-              twitter: maker.actorName.toLowerCase().replace(/ /g, ""),
-            },
-          });
-          setIsInitialLoading(false);
-          return;
-        }
-
-        setBackendProfile(null);
         setIsInitialLoading(false);
       }
     })();
@@ -457,37 +394,16 @@ const ProfilePage: React.FC = () => {
   }), [parsedTheme.themeTextColor]);
 
   const userWorks = useMemo(() => {
-    if (!profile) return [];
-    if (backendWorks.length > 0) return backendWorks;
-    return GRID_ITEMS.filter((w) => w.artistId === profile.id);
-  }, [profile, backendWorks]);
+    return backendWorks;
+  }, [backendWorks]);
 
   const mappedWallPosts = useMemo<WallPost[]>(() => {
-    if (backendWallPosts.length > 0) {
-      // Map raw backend WallPostItem shapes to the frontend WallPost type
-      return backendWallPosts.map(mapBackendWallPost);
-    }
-    // Fallback to mock wall posts for non-UUID artist profiles (stars, makers, mocks)
-    return getWallPostsByArtist(profileId ?? "");
-  }, [backendWallPosts, profileId]);
-
-  const currentArtistId = profileId || "fh-001";
+    return backendWallPosts.map(mapBackendWallPost);
+  }, [backendWallPosts]);
 
   const artistOriginals = useMemo(() => {
-    if (backendOriginals.length > 0) return backendOriginals;
-    return ORIGINALS.filter((org) => {
-      const hasLedger = mockLedger.some(
-        (l) => l.originalId === org.id && (l.artistId === currentArtistId || (!l.artistId && (currentArtistId === "fh-001" || currentArtistId === CURRENT_USER_MOCK.id)))
-      );
-      const hasRec = MOCK_RECOMMENDATIONS.some(
-        (r) => r.original.id === org.id && r.artist.id === currentArtistId
-      );
-      const hasWork = userWorks.some(
-        (w) => w.originalIds?.includes(org.id)
-      );
-      return hasLedger || hasRec || hasWork;
-    });
-  }, [backendOriginals, currentArtistId, userWorks]);
+    return backendOriginals;
+  }, [backendOriginals]);
 
 
   if (isInitialLoading) return <ProfileSkeleton />;
@@ -693,8 +609,8 @@ const ProfilePage: React.FC = () => {
                       <OriginalPosterCard
                         key={original.id}
                         original={original}
-                        makers={MAKERS_MOCK}
-                        stars={STARS_MOCK}
+                        makers={[]}
+                        stars={[]}
                         index={index}
                         onClick={() => setSelectedOriginalId(original.id)}
                       />
@@ -706,13 +622,18 @@ const ProfilePage: React.FC = () => {
                   </div>
                 )}
                 <AnimatePresence>
-                  {selectedOriginalId && (
-                    <LibraryItemSheet
-                      originalId={selectedOriginalId}
-                      profileId={profile?.id || CURRENT_USER_MOCK.id}
-                      onClose={() => setSelectedOriginalId(null)}
-                    />
-                  )}
+                  {selectedOriginalId && (() => {
+                    const selData = artistOriginals.find((o) => String(o.id) === String(selectedOriginalId));
+                    return (
+                      <LibraryItemSheet
+                        originalId={selectedOriginalId}
+                        profileId={profile?.id || "fh-001"}
+                        libraryEntryId={selData?.libraryEntryId}
+                        originalData={selData}
+                        onClose={() => setSelectedOriginalId(null)}
+                      />
+                    );
+                  })()}
                 </AnimatePresence>
               </>
             )}

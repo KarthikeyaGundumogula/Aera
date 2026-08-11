@@ -16,21 +16,23 @@ export const OriginalPosterCard = memo(
     const navigate = useNavigate();
 
     const director = useMemo(() => {
-      return makers.find(
-        (m) =>
-          m.characterName === "Director" &&
-          m.workedOn?.some((w) => w.id === original.id),
+      // Prefer the resolved maker from the makers prop, fall back to the
+      // director string already returned by the backend on the original object
+      const fromProp = makers.find(
+        (m) => m.workedOn?.some((w) => w.id === original.id),
       );
-    }, [makers, original.id]);
+      if (fromProp) return { actorName: fromProp.actorName };
+      const fallback = (original as any).director as string | null | undefined;
+      if (fallback) return { actorName: fallback };
+      return undefined;
+    }, [makers, original]);
 
     const castAndCrewText = useMemo(() => {
       const movieStars = stars.filter((s) =>
         s.workedOn?.some((w) => w.id === original.id),
       );
       const movieMakers = makers.filter(
-        (m) =>
-          m.characterName !== "Director" &&
-          m.workedOn?.some((w) => w.id === original.id),
+        (m) => m.workedOn?.some((w) => w.id === original.id),
       );
 
       const names = [
@@ -38,10 +40,16 @@ export const OriginalPosterCard = memo(
         ...movieMakers.map((m) => m.actorName),
       ];
 
-      if (names.length === 0) return "ENSEMBLE CAST";
-      // Show up to 5 names to ensure it wraps to a second line
-      return names.slice(0, 5).join(" • ").toUpperCase();
-    }, [stars, makers, original.id]);
+      if (names.length > 0) {
+        return names.slice(0, 5).join(" • ").toUpperCase();
+      }
+
+      // Fall back to castPreview string from backend
+      const preview = (original as any).castPreview || (original as any).cast_preview;
+      if (preview) return String(preview).toUpperCase();
+
+      return "ENSEMBLE CAST";
+    }, [stars, makers, original]);
 
     const year = useMemo(() => {
       if (!original.releaseDate || typeof original.releaseDate !== "string") return null;

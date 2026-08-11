@@ -2,13 +2,24 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { Sparkles, Sun, Users, QrCode, Film } from "lucide-react";
-import { ORIGINALS, STARS_MOCK, MAKERS_MOCK } from "../../../mock";
-
-// Pick top originals (e.g., first 4)
-const RECOMMENDED_ORIGINALS = ORIGINALS.slice(0, 4);
+import { apiFetch } from "@/lib/api";
+import { useState, useEffect } from "react";
+import type { Original } from "@/types/originals";
 
 export function TopOriginalsSection() {
   const navigate = useNavigate();
+  const [originals, setOriginals] = useState<Original[]>([]);
+
+  useEffect(() => {
+    apiFetch("/originals")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setOriginals(json.items || json.data || []);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="relative">
@@ -21,12 +32,10 @@ export function TopOriginalsSection() {
       {/* Centered Desktop Carousel */}
       <div className="overflow-x-auto no-scrollbar pb-6 w-full">
         <div className="flex gap-4 sm:gap-6 w-max px-6 md:px-12 mx-auto">
-          {RECOMMENDED_ORIGINALS.map((orig) => {
-            const originalStars = STARS_MOCK.filter(
-              (s) => s.originalId === orig.id,
-            ).slice(0, 3);
-            const maker = MAKERS_MOCK.find((m) => m.originalId === orig.id);
-            const ticketNo = `TKT-${orig.id.slice(0, 6).toUpperCase()}`;
+          {originals.map((orig: any) => {
+            const director = orig.director as string | null | undefined;
+            const castPreview = (orig.castPreview || orig.cast_preview) as string | null | undefined;
+            const ticketNo = `TKT-${(orig.id || "").slice(0, 6).toUpperCase()}`;
 
             return (
               <motion.div
@@ -56,16 +65,16 @@ export function TopOriginalsSection() {
                     </div>
 
                     {/* Titles */}
-                    {maker && (
+                    {director && (
                       <p className="text-[7px] sm:text-[8px] text-white/40 uppercase tracking-[0.2em] mb-1 sm:mb-2 font-bold">
-                        from -  {maker.actorName}
+                        from — {director}
                       </p>
                     )}
                     <h4 className="text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-widest text-white mb-2 leading-none drop-shadow-md line-clamp-2 break-words">
                       {orig.title}
                     </h4>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      {orig.genre?.slice(0, 2).map((g) => (
+                      {orig.genre?.slice(0, 2).map((g: any) => (
                         <span
                           key={g}
                           className="px-1.5 py-0.5 bg-white/10 text-white/90 text-[6px] sm:text-[7px] font-bold uppercase tracking-widest rounded-sm border border-white/5"
@@ -101,22 +110,11 @@ export function TopOriginalsSection() {
                       </div>
                     )}
 
-                    <div className="flex items-center">
-                      {originalStars.map((star, i) => (
-                        <div
-                          key={star.actorName}
-                          className={`w-5 h-5 sm:w-7 sm:h-7 rounded-md border border-[#111] overflow-hidden bg-surface-deep shadow-md ${i > 0 ? "-ml-1.5 sm:-ml-2" : ""}`}
-                          style={{ zIndex: 10 - i }}
-                          title={star.actorName}
-                        >
-                          <img
-                            src={star.imageUrl}
-                            alt={star.actorName}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                    {castPreview && (
+                      <p className="text-[7px] sm:text-[8px] text-white/50 uppercase tracking-[0.15em] font-bold truncate">
+                        {castPreview}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -146,7 +144,7 @@ export function TopOriginalsSection() {
                       <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-amber-500 mb-1">
                         <Sun className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="text-sm sm:text-lg font-black tracking-tighter leading-none">
-                          {orig.stats.presence}
+                          {orig.stats?.presence ?? "—"}
                         </span>
                       </div>
                       <p className="text-[6px] sm:text-[7px] text-white/50 uppercase tracking-[0.2em] font-bold">
@@ -160,7 +158,7 @@ export function TopOriginalsSection() {
                       <div className="flex items-center justify-center gap-1 text-white/90 mb-1">
                         <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         <span className="text-[10px] sm:text-xs font-black tracking-tight leading-none">
-                          {orig.stats.members.toLocaleString()}
+                          {(orig.stats?.members ?? 0).toLocaleString()}
                         </span>
                       </div>
                       <p className="text-[5px] sm:text-[6px] text-white/40 uppercase tracking-[0.2em] font-bold leading-tight">
