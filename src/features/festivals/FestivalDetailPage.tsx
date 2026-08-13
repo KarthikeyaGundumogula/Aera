@@ -4,7 +4,7 @@ import { Clock, UserPlus, Share2, Settings, Upload, Plus } from 'lucide-react';
 import { FESTIVALS, SETS, ARTISTS_MOCK, GRID_ITEMS } from '../../mock';
 import { CinematicPageHeader } from '../../components/CinematicPageHeader';
 import { CommandCenter, CommandItem } from '../../components/CommandCenter';
-import { FestivalSpotlightPlayer } from './components/FestivalSpotlightPlayer';
+import { RecentReleasesSection } from '../shared/components/RecentReleasesSection';
 import { ArtistSpotlightGrid } from '../../components/ArtistSpotlightGrid';
 import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSection';
 import { UpdateFestivalModal } from './components/UpdateFestivalModal';
@@ -162,7 +162,11 @@ export function FestivalDetailPage() {
       </section>
 
       {/* ─── Layer II: Panelist Spotlight ─────────────────────────────────── */}
-      <FestivalSpotlightPlayer works={festivalWorks} />
+      <RecentReleasesSection 
+        title="Panelist Spotlight" 
+        works={festivalWorks}
+        className="pt-4 pb-6"
+      />
 
       {/* ─── Layer III: Participants ──────────────────────────────────────── */}
       <ArtistSpotlightGrid 
@@ -170,7 +174,7 @@ export function FestivalDetailPage() {
         artists={participants}
         rows={2}
         variant="default"
-        containerClassName="pt-6 pb-12"
+        containerClassName="pt-4 pb-6"
       />
 
       {/* ─── Layer IV: Festival Theatre Preview ───────────────────────────── */}

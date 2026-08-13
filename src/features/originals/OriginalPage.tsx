@@ -185,10 +185,10 @@ export function OriginalPage() {
       </motion.div>
 
       {/* RECENT RELEASES */}
-      <RecentReleasesSection />
+      <RecentReleasesSection className="pt-8 pb-6" />
 
       {/* Star Spotlight */}
-      <section className="px-8 pt-10 pb-4">
+      <section className="px-8 pt-6 pb-4">
         <SectionHeader title="Stars" containerClassName="mb-6" />
 
         <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">

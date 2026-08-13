@@ -40,14 +40,13 @@ export const RecommendationCard = memo(function RecommendationCard({
 }: Props) {
   const navigate = useNavigate();
 
-  const hasBreakdown = React.useMemo(() => {
-    const ledgerEntry = mockLedger.find(
+  const ledgerEntry = React.useMemo(() => {
+    return mockLedger.find(
       (l) =>
         (l.artistId === rec.artist.id || (!l.artistId && (rec.artist.id === "fh-001" || rec.artist.id === CURRENT_USER_MOCK.id))) &&
         l.originalId === rec.original.id &&
-        (Boolean(l.afterThoughts) || Boolean(l.preThoughts) || l.status === "watched")
+        (Boolean(l.afterThoughts) || Boolean(l.preThoughts))
     );
-    return Boolean(ledgerEntry || rec.notes);
   }, [rec]);
 
   const [notesExpanded, setNotesExpanded] = useState(false);
@@ -297,11 +296,11 @@ export const RecommendationCard = memo(function RecommendationCard({
                 {rec.original.title}
               </h3>
               <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
-                {hasBreakdown && (
+                {ledgerEntry && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/profile/${rec.artist.id}/recommendations/${rec.original.id}`);
+                      navigate(`/ledger/${ledgerEntry.id}`);
                     }}
                     className="flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-white/40 hover:text-amber-400 hover:bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/10 transition-colors cursor-pointer"
                     title="View Breakdown"

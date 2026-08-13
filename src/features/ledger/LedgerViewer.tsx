@@ -1159,13 +1159,13 @@ export function LedgerViewer() {
                   (() => {
                     const { line1, rest } = splitHeadline(preThoughts);
                     return (
-                      <p className="text-[19px] font-black uppercase tracking-tight leading-[1.3] text-white/90 mb-4">
+                      <div className="text-[19px] font-black uppercase tracking-tight leading-[1.3] text-white/90 mb-4">
                         <span>{line1}</span>
                         <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
                           <MakerCardContent entry={entry} />
                         </span>
                         {rest && <span>{rest}</span>}
-                      </p>
+                      </div>
                     );
                   })()}
 
@@ -1176,14 +1176,14 @@ export function LedgerViewer() {
                     const firstChar = line1.charAt(0);
                     const line1AfterChar = line1.slice(1);
                     return (
-                      <p className="text-[15px] font-medium leading-[1.75] text-white/70">
+                      <div className="text-[15px] font-medium leading-[1.75] text-white/70">
                         <DropCapSVG letter={firstChar} artistId={entry.artistId} />
                         <span>{line1AfterChar}</span>
                         <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
                           <MakerCardContent entry={entry} />
                         </span>
                         {rest && <span>{rest}</span>}
-                      </p>
+                      </div>
                     );
                   })()}
 

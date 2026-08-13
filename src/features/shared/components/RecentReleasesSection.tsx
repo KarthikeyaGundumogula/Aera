@@ -4,34 +4,87 @@ import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../../components/SectionHeader';
 import { FHLoader } from '../../../components/FHLoader';
 import { buildEmbedUrl } from '../../../utils/embed';
+import { useTwitterWidgets } from '../../../hooks/useTwitterWidgets';
 import { GRID_ITEMS, ORIGINALS } from '../../../mock';
+import { TheatreItem } from '../../../types';
+
+interface ReleasePlayerMediaProps {
+  currentWork: TheatreItem;
+  isIntersecting: boolean;
+}
+
+const ReleasePlayerMedia = memo(function ReleasePlayerMedia({ currentWork, isIntersecting }: ReleasePlayerMediaProps) {
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+  const isYoutube = currentWork?.platform === 'youtube';
+  const isTwitter = currentWork?.platform === 'twitter';
+  const embedUrl = isYoutube && currentWork?.srcId ? buildEmbedUrl('youtube', currentWork.srcId) : '';
+
+  const { containerRef, isLoaded: isTwitterLoaded } = useTwitterWidgets(
+    isTwitter && isIntersecting ? currentWork.srcId : undefined
+  );
+
+  useEffect(() => {
+    setIsIframeLoaded(false);
+  }, [currentWork.id]);
+
+  const isFullyLoaded = isYoutube ? isIframeLoaded : (isTwitter ? isTwitterLoaded : true);
+
+  return (
+    <>
+      {(!isIntersecting || !isFullyLoaded) && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
+          <FHLoader label="Loading" />
+        </div>
+      )}
+
+      {isIntersecting && isYoutube && embedUrl && (
+        <iframe
+          key={`yt-${currentWork.id}`}
+          src={embedUrl}
+          className="absolute inset-0 w-full h-full border-none z-10"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          onLoad={() => setIsIframeLoaded(true)}
+        />
+      )}
+
+      {isIntersecting && isTwitter && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-2">
+          <div ref={containerRef} className="w-full max-w-[560px] flex justify-center scale-95" />
+        </div>
+      )}
+    </>
+  );
+});
 
 interface RecentReleasesSectionProps {
   title?: string;
   icon?: ElementType;
   className?: string;
   headerClassName?: string;
+  works?: TheatreItem[];
 }
 
 export const RecentReleasesSection = memo(function RecentReleasesSection({ 
   title = "Releases",
   icon,
   className = "pt-8 pb-12",
-  headerClassName = "mb-8"
+  headerClassName = "mb-8",
+  works
 }: RecentReleasesSectionProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isIntersecting, setIsIntersecting] = useState(false);
-  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
-  // Filter top 5 YouTube releases based on credits
+  // Filter top 5 YouTube releases based on credits if works is not provided
   const recentReleases = useMemo(() => {
+    if (works) return works;
     return GRID_ITEMS
       .filter(w => w.platform === 'youtube')
       .sort((a, b) => (b.credits || 0) - (a.credits || 0))
       .slice(0, 5);
-  }, []);
+  }, [works]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -42,11 +95,6 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
     return () => observer.disconnect();
   }, []);
 
-  // Reset iframe loading state when switching videos
-  useEffect(() => {
-    setIsIframeLoaded(false);
-  }, [currentIndex]);
-
   const currentWork = recentReleases[currentIndex];
 
   const currentOriginal = useMemo(() => {
@@ -55,8 +103,6 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
   }, [currentWork]);
 
   if (!recentReleases.length) return null;
-
-  const embedUrl = currentWork?.srcId ? buildEmbedUrl('youtube', currentWork.srcId) : '';
 
   const handleNext = () => setCurrentIndex(i => Math.min(i + 1, recentReleases.length - 1));
   const handlePrev = () => setCurrentIndex(i => Math.max(i - 1, 0));
@@ -78,22 +124,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
               maxWidth: "calc((100vh - 280px) * 16 / 9)"
             }}
           >
-             {(!isIntersecting || !isIframeLoaded) && (
-               <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
-                 <FHLoader label="Loading" />
-               </div>
-             )}
-
-             {isIntersecting && embedUrl && (
-               <iframe
-                 key={`yt-desktop-${currentWork.id}`}
-                 src={embedUrl}
-                 className="absolute inset-0 w-full h-full border-none z-10"
-                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                 allowFullScreen
-                 onLoad={() => setIsIframeLoaded(true)}
-               />
-             )}
+             <ReleasePlayerMedia currentWork={currentWork} isIntersecting={isIntersecting} />
           </div>
 
           {/* Controls & Metadata */}
@@ -156,22 +187,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
           <div className="px-2">
             {/* Neumorphic Player Container */}
             <div className="relative aspect-video rounded-2xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-               {(!isIntersecting || !isIframeLoaded) && (
-                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
-                   <FHLoader label="Loading Celebration" />
-                 </div>
-               )}
-
-               {isIntersecting && embedUrl && (
-                 <iframe
-                   key={`yt-mobile-${currentWork.id}`}
-                   src={embedUrl}
-                   className="absolute inset-0 w-full h-full border-none z-10"
-                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                   allowFullScreen
-                   onLoad={() => setIsIframeLoaded(true)}
-                 />
-               )}
+               <ReleasePlayerMedia currentWork={currentWork} isIntersecting={isIntersecting} />
             </div>
           </div>
 
