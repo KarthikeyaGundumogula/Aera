@@ -18,7 +18,9 @@ export default function ReservedArtistsPage() {
           setArtists(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[ReservedArtistsPage] Failed to fetch reserved artists:", err);
+      });
   }, []);
 
   const claimedIds = ["fh-001"];

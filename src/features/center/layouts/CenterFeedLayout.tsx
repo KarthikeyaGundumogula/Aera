@@ -86,7 +86,9 @@ export function CenterFeedLayout() {
           setItems(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[CenterFeedLayout] Failed to fetch theatre items:", err);
+      });
   }, []);
 
   // Defer heavy layout data so the hero/header paints immediately on mount

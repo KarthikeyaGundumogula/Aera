@@ -2,6 +2,7 @@ import { memo, useMemo } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { Original, OriginalMaker, OriginalStar } from "../../../types";
+import { PosterImage } from "../../../components/PosterImage";
 
 interface OriginalPosterCardProps {
   original: Original;
@@ -158,9 +159,10 @@ export const OriginalPosterCard = memo(
               boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
             }}
           >
-            <img
+            <PosterImage
               src={original.coverImage}
-              alt={`${original.title} poster`}
+              alt={original.title}
+              info={director ? `DIR. ${director}` : original.genre?.slice(0, 1).join("")}
               loading="lazy"
               className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105 group-hover:brightness-110"
             />

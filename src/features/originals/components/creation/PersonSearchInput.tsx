@@ -56,7 +56,9 @@ export function PersonSearchInput({
           setProfiles(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[PersonSearchInput] Failed to search profiles:", err);
+      });
   }, [query]);
 
   // Focus the search input on mount

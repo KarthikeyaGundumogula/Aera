@@ -37,7 +37,9 @@ export function FoyerSection() {
           setArtistGroups(json.data || json.groups || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[FoyerSection] Failed to fetch foyer wall posts:", err);
+      });
   }, []);
 
   const handleFetchOlder = async (artistId: string) => {

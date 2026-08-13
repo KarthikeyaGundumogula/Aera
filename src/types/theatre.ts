@@ -22,3 +22,18 @@ export interface TheatreItem {
   originalIds?: string[]; // Reference to Originals (can be multiple)
   recId?: string;        // Links to Recommendation.id — only set when category === 'Recommendation'
 }
+
+/**
+ * Minimal work record returned by GET /festivals/{id}/works for the panelist spotlight player.
+ * Maps directly to tars ReleaseSectionWork response struct (camelCase).
+ */
+export interface ReleaseSectionWork {
+  workId: string;
+  artistName: string;
+  /** Platform-specific content ID (YouTube video ID, Twitter tweet ID). */
+  workSrcId: string;
+  /** 'YOUTUBE' | 'TWITTER' | 'NATIVE' */
+  platform: 'YOUTUBE' | 'TWITTER' | 'NATIVE';
+  /** 'EDIT' | 'POSTER' | 'SCRIPT' */
+  category: 'EDIT' | 'POSTER' | 'SCRIPT';
+}

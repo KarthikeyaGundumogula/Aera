@@ -63,7 +63,9 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
           setItems(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[DesktopCanvas] Failed to fetch theatre items:", err);
+      });
   }, []);
 
   // Pre-compute cluster pool from live data

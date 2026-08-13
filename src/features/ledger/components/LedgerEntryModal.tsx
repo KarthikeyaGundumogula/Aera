@@ -21,6 +21,7 @@ import {
 import type { LedgerItem } from "@/types/ledger";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
+import { PosterImage } from "@/components/PosterImage";
 import { useSearchQuery } from "@/lib/search";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -154,12 +155,12 @@ function OriginalsSearch({
               onClick={() => onSelect(original)}
               className="w-full flex items-center gap-4 px-5 py-3 hover:bg-white/[0.03] transition-colors text-left border-b border-white/[0.03] last:border-0 focus:outline-none"
             >
-              <img
+              <PosterImage
                 loading="lazy"
                 src={original.coverImage}
                 alt={original.title}
+                info={original.releaseDate}
                 className="w-9 rounded-lg object-cover object-top opacity-70 flex-shrink-0"
-                style={{ aspectRatio: "2/3", height: "54px" }}
               />
               <div className="flex-1 min-w-0">
                 <span className="block text-xs font-light text-white/80 truncate">
@@ -515,9 +516,10 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
                     >
                       {selectedOriginal ? (
                         <>
-                          <img
+                          <PosterImage
                             src={selectedOriginal.coverImage}
                             alt={selectedOriginal.title}
+                            info={selectedOriginal.genre?.slice(0, 2).join(" • ")}
                             className="absolute inset-0 w-full h-full object-cover object-top transition-[filter] duration-500 group-hover:brightness-50"
                           />
                           <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">

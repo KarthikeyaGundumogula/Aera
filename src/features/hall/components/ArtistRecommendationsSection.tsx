@@ -20,7 +20,9 @@ export function ArtistRecommendationsSection() {
           setRecommendations(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[ArtistRecommendationsSection] Failed to fetch recommendations:", err);
+      });
   }, []);
 
   const displayRecs = React.useMemo(() => {

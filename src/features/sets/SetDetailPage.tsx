@@ -27,6 +27,8 @@ import { UpdateSetModal } from "./components/UpdateSetModal";
 import { CreateFestivalModal } from "./components/CreateFestivalModal";
 import { NotFoundOverlay } from "../../components/NotFoundOverlay";
 import { apiFetch } from "@/lib/api";
+import { Set as SetType, Festival } from "../../types/sets";
+import { TheatreItem } from "../../types";
 
 /**
  * SetDetailPage — /sets/:id
@@ -36,11 +38,11 @@ export function SetDetailPage() {
   const navigate = useNavigate();
   const { currentArtist } = useAuth();
 
-  const [localSet, setLocalSet] = useState<any>(null);
+  const [localSet, setLocalSet] = useState<SetType | null>(null);
   const [loading, setLoading] = useState(true);
   const [discussions, setDiscussions] = useState<any[]>([]);
-  const [theatreWorks, setTheatreWorks] = useState<any[]>([]);
-  const [fetchedFestivals, setFetchedFestivals] = useState<any[]>([]);
+  const [theatreWorks, setTheatreWorks] = useState<TheatreItem[]>([]);
+  const [fetchedFestivals, setFetchedFestivals] = useState<Festival[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -114,10 +116,11 @@ export function SetDetailPage() {
           const json = await festRes.json();
           const list = json.data || json;
           if (Array.isArray(list) && isMounted) {
-            const mappedFestivals = list.map((f: any) => ({
+            const mappedFestivals: Festival[] = list.map((f: any) => ({
               id: f.id,
-              setId: f.setId || f.set_id,
-              title: f.title || f.name,
+              setId: f.setId || f.set_id || "",
+              organizerId: f.organizerId || f.organizer_id || "",
+              title: f.title || f.name || "Festival",
               description: f.description || "",
               rules: Array.isArray(f.rules) ? f.rules : f.rules ? [f.rules] : [],
               startDate: f.startDate || f.start_date || new Date().toISOString(),
@@ -130,7 +133,9 @@ export function SetDetailPage() {
           }
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.error("[SetDetailPage] Failed to fetch set details:", err);
+      })
       .finally(() => {
         if (isMounted) setLoading(false);
       });
@@ -143,23 +148,23 @@ export function SetDetailPage() {
   const set = localSet;
 
   const allFestivals = useMemo(() => {
-    return fetchedFestivals.filter((f: any) => String(f.setId) === String(id));
+    return fetchedFestivals.filter((f) => String(f.setId) === String(id));
   }, [fetchedFestivals, id]);
 
   const activeFestival = useMemo(() => {
     if (!set) return null;
     if (set.activeFestivalId) {
-      const match = allFestivals.find((f: any) => String(f.id) === String(set.activeFestivalId));
+      const match = allFestivals.find((f) => String(f.id) === String(set.activeFestivalId));
       if (match) return match;
     }
     return (
-      allFestivals.find((f: any) => f.status === "LIVE" || f.status === "UPCOMING") ||
+      allFestivals.find((f) => f.status === "LIVE" || f.status === "UPCOMING") ||
       allFestivals[0] ||
       null
     );
   }, [set, allFestivals]);
 
-  const captain: any = useMemo(() => null, []);
+  const captain = null as { id: string; name: string; profilePicture?: string } | null;
 
   const setWorks = useMemo(() => {
     if (!theatreWorks || !Array.isArray(theatreWorks)) return [];
@@ -218,9 +223,17 @@ export function SetDetailPage() {
           method: "POST",
           body: JSON.stringify({ set_id: id }),
         });
-        if (res.ok) setIsJoined(true);
-      } catch {
-        setIsJoined(true);
+        if (res.ok) {
+          setIsJoined(true);
+          triggerToast("Successfully joined set!");
+        } else {
+          const json = await res.json().catch(() => ({}));
+          const errMsg = json.error || json.message || "Failed to join set. Please try again.";
+          triggerToast(errMsg);
+        }
+      } catch (err) {
+        console.error("[SetDetailPage] Error joining set:", err);
+        triggerToast("Failed to join set. Please try again.");
       }
     } else {
       if (isCreator) {
@@ -234,13 +247,15 @@ export function SetDetailPage() {
         });
         if (res.ok) {
           setIsJoined(false);
+          triggerToast("Left set.");
         } else {
           const json = await res.json().catch(() => ({}));
-          const errMsg = json.error || json.message || "As you are the creator, you can't leave the set";
+          const errMsg = json.error || json.message || "Failed to leave set. Please try again.";
           triggerToast(errMsg);
         }
-      } catch {
-        triggerToast("As you are the creator, you can't leave the set");
+      } catch (err) {
+        console.error("[SetDetailPage] Error leaving set:", err);
+        triggerToast("Failed to leave set. Please try again.");
       }
     }
   };
@@ -300,10 +315,11 @@ export function SetDetailPage() {
               const json = await festRes.json();
               const list = json.data || json;
               if (Array.isArray(list)) {
-                const mappedFestivals = list.map((f: any) => ({
+                const mappedFestivals: Festival[] = list.map((f: any) => ({
                   id: f.id,
-                  setId: f.setId || f.set_id,
-                  title: f.title || f.name,
+                  setId: f.setId || f.set_id || "",
+                  organizerId: f.organizerId || f.organizer_id || "",
+                  title: f.title || f.name || "Festival",
                   description: f.description || "",
                   rules: Array.isArray(f.rules) ? f.rules : f.rules ? [f.rules] : [],
                   startDate: f.startDate || f.start_date || new Date().toISOString(),
@@ -322,7 +338,8 @@ export function SetDetailPage() {
         const msg = errJson.error || errJson.message || "Failed to create festival";
         triggerToast(msg);
       }
-    } catch {
+    } catch (err) {
+      console.error("[SetDetailPage] Failed to create festival:", err);
       triggerToast("Failed to create festival");
     }
   };

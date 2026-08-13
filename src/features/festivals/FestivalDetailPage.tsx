@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, UserPlus, Share2, Settings, Upload, Plus } from 'lucide-react';
+import { Clock, Share2, Settings, Upload, Plus } from 'lucide-react';
 import { CinematicPageHeader } from '../../components/CinematicPageHeader';
 import { CommandCenter, CommandItem } from '../../components/CommandCenter';
 import { FestivalSpotlightPlayer } from './components/FestivalSpotlightPlayer';
@@ -8,7 +8,7 @@ import { ArtistSpotlightGrid } from '../../components/ArtistSpotlightGrid';
 import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSection';
 import { UpdateFestivalModal } from './components/UpdateFestivalModal';
 import { AddPanelistModal } from './components/AddPanelistModal';
-import { OriginalArtist } from '../../types';
+import { OriginalArtist, ReleaseSectionWork, TheatreItem } from '../../types';
 import { apiFetch } from '@/lib/api';
 
 export function FestivalDetailPage() {
@@ -17,28 +17,75 @@ export function FestivalDetailPage() {
 
   const [localFestival, setLocalFestival] = useState<any>(null);
   const [set, setSet] = useState<any>({ id: "set-1", title: "Set" });
+  const [spotlightWorks, setSpotlightWorks] = useState<ReleaseSectionWork[]>([]);
+  const [theatreWorks, setTheatreWorks] = useState<TheatreItem[]>([]);
+  const [backendPanelists, setBackendPanelists] = useState<OriginalArtist[]>([]);
+  const [addedPanelists, setAddedPanelists] = useState<OriginalArtist[]>([]);
 
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isAddPanelistModalOpen, setIsAddPanelistModalOpen] = useState(false);
+
+  // ─── Query 1: Festival Metadata + Panelist Spotlight Cards ────────────────
   useEffect(() => {
     if (!id) return;
-    apiFetch(`/festivals/${id}`)
+    let isMounted = true;
+
+    apiFetch(`/festivals/${id}?panelist_limit=12`)
       .then(async (res) => {
-        if (res.ok) {
+        if (res.ok && isMounted) {
           const json = await res.json();
           const data = json.festival || json.data || json;
           setLocalFestival(data);
+          if (data.panelists && Array.isArray(data.panelists)) {
+            setBackendPanelists(data.panelists);
+          }
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.warn('Failed to fetch festival detail:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
-  const festivalWorks = useMemo(() => [], []);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isAddPanelistModalOpen, setIsAddPanelistModalOpen] = useState(false);
-  const [addedPanelists, setAddedPanelists] = useState<OriginalArtist[]>([]);
+  // ─── Query 2: Spotlight Works + Theatre Works (Paginated Feeds) ───────────
+  useEffect(() => {
+    if (!id) return;
+    let isMounted = true;
+
+    apiFetch(`/festivals/${id}/works?spotlight_limit=6&theatre_limit=8`)
+      .then(async (res) => {
+        if (res.ok && isMounted) {
+          const json = await res.json();
+          const data = json.data || json;
+          if (data.spotlightWorks && Array.isArray(data.spotlightWorks)) {
+            setSpotlightWorks(data.spotlightWorks);
+          }
+          if (data.theatreWorks && Array.isArray(data.theatreWorks)) {
+            const mapped: TheatreItem[] = data.theatreWorks.map((w: any) => ({
+              id: w.id,
+              title: w.title || undefined,
+              category: w.workType,
+              image: w.thumbnail || undefined,
+            }));
+            setTheatreWorks(mapped);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to fetch festival works:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   const participants = useMemo(() => {
-    return [...addedPanelists];
-  }, [addedPanelists]);
+    return [...addedPanelists, ...backendPanelists];
+  }, [addedPanelists, backendPanelists]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -62,7 +109,7 @@ export function FestivalDetailPage() {
       image: `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanHandle)}`,
       spirit: 0,
       works: 0,
-    } as any;
+    } as OriginalArtist;
     setAddedPanelists(prev => [found, ...prev]);
   };
 
@@ -173,7 +220,7 @@ export function FestivalDetailPage() {
       </section>
 
       {/* ─── Layer II: Panelist Spotlight ─────────────────────────────────── */}
-      <FestivalSpotlightPlayer works={festivalWorks} />
+      <FestivalSpotlightPlayer works={spotlightWorks} />
 
       {/* ─── Layer III: Participants ──────────────────────────────────────── */}
       <ArtistSpotlightGrid 
@@ -187,7 +234,7 @@ export function FestivalDetailPage() {
       {/* ─── Layer IV: Festival Theatre Preview ───────────────────────────── */}
       <TheatrePreviewSection
         title={`${localFestival.title} Archive`}
-        works={festivalWorks}
+        works={theatreWorks}
         enterUrl={`/festivals/${localFestival.id}/theatre`}
       />
 

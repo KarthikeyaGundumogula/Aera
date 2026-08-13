@@ -66,7 +66,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
     return () => clearTimeout(timer);
   }, [currentIndex, currentWork?.id]);
 
-  const currentOriginal: any = null;
+  const currentOriginal = null as { id: string; title: string } | null;
 
   if (!recentReleases.length) return null;
 

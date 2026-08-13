@@ -144,7 +144,7 @@ export const RecommendationCard = memo(function RecommendationCard({
 
           {/* Right: Genre Tags */}
           <div className="flex items-center gap-1.5">
-            {rec.original.genres?.slice(0, 2).map((g: any) => (
+            {rec.original.genres?.slice(0, 2).map((g) => (
               <span
                 key={g}
                 className="text-[8px] font-black uppercase tracking-[0.2em] text-white/60 border border-white/20 px-2.5 py-1 rounded-xl bg-black/10 backdrop-blur-md"
@@ -179,6 +179,15 @@ export const RecommendationCard = memo(function RecommendationCard({
             {/* Poster — fixed height so tall images don't inflate card */}
             <div className="px-2.5 pt-2.5 pb-2 shrink-0">
               <div
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/originals/${rec.original.id}`);
+                  }
+                }}
                 className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -251,9 +260,18 @@ export const RecommendationCard = memo(function RecommendationCard({
                     Stars
                   </p>
                   <div className="flex flex-col gap-1">
-                    {rec.original.stars.slice(0, 3).map((star: any) => (
+                    {rec.original.stars.slice(0, 3).map((star) => (
                       <div
                         key={star}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigate(`/profile/${star}`);
+                          }
+                        }}
                         className="group/star flex items-center gap-0.5 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();

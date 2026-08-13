@@ -10,6 +10,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
+import { PosterImage } from "../../../components/PosterImage";
 import type { LedgerItem } from "@/types/ledger";
 import { LedgerTaggedWorksStack } from "./LedgerTaggedWorksStack";
 
@@ -58,10 +59,11 @@ export const LedgerItemCard = memo(function LedgerItemCard({
         {/* Left: Poster - Fixed Dimensions with no stretching/cropping */}
         <div className="w-24 sm:w-32 flex-shrink-0 relative bg-black/40 border-r border-white/5">
           <div className="aspect-[2/3] relative w-full overflow-hidden">
-            <img
+            <PosterImage
               loading="lazy"
               src={item.originalPosterUrl}
               alt={item.originalName}
+              info={item.status === "want_to_watch" ? "Pending" : "Watched"}
               className="w-full h-full object-contain transition-transform duration-1000 opacity-90 group-hover:scale-105 group-hover:opacity-100"
             />
           </div>

@@ -4,6 +4,7 @@ import { X, Eye, Clock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { SurgeScoreDisplay } from "../../../components/surge/SurgeScoreDisplay";
+import { PosterImage } from "../../../components/PosterImage";
 
 
 import { apiFetch } from "@/lib/api";
@@ -53,7 +54,9 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
             }
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("[LibraryItemSheet] Failed to fetch original data:", err);
+        });
     }
 
     // 2. Fetch compact sheet detail strictly by libraryEntryId (lib.id) retrieved from get_user_library
@@ -86,7 +89,9 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
             }
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("[LibraryItemSheet] Failed to fetch sheet detail:", err);
+        });
     }
 
 
@@ -148,9 +153,10 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
           <>
             {/* Poster + Meta Row */}
             <div className="flex gap-4">
-              <img
-                src={original.coverImage || original.cover_image || original.cover_img || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&auto=format&fit=crop&q=80"}
+              <PosterImage
+                src={original.coverImage || original.cover_image || original.cover_img}
                 alt={original.title}
+                info={original.genre?.slice?.(0, 2)?.join?.(" • ")}
                 className="w-20 sm:w-24 aspect-[2/3] object-cover rounded-xl border border-white/10 shadow-lg shrink-0"
               />
               <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">

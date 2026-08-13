@@ -20,7 +20,9 @@ export function LedgerPage() {
           setLedger(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[LedgerPage] Failed to fetch library items:", err);
+      });
   }, []);
 
   const handleUpdateItem = (updatedItem: LedgerItem) => {

@@ -21,7 +21,9 @@ export function RecommendationViewer({ item }: RecommendationViewerProps) {
           setRec(json.data || json);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[RecommendationViewer] Failed to fetch recommendation detail:", err);
+      });
   }, [item.recId]);
 
   return (

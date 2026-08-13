@@ -21,7 +21,9 @@ export function MobileCanvas() {
           setClusters(built);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[MobileCanvas] Failed to fetch theatre items:", err);
+      });
   }, []);
 
   // isLoadingRef: mutable flag that guards against sentinel firing twice

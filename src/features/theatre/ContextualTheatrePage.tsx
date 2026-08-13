@@ -68,7 +68,9 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
             if (isMounted && data.title) setSubtitle(data.title);
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("[ContextualTheatrePage] Failed to fetch set detail:", err);
+        });
     } else if (type === "festival") {
       apiFetch(`/festivals/${id}`)
         .then(async (res) => {
@@ -78,7 +80,9 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
             if (isMounted && data.title) setSubtitle(data.title);
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("[ContextualTheatrePage] Failed to fetch festival detail:", err);
+        });
     }
 
     return () => {

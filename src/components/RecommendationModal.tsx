@@ -59,7 +59,9 @@ export function RecommendationModal({
             setRecs(items);
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("[RecommendationModal] Failed to fetch recommendations:", err);
+        });
     }
   }, [isOpen]);
 

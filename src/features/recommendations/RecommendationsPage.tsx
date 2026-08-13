@@ -18,7 +18,9 @@ export function RecommendationsPage() {
           setRecommendations(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[RecommendationsPage] Failed to fetch recommendations:", err);
+      });
   }, []);
 
   const feedContextItems = useMemo(() => {

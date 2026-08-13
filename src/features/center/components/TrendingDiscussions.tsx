@@ -18,7 +18,9 @@ export function TrendingDiscussions() {
           setThoughts(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[TrendingDiscussions] Failed to fetch thoughts:", err);
+      });
   }, []);
 
   return (

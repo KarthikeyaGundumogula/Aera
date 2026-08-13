@@ -25,6 +25,7 @@ import { Eye, EyeOff, BookPlus, ChevronRight, Sparkles } from "lucide-react";
 import type { LedgerItem } from "@/types/ledger";
 import { WallPost } from "../../../types/wall";
 import { SurgeBars } from "../../../components/SurgeBars";
+import { PosterImage } from "../../../components/PosterImage";
 
 interface LedgerWallCardProps {
   post: WallPost;
@@ -77,13 +78,14 @@ export const LedgerWallCard = memo(function LedgerWallCard({
         {/* Main row: poster + text */}
         <div className="flex flex-1">
         <div className="relative flex-shrink-0 w-[90px] sm:w-[110px] overflow-hidden">
-          <img
+          <PosterImage
             src={entry.originalPosterUrl}
             alt={entry.originalName}
+            info={entry.genre?.slice(0, 1).join("")}
             className="absolute inset-0 w-full h-full object-cover object-top"
           />
           {/* Dark overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/70 pointer-events-none" />
 
           {/* Status badge overlaid at bottom */}
           <div className="absolute bottom-2 left-2">

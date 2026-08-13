@@ -102,6 +102,14 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
             {/* Poster — fixed height so tall images don't inflate card */}
             <div className="px-2.5 pt-2.5 pb-2 shrink-0">
               <div
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleCardClick(e as any);
+                  }
+                }}
                 className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 shadow-[0_8px_24px_rgba(0,0,0,0.6)] cursor-pointer group/poster"
                 onClick={handleCardClick}
               >
@@ -129,6 +137,15 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
             <div className="px-2.5 pb-2 flex flex-col gap-1 sm:gap-1.5">
               {rec.original.director && (
                 <div
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(`/profile/${rec.original.director}`);
+                    }
+                  }}
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -148,6 +165,15 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
               )}
               {rec.original.dop && (
                 <div
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(`/profile/${rec.original.dop}`);
+                    }
+                  }}
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -174,6 +200,15 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     {rec.original.stars.slice(0, 3).map((star) => (
                       <div
                         key={star}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigate(`/profile/${star}`);
+                          }
+                        }}
                         className="group/star flex items-center gap-0.5 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();

@@ -1,5 +1,6 @@
 import { memo, useState, useEffect } from "react";
 import { StageIcon } from "../../../components/icons/AppIcons";
+import { PosterImage } from "../../../components/PosterImage";
 import { apiFetch } from "@/lib/api";
 
 export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
@@ -19,7 +20,9 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
           setTopOriginals(items);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[TopOriginalsAccordion] Failed to fetch originals:", err);
+      });
   }, []);
 
   return (
@@ -47,9 +50,11 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
               }
             }}
           >
-            <img loading="lazy"
+            <PosterImage
+              loading="lazy"
               src={org.coverImage}
               alt={org.title}
+              info={org.genre?.slice(0, 2).join(" • ")}
               className="absolute inset-0 w-full h-full object-cover object-top"
               decoding="async"
             />

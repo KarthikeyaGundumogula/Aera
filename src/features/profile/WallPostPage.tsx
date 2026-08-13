@@ -17,7 +17,9 @@ export default function WallPostPage() {
           setGroup(json.data || json);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[WallPostPage] Failed to fetch wall post:", err);
+      });
   }, [artistId, postId]);
   const initialPostIndices = useMemo(() => {
     if (!group || !postId) return {};

@@ -327,7 +327,9 @@ export function DiscussionPage() {
             setReplies(data.comments || []);
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("[DiscussionPage] Failed to fetch discussion details:", err);
+        });
     }
   }, [setId, discussionId]);
 
@@ -352,8 +354,8 @@ export function DiscussionPage() {
             content: text,
           }),
         });
-      } catch {
-        // Fallback state update
+      } catch (err) {
+        console.error("[DiscussionPage] Failed to post reply to backend:", err);
       }
     }
 
@@ -395,8 +397,8 @@ export function DiscussionPage() {
             content: textToPost,
           }),
         });
-      } catch {
-        // Fallback state update
+      } catch (err) {
+        console.error("[DiscussionPage] Failed to post comment to backend:", err);
       }
     }
 

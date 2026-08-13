@@ -37,6 +37,7 @@ import { SurgeBars } from "../../components/SurgeBars";
 import { SurgeScoreDisplay } from "../../components/surge/SurgeScoreDisplay";
 import { SurgeInputSection } from "../../components/surge/SurgeInputSection";
 import { ArtistAvatar } from "@/components/ArtistAvatar";
+import { PosterImage } from "@/components/PosterImage";
 
 // ─── Easing constant (strong ease-out per Emil design-eng principles) ──────────
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -298,6 +299,14 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
                   duration: 0.4,
                   ease: EASE_OUT,
                 }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(`/profile/${encodeURIComponent(person.name)}`);
+                  }
+                }}
                 onClick={() => navigate(`/profile/${encodeURIComponent(person.name)}`)}
                 className="flex-shrink-0 flex items-center gap-2.5 p-2 pr-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.06] transition-all cursor-pointer group w-[165px]"
               >
@@ -348,6 +357,14 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
                   delay: 0.4 + i * 0.05,
                   duration: 0.4,
                   ease: EASE_OUT,
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(`/profile/${encodeURIComponent(person.name)}`);
+                  }
                 }}
                 onClick={() => navigate(`/profile/${encodeURIComponent(person.name)}`)}
                 className="flex-shrink-0 flex items-center gap-2.5 p-2 pr-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.06] transition-all cursor-pointer group w-[165px]"
@@ -573,7 +590,9 @@ export function LedgerViewer() {
           artistColorTheme: item.artistColorTheme || "",
         });
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[LedgerViewer] Failed to fetch entry details:", err);
+      });
 
     return () => {
       isMounted = false;
@@ -770,8 +789,16 @@ export function LedgerViewer() {
         pre_thoughts: `Added from ${authorProfile.name}'s breakdown.`,
       }),
     })
-      .then(() => setAddedToLedger(true))
-      .catch(() => setAddedToLedger(true));
+      .then((res) => {
+        if (res.ok) {
+          setAddedToLedger(true);
+        } else {
+          console.error("[LedgerViewer] Failed to add entry to library, status:", res.status);
+        }
+      })
+      .catch((err) => {
+        console.error("[LedgerViewer] Error adding to ledger:", err);
+      });
   };
 
   return (
@@ -814,9 +841,10 @@ export function LedgerViewer() {
         transition={{ duration: 0.7, ease: EASE_OUT }}
         className="relative w-full h-[55vw] max-h-[480px] min-h-[220px] overflow-hidden"
       >
-        <img
+        <PosterImage
           src={entry.originalPosterUrl}
           alt={entry.originalName}
+          info={entry.genre?.slice(0, 2).join(" • ")}
           className="w-full h-full object-cover object-top"
         />
         {/* Cinematic vignette gradient */}

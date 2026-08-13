@@ -27,7 +27,9 @@ export function LedgerTabsZone() {
           setLedgerItems(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[LedgerTabsZone] Failed to fetch library items:", err);
+      });
   }, []);
 
   useEffect(() => {

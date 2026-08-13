@@ -19,7 +19,9 @@ export default function OriginalRecommendationsPage() {
           setRecommendations(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[OriginalRecommendationsPage] Failed to fetch recommendations:", err);
+      });
   }, [profileId, originalId]);
 
   return (

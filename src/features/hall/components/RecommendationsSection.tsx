@@ -15,7 +15,9 @@ export function RecommendationsSection() {
           setRecommendedWorks(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[RecommendationsSection] Failed to fetch theatre recommendations:", err);
+      });
   }, []);
   return (
     <div className="relative">

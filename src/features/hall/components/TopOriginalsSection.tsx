@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { Sparkles, Sun, Users, QrCode, Film } from "lucide-react";
+import { PosterImage } from "../../../components/PosterImage";
 import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
 import type { Original } from "@/types/originals";
@@ -18,7 +19,9 @@ export function TopOriginalsSection() {
           setOriginals(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[TopOriginalsSection] Failed to fetch originals:", err);
+      });
   }, []);
 
   return (
@@ -120,9 +123,10 @@ export function TopOriginalsSection() {
 
                 {/* CENTER: Image (35%) */}
                 <div className="relative w-[35%] h-full bg-[#111]">
-                  <img
+                  <PosterImage
                     src={orig.coverImage}
                     alt={orig.title}
+                    info={orig.genre?.slice(0, 2).join(" • ")}
                     className="w-full h-full object-cover object-center grayscale-[0.2] transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105"
                   />
                   {/* Subtle inner shadow to blend edges instead of massive gradients */}

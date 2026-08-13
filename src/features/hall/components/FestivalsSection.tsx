@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Trophy, Clock, Zap } from "lucide-react";
 import { Festival } from "../../../types";
+import { PosterImage } from "../../../components/PosterImage";
 
 interface FestivalsSectionProps {
   festivals: Festival[];
@@ -47,9 +48,10 @@ function FestivalCard({ festival }: { festival: Festival }) {
     >
       {/* Cover image with cinematic gradient overlay */}
       <div className="relative h-36 overflow-hidden">
-        <img
+        <PosterImage
           src={festival.coverImage}
           alt={festival.title}
+          info={cfg.label}
           className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />

@@ -18,7 +18,9 @@ export const FestivalStage = memo(function FestivalStage() {
           );
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[FestivalStage] Failed to fetch festivals:", err);
+      });
   }, []);
 
   if (activeFestivals.length === 0) {

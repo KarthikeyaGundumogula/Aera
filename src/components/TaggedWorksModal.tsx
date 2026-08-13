@@ -53,7 +53,9 @@ export function TaggedWorksModal({
           }
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[TaggedWorksModal] Failed to fetch tagged works:", err);
+      });
     return () => {
       isMounted = false;
     };

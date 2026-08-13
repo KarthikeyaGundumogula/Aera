@@ -22,7 +22,9 @@ export function TaggedWorksPage() {
           setOriginal(json.data || json);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[TaggedWorksPage] Failed to fetch original:", err);
+      });
 
     apiFetch(`/library/${id}/tagged_works`)
       .then(async (res) => {
@@ -31,7 +33,9 @@ export function TaggedWorksPage() {
           setExistingWorks(json.data || json || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[TaggedWorksPage] Failed to fetch tagged works:", err);
+      });
   }, [id]);
 
   const title = original?.title || original?.name || "Original";

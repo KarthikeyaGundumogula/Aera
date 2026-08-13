@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Search, Loader2, X, Film } from "lucide-react";
 import type { Original } from "@/types/originals";
+import { PosterImage } from "@/components/PosterImage";
 import { useSearchQuery } from "@/lib/search";
 import { apiFetch } from "@/lib/api";
 
@@ -29,7 +30,9 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
           setOriginals(items);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[OriginalsSearch] Failed to fetch originals:", err);
+      });
   }, []);
 
   const { results: liveResults, loading: isSearching } = useSearchQuery('originals', query);
@@ -107,12 +110,12 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
               onClick={() => onSelect(original)}
               className="w-full flex items-center gap-4 px-5 py-3 hover:bg-white/[0.03] transition-colors text-left border-b border-white/[0.03] last:border-0 focus:outline-none"
             >
-              <img
+              <PosterImage
                 loading="lazy"
                 src={original.coverImage}
                 alt={original.title}
+                info={original.releaseDate}
                 className="w-9 h-13 rounded-lg object-cover object-top opacity-70 flex-shrink-0"
-                style={{ aspectRatio: "2/3" }}
               />
               <div className="flex-1 min-w-0">
                 <span className="block text-xs font-semibold text-white/80 truncate">

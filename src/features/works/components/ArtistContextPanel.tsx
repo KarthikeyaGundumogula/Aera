@@ -24,7 +24,9 @@ export function ArtistContextPanel({ item }: ArtistContextPanelProps) {
           setArtistWorks(json.items || json.data || []);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[ArtistContextPanel] Failed to fetch artist works:", err);
+      });
   }, [artistId]);
 
   const otherWorks = artistWorks.filter(

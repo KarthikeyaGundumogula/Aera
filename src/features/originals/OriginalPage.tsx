@@ -16,6 +16,9 @@ import { HeroResonanceSignature } from "./components/HeroResonanceSignature";
 import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
 import { RecentReleasesSection } from "../shared/components/RecentReleasesSection";
+import { PosterImage } from "../../components/PosterImage";
+import { Original } from "../../types/originals";
+import { TheatreItem } from "../../types";
 
 interface OriginalClaims {
   canUpdateMeta: boolean;
@@ -30,9 +33,9 @@ export function OriginalPage() {
   const [showToast, setShowToast] = useState(false);
   const [showManagement, setShowManagement] = useState(false);
   const isMobile = useMediaQuery();
-  const [localOriginal, setLocalOriginal] = useState<any>(null);
+  const [localOriginal, setLocalOriginal] = useState<Original | null>(null);
   const [officialReleases, setOfficialReleases] = useState<any[]>([]);
-  const [theatreWorks, setTheatreWorks] = useState<any[]>([]);
+  const [theatreWorks, setTheatreWorks] = useState<TheatreItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const original = localOriginal;
@@ -86,7 +89,9 @@ export function OriginalPage() {
           }
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.error("[OriginalPage] Failed to fetch original detail:", err);
+      })
       .finally(() => {
         if (isMounted) setLoading(false);
       });
@@ -98,12 +103,12 @@ export function OriginalPage() {
           const json = await res.json();
           const theatreCards = json.data || json;
           if (Array.isArray(theatreCards) && isMounted && theatreCards.length > 0) {
-            const mappedWorks = theatreCards.map((w: any) => ({
+            const mappedWorks: TheatreItem[] = theatreCards.map((w: any) => ({
               id: w.id,
               title: w.title || "Untitled Work",
               category: w.workType || w.work_type || w.category || "Edit",
               image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
-              platform: "youtube",
+              platform: "youtube" as const,
               srcId: w.id,
             }));
             setTheatreWorks(mappedWorks);
@@ -246,9 +251,11 @@ export function OriginalPage() {
         className="relative w-full overflow-hidden"
       >
         <div className="absolute inset-0">
-          <img
+          <PosterImage
             loading="lazy"
             src={original.coverImage}
+            alt={original.title}
+            info={original.genre?.slice(0, 2).join(" • ")}
             className="w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
@@ -321,9 +328,9 @@ export function OriginalPage() {
 
           <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
             <div className="flex gap-4 sm:gap-6 w-max">
-              {original.stars.map((star: any, index: number) => (
+              {original.stars.map((star, index) => (
                 <PersonProfile
-                  key={`${star.actorName}-${index}`}
+                  key={star.actorName || `star-${index}`}
                   person={star}
                   delay={index * 0.15}
                   type="Star"
@@ -341,9 +348,9 @@ export function OriginalPage() {
 
           <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">
             <div className="flex gap-4 sm:gap-6 w-max">
-              {original.makers.map((maker: any, index: number) => (
+              {original.makers.map((maker, index) => (
                 <MakerProfile
-                  key={`${maker.actorName}-${index}`}
+                  key={maker.actorName || `maker-${index}`}
                   person={maker}
                   delay={index * 0.15}
                 />
