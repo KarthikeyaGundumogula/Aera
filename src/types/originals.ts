@@ -52,6 +52,8 @@ export interface Original {
   heroHighlights?: TheatreItem[];
   releaseDate?: string;
   genre?: string[];
+  director?: string;
+  castPreview?: string;
   resonanceSignature?: {
     peakMagnitude: number;
     normalizedSurgeDensity: number;

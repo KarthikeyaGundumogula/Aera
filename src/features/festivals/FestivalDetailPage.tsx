@@ -117,13 +117,15 @@ export function FestivalDetailPage() {
       <section className="relative w-full h-[60vh] md:h-[75vh] flex flex-col justify-end">
         {/* Immersive Cover Image */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img 
-            src={localFestival.coverImage} 
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover object-top opacity-60 mix-blend-screen"
-          />
+          {localFestival.coverImage ? (
+            <img 
+              src={localFestival.coverImage} 
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover object-top opacity-60 mix-blend-screen"
+            />
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#050505] to-transparent opacity-80" />
         </div>

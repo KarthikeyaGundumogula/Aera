@@ -63,6 +63,8 @@ export function usePaginatedOriginals(pageSize = 12) {
           description: "",
           coverImage: og.coverImage || og.cover_image || "",
           releaseDate: og.releaseDate || og.release_date || "",
+          director: og.director || undefined,
+          castPreview: og.castPreview || og.cast_preview || undefined,
           stats: {
             presence: 100,
             members: 0,

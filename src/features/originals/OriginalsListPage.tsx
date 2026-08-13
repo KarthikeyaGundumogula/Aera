@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { Clapperboard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { OriginalPosterCard } from "./components/OriginalPosterCard";
 import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 import { usePaginatedOriginals } from "@/hooks/usePaginatedOriginals";
+import { MobileTopHeader } from "../navigation/MobileTopHeader";
+import { DesktopHeader } from "../navigation/DesktopHeader";
 
 export function OriginalsListPage() {
   const navigate = useNavigate();
@@ -18,61 +20,12 @@ export function OriginalsListPage() {
       className="min-h-screen bg-black text-white overflow-y-auto no-scrollbar"
       style={{ touchAction: "manipulation" }}
     >
-      {/* ── PAGE HEADER ──────────────────────────────────────────────── */}
-      <motion.header
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-        className="sticky top-0 z-50 flex items-center justify-between px-4 md:px-10 py-4 bg-black/80 backdrop-blur-xl border-b border-white/[0.04]"
-      >
-        {/* Left: back to Hall */}
-        <button
-          onClick={() => navigate("/")}
-          aria-label="Return to Hall"
-          className="group p-2 -ml-2 rounded-xl hover:bg-white/5 transition-colors active:scale-90 transition-transform duration-150"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-white/50 group-hover:text-white transition-colors group-hover:-translate-x-0.5 transition-transform"
-            aria-hidden="true"
-          >
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-
-        {/* Center: page identity */}
-        <div className="absolute inset-x-0 flex justify-center pointer-events-none">
-          <div className="flex items-center gap-2.5">
-            <Clapperboard
-              className="w-3.5 h-3.5 text-white/50"
-              aria-hidden="true"
-            />
-            <h1 className="text-[10px] font-black uppercase tracking-[0.45em] text-white/70">
-              Originals
-            </h1>
-          </div>
-        </div>
-
-        {/* Right: count badge */}
-        <span
-          className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 tabular-nums"
-          aria-label={`${totalCount} originals`}
-        >
-          {totalCount} Films
-        </span>
-      </motion.header>
+      <MobileTopHeader />
+      <DesktopHeader />
 
       {/* ── POSTER GRID ──────────────────────────────────────────────── */}
       <main
-        className="px-1 sm:px-4 md:px-8 pt-[2px] pb-28"
+        className="pt-20 md:pt-24 px-4 md:px-8 pb-28"
         aria-label="Originals poster grid"
       >
         {loading ? (
