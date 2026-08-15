@@ -27,6 +27,7 @@ export interface Set {
 export interface Festival {
   id: string;
   setId: string;
+  setName?: string;
   organizerId: string;
   title: string;
   description: string;

@@ -2,6 +2,7 @@ import { useState, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Activity, ArrowRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { PosterImage } from "../../../components/PosterImage";
 
 export const FestivalStage = memo(function FestivalStage() {
   const navigate = useNavigate();
@@ -67,9 +68,10 @@ export const FestivalStage = memo(function FestivalStage() {
               className="group relative flex-none w-[85vw] md:w-[50vw] lg:w-[40vw] max-w-[600px] aspect-video snap-center cursor-pointer rounded-2xl overflow-hidden bg-surface-deep border border-white/5 hover:border-white/20 transition-all duration-500 shadow-2xl"
             >
               {/* Image & Overlay */}
-              <img
+              <PosterImage
                 src={festival.coverImage}
                 alt={festival.title}
+                info={festival.status}
                 className="absolute inset-0 w-full h-full object-cover object-top opacity-50 group-hover:scale-105 group-hover:opacity-70 transition-all duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-transparent pointer-events-none" />
@@ -83,7 +85,7 @@ export const FestivalStage = memo(function FestivalStage() {
                         style={{ color: accentColor }}
                       />
                       <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/80">
-                        {(festival as any).hostSetTitle || "Unknown Source"}
+                        {festival.setName || "Unknown Source"}
                       </span>
                     </div>
                     <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-2 drop-shadow-lg">

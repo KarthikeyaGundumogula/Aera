@@ -28,12 +28,16 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
     return () => observer.disconnect();
   }, []);
 
-  // Reset iframe loading state when switching videos
+  const currentWork = works[currentIndex];
+
+  // Reset iframe loading state when switching videos, with a fallback timer
   useEffect(() => {
     setIsIframeLoaded(false);
-  }, [currentIndex]);
-
-  const currentWork = works[currentIndex];
+    const timer = setTimeout(() => {
+      setIsIframeLoaded(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [currentIndex, currentWork?.workId]);
 
   const isYoutube = currentWork?.platform === 'YOUTUBE';
   const isTwitter = currentWork?.platform === 'TWITTER';
@@ -44,7 +48,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
 
   const { containerRef: twitterContainerRef, isLoaded: isTwitterLoaded } =
     useTwitterWidgets(
-      isTwitter && isIntersecting ? currentWork?.workSrcId : undefined
+      isTwitter ? currentWork?.workSrcId : undefined
     );
 
   if (!works.length) return null;
@@ -68,14 +72,14 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
           {/* Neumorphic Player Container */}
           <div className="relative aspect-video rounded-3xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]">
             {/* Loading State Overlay */}
-            {(!isIntersecting || !isFullyLoaded) && (
+            {!isFullyLoaded && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
                 <FHLoader label="Loading " />
               </div>
             )}
 
             {/* YouTube Embed */}
-            {isIntersecting && isYoutube && embedUrl && (
+            {isYoutube && embedUrl && (
               <iframe
                 key={`yt-${currentWork.workId}`}
                 src={embedUrl}
@@ -87,12 +91,20 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
             )}
 
             {/* Twitter Embed */}
-            {isIntersecting && isTwitter && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-2">
+            {isTwitter && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-4">
                 <div
                   ref={twitterContainerRef}
                   className="w-full max-w-[560px] flex justify-center scale-95"
                 />
+                <a
+                  href={`https://twitter.com/i/web/status/${currentWork?.workSrcId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 z-20"
+                >
+                  View on Twitter / X
+                </a>
               </div>
             )}
           </div>
@@ -112,7 +124,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
             {/* Centered Title & Artist */}
             <div className="flex flex-col items-center text-center flex-1 px-2 overflow-hidden">
               <h3 className="text-base md:text-xl font-black uppercase tracking-tight text-white truncate w-full">
-                {currentWork?.category ?? 'EDIT'}
+                {currentWork?.workTitle || currentWork?.category || 'EDIT'}
               </h3>
               <span className="text-[9px] md:text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1 truncate max-w-full">
                 By. {currentWork?.artistName}

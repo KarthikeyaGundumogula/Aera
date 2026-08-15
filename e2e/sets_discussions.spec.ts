@@ -65,12 +65,20 @@ test.describe('Sets & Discussions API Endpoints', () => {
     expect(loginRes.ok()).toBeTruthy();
 
     // 3. Admin login to promote artist to organizer
-    const adminLoginRes = await request.post(`${BACKEND_URL}/auth/admin/login`, {
+    let adminLoginRes = await request.post(`${BACKEND_URL}/auth/admin/login`, {
       data: {
-        admin_name: 'superadmin',
+        admin_name: 'admin',
         admin_password: 'Admin@12345',
       },
     });
+    if (!adminLoginRes.ok()) {
+      adminLoginRes = await request.post(`${BACKEND_URL}/auth/admin/login`, {
+        data: {
+          admin_name: 'superadmin',
+          admin_password: 'Admin@12345',
+        },
+      });
+    }
     expect(adminLoginRes.ok()).toBeTruthy();
 
     // 4. Create role 'organizer' (ignore if exists)

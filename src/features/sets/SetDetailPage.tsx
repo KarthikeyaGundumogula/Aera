@@ -318,6 +318,7 @@ export function SetDetailPage() {
                 const mappedFestivals: Festival[] = list.map((f: any) => ({
                   id: f.id,
                   setId: f.setId || f.set_id || "",
+                  setName: f.setName || f.set_name || "",
                   organizerId: f.organizerId || f.organizer_id || "",
                   title: f.title || f.name || "Festival",
                   description: f.description || "",

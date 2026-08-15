@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, ChevronRight, Clock } from 'lucide-react';
 import { Festival, Set } from '../../../types';
 import { SectionHeader } from '../../../components/SectionHeader';
+import { PosterImage } from '../../../components/PosterImage';
 
 interface ActiveFestivalSpotlightProps {
   festival: Festival;
@@ -62,15 +63,12 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
           style={{ minHeight: '320px' }}
         >
           {/* Background image */}
-          {festival.coverImage && (festival.coverImage.startsWith('http') || festival.coverImage.startsWith('/') || festival.coverImage.startsWith('data:')) ? (
-            <img
-              src={festival.coverImage}
-              alt={festival.title}
-              className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.02]"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-950 to-black" />
-          )}
+          <PosterImage
+            src={festival.coverImage}
+            alt={festival.title}
+            info={festival.status}
+            className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.02]"
+          />
           {/* Layered gradients */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />

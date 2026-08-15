@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Trophy, Calendar } from 'lucide-react';
 import { Festival } from '../../../types';
 import { SectionHeader } from '../../../components/SectionHeader';
+import { PosterImage } from '../../../components/PosterImage';
 
 interface FestivalArchiveProps {
   festivals: Festival[];
@@ -53,18 +54,13 @@ export const FestivalArchive = memo(function FestivalArchive({ festivals }: Fest
             >
               {/* Image */}
               <div className="relative w-full aspect-video overflow-hidden rounded-md mb-3 border border-white/[0.04] group-hover:border-white/10 transition-colors">
-                {festival.coverImage && (festival.coverImage.startsWith('http') || festival.coverImage.startsWith('/') || festival.coverImage.startsWith('data:')) ? (
-                  <img
-                    src={festival.coverImage}
-                    alt={festival.title}
-                    className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 scale-[1.01] group-hover:scale-[1.04]"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-white/20 px-2 text-center">
-                    {festival.title}
-                  </div>
-                )}
+                <PosterImage
+                  src={festival.coverImage}
+                  alt={festival.title}
+                  info={festival.status}
+                  className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 scale-[1.01] group-hover:scale-[1.04]"
+                  loading="lazy"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 {/* Concluded badge */}
                 <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-white/10 backdrop-blur-md rounded-[2px] border border-white/10">

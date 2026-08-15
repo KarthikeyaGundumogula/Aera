@@ -29,6 +29,7 @@ export interface TheatreItem {
  */
 export interface ReleaseSectionWork {
   workId: string;
+  workTitle?: string;
   artistName: string;
   /** Platform-specific content ID (YouTube video ID, Twitter tweet ID). */
   workSrcId: string;

@@ -189,6 +189,14 @@ Older codebases on React 18 still need `forwardRef`.
 - Treated as a separate track — `rules/react-native/` is not yet present
 - React core hooks/patterns from this file still apply
 
+## Image Rendering and Fallbacks
+
+Never use raw `<img>` tags directly for poster art, thumbnails, original covers, or festival images. Always use the central `<PosterImage>` component.
+
+- **Placeholder Fallback**: `<PosterImage>` intercepts image loading failures (`onError`) and automatically renders a beautiful Framehouse cinematic placeholder instead of showing a broken image icon.
+- **Metadata Context**: Provide the `info` prop (e.g., status, release date, director, format) to render descriptive context on the placeholder if the image fails to load.
+- **Component Path**: `src/components/PosterImage.tsx`
+
 ## Skill Reference
 
 For React-specific deep dives see `skills/react-patterns/SKILL.md`. For cross-framework frontend concerns see `skills/frontend-patterns/SKILL.md`. For accessibility see `skills/accessibility/SKILL.md`.

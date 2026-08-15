@@ -9,8 +9,11 @@ export interface OriginalReleaseItem {
   id: string;
   title: string;
   src: string;
+  platform?: string;
   releaseType?: string;
 }
+
+import { useTwitterWidgets } from '../../../hooks/useTwitterWidgets';
 
 interface RecentReleasesSectionProps {
   title?: string;
@@ -39,6 +42,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
         id: r.id,
         title: r.title,
         srcId: r.src,
+        platform: r.platform || "YOUTUBE",
         category: r.releaseType || "EDIT",
         originalIds: [r.id],
         artist: "Official Release",
@@ -70,7 +74,21 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
   if (!recentReleases.length) return null;
 
-  const embedUrl = currentWork?.srcId ? buildEmbedUrl('youtube', currentWork.srcId) : '';
+  const isYoutube = currentWork?.platform?.toLowerCase() === "youtube" || currentWork?.platform?.toLowerCase() === "edit" || !currentWork?.platform;
+  const isTwitter = currentWork?.platform?.toLowerCase() === "twitter";
+
+  const embedUrl = isYoutube && currentWork?.srcId
+    ? buildEmbedUrl('youtube', currentWork.srcId)
+    : '';
+
+  const { containerRef: desktopTwitterRef, isLoaded: isDesktopTwitterLoaded } =
+    useTwitterWidgets(isTwitter ? currentWork?.srcId : undefined);
+
+  const { containerRef: mobileTwitterRef, isLoaded: isMobileTwitterLoaded } =
+    useTwitterWidgets(isTwitter ? currentWork?.srcId : undefined);
+
+  const isDesktopFullyLoaded = isYoutube ? isIframeLoaded : isTwitter ? isDesktopTwitterLoaded : true;
+  const isMobileFullyLoaded = isYoutube ? isIframeLoaded : isTwitter ? isMobileTwitterLoaded : true;
 
   const handleNext = () => setCurrentIndex(i => Math.min(i + 1, recentReleases.length - 1));
   const handlePrev = () => setCurrentIndex(i => Math.max(i - 1, 0));
@@ -92,13 +110,13 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
               maxWidth: "calc((100vh - 280px) * 16 / 9)"
             }}
           >
-             {(!isIntersecting || !isIframeLoaded) && (
+             {!isDesktopFullyLoaded && (
                <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
                  <FHLoader label="Loading" />
                </div>
              )}
 
-             {isIntersecting && embedUrl && (
+             {isYoutube && embedUrl && (
                <iframe
                  key={`yt-desktop-${currentWork.id}`}
                  src={embedUrl}
@@ -107,6 +125,23 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
                  allowFullScreen
                  onLoad={() => setIsIframeLoaded(true)}
                />
+             )}
+
+             {isTwitter && (
+               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-4">
+                 <div
+                   ref={desktopTwitterRef}
+                   className="w-full max-w-[560px] flex justify-center scale-95"
+                 />
+                 <a
+                   href={`https://twitter.com/i/web/status/${currentWork?.srcId}`}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="mt-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 z-20"
+                 >
+                   View on Twitter / X
+                 </a>
+               </div>
              )}
           </div>
 
@@ -170,22 +205,39 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
           <div className="px-2">
             {/* Neumorphic Player Container */}
             <div className="relative aspect-video rounded-2xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-               {(!isIntersecting || !isIframeLoaded) && (
-                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
-                   <FHLoader label="Loading Celebration" />
-                 </div>
-               )}
+                {!isMobileFullyLoaded && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
+                    <FHLoader label="Loading Celebration" />
+                  </div>
+                )}
 
-               {isIntersecting && embedUrl && (
-                 <iframe
-                   key={`yt-mobile-${currentWork.id}`}
-                   src={embedUrl}
-                   className="absolute inset-0 w-full h-full border-none z-10"
-                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                   allowFullScreen
-                   onLoad={() => setIsIframeLoaded(true)}
-                 />
-               )}
+                {isYoutube && embedUrl && (
+                  <iframe
+                    key={`yt-mobile-${currentWork.id}`}
+                    src={embedUrl}
+                    className="absolute inset-0 w-full h-full border-none z-10"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    onLoad={() => setIsIframeLoaded(true)}
+                  />
+                )}
+
+                {isTwitter && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-4">
+                    <div
+                      ref={mobileTwitterRef}
+                      className="w-full max-w-[560px] flex justify-center scale-95"
+                    />
+                    <a
+                      href={`https://twitter.com/i/web/status/${currentWork?.srcId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 z-20"
+                    >
+                      View on Twitter / X
+                    </a>
+                  </div>
+                )}
             </div>
           </div>
 

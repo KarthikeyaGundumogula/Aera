@@ -7,6 +7,7 @@ export default function UploadPage() {
 
   const festivalId = searchParams.get("festivalId") || undefined;
   const setId = searchParams.get("setId") || undefined;
+  const role = searchParams.get("role") || undefined;
 
   const handleExit = () => {
     if (festivalId) {
@@ -38,6 +39,7 @@ export default function UploadPage() {
       originals={[]}
       festivalId={festivalId}
       setId={setId}
+      role={role}
     />
   );
 }

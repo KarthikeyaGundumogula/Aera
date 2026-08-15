@@ -44,6 +44,7 @@ export function UploadStudioFlow({
   initialOriginalIds = [],
   festivalId,
   setId,
+  role,
   uploadTargetUrl,
   isOriginalRelease,
   originalId,
@@ -170,7 +171,7 @@ export function UploadStudioFlow({
 
     try {
       const activePlatform = isOriginalRelease ? "youtube" : (formData.platform || "youtube");
-      let backendSrcId = extractSrcId(formData.contentUrl, activePlatform);
+      let backendSrcId = extractSrcId(activePlatform, formData.contentUrl);
       let backendSrcIds: string[] = [];
 
       if (formData.category === "Poster") {
@@ -224,10 +225,19 @@ export function UploadStudioFlow({
         }
       }
 
-      // Target endpoint: if uploading for a set, hit POST /sets/{setId}/new/work/{workTypeEndpoint}
+      // Target endpoint:
+      // 1. If uploadTargetUrl is specified, use it directly.
+      // 2. If festivalId exists, target `/festivals/{festivalId}/{role}/new/{workTypeEndpoint}`.
+      // 3. If setId exists, target `/sets/{setId}/new/work/{workTypeEndpoint}`.
+      // 4. Default to `/works/new/{workTypeEndpoint}`.
+      const isFestivalUuid = festivalId && /^[0-9a-fA-F-]{36}$/.test(festivalId);
+      const isSetUuid = setId && /^[0-9a-fA-F-]{36}$/.test(setId);
+
       const targetEndpoint =
         uploadTargetUrl ||
-        (setId && /^[0-9a-fA-F-]{36}$/.test(setId)
+        (isFestivalUuid
+          ? `/festivals/${festivalId}/${role === "panelist" ? "panelist" : "member"}/new/${workTypeEndpoint}`
+          : isSetUuid
           ? `/sets/${setId}/new/work/${workTypeEndpoint}`
           : `/works/new/${workTypeEndpoint}`);
 
@@ -272,7 +282,7 @@ export function UploadStudioFlow({
         category: formData.category,
         image: formData.category === "Storyboard" ? (formData.storyboardPages[0]?.url || "") : formData.contentUrl,
         platform: formData.platform,
-        srcId: extractSrcId(formData.contentUrl, formData.platform || "youtube"),
+        srcId: extractSrcId(formData.platform || "youtube", formData.contentUrl),
         credits: 0,
         aspectRatio: formData.aspectRatio,
         originalIds: formData.originalIds,
@@ -291,7 +301,7 @@ export function UploadStudioFlow({
       }, 1800);
     }
     // If it failed, uploadError is set — ReviewStep will show the error banner.
-  }, [onComplete, formData, addWork, fetchUserWorks, currentArtist, festivalId, setId]);
+  }, [onComplete, formData, addWork, fetchUserWorks, currentArtist, festivalId, setId, role]);
 
 
   useEffect(() => {

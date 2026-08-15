@@ -9,6 +9,7 @@ import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSecti
 import { UpdateFestivalModal } from './components/UpdateFestivalModal';
 import { AddPanelistModal } from './components/AddPanelistModal';
 import { OriginalArtist, ReleaseSectionWork, TheatreItem } from '../../types';
+import { PosterImage } from '../../components/PosterImage';
 import { apiFetch } from '@/lib/api';
 
 export function FestivalDetailPage() {
@@ -50,32 +51,51 @@ export function FestivalDetailPage() {
     };
   }, [id]);
 
-  // ─── Query 2: Spotlight Works + Theatre Works (Paginated Feeds) ───────────
+  // ─── Query 2: Spotlight Works Feed ──────────────────────────────────────────
   useEffect(() => {
     if (!id) return;
     let isMounted = true;
 
-    apiFetch(`/festivals/${id}/works?spotlight_limit=6&theatre_limit=8`)
+    apiFetch(`/festivals/${id}/spotlight_works?limit=6`)
       .then(async (res) => {
         if (res.ok && isMounted) {
           const json = await res.json();
           const data = json.data || json;
-          if (data.spotlightWorks && Array.isArray(data.spotlightWorks)) {
-            setSpotlightWorks(data.spotlightWorks);
-          }
-          if (data.theatreWorks && Array.isArray(data.theatreWorks)) {
-            const mapped: TheatreItem[] = data.theatreWorks.map((w: any) => ({
-              id: w.id,
-              title: w.title || undefined,
-              category: w.workType,
-              image: w.thumbnail || undefined,
-            }));
-            setTheatreWorks(mapped);
-          }
+          const items = data.items || [];
+          setSpotlightWorks(items);
         }
       })
       .catch((err) => {
-        console.warn('Failed to fetch festival works:', err);
+        console.warn('Failed to fetch festival spotlight works:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  // ─── Query 3: Theatre Works Feed ────────────────────────────────────────────
+  useEffect(() => {
+    if (!id) return;
+    let isMounted = true;
+
+    apiFetch(`/festivals/${id}/theatre_works?limit=8`)
+      .then(async (res) => {
+        if (res.ok && isMounted) {
+          const json = await res.json();
+          const data = json.data || json;
+          const items = data.items || [];
+          const mapped: TheatreItem[] = items.map((w: any) => ({
+            id: w.id,
+            title: w.title || undefined,
+            category: w.workType,
+            image: w.thumbnail || undefined,
+          }));
+          setTheatreWorks(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to fetch festival theatre works:', err);
       });
 
     return () => {
@@ -165,9 +185,10 @@ export function FestivalDetailPage() {
         {/* Immersive Cover Image */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {localFestival.coverImage ? (
-            <img 
+            <PosterImage 
               src={localFestival.coverImage} 
-              alt=""
+              alt={localFestival.title}
+              info={localFestival.status}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover object-top opacity-60 mix-blend-screen"
