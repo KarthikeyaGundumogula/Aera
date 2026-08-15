@@ -47,9 +47,9 @@ export function CurateOverlay({
     setTaggedOriginals((prev) => [...prev, id]);
     if (!ledgerOriginals.includes(id)) {
       setLedgerOriginals((prev) => [...prev, id]);
-      onShowToast("Original Added & Work Tagged");
+      onShowToast("Original collection creaed with Work");
     } else {
-      onShowToast("Work Tagged to Original");
+      onShowToast("Work addded to original collection");
     }
   };
 

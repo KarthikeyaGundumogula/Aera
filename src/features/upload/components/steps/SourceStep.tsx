@@ -217,7 +217,7 @@ export function SourceStep({
                       <textarea 
                         value={page.text}
                         onChange={(e) => updatePageText(idx, e.target.value)}
-                        placeholder="Add cinematic notes for this page..."
+                        placeholder="Add cinematic notes... Use **word** for bold text."
                         className="flex-1 bg-white/5 border border-white/5 rounded-xl p-3 text-[11px] leading-relaxed font-medium outline-none focus:border-white/20 transition-all resize-none placeholder:text-white/5"
                       />
                     </div>

@@ -104,6 +104,8 @@ export function UploadStudioFlow({
       originalIds: formData.originalIds,
       festivalId,
       setId,
+      images: formData.category === "Storyboard" ? formData.storyboardPages.map((p) => p.url) : [],
+      captions: formData.category === "Storyboard" ? formData.storyboardPages.map((p) => p.text) : [],
     };
     
     addWork(newWork);
