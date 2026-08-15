@@ -36,6 +36,7 @@ import { mockLedger, LedgerItem, LedgerMakerCredit } from "../../mock/ledger";
 import { ARTISTS_MOCK, STARS_MOCK, MAKERS_MOCK, CURRENT_USER_MOCK } from "../../mock";
 import { SurgeBars } from "../../components/SurgeBars";
 import { SurgeInputSection } from "../../components/surge/SurgeInputSection";
+import { useAuth } from "../../context/AuthContext";
 
 // ─── Easing constant (strong ease-out per Emil design-eng principles) ──────────
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -579,8 +580,9 @@ export function LedgerViewer() {
   const [copied, setCopied] = useState(false);
 
   const entry: LedgerItem | undefined = mockLedger.find((l) => l.id === id);
-
-  const isOwner = true;
+  const { currentArtist } = useAuth();
+  const currentArtistId = currentArtist?.id || CURRENT_USER_MOCK.id;
+  const isOwner = entry?.artistId === currentArtistId;
 
   const [isEditing, setIsEditing] = useState<boolean>(
     searchParams.get("edit") === "true" && isOwner
@@ -694,10 +696,7 @@ export function LedgerViewer() {
       const found = ARTISTS_MOCK.find((a) => a.id === entry.artistId);
       if (found) return { name: found.name, image: found.image };
     }
-    if (entry.starName) {
-      return { name: entry.starName, image: entry.starImageUrl };
-    }
-    return { name: entry.originalName, image: entry.originalPosterUrl };
+    return { name: "Unknown Artist", image: "/avatars/placeholder.jpg" };
   }, [entry]);
 
   // Add to Ledger functionality
@@ -823,14 +822,20 @@ export function LedgerViewer() {
             transition={{ delay: 0.2, duration: 0.5, ease: EASE_OUT }}
             className="flex items-center gap-3 px-10 py-5 border-b border-white/[0.06]"
           >
-            <img
-              src={entry.starImageUrl ?? entry.originalPosterUrl}
-              alt={entry.starName ?? entry.originalName}
-              className="w-8 h-8 rounded-xl object-cover object-top border border-white/10"
-            />
+            {authorProfile.image ? (
+              <img
+                src={authorProfile.image}
+                alt={authorProfile.name}
+                className="w-8 h-8 rounded-xl object-cover object-top border border-white/10"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white/40 text-xs font-black">
+                {authorProfile.name.charAt(0)}
+              </div>
+            )}
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90">
-                {entry.starName ?? entry.originalName}
+                {authorProfile.name}
               </p>
               {watchedDate && (
                 <p className="text-[9px] font-medium text-white/30 flex items-center gap-1 mt-0.5">
@@ -840,17 +845,19 @@ export function LedgerViewer() {
               )}
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 border cursor-pointer shadow-md ${
-                  isEditing
-                    ? "bg-white text-black border-white font-bold"
-                    : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
-                }`}
-              >
-                <Edit3 className="w-3 h-3" />
-                {isEditing ? "Done" : "Update Breakdown"}
-              </button>
+              {isOwner && (
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 border cursor-pointer shadow-md ${
+                    isEditing
+                      ? "bg-white text-black border-white font-bold"
+                      : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
+                  }`}
+                >
+                  <Edit3 className="w-3 h-3" />
+                  {isEditing ? "Done" : "Update Breakdown"}
+                </button>
+              )}
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
                   isWatched
@@ -1085,17 +1092,19 @@ export function LedgerViewer() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-wider transition-all flex items-center gap-1 border cursor-pointer shadow-sm ${
-                isEditing
-                  ? "bg-white text-black border-white font-bold"
-                  : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
-              }`}
-            >
-              <Edit3 className="w-2.5 h-2.5" />
-              {isEditing ? "Done" : "Update Breakdown"}
-            </button>
+            {isOwner && (
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-wider transition-all flex items-center gap-1 border cursor-pointer shadow-sm ${
+                  isEditing
+                    ? "bg-white text-black border-white font-bold"
+                    : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
+                }`}
+              >
+                <Edit3 className="w-2.5 h-2.5" />
+                {isEditing ? "Done" : "Update Breakdown"}
+              </button>
+            )}
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
                 isWatched
