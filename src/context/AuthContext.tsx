@@ -43,7 +43,7 @@ function mapBackendWorkToTheatreItem(raw: {
   }
 
   // Fallback for Edit category if thumbnail is missing but srcId is present
-  if (category === "Edit" && srcId && !thumbnail) {
+  if (category === "Edit" && srcId && !thumbnail && (!platform || platform === "youtube")) {
     thumbnail = `https://img.youtube.com/vi/${srcId}/hqdefault.jpg`;
     platform = platform || "youtube";
   }

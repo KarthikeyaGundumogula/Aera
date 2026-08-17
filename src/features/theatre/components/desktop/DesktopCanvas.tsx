@@ -56,16 +56,49 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
   const lastCullingPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    apiFetch("/theatre")
-      .then(async (res) => {
-        if (res.ok) {
+    let isMounted = true;
+
+    const fetchAllWorks = async () => {
+      let accumulated: TheatreItem[] = [];
+      let cursor: string | null = null;
+      let hasMore = true;
+
+      try {
+        while (hasMore && isMounted) {
+          const url: string = cursor
+            ? `/theatre?limit=50&cursor=${encodeURIComponent(cursor)}`
+            : `/theatre?limit=50`;
+
+          const res = await apiFetch(url);
+          if (!res.ok) break;
+
           const json = await res.json();
-          setItems(json.items || json.data || []);
+          const pageItems: TheatreItem[] = json.items || json.data || [];
+          const nextCur: string | null = json.meta?.nextCursor || null;
+
+          if (pageItems.length > 0) {
+            accumulated = [...accumulated, ...pageItems];
+            if (isMounted) {
+              setItems([...accumulated]);
+            }
+          }
+
+          if (nextCur && pageItems.length > 0 && nextCur !== cursor) {
+            cursor = nextCur;
+          } else {
+            hasMore = false;
+          }
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("[DesktopCanvas] Failed to fetch theatre items:", err);
-      });
+      }
+    };
+
+    fetchAllWorks();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Pre-compute cluster pool from live data
@@ -188,7 +221,7 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
         onTouchEnd={onPointerUp}
       >
       {/* Infinite cluster field */}
-      {visibleCells.map(({ x, y }) => {
+      {clusterPool.length > 0 && visibleCells.map(({ x, y }) => {
         // Bit-mixing hash: spreads (x, y) more uniformly across the pool.
         // Uses Cantor pairing + multiplicative mixing to minimise adjacent collisions
         // even when clusterPool is small (e.g. 5–10 clusters).

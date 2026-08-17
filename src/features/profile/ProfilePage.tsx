@@ -5,6 +5,7 @@ import React, {
   useLayoutEffect,
   useRef,
   useDeferredValue,
+  useCallback,
 } from "react";
 import { motion } from "motion/react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
@@ -163,6 +164,8 @@ const ProfilePage: React.FC = () => {
   const [backendWorks, setBackendWorks] = useState<TheatreItem[]>([]);
   const [backendWallPosts, setBackendWallPosts] = useState<any[]>([]);
   const [backendOriginals, setBackendOriginals] = useState<Original[]>([]);
+  const [worksNextCursor, setWorksNextCursor] = useState<string | null>(null);
+  const [isWorksLoadingMore, setIsWorksLoadingMore] = useState(false);
 
   // Tab orb tracking
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -337,7 +340,9 @@ const ProfilePage: React.FC = () => {
           if (res.ok && isMounted) {
             const json = await res.json();
             const items = json.items || json.data || [];
+            const cursor = json.meta?.nextCursor || null;
             setBackendWorks(items);
+            setWorksNextCursor(cursor);
           }
         } else if (activeTab === "WALL") {
           const res = await apiFetch(`/profiles/${backendProfile.id}/wall?limit=12`);
@@ -356,6 +361,29 @@ const ProfilePage: React.FC = () => {
       isMounted = false;
     };
   }, [backendProfile?.id, activeTab]);
+
+  const loadMoreWorks = useCallback(async () => {
+    if (!backendProfile?.id || !worksNextCursor || isWorksLoadingMore) return;
+    setIsWorksLoadingMore(true);
+    try {
+      const res = await apiFetch(`/profiles/${backendProfile.id}/works?limit=12&cursor=${encodeURIComponent(worksNextCursor)}`);
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.items || json.data || [];
+        const newCursor = json.meta?.nextCursor || null;
+        if (items.length > 0) {
+          setBackendWorks(prev => [...prev, ...items]);
+          setWorksNextCursor(newCursor);
+        } else {
+          setWorksNextCursor(null);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load more artist works:", e);
+    } finally {
+      setIsWorksLoadingMore(false);
+    }
+  }, [backendProfile?.id, worksNextCursor, isWorksLoadingMore]);
 
   const profile = backendProfile;
 
@@ -587,6 +615,9 @@ const ProfilePage: React.FC = () => {
                   works={userWorks}
                   variant="full"
                   disablePadding={true}
+                  isLoading={isWorksLoadingMore}
+                  onLoadMore={loadMoreWorks}
+                  hasMore={!!worksNextCursor}
                 />
               </div>
             )}

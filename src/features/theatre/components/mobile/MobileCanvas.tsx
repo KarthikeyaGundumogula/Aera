@@ -10,48 +10,73 @@ import type { TheatreItem } from "../../../../types";
 
 export function MobileCanvas() {
   const [clusters, setClusters] = useState<MobileCluster[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  
+  const isLoadingRef = useRef(true);
+  const pageRef      = useRef(0);
+  const sentinelRef  = useRef<HTMLDivElement>(null);
+  const nextCursorRef = useRef<string | null>(null);
 
   useEffect(() => {
+    nextCursorRef.current = nextCursor;
+  }, [nextCursor]);
+
+  useEffect(() => {
+    isLoadingRef.current = true;
     apiFetch("/theatre")
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
           const items: TheatreItem[] = json.items || json.data || [];
+          const cursor: string | null = json.meta?.nextCursor || null;
           const built = buildMobileClusters(items).map((c, i) => ({ ...c, id: `${c.id}-p0-${i}` }));
           setClusters(built);
+          setNextCursor(cursor);
         }
       })
       .catch((err) => {
         console.error("[MobileCanvas] Failed to fetch theatre items:", err);
+      })
+      .finally(() => {
+        isLoadingRef.current = false;
       });
   }, []);
 
-  // isLoadingRef: mutable flag that guards against sentinel firing twice
-  // while a page is being appended. Using a ref (not state) avoids a re-render.
-  const isLoadingRef = useRef(false);
-  const pageRef      = useRef(0);
-  const sentinelRef  = useRef<HTMLDivElement>(null);
-  const timerRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // ── Load next page ─────────────────────────────────────────────────────────
   const loadMore = useCallback(() => {
-    // Hard gate: ignore the sentinel if a load is already in flight.
-    if (isLoadingRef.current) return;
+    const cursor = nextCursorRef.current;
+    if (isLoadingRef.current || !cursor) return;
     isLoadingRef.current = true;
 
-    pageRef.current += 1;
-    const page = pageRef.current;
+    const page = pageRef.current + 1;
+    pageRef.current = page;
 
-    timerRef.current = setTimeout(() => {
-      const next: MobileCluster[] = [];
+    apiFetch(`/theatre?cursor=${encodeURIComponent(cursor)}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const items: TheatreItem[] = json.items || json.data || [];
+          const newCursor: string | null = json.meta?.nextCursor || null;
 
-      // startTransition marks the append as non-urgent so the browser can
-      // keep the current frame interactive while React schedules the update.
-      startTransition(() => {
-        setClusters(prev => [...prev, ...next]);
+          if (items.length > 0) {
+            const built = buildMobileClusters(items).map((c, i) => ({ ...c, id: `${c.id}-p${page}-${i}` }));
+            startTransition(() => {
+              setClusters(prev => [...prev, ...built]);
+              setNextCursor(newCursor);
+              isLoadingRef.current = false;
+            });
+          } else {
+            setNextCursor(null);
+            isLoadingRef.current = false;
+          }
+        } else {
+          isLoadingRef.current = false;
+        }
+      })
+      .catch((err) => {
+        console.error("[MobileCanvas] Failed to load more theatre items:", err);
         isLoadingRef.current = false;
       });
-    }, 300);
   }, []);
 
   // ── Sentinel IntersectionObserver ──────────────────────────────────────────
@@ -69,7 +94,6 @@ export function MobileCanvas() {
 
     return () => {
       observer.disconnect();
-      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [loadMore]);
 
@@ -98,14 +122,23 @@ export function MobileCanvas() {
             </div>
           ))}
 
-          {/* Infinite scroll sentinel — kept small, spinner hidden by default */}
-          <div
-            ref={sentinelRef}
-            className="h-16 w-full flex items-center justify-center mt-2"
-            aria-hidden="true"
-          >
-            <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-xl animate-spin" />
-          </div>
+          {/* Infinite scroll sentinel when nextCursor exists, or End of Feed message when depleted */}
+          {nextCursor ? (
+            <div
+              ref={sentinelRef}
+              className="h-16 w-full flex items-center justify-center mt-2"
+              aria-hidden="true"
+            >
+              <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-xl animate-spin" />
+            </div>
+          ) : (
+            clusters.length > 0 && (
+              <div className="py-12 flex flex-col items-center justify-center gap-3 opacity-40">
+                <div className="h-px w-24 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white">No More Works</p>
+              </div>
+            )
+          )}
         </div>
       </div>
     </FeedContext.Provider>

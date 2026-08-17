@@ -87,7 +87,7 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
               >
                 <StageIcon className="w-4 h-4 text-white/80" />
                 <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
-                  {org.stats.presence} Stage
+                  {org.stats?.presence ?? 0} Stage
                 </span>
               </div>
             </div>
@@ -97,7 +97,7 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
               <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-sm flex items-center gap-1 border border-white/10">
                 <StageIcon className="w-2.5 h-2.5 text-white/80" />
                 <span className="text-[8px] font-black text-white/80 tabular-nums tracking-widest">
-                  {org.stats.presence}
+                  {org.stats?.presence ?? 0}
                 </span>
               </div>
             )}

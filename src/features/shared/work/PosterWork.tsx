@@ -5,6 +5,7 @@ import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
 import { getYoutubeFallbackThumbnail } from "../../../utils/embed";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
+import { PosterImage } from "../../../components/PosterImage";
 
 export function PosterWork({
   item,
@@ -14,15 +15,21 @@ export function PosterWork({
   showHoverOverlay,
   priority = "lazy",
 }: BaseWorkProps) {
-  const [isLoaded, setIsLoaded] = useState(true);
   const { openWork } = useWorkNavigation();
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [imgSrc, setImgSrc] = useState(() => {
+    if (item.image && item.image.trim() !== "") return item.image;
+    if (item.platform === "youtube" && item.srcId) {
+      return `https://img.youtube.com/vi/${item.srcId}/maxresdefault.jpg`;
+    }
+    return "";
+  });
+  
   const shouldShowHoverOverlay = useMemo(
     () => showHoverOverlay ?? variant !== "theatre-mobile",
     [showHoverOverlay, variant],
   );
   const showPosterMeta = variant !== "feed";
-  const fallbackImage = "https://images.unsplash.com/photo-1536440136628-849c177e76a1";
-  const imageSrc = item.image && item.image.trim() !== "" ? item.image : fallbackImage;
 
   return (
     <>
@@ -30,34 +37,42 @@ export function PosterWork({
       className={`group relative h-full w-full overflow-hidden bg-white/[0.03] backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)] ${className}`}
       onClick={() => openWork(item)}
     >
-      <img 
-        onLoad={(e) => {
-          const img = e.currentTarget;
-          if (img.naturalWidth === 120 && img.src.includes("maxresdefault")) {
-            if (item.platform === "youtube" && item.srcId) {
-              img.src = getYoutubeFallbackThumbnail(item.srcId);
+      {imgSrc ? (
+        <img 
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            if (img.naturalWidth === 120 && img.src.includes("youtube.com")) {
+              if (img.src.includes("maxresdefault") && item.srcId) {
+                setImgSrc(getYoutubeFallbackThumbnail(item.srcId));
+              } else {
+                setImgSrc("");
+              }
+            } else {
+              setIsLoaded(true);
             }
-          } else {
-            setIsLoaded(true);
-          }
-        }}
-        onError={(e) => {
-          const target = e.currentTarget;
-          if (item.platform === "youtube" && item.srcId && !target.src.includes("hqdefault")) {
-            target.src = getYoutubeFallbackThumbnail(item.srcId);
-          } else if (target.src !== fallbackImage) {
-            target.src = fallbackImage;
-          }
-          setIsLoaded(true);
-        }}
-        src={imageSrc}
-        alt={item.title}
-        loading={priority}
-        decoding="async"
-        className={`h-full w-full object-cover object-top transition-all duration-1000 ${
-          isLoaded ? "opacity-100" : "opacity-90"
-        } ${variant === "theatre-desktop" ? "group-hover:scale-110" : ""}`}
-      />
+          }}
+          onError={() => {
+            if (imgSrc.includes("youtube.com") && imgSrc.includes("maxresdefault") && item.srcId) {
+              setImgSrc(getYoutubeFallbackThumbnail(item.srcId));
+            } else {
+              setImgSrc("");
+            }
+          }}
+          src={imgSrc}
+          alt={item.title}
+          loading={priority}
+          decoding="async"
+          className={`h-full w-full object-cover object-top transition-all duration-1000 ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          } ${variant === "theatre-desktop" ? "group-hover:scale-110" : ""}`}
+        />
+      ) : (
+        <PosterImage
+          alt={item.title || "Poster"}
+          info={item.artist || "Poster"}
+          className="h-full w-full object-cover animate-fade-in"
+        />
+      )}
 
       <div
         className={`pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent ${

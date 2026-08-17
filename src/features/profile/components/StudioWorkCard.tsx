@@ -4,6 +4,7 @@ import { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 import { getYoutubeFallbackThumbnail } from "../../../utils/embed";
 import { ModalWrapper } from "../../shared/modals/ModalWrapper";
+import { PosterImage } from "../../../components/PosterImage";
 
 interface StudioWorkCardProps {
   item: TheatreItem;
@@ -16,7 +17,13 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename, onD
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(item.title || "");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(item.image);
+  const [imgSrc, setImgSrc] = useState(() => {
+    if (item.image && item.image.trim() !== "") return item.image;
+    if (item.platform === "youtube" && item.srcId) {
+      return `https://img.youtube.com/vi/${item.srcId}/maxresdefault.jpg`;
+    }
+    return "";
+  });
   const [isSavingTitle, setIsSavingTitle] = useState(false);
   const [titleSaveStatus, setTitleSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -137,16 +144,21 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename, onD
           <img
             onLoad={(e) => {
               const img = e.currentTarget;
-              if (img.naturalWidth === 120 && img.src.includes("maxresdefault") && item.platform === "youtube" && item.srcId) {
-                const fallback = getYoutubeFallbackThumbnail(item.srcId);
-                setImgSrc(fallback);
+              if (img.naturalWidth === 120 && img.src.includes("youtube.com")) {
+                if (img.src.includes("maxresdefault") && item.srcId) {
+                  setImgSrc(getYoutubeFallbackThumbnail(item.srcId));
+                } else {
+                  setImgSrc("");
+                }
               } else {
                 setIsLoaded(true);
               }
             }}
             onError={() => {
-              if (item.platform === "youtube" && item.srcId) {
+              if (imgSrc.includes("youtube.com") && imgSrc.includes("maxresdefault") && item.srcId) {
                 setImgSrc(getYoutubeFallbackThumbnail(item.srcId));
+              } else {
+                setImgSrc("");
               }
             }}
             src={imgSrc}
@@ -157,7 +169,11 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename, onD
             }`}
           />
         ) : (
-          <div className="text-white/10">{getCategoryIcon}</div>
+          <PosterImage
+            alt={item.title || "Edit"}
+            info={item.category || "Edit"}
+            className="w-full h-full object-cover"
+          />
         )}
 
         {/* Technical Hud Overlay */}

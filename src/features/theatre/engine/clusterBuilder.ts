@@ -32,10 +32,7 @@ function getSeedFromItems(items: TheatreItem[]): number {
 }
 
 type Bucket = {
-  imax: TheatreItem[];
-  wide: TheatreItem[];
-  vertical: TheatreItem[];
-  square: TheatreItem[];
+  edits: TheatreItem[];
   poster: TheatreItem[];
   storyboard: TheatreItem[];
   recommendation: TheatreItem[];
@@ -63,30 +60,32 @@ const CLUSTER_TEMPLATES = {
     { type: "WIDE", x: 6, y: 6, w: 6, h: 3 },
   ],
   B: [
-    { type: "WIDE", x: 0, y: 0, w: 6, h: 3 },
-    { type: "SQUARE", x: 6, y: 0, w: 6, h: 3 },
+    { type: "WIDE",     x: 0, y: 0, w: 6, h: 3 },
+    { type: "WIDE",     x: 6, y: 0, w: 6, h: 3 },
     { type: "VERTICAL", x: 0, y: 3, w: 3, h: 6 },
-    { type: "SQUARE", x: 3, y: 3, w: 3, h: 3 },
-    { type: "SQUARE", x: 6, y: 3, w: 6, h: 3 },
-    { type: "SQUARE", x: 3, y: 6, w: 3, h: 3 },
-    { type: "SQUARE", x: 6, y: 6, w: 6, h: 3 },
+    { type: "SQUARE",   x: 3, y: 3, w: 3, h: 3 },
+    { type: "SQUARE",   x: 6, y: 3, w: 3, h: 3 },
+    { type: "SQUARE",   x: 9, y: 3, w: 3, h: 3 },
+    { type: "SQUARE",   x: 3, y: 6, w: 3, h: 3 },
+    { type: "WIDE",     x: 6, y: 6, w: 6, h: 3 },
   ],
   C: [
     { type: "VERTICAL", x: 0, y: 0, w: 3, h: 6 },
     { type: "VERTICAL", x: 3, y: 0, w: 3, h: 6 },
-    { type: "WIDE", x: 6, y: 0, w: 6, h: 3 },
-    { type: "SQUARE", x: 6, y: 3, w: 6, h: 3 },
-    { type: "SQUARE", x: 0, y: 6, w: 3, h: 3 },
-    { type: "SQUARE", x: 3, y: 6, w: 3, h: 3 },
-    { type: "SQUARE", x: 6, y: 6, w: 6, h: 3 },
+    { type: "WIDE",     x: 6, y: 0, w: 6, h: 3 },
+    { type: "SQUARE",   x: 6, y: 3, w: 3, h: 3 },
+    { type: "SQUARE",   x: 9, y: 3, w: 3, h: 3 },
+    { type: "SQUARE",   x: 0, y: 6, w: 3, h: 3 },
+    { type: "SQUARE",   x: 3, y: 6, w: 3, h: 3 },
+    { type: "WIDE",     x: 6, y: 6, w: 6, h: 3 },
   ],
   D: [ // Poster-heavy template
     { type: "VERTICAL", x: 0, y: 0, w: 3, h: 6 },
     { type: "VERTICAL", x: 3, y: 0, w: 3, h: 6 },
     { type: "VERTICAL", x: 6, y: 0, w: 3, h: 6 },
     { type: "VERTICAL", x: 9, y: 0, w: 3, h: 6 },
-    { type: "WIDE", x: 0, y: 6, w: 6, h: 3 },
-    { type: "WIDE", x: 6, y: 6, w: 6, h: 3 },
+    { type: "WIDE",     x: 0, y: 6, w: 6, h: 3 },
+    { type: "WIDE",     x: 6, y: 6, w: 6, h: 3 },
   ],
   F: [ // Vertical Anchor — VERTICAL + SQUARE (16×8)
     { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8 },
@@ -134,38 +133,21 @@ const CLUSTER_TEMPLATES = {
 
 function classify(items: TheatreItem[]): Bucket {
   const bucket: Bucket = {
-    imax: [],
-    wide: [],
-    vertical: [],
-    square: [],
+    edits: [],
     poster: [],
     storyboard: [],
     recommendation: [],
   };
 
   for (const item of items) {
-    const r = item.aspectRatio || 1;
-
     if (isRecommendationWork(item)) {
       bucket.recommendation.push(item);
-      continue;
-    }
-
-    if (isStoryboardWork(item)) {
+    } else if (isStoryboardWork(item)) {
       bucket.storyboard.push(item);
-      continue;
-    }
-
-    if (isPosterWork(item)) {
+    } else if (isPosterWork(item)) {
       bucket.poster.push(item);
-      continue;
-    }
-
-    if (isEditWork(item) || item.category === undefined || item.category === "Edit") {
-      if (r >= 2.2) bucket.imax.push(item);
-      else if (r >= 1.6) bucket.wide.push(item);
-      else if (r <= 0.7) bucket.vertical.push(item);
-      else bucket.square.push(item);
+    } else {
+      bucket.edits.push(item);
     }
   }
 
@@ -184,15 +166,13 @@ function chooseCluster(
     return flowOptions[Math.floor(rng() * flowOptions.length)];
   }
 
-  if (isFirst && bucket.imax.length > 0) return "A";
+  if (isFirst && bucket.edits.length > 0) return "A";
   if (bucket.poster.length > 4 && rng() < 0.5) return "D";
-  if (bucket.imax.length > 0 && imaxWindowSum < 2 && rng() < 0.3) return "A";
-  if (bucket.vertical.length >= 2 || rng() < 0.6) return "C";
+  if (bucket.edits.length > 0 && imaxWindowSum < 2 && rng() < 0.3) return "A";
+  if (bucket.poster.length + bucket.storyboard.length >= 2 || rng() < 0.6) return "C";
   
   return "B";
 }
-
-
 
 interface ClusterState {
   sinceLastRec: number;
@@ -203,89 +183,104 @@ function fillCluster(
   bucket: Bucket, 
   masterBucket: Bucket,
   rng: () => number,
-  clusterState: ClusterState
+  _clusterState: ClusterState
 ): Cluster {
   const template = CLUSTER_TEMPLATES[type];
   const slots: ClusterSlot[] = template.map(s => ({ ...s, item: undefined })) as ClusterSlot[];
-  let editCount = 0;
 
-  const isEdit = (it: TheatreItem) => isEditWork(it);
-
-  // PASS 0: High-Priority Recommendations (Forces 'min 1 per 2 clusters' rule)
-  let placedRec = false;
-  if (clusterState.sinceLastRec >= 1 && bucket.recommendation.length > 0) {
-    for (const slot of slots) {
-      if (slot.item) continue;
-      if (slot.type === "SQUARE" || slot.type === "VERTICAL") {
-        slot.item = bucket.recommendation.shift()!;
-        placedRec = true;
-        break; // Max 1 per cluster
-      }
-    }
-  }
-
-  // PASS 1: Primary items
+  // PASS 1: Primary assignment based on slot category rules
   for (const slot of slots) {
-    if (editCount >= 6) break;
-
+    if (slot.item) continue;
     let item: TheatreItem | undefined = undefined;
+
     switch (slot.type) {
-      case "IMAX":     item = bucket.imax.shift();     break;
-      case "WIDE":     item = bucket.wide.shift();     break;
-      case "VERTICAL": item = bucket.vertical.shift(); break;
-      case "SQUARE":   item = bucket.square.shift();   break;
+      case "IMAX":
+      case "WIDE":
+        // IMAX and WIDE (Academy) take EDITS only
+        item = bucket.edits.shift();
+        break;
+
+      case "VERTICAL":
+        // VERTICAL takes Posters first, then Storyboards, then Edits as fallback
+        item = bucket.poster.shift() || bucket.storyboard.shift() || bucket.edits.shift();
+        break;
+
+      case "SQUARE":
+        // SQUARE takes everything: Storyboards, Posters, Edits, Recommendations
+        item = bucket.storyboard.shift() || bucket.poster.shift() || bucket.edits.shift() || bucket.recommendation.shift();
+        break;
     }
 
     if (item) {
       slot.item = item;
-      if (isEdit(item)) editCount++;
     }
   }
 
-  // PASS 2: Posters
+  // PASS 2: Secondary assignment for remaining unfilled slots if pools still have items
   for (const slot of slots) {
     if (slot.item) continue;
-    if (slot.type === "VERTICAL" || slot.type === "SQUARE") {
-      const item = bucket.poster.shift();
-      if (item) {
-        slot.item = item;
-        if (isEdit(item)) editCount++;
-      }
+    let item: TheatreItem | undefined = undefined;
+
+    switch (slot.type) {
+      case "IMAX":
+      case "WIDE":
+        item = bucket.edits.shift();
+        break;
+
+      case "VERTICAL":
+        item = bucket.poster.shift() || bucket.storyboard.shift() || bucket.edits.shift();
+        break;
+
+      case "SQUARE":
+        item = bucket.storyboard.shift() || bucket.poster.shift() || bucket.edits.shift() || bucket.recommendation.shift();
+        break;
+    }
+
+    if (item) {
+      slot.item = item;
     }
   }
 
-  // PASS 3: Storyboards
+  // PASS 3: Fallback pass recycling from masterBucket so no slots remain empty/black
+  const pickFallback = (pool: TheatreItem[]) => {
+    if (!pool.length) return undefined;
+    const idx = Math.floor(rng() * pool.length);
+    return pool[idx];
+  };
+
+  const allMasterItems = [
+    ...masterBucket.edits,
+    ...masterBucket.poster,
+    ...masterBucket.storyboard,
+    ...masterBucket.recommendation,
+  ];
+
   for (const slot of slots) {
     if (slot.item) continue;
-    if (slot.w === 3 && slot.h === 3) {
-      const item = bucket.storyboard.shift();
-      if (item) {
-        slot.item = item;
-      }
+    let item: TheatreItem | undefined = undefined;
+
+    switch (slot.type) {
+      case "IMAX":
+      case "WIDE":
+        // IMAX and WIDE (Academy) take EDITS ONLY
+        item = pickFallback(masterBucket.edits);
+        break;
+
+      case "VERTICAL":
+        item = pickFallback(masterBucket.poster) || pickFallback(masterBucket.storyboard) || pickFallback(masterBucket.edits);
+        break;
+
+      case "SQUARE":
+        item = pickFallback(masterBucket.storyboard) || pickFallback(masterBucket.poster) || pickFallback(masterBucket.edits) || pickFallback(masterBucket.recommendation);
+        break;
+    }
+
+    if (item) {
+      slot.item = item;
     }
   }
 
-  // PASS 3.5: Low-Priority Recommendations (Fills left-over squares)
-  if (!placedRec && bucket.recommendation.length > 0) {
-    for (const slot of slots) {
-      if (slot.item) continue;
-      if (slot.type === "SQUARE" || slot.type === "VERTICAL") {
-        slot.item = bucket.recommendation.shift()!;
-        placedRec = true;
-        break; // Max 1 per cluster
-      }
-    }
-  }
-
-  if (placedRec) {
-    clusterState.sinceLastRec = 0;
-  } else {
-    clusterState.sinceLastRec++;
-  }
-
-  // No duplication or fallback — unfilled slots intentionally remain undefined.
-  // Only real uploaded items appear in the grid.
-  return { type, slots: slots as ClusterSlot[] };
+  return { type, slots };
 }
 
 export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'canvas'): Cluster[] {
@@ -294,21 +289,15 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
   const seed = getSeedFromItems(items);
   const rng  = createPRNG(seed);
 
-  // Classify once, then deep-clone arrays for the working bucket.
-  // This avoids running the full O(n) classify() loop twice.
   const masterBucket = classify([...items]);
   const bucket: Bucket = {
-    imax:     [...masterBucket.imax],
-    wide:     [...masterBucket.wide],
-    vertical: [...masterBucket.vertical],
-    square:   [...masterBucket.square],
-    poster:   [...masterBucket.poster],
-    storyboard:   [...masterBucket.storyboard],
+    edits:          [...masterBucket.edits],
+    poster:         [...masterBucket.poster],
+    storyboard:     [...masterBucket.storyboard],
     recommendation: [...masterBucket.recommendation],
   };
 
   const clusters: Cluster[] = [];
-  // imaxHistory tracks IMAX-slot density over the last 2 clusters (sliding window).
   let imaxPrev = 0;
   let imaxCurr = 0;
 
@@ -319,16 +308,12 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
     }
   };
 
-  shuffle(bucket.wide);
+  shuffle(bucket.edits);
   shuffle(bucket.poster);
-  shuffle(bucket.square);
-  shuffle(bucket.vertical);
   shuffle(bucket.storyboard);
 
   const hasContent = (b: Bucket) =>
-    b.imax.length > 0 || b.wide.length > 0 || b.vertical.length > 0 ||
-    b.square.length > 0 || b.poster.length > 0 || b.storyboard.length > 0 || 
-    b.recommendation.length > 0;
+    b.edits.length > 0 || b.poster.length > 0 || b.storyboard.length > 0 || b.recommendation.length > 0;
 
   const clusterState: ClusterState = { sinceLastRec: 0 };
 
