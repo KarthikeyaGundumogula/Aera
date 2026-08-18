@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import { motion } from "motion/react";
+import { Upload, Pencil, X } from "lucide-react";
 import { ArtistAvatar } from "@/components/ArtistAvatar";
 
 interface PortraitIdentitySectionProps {
@@ -16,7 +17,6 @@ interface PortraitIdentitySectionProps {
 }
 
 const TAGLINE_MAX = 120;
-const VARIANTS = ["beam", "marble", "bauhaus", "sunset", "pixel", "ring"] as const;
 
 export function PortraitIdentitySection({
   username,
@@ -27,11 +27,14 @@ export function PortraitIdentitySection({
   onPortraitChange,
   onPortraitClear,
 }: PortraitIdentitySectionProps) {
-  const [selectedVariant, setSelectedVariant] = useState<
-    "beam" | "marble" | "pixel" | "sunset" | "bauhaus" | "ring"
-  >("beam");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const avatarSeed = username || displayName || "artist";
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    onPortraitChange(file, previewUrl);
+  };
 
   return (
     <motion.section
@@ -41,37 +44,60 @@ export function PortraitIdentitySection({
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="w-full space-y-8"
     >
-      {/* ─── DYNAMIC BORING AVATAR GENERATOR ─── */}
+      {/* ─── PORTRAIT UPLOADER & PREVIEW ─── */}
       <div className="flex flex-col items-center gap-4 mb-8">
-        <div className="relative group perspective-1000">
-          <div className="w-40 sm:w-48 aspect-square rounded-2xl overflow-hidden border-2 border-white/20 bg-black/40 flex items-center justify-center shadow-2xl transition-all">
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+
+        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+          <div className="w-40 sm:w-48 aspect-square rounded-2xl overflow-hidden border-2 border-white/20 bg-black/40 flex items-center justify-center shadow-2xl transition-all group-hover:border-white/40">
             <ArtistAvatar
-              src={`boring-avatar:${avatarSeed}`}
+              src={portraitPreview}
               name={displayName || username || "Artist"}
-              variant={selectedVariant}
               size={180}
               className="w-full h-full rounded-2xl"
             />
           </div>
+
+          {/* Hover Overlay */}
+          <div className="absolute inset-0 rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1 transition-opacity backdrop-blur-sm">
+            <Pencil className="w-6 h-6 text-white" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/80">
+              {portraitPreview ? "Change Portrait" : "Upload Portrait"}
+            </span>
+          </div>
+
+          {/* Clear Button */}
+          {portraitPreview && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPortraitClear();
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+              className="absolute -top-2 -right-2 p-1.5 rounded-full bg-red-500/80 hover:bg-red-500 text-white shadow-lg transition-all"
+              title="Remove picture"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        {/* Variant Picker */}
-        <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl mt-2">
-          {VARIANTS.map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setSelectedVariant(v)}
-              className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                selectedVariant === v
-                  ? "bg-white text-black shadow-md"
-                  : "text-white/40 hover:text-white/80"
-              }`}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
+        {/* Upload Action Button */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/80 transition-all"
+        >
+          <Upload className="w-3.5 h-3.5" />
+          {portraitPreview ? "Replace Portrait Photo" : "Upload Portrait Photo"}
+        </button>
 
         <div className="text-center max-w-xs px-4">
           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/90 truncate">
@@ -98,12 +124,13 @@ export function PortraitIdentitySection({
               className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-5 py-3.5 text-sm font-bold tracking-tight placeholder:text-white/10 focus:border-white/30 focus:bg-white/[0.05] transition-all outline-none"
             />
           </div>
+
           <div className="space-y-2">
             <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-1">
               Artist Handle
             </label>
             <div className="relative">
-               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-mono text-xs">@</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-mono text-xs">@</span>
               <input
                 type="text"
                 value={username}

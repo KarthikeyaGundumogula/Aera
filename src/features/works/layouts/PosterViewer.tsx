@@ -1,18 +1,18 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
-import { TheatreItem } from "../../../types";
+import { PosterWorkDetail } from "../../../types";
 import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
 
 interface PosterViewerProps {
-  item: TheatreItem;
+  work: PosterWorkDetail;
 }
 
 /**
  * PosterViewer — wraps ViewerFrame with a full-size poster image as
  * the media slot. Double-tap fires the honour flash via ViewerFrame.
  */
-export function PosterViewer({ item }: PosterViewerProps) {
-  const imageSrc = item.image ?? (item.images?.[0] || "");
+export function PosterViewer({ work }: PosterViewerProps) {
+  const imageSrc = work.srcId;
   const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
@@ -33,7 +33,7 @@ export function PosterViewer({ item }: PosterViewerProps) {
       )}
 
       <ViewerFrame
-        item={item}
+        work={work}
         mediaMaxWidth="min(440px,calc(100vw-2rem))"
         mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
           <motion.div
@@ -48,7 +48,7 @@ export function PosterViewer({ item }: PosterViewerProps) {
               <div className="relative inline-block max-w-full">
                 <img
                   src={imageSrc}
-                  alt={item.title || "Poster"}
+                  alt={work.title || "Poster"}
                   className="w-auto h-auto max-w-full max-h-[70vh] lg:max-h-[calc(100vh-320px)] object-contain rounded-none select-none border-[1.5px] border-white/20 shadow-[0_8px_48px_rgba(0,0,0,0.6)]"
                   loading="eager"
                   style={{ backfaceVisibility: "hidden" }}

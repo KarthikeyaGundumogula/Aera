@@ -14,6 +14,20 @@ import { OriginalArtist } from "../../../types";
 import { CreditTag } from "../tags";
 import { ModalWrapper } from "../modals/ModalWrapper";
 import { ArtistAvatar } from "../../../components/ArtistAvatar";
+import { apiFetch } from "@/lib/api";
+
+interface ArtistModalData {
+  profilePicture?: string;
+  stageName?: string;
+  userName?: string;
+  tagLine?: string;
+  youtubeProfile?: string | null;
+  twitterProfile?: string | null;
+  instagramProfile?: string | null;
+  spirit?: number;
+  works?: number;
+  originals?: string[];
+}
 
 interface ArtistProfileProps {
   artist: OriginalArtist | null;
@@ -30,6 +44,8 @@ export const ArtistProfile = memo(
     const [localIsOpen, setLocalIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
+    const [modalData, setModalData] = useState<ArtistModalData | null>(null);
+    const [isLoadingModal, setIsLoadingModal] = useState(false);
     
     // Support both internal (click card) and external (WorkModal) triggers
     const isOpen = onClose ? !!artist : localIsOpen;
@@ -73,9 +89,58 @@ export const ArtistProfile = memo(
       }
     }, [isOpen]);
 
+    // Fetch ArtistModal data when open
+    useEffect(() => {
+      if (!isOpen || !artist) return;
+
+      const targetIdentifier = artist.userName || artist.id;
+      if (!targetIdentifier) return;
+
+      let isMounted = true;
+      setIsLoadingModal(true);
+
+      apiFetch(`/profiles/modal/${encodeURIComponent(targetIdentifier)}`, { method: "GET" })
+        .then(async (res) => {
+          if (!isMounted) return;
+          if (res.ok) {
+            const json = await res.json();
+            const data: ArtistModalData = json?.artist_modal || json?.artistModal || null;
+            if (data && isMounted) {
+              setModalData(data);
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn("[ArtistProfile] Failed to fetch artist modal data:", err);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoadingModal(false);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    }, [isOpen, artist?.id, artist?.userName]);
+
     if (!artist) return null;
 
-    const fhUid = `FH-ID-${artist.id.toUpperCase().replace("-", "")}`;
+    const currentName = modalData?.stageName || artist.name || "Artist";
+    const currentUsername = modalData?.userName || artist.userName || "";
+    const displayHandle = currentUsername
+      ? (currentUsername.startsWith("@") ? currentUsername : `@${currentUsername}`)
+      : (currentName ? `@${currentName.toLowerCase().replace(/\s+/g, "")}` : "@artist");
+    const currentImage = modalData?.profilePicture || artist.image || "";
+    const currentBio = modalData?.tagLine || artist.bio || "FrameHouse creator contributing to the cinematic evolution.";
+    const currentSpirit = modalData?.spirit ?? artist.spirit ?? 0;
+    const currentWorks = modalData?.works ?? artist.works ?? 0;
+    const currentSocials = {
+      instagram: modalData?.instagramProfile || artist.socials?.instagram,
+      twitter: modalData?.twitterProfile || artist.socials?.twitter,
+      youtube: modalData?.youtubeProfile || artist.socials?.youtube,
+    };
+    const currentOriginals: Array<{ id: string; title: string }> = modalData?.originals
+      ? modalData.originals.map((title, idx) => ({ id: `${idx}`, title }))
+      : (artist.workedOn || []);
 
     const handleProjectClick = () => {
       setIsOpen(false);
@@ -113,8 +178,8 @@ export const ArtistProfile = memo(
                       <span className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">
                         Artist Stage
                       </span>
-                      <span className="text-[9px] font-mono text-white/20 mt-0.5">
-                        {fhUid}
+                      <span className="text-[9px] font-mono text-white/35 mt-0.5 tracking-wider">
+                        {displayHandle}
                       </span>
                     </div>
 
@@ -123,7 +188,7 @@ export const ArtistProfile = memo(
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsOpen(false);
-                        navigate(`/profile/${artist.id}`);
+                        navigate(`/profile/${currentUsername || artist.id}`);
                       }}
                       className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
                     >
@@ -133,11 +198,11 @@ export const ArtistProfile = memo(
 
                   {/* Portrait Section (Identity Frame) */}
                   <div className="px-6 py-4 z-10 flex items-center justify-center gap-2 sm:gap-6 overflow-hidden">
-                    {/* Left side Vertical ID */}
-                    <div className="flex flex-col items-center gap-4 opacity-20 select-none shrink-0">
+                    {/* Left side Vertical Username */}
+                    <div className="flex flex-col items-center gap-4 opacity-25 select-none shrink-0">
                       <div className="w-[1px] h-10 sm:h-12 bg-white" />
                       <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.4em] uppercase text-white whitespace-nowrap">
-                        {artist.id.toUpperCase().replace('PROFILE-', '')}
+                        {displayHandle}
                       </span>
                       <div className="w-[1px] h-10 sm:h-12 bg-white" />
                     </div>
@@ -152,8 +217,8 @@ export const ArtistProfile = memo(
                         className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10 group bg-black/20 shadow-2xl"
                       >
                         <ArtistAvatar
-                          src={artist.image}
-                          name={artist.name}
+                          src={currentImage}
+                          name={currentName}
                           size={240}
                           className="w-full h-full rounded-2xl"
                         />
@@ -161,11 +226,11 @@ export const ArtistProfile = memo(
                       </motion.div>
                     </div>
 
-                    {/* Right side Vertical ID */}
-                    <div className="flex flex-col items-center gap-4 opacity-20 select-none shrink-0">
+                    {/* Right side Vertical Username */}
+                    <div className="flex flex-col items-center gap-4 opacity-25 select-none shrink-0">
                       <div className="w-[1px] h-10 sm:h-12 bg-white" />
                       <span className="[writing-mode:vertical-rl] rotate-180 text-[7px] sm:text-[8px] font-mono tracking-[0.4em] uppercase text-white whitespace-nowrap">
-                        {artist.id.toUpperCase().replace('PROFILE-', '')}
+                        {displayHandle}
                       </span>
                       <div className="w-[1px] h-10 sm:h-12 bg-white" />
                     </div>
@@ -174,13 +239,12 @@ export const ArtistProfile = memo(
                   {/* Bio Section */}
                   <div className="px-8 py-2 text-center z-10">
                     <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-2 leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                      {artist.name}
+                      {currentName}
                     </h2>
                     <div className="h-px w-12 bg-white/10 mx-auto my-4" />
                     <p className="text-[11px] font-medium text-white/50 leading-relaxed max-w-[90%] mx-auto line-clamp-3 italic">
                       "
-                      {artist.bio ||
-                        "FrameHouse creator contributing to the cinematic evolution."}
+                      {currentBio}
                       "
                     </p>
                   </div>
@@ -194,7 +258,7 @@ export const ArtistProfile = memo(
                       <div className="flex items-center gap-2">
                         <SpiritIcon className="w-3 h-3 text-white/80" />
                         <span className="text-sm font-black text-white">
-                          {artist.spirit}
+                          {currentSpirit}
                         </span>
                       </div>
                     </div>
@@ -220,7 +284,7 @@ export const ArtistProfile = memo(
                       <div className="flex items-center gap-2">
                         <WorksIcon className="w-3 h-3 text-white/80" />
                         <span className="text-sm font-black text-white">
-                          {artist.works}
+                          {currentWorks}
                         </span>
                       </div>
                     </div>
@@ -228,9 +292,9 @@ export const ArtistProfile = memo(
 
                   {/* Social Footer */}
                   <div className="p-8 flex justify-center items-center gap-8 z-10">
-                    {artist.socials?.instagram && (
+                    {currentSocials.instagram && (
                       <a
-                        href={`https://instagram.com/${artist.socials.instagram.replace("@", "")}`}
+                        href={`https://instagram.com/${currentSocials.instagram.replace("@", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
@@ -239,9 +303,9 @@ export const ArtistProfile = memo(
                         <Instagram size={18} />
                       </a>
                     )}
-                    {artist.socials?.twitter && (
+                    {currentSocials.twitter && (
                       <a
-                        href={`https://twitter.com/${artist.socials.twitter.replace("@", "")}`}
+                        href={`https://twitter.com/${currentSocials.twitter.replace("@", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
@@ -250,9 +314,9 @@ export const ArtistProfile = memo(
                         <Twitter size={18} />
                       </a>
                     )}
-                    {artist.socials?.youtube && (
+                    {currentSocials.youtube && (
                       <a
-                        href={`https://youtube.com/@${artist.socials.youtube.replace("@", "")}`}
+                        href={`https://youtube.com/@${currentSocials.youtube.replace("@", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
@@ -280,8 +344,8 @@ export const ArtistProfile = memo(
                       <span className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">
                         Credit Gallery
                       </span>
-                      <span className="text-[9px] font-mono text-white/20 mt-0.5">
-                        {artist.name}
+                      <span className="text-[9px] font-mono text-white/35 mt-0.5 tracking-wider">
+                        {displayHandle}
                       </span>
                     </div>
                   </div>
@@ -299,9 +363,9 @@ export const ArtistProfile = memo(
                         className="flex flex-row flex-wrap justify-center gap-3"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {artist.workedOn?.map((project, pIdx) => (
+                        {currentOriginals.map((project, pIdx) => (
                           <CreditTag
-                            key={project.id}
+                            key={`${project.id}-${pIdx}`}
                             id={project.id}
                             title={project.title}
                             index={pIdx}
@@ -309,8 +373,7 @@ export const ArtistProfile = memo(
                           />
                         ))}
 
-                        {(!artist.workedOn ||
-                          artist.workedOn.length === 0) && (
+                        {currentOriginals.length === 0 && (
                           <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 italic text-center">
                             No public records found
                           </p>

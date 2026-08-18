@@ -39,8 +39,9 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
     return () => clearTimeout(timer);
   }, [currentIndex, currentWork?.workId]);
 
-  const isYoutube = currentWork?.platform === 'YOUTUBE';
-  const isTwitter = currentWork?.platform === 'TWITTER';
+  const rawPlatform = (currentWork?.platform || '').toLowerCase();
+  const isTwitter = rawPlatform === 'twitter' || (Boolean(currentWork?.workSrcId) && /twitter\.com|x\.com/.test(currentWork?.workSrcId || ''));
+  const isYoutube = !isTwitter;
   const embedUrl =
     isYoutube && currentWork?.workSrcId
       ? buildEmbedUrl('youtube', currentWork.workSrcId)

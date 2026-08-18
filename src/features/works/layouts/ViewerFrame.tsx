@@ -1,27 +1,19 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { StarAction } from "../../../components/actions/StarAction";
 import { CameraAction } from "../../../components/actions/CameraAction";
 import { SaveAction } from "../../../components/actions/SaveAction";
 import { QuoteModal } from "../../../components/QuoteModal";
-import { TheatreItem, OriginalArtist } from "../../../types";
+import { WorkDetail, OriginalArtist, TheatreItem } from "../../../types";
 import { ViewerNav } from "../components/ViewerNav";
 import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
-import { Pin, BookPlus, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { ShareAction } from "../../../components/actions/ShareAction";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { apiFetch } from "@/lib/api";
-
-// Simple deterministic stat generator based on ID
-function generateStat(id: string | number, multiplier: number, offset: number = 0): number {
-  let hash = 0;
-  const str = String(id);
-  for (let i = 0; i < str.length; i++) hash = (hash << 5) - hash + str.charCodeAt(i);
-  return (Math.abs(hash) % multiplier) + offset;
-}
 
 function formatStat(num: number): string {
   if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + 'M';
@@ -30,7 +22,7 @@ function formatStat(num: number): string {
 }
 
 interface ViewerFrameProps {
-  item: TheatreItem;
+  work: WorkDetail;
   /**
    * The unique media content for this work type.
    * Receives `{ isStarred, staring, doubleTapFlash, onDoubleTap }` so media
@@ -54,21 +46,8 @@ export interface MediaSlotContext {
 const DOUBLE_TAP_MS = 400;
 const DOUBLE_TAP_MIN_MS = 30;
 
-/**
- * ViewerFrame — the single, unified viewer chrome.
- *
- * Handles:
- *  - Responsive two-column grid (desktop) / vertical stack (mobile)
- *  - ViewerNav (top bar)
- *  - YouTube-style identity block: Title → Avatar + Name + Favourite → Actions
- *  - Honour / Favourite state
- *  - ArtistProfile modal
- *  - ArtistContextPanel (right column)
- *
- * Each work type passes a `mediaSlot` render-prop with its unique media JSX.
- */
 export function ViewerFrame({
-  item,
+  work,
   mediaSlot,
   showIdentityBlock = true,
   mediaMaxWidth,
@@ -85,15 +64,44 @@ export function ViewerFrame({
   const starTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const flashTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  const artistId = work.artist?.id || "";
+  const artistName = work.artist?.stageName || "Unknown Artist";
+  const rawAvatar =
+    work.artist?.profilePicture ||
+    (work.artist as any)?.profile_picture ||
+    (work.artist as any)?.artistAvatar ||
+    "";
+
+  const isValidAvatar =
+    typeof rawAvatar === "string" &&
+    rawAvatar.trim() !== "" &&
+    rawAvatar !== "undefined" &&
+    rawAvatar !== "null" &&
+    (rawAvatar.startsWith("http://") ||
+      rawAvatar.startsWith("https://") ||
+      rawAvatar.startsWith("/") ||
+      rawAvatar.startsWith("data:"));
+
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [rawAvatar]);
+
+  const favoritesCount = work.artist?.favoritesCount ?? 0;
+  const spiritCount = work.artist?.spirit ?? 0;
+  const starsCount = work.stars ?? 0;
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleArtistClick = () => {
     setSelectedArtist({
-      id: item.artistId || String(item.id),
-      name: item.artist || "Anonymous",
-      spirit: 0,
+      id: artistId,
+      name: artistName,
+      userName: work.artist?.userName || "",
+      spirit: spiritCount,
       works: 0,
-      image: item.artistAvatar || item.image || "",
+      image: isValidAvatar ? rawAvatar : "",
     });
   };
 
@@ -106,13 +114,10 @@ export function ViewerFrame({
     starTimeout.current = setTimeout(() => setStaring(false), 420);
     flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 1000);
 
-    const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
-    if (isUuid) {
-      apiFetch("/artists/star_work", {
-        method: "POST",
-        body: JSON.stringify({ entity_id: item.id }),
-      }).catch((e) => console.warn("[ViewerFrame] fireStar backend error:", e));
-    }
+    apiFetch("/artists/star_work", {
+      method: "POST",
+      body: JSON.stringify({ entity_id: work.id }),
+    }).catch((e) => console.warn("[ViewerFrame] fireStar backend error:", e));
   };
 
   const handleStarBtn = () => {
@@ -127,15 +132,12 @@ export function ViewerFrame({
     }
     starTimeout.current = setTimeout(() => setStaring(false), 420);
 
-    const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
-    if (isUuid) {
-      const endpoint = next ? "/artists/star_work" : "/artists/unstar_work";
-      const method = next ? "POST" : "DELETE";
-      apiFetch(endpoint, {
-        method,
-        body: JSON.stringify({ entity_id: item.id }),
-      }).catch((e) => console.warn("[ViewerFrame] star_work error:", e));
-    }
+    const endpoint = next ? "/artists/star_work" : "/artists/unstar_work";
+    const method = next ? "POST" : "DELETE";
+    apiFetch(endpoint, {
+      method,
+      body: JSON.stringify({ entity_id: work.id }),
+    }).catch((e) => console.warn("[ViewerFrame] star_work error:", e));
   };
 
   const triggerDoubleTap = () => {
@@ -153,13 +155,10 @@ export function ViewerFrame({
       setToastMsg("Pinned to Wall");
       setTimeout(() => setToastMsg(null), 3000);
 
-      const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
-      if (isUuid) {
-        apiFetch("/artists/new/wall_post", {
-          method: "POST",
-          body: JSON.stringify({ work_id: item.id }),
-        }).catch((e) => console.warn("[ViewerFrame] pin wall_post error:", e));
-      }
+      apiFetch("/artists/new/wall_post", {
+        method: "POST",
+        body: JSON.stringify({ work_id: work.id }),
+      }).catch((e) => console.warn("[ViewerFrame] pin wall_post error:", e));
     }
   };
 
@@ -171,22 +170,13 @@ export function ViewerFrame({
       setTimeout(() => setToastMsg(null), 2500);
     }
 
-    const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
-    if (isUuid) {
-      const endpoint = next ? "/artists/save_work" : "/artists/unsave_work";
-      const method = next ? "POST" : "DELETE";
-      apiFetch(endpoint, {
-        method,
-        body: JSON.stringify({ entity_id: item.id }),
-      }).catch((e) => console.warn("[ViewerFrame] save_work error:", e));
-    }
+    const endpoint = next ? "/artists/save_work" : "/artists/unsave_work";
+    const method = next ? "POST" : "DELETE";
+    apiFetch(endpoint, {
+      method,
+      body: JSON.stringify({ entity_id: work.id }),
+    }).catch((e) => console.warn("[ViewerFrame] save_work error:", e));
   };
-
-  const followersCount = generateStat(item.artist || item.id, 50000, 1000);
-  const spiritCount = generateStat(item.id, 2000, 100);
-  const starsCount = generateStat(item.id, 10000, 500);
-  const pinsCount = generateStat(item.id, 5000, 50);
-  const savesCount = generateStat(item.id, 20000, 200);
 
   // ── Media slot context ─────────────────────────────────────────────────────
   const mediaCtx: MediaSlotContext = {
@@ -206,7 +196,7 @@ export function ViewerFrame({
 
         {/* Left column ─────────────────────────────────────────────────────── */}
         <div className="flex flex-col relative">
-          <ViewerNav item={item} />
+          <ViewerNav work={work} />
 
           <div className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-[60px] pb-8 sm:pt-[64px]">
 
@@ -270,7 +260,7 @@ export function ViewerFrame({
                   onPointerDown={triggerDoubleTap}
                   style={{ touchAction: "manipulation", userSelect: "none" }}
                 >
-                  {item.title || "Untitled"}
+                  {work.title || "Untitled"}
                 </h1>
 
                 {/* Artist row + actions row */}
@@ -281,13 +271,14 @@ export function ViewerFrame({
                     <button
                       onClick={handleArtistClick}
                       className="shrink-0 active:scale-95 transition-transform"
-                      aria-label={`View ${item.artist || "artist"} profile`}
+                      aria-label={`View ${artistName} profile`}
                       style={{ touchAction: "manipulation" }}
                     >
-                      {item.artistAvatar ? (
+                      {isValidAvatar && !avatarError ? (
                         <img
-                          src={item.artistAvatar}
-                          alt={item.artist || ""}
+                          src={rawAvatar}
+                          alt={artistName}
+                          onError={() => setAvatarError(true)}
                           className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover opacity-80 hover:opacity-100 transition-opacity border border-white/10"
                           loading="eager"
                           decoding="async"
@@ -295,7 +286,7 @@ export function ViewerFrame({
                       ) : (
                         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/6 border border-white/8 flex items-center justify-center">
                           <span className="text-sm font-black text-white/35">
-                            {(item.artist || "?").charAt(0).toUpperCase()}
+                            {(artistName || "?").charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
@@ -306,13 +297,13 @@ export function ViewerFrame({
                         onClick={handleArtistClick}
                         className="text-[14px] sm:text-[15px] font-bold text-white/80 hover:text-white transition-colors truncate max-w-[140px] sm:max-w-[200px]"
                       >
-                        {item.artist || "Unknown Artist"}
+                        {artistName}
                       </button>
 
                       <div className="flex items-center gap-2 text-[10px] font-bold text-white/50">
                         <span className="flex items-center gap-1">
                           <Heart className="w-3 h-3" />
-                          {formatStat(followersCount)}
+                          {formatStat(favoritesCount)}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
@@ -338,21 +329,19 @@ export function ViewerFrame({
                       isPinned={pinned}
                       onPin={handlePin}
                       onQuote={() => setIsQuoteModalOpen(true)}
-                      count={formatStat(pinned ? pinsCount + 1 : pinsCount)}
                       variant="viewer"
                     />
                     
                     <SaveAction
                       isActive={saved}
                       onClick={handleSaveToggle}
-                      count={formatStat(saved ? savesCount + 1 : savesCount)}
                       variant="viewer"
                     />
 
                     <ShareAction
-                      title={`${item.title || "Work"} on Aera`}
-                      text={`Check out ${item.title || "this work"} on Aera`}
-                      url={`${window.location.origin}/works/${item.id}`}
+                      title={`${work.title || "Work"} on Aera`}
+                      text={`Check out ${work.title || "this work"} on Aera`}
+                      url={`${window.location.origin}/works/${work.id}`}
                       variant="viewer"
                       onShareSuccess={() => {
                         setToastMsg("LINK COPIED");
@@ -367,7 +356,7 @@ export function ViewerFrame({
         </div>
 
         {/* Right column — Artist context ────────────────────────────────── */}
-        <ArtistContextPanel item={item} />
+        <ArtistContextPanel artistId={artistId} currentWorkId={work.id} />
       </main>
 
       {selectedArtist && (
@@ -377,7 +366,13 @@ export function ViewerFrame({
       <QuoteModal 
         isOpen={isQuoteModalOpen} 
         onClose={() => setIsQuoteModalOpen(false)} 
-        item={item} 
+        item={{
+          id: work.id,
+          title: work.title,
+          category: work.category,
+          artist: artistName,
+          artistAvatar: isValidAvatar ? rawAvatar : undefined,
+        }} 
       />
 
       <AnimatePresence>

@@ -22,6 +22,7 @@ import { useAuth, parseColorTheme } from "../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { TheatreItem, Original } from "../../types";
 import type { WallPost } from "../../types/wall";
+import { DEFAULT_AVATAR_PLACEHOLDER } from "@/constants/placeholders";
 
 
 /**
@@ -48,7 +49,7 @@ function mapBackendWallPost(raw: {
     id: raw.id,
     artistId: raw.artistId,
     artistName: raw.artistName,
-    artistImage: raw.artistImage || `boring-avatar:${raw.artistId}`,
+    artistImage: raw.artistImage || DEFAULT_AVATAR_PLACEHOLDER,
     type,
     text: raw.text ?? undefined,
     pinnedWorkId: raw.pinnedWorkId ?? undefined,
@@ -237,7 +238,7 @@ const ProfilePage: React.FC = () => {
             name: currentArtist.name,
             handle: cleanHandle,
             tagline: currentArtist.bio || "Visionary Artist",
-            image: currentArtist.image || `boring-avatar:${cleanHandle}`,
+            image: currentArtist.image || DEFAULT_AVATAR_PLACEHOLDER,
             spirit: (currentArtist.spirit || 0).toLocaleString(),
             favoritesCount: (currentArtist.favoritesCount || 0).toLocaleString(),
             type: "ARTIST",
@@ -270,7 +271,7 @@ const ProfilePage: React.FC = () => {
                 name: stage.stageName || stage.userName || cleanHandle,
                 handle: stage.userName || cleanHandle,
                 tagline: stage.tagLine || "Visionary Artist",
-                image: stage.profilePicture || `boring-avatar:${stage.userName || cleanHandle}`,
+                image: stage.profilePicture || DEFAULT_AVATAR_PLACEHOLDER,
                 spirit: (stage.spirit || 0).toLocaleString(),
                 favoritesCount: (stage.favoritesCount || 0).toLocaleString(),
                 type: "ARTIST",

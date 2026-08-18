@@ -1,132 +1,155 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { extractSrcId } from "../utils/embed";
 
 declare global {
   interface Window {
     twttr?: {
       widgets?: {
-        load: (el: HTMLElement) => unknown;
+        load: (el?: HTMLElement) => Promise<unknown>;
+        createTweet: (
+          tweetId: string,
+          targetEl: HTMLElement,
+          options?: Record<string, unknown>
+        ) => Promise<HTMLElement | undefined>;
       };
+      _e?: Array<() => void>;
+      ready?: (callback: (twttr: any) => void) => void;
     };
   }
+}
+
+let twitterScriptPromise: Promise<any> | null = null;
+
+function loadTwitterSdk(): Promise<any> {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  if (window.twttr?.widgets) return Promise.resolve(window.twttr);
+
+  if (!twitterScriptPromise) {
+    twitterScriptPromise = new Promise((resolve) => {
+      if (window.twttr?.widgets) {
+        resolve(window.twttr);
+        return;
+      }
+
+      const scriptId = "twitter-wjs";
+      let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+      if (!script) {
+        script = document.createElement("script");
+        script.id = scriptId;
+        script.src = "https://platform.twitter.com/widgets.js";
+        script.async = true;
+        script.charset = "utf-8";
+        document.body.appendChild(script);
+      }
+
+      const onDone = () => {
+        if (window.twttr?.ready) {
+          window.twttr.ready((twttr: any) => resolve(twttr));
+        } else {
+          resolve(window.twttr || null);
+        }
+      };
+
+      script.addEventListener("load", onDone);
+      script.addEventListener("error", () => resolve(null));
+
+      // Fallback timeout in case script is blocked
+      setTimeout(onDone, 3000);
+    });
+  }
+
+  return twitterScriptPromise;
 }
 
 export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: unknown) {
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const pollRef = useRef<NodeJS.Timeout | number | null>(null);
   const renderGenRef = useRef(0);
 
-  const renderTweet = useCallback(() => {
-    const container = containerRef.current;
-    if (!container || !srcId) return;
-
-    const generation = ++renderGenRef.current;
-
-    container.innerHTML = [
-      `<blockquote`,
-      `  class="twitter-tweet"`,
-      `  data-media-max-width="560"`,
-      `  data-conversation="none"`,
-      `  data-theme="dark"`,
-      `  data-dnt="true"`,
-      `>`,
-      `  <a href="https://twitter.com/twitter/status/${srcId}"></a>`,
-      `</blockquote>`,
-    ].join(" ");
-
-    const doLoad = () => {
-      if (renderGenRef.current !== generation) return;
-      if (!window.twttr?.widgets || !containerRef.current) return;
-
-      const p = window.twttr.widgets.load(containerRef.current);
-      if (p instanceof Promise) {
-        p.then(() => {
-          if (renderGenRef.current !== generation) return;
-          // Use ResizeObserver instead of layout thrashing polling
-          const iframe = container.querySelector("iframe");
-          if (iframe) {
-            const observer = new ResizeObserver((entries) => {
-              for (const entry of entries) {
-                if (entry.contentRect.height > 100) {
-                  observer.disconnect();
-                  if (renderGenRef.current === generation) setIsLoaded(true);
-                }
-              }
-            });
-            observer.observe(iframe);
-            // Fallback just in case observer doesn't fire
-            setTimeout(() => {
-              observer.disconnect();
-              if (renderGenRef.current === generation) setIsLoaded(true);
-            }, 3000);
-          } else {
-            setIsLoaded(true);
-          }
-        }).catch((err: unknown) => {
-          console.error("Twitter widget load error", err);
-          if (renderGenRef.current === generation) setIsLoaded(true);
-        });
-      } else {
-        // Fallback if twttr.widgets.load doesn't return a promise
-        setTimeout(() => {
-          if (renderGenRef.current === generation) setIsLoaded(true);
-        }, 1000);
-      }
-    };
-
-    if (window.twttr?.widgets) {
-      doLoad();
-    } else {
-      const existing = document.querySelector<HTMLScriptElement>(
-        'script[src*="platform.twitter.com/widgets.js"]',
-      );
-      if (!existing) {
-        const script = document.createElement("script");
-        script.src = "https://platform.twitter.com/widgets.js";
-        script.async = true;
-        script.charset = "utf-8";
-        script.onload = doLoad;
-        document.body.appendChild(script);
-      } else {
-        if (pollRef.current) clearInterval(pollRef.current as number);
-        pollRef.current = setInterval(() => {
-          if (window.twttr?.widgets) {
-            if (pollRef.current) clearInterval(pollRef.current as number);
-            pollRef.current = null;
-            doLoad();
-          }
-        }, 100);
-        
-        setTimeout(() => {
-          if (pollRef.current) {
-            clearInterval(pollRef.current as number);
-            pollRef.current = null;
-          }
-          if (renderGenRef.current === generation) {
-            setIsLoaded(true);
-          }
-        }, 5000);
-      }
-    }
+  const cleanTweetId = useMemo(() => {
+    if (!srcId) return "";
+    return extractSrcId("twitter", srcId);
   }, [srcId]);
 
   useEffect(() => {
-    if (!srcId) return;
+    if (!cleanTweetId) {
+      setIsLoaded(true);
+      return;
+    }
+
+    const generation = ++renderGenRef.current;
     setIsLoaded(false);
-    const fallback = setTimeout(() => setIsLoaded(true), 5000);
-    renderTweet();
-    return () => {
-      clearTimeout(fallback);
-      if (pollRef.current) {
-        clearInterval(pollRef.current as number);
-        pollRef.current = null;
+    let isCancelled = false;
+
+    const render = async () => {
+      const twttr = await loadTwitterSdk();
+      if (isCancelled || renderGenRef.current !== generation) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      if (twttr?.widgets?.createTweet) {
+        try {
+          const el = await twttr.widgets.createTweet(cleanTweetId, container, {
+            theme: "dark",
+            dnt: true,
+            conversation: "none",
+            align: "center",
+          });
+
+          if (isCancelled || renderGenRef.current !== generation) return;
+
+          if (el) {
+            setIsLoaded(true);
+            return;
+          }
+        } catch (err) {
+          console.warn("[useTwitterWidgets] createTweet failed, trying fallback blockquote:", err);
+        }
       }
-      renderGenRef.current++; // Invalidate pending loads
-      if (containerRef.current) {
-        containerRef.current.innerHTML = ""; // Cleanup DOM
+
+      // Fallback: blockquote + widgets.load
+      if (container && !isCancelled && renderGenRef.current === generation) {
+        container.innerHTML = `
+          <blockquote class="twitter-tweet" data-theme="dark" data-dnt="true" data-conversation="none" data-align="center">
+            <a href="https://twitter.com/i/status/${cleanTweetId}"></a>
+          </blockquote>
+        `;
+
+        if (twttr?.widgets?.load) {
+          try {
+            await twttr.widgets.load(container);
+          } catch (e) {
+            console.warn("[useTwitterWidgets] fallback load error:", e);
+          }
+        }
+      }
+
+      if (!isCancelled && renderGenRef.current === generation) {
+        setIsLoaded(true);
       }
     };
-  }, [srcId, renderTweet, refreshTrigger]);
 
-  return { containerRef, isLoaded };
+    render();
+
+    const fallbackTimer = setTimeout(() => {
+      if (!isCancelled && renderGenRef.current === generation) {
+        setIsLoaded(true);
+      }
+    }, 4000);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(fallbackTimer);
+      renderGenRef.current++;
+      if (containerRef.current) {
+        containerRef.current.innerHTML = "";
+      }
+    };
+  }, [cleanTweetId, refreshTrigger]);
+
+  return { containerRef, isLoaded, tweetId: cleanTweetId };
 }

@@ -17,18 +17,18 @@ const ALPHA_SUFFIX = Array.from({ length: 6 }, () => String.fromCharCode(97 + Ma
 const TEST_UPLOADER = {
   handle: `uploader_${UNIQUE_SUFFIX}`,
   password: 'kApten@1023',
-  tag_line: 'director and content creator',
-  profile_picture: 'boring-avatar:uploader',
+  tag_line: 'video editor and creator',
+  profile_picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
   youtube_profile: 'uploader_channel',
   stage_name: 'uploader artist',
-  color_theme: '#D97706',
+  color_theme: '#FAC107',
 };
 
 const TEST_PANELIST = {
   handle: `panelist_${UNIQUE_SUFFIX}`,
   password: 'kApten@1023',
-  tag_line: 'expert critic',
-  profile_picture: 'boring-avatar:panelist',
+  tag_line: 'guest panelist and editor',
+  profile_picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
   youtube_profile: 'panelist_channel',
   stage_name: 'panelist artist',
   color_theme: '#3B82F6',
@@ -104,21 +104,37 @@ test.describe('Work Upload Flow Integration Tests', () => {
     });
     expect(reloginUploaderRes.ok()).toBeTruthy();
 
-    // ─── Test 1: Standard Upload (POST /works/new/EDIT) ───
-    const editPayload = {
-      title: 'Timeless Motion',
+    // ─── Payloads for YouTube and Twitter created edits ───
+    const youtubeEditPayload = {
+      title: 'Timeless Motion YouTube',
       work_type: 'EDIT',
-      src_id: 'GG1_DsScm6U',
+      src_id: '9A9aHWhqz6c',
       platform: 'YOUTUBE',
       format: 'IMAX',
     };
 
-    const stdUploadRes = await request.post(`${BACKEND_URL}/works/new/EDIT`, {
-      data: editPayload,
+    const twitterEditPayload = {
+      title: 'Timeless Motion Twitter',
+      work_type: 'EDIT',
+      src_id: '2081445953379443019',
+      platform: 'TWITTER',
+      format: 'IMAX',
+    };
+
+    // ─── Test 1: Standard Upload (POST /works/new/EDIT) ───
+    const stdYoutubeUploadRes = await request.post(`${BACKEND_URL}/works/new/EDIT`, {
+      data: youtubeEditPayload,
     });
-    expect(stdUploadRes.ok()).toBeTruthy();
-    const stdUploadJson = await stdUploadRes.json();
-    expect(stdUploadJson.id).toBeDefined();
+    expect(stdYoutubeUploadRes.ok()).toBeTruthy();
+    const stdYoutubeUploadJson = await stdYoutubeUploadRes.json();
+    expect(stdYoutubeUploadJson.id).toBeDefined();
+
+    const stdTwitterUploadRes = await request.post(`${BACKEND_URL}/works/new/EDIT`, {
+      data: twitterEditPayload,
+    });
+    expect(stdTwitterUploadRes.ok()).toBeTruthy();
+    const stdTwitterUploadJson = await stdTwitterUploadRes.json();
+    expect(stdTwitterUploadJson.id).toBeDefined();
 
     // 5. Create a Set
     const setName = `Film School Collective ${ALPHA_SUFFIX}`;
@@ -136,16 +152,22 @@ test.describe('Work Upload Flow Integration Tests', () => {
     expect(setId).toBeDefined();
 
     // ─── Test 2: Set-Specific Upload (POST /sets/{set_id}/new/work/EDIT) ───
-    const setUploadRes = await request.post(`${BACKEND_URL}/sets/${setId}/new/work/EDIT`, {
-      data: editPayload,
+    const setYoutubeUploadRes = await request.post(`${BACKEND_URL}/sets/${setId}/new/work/EDIT`, {
+      data: youtubeEditPayload,
     });
-    expect(setUploadRes.ok()).toBeTruthy();
-    const setUploadJson = await setUploadRes.json();
-    expect(setUploadJson.id || setUploadJson.workId || setUploadJson.work_id).toBeDefined();
+    expect(setYoutubeUploadRes.ok()).toBeTruthy();
+    const setYoutubeUploadJson = await setYoutubeUploadRes.json();
+    expect(setYoutubeUploadJson.id || setYoutubeUploadJson.workId || setYoutubeUploadJson.work_id).toBeDefined();
+
+    const setTwitterUploadRes = await request.post(`${BACKEND_URL}/sets/${setId}/new/work/EDIT`, {
+      data: twitterEditPayload,
+    });
+    expect(setTwitterUploadRes.ok()).toBeTruthy();
+    const setTwitterUploadJson = await setTwitterUploadRes.json();
+    expect(setTwitterUploadJson.id || setTwitterUploadJson.workId || setTwitterUploadJson.work_id).toBeDefined();
 
     // 6. Create a Festival (under the Set, listing TEST_PANELIST as a panelist)
     const festName = `Visual Vision Film Festival ${ALPHA_SUFFIX}`;
-    // Festival start_date must be <= now, end_date must be >= now for it to be active
     const now = new Date();
     const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(); // 1 day ago
     const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(); // 1 day from now
@@ -167,7 +189,6 @@ test.describe('Work Upload Flow Integration Tests', () => {
     expect(festivalId).toBeDefined();
 
     // ─── Test 3: Festival Panelist Upload (POST /festivals/{festival_id}/panelist/new/EDIT) ───
-    // Log in as panelist first
     const loginPanelistRes = await request.post(`${BACKEND_URL}/auth/login`, {
       data: {
         handle: TEST_PANELIST.handle,
@@ -179,7 +200,7 @@ test.describe('Work Upload Flow Integration Tests', () => {
     const panelistUploadRes = await request.post(
       `${BACKEND_URL}/festivals/${festivalId}/panelist/new/EDIT`,
       {
-        data: editPayload,
+        data: youtubeEditPayload,
       }
     );
     expect(panelistUploadRes.ok()).toBeTruthy();
@@ -187,7 +208,6 @@ test.describe('Work Upload Flow Integration Tests', () => {
     expect(panelistUploadJson.id).toBeDefined();
 
     // ─── Test 4: Festival Member Upload (POST /festivals/{festival_id}/member/new/EDIT) ───
-    // Log back in as uploader (who is the set owner, therefore a member of the set)
     const reloginUploaderRes2 = await request.post(`${BACKEND_URL}/auth/login`, {
       data: {
         handle: TEST_UPLOADER.handle,
@@ -199,7 +219,7 @@ test.describe('Work Upload Flow Integration Tests', () => {
     const memberUploadRes = await request.post(
       `${BACKEND_URL}/festivals/${festivalId}/member/new/EDIT`,
       {
-        data: editPayload,
+        data: twitterEditPayload,
       }
     );
     expect(memberUploadRes.ok()).toBeTruthy();

@@ -22,7 +22,7 @@ const TEST_ARTIST = {
   handle: `set_artist_${UNIQUE_SUFFIX}`,
   password: 'kApten@1023',
   tag_line: 'cinephile and set organizer',
-  profile_picture: 'boring-avatar:setartist',
+  profile_picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
   youtube_profile: 'setartist_channel',
   stage_name: 'set artist',
   color_theme: '#D97706',

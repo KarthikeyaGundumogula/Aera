@@ -11,6 +11,7 @@ import { ArtistProfile } from "../shared/profile";
 import { OriginalArtist } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { useProfileForm } from "./hooks/useProfileForm";
+import { DEFAULT_AVATAR_PLACEHOLDER } from "@/constants/placeholders";
 
 
 
@@ -87,13 +88,12 @@ export default function ArtistSetupPage() {
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    const avatarSeed = formData.username || formData.name || "artist";
     const artistDetails: OriginalArtist = {
       id: `profile-${formData.username}`,
       name: formData.name.trim(),
       userName: formData.username.trim().toLowerCase(),
       bio: formData.bio.trim() || "Cinematic Visionary",
-      image: formData.portraitPreview || `boring-avatar:${avatarSeed}`,
+      image: formData.portraitPreview || DEFAULT_AVATAR_PLACEHOLDER,
       spirit: 0,
       works: 0,
       themeBgColor: formData.themeBgColor || "#0f1a42",
@@ -334,7 +334,7 @@ export default function ArtistSetupPage() {
                             id: `profile-${formData.username}`,
                             name: formData.name || "Artist",
                             bio: formData.bio || "Cinematic Visionary",
-                            image: `boring-avatar:${formData.username || formData.name || "artist"}`,
+                            image: formData.portraitPreview || DEFAULT_AVATAR_PLACEHOLDER,
                             spirit: 0,
                             works: 0,
                             themeBgColor: formData.themeBgColor || "#0f1a42",

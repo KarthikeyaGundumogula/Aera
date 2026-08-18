@@ -1,10 +1,10 @@
 import { useState } from "react";
-import Avatar from "boring-avatars";
+import { DEFAULT_AVATAR_PLACEHOLDER } from "@/constants/placeholders";
 
 interface ArtistAvatarProps {
   src?: string | null;
   name: string;
-  variant?: "beam" | "marble" | "pixel" | "sunset" | "bauhaus" | "ring";
+  variant?: string;
   size?: number;
   className?: string;
   colors?: string[];
@@ -12,21 +12,11 @@ interface ArtistAvatarProps {
   imagePosition?: string;
 }
 
-const DEFAULT_AVATAR_COLORS = [
-  "#0f1a42",
-  "#fac107",
-  "#ffffff",
-  "#1e293b",
-  "#334155",
-];
-
 export function ArtistAvatar({
   src,
   name,
-  variant = "beam",
   size = 40,
   className = "",
-  colors = DEFAULT_AVATAR_COLORS,
   showTitleFallback = false,
   imagePosition = "50% 0%",
 }: ArtistAvatarProps) {
@@ -34,7 +24,7 @@ export function ArtistAvatar({
 
   const cleanName = name || "Artist";
 
-  // Check if src is a real external image URL (not empty, not boring-avatar seed)
+  // Check if src is a real image URL
   const isRealUrl =
     src &&
     !src.startsWith("boring-avatar:") &&
@@ -62,8 +52,8 @@ export function ArtistAvatar({
     );
   }
 
-  // If showing Framehouse Icon + Title fallback explicit mode
-  if (showTitleFallback || imgError) {
+  // If showing explicit title fallback mode
+  if (showTitleFallback) {
     return (
       <div
         className={`relative flex flex-col items-center justify-center bg-black/60 border border-white/10 rounded-xl overflow-hidden p-2 text-center select-none ${className}`}
@@ -81,25 +71,13 @@ export function ArtistAvatar({
     );
   }
 
-  // Boring Avatar fallback / primary generator
-  const seed = src?.startsWith("boring-avatar:")
-    ? src.replace("boring-avatar:", "")
-    : cleanName;
-
-  const avatarSize = hasFullSizing ? "100%" : size || 40;
-
+  // Standard profile picture image placeholder fallback
   return (
-    <div
-      className={`overflow-hidden rounded-xl flex items-center justify-center bg-black/40 border border-white/10 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-cover ${className}`}
-      style={sizeStyle}
-    >
-      <Avatar
-        size={avatarSize}
-        name={seed}
-        variant={variant}
-        colors={colors}
-        square={true}
-      />
-    </div>
+    <img
+      src={DEFAULT_AVATAR_PLACEHOLDER}
+      alt={cleanName}
+      className={`object-cover rounded-xl ${className}`}
+      style={{ ...sizeStyle, objectPosition: imagePosition }}
+    />
   );
 }

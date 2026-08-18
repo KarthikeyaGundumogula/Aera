@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
@@ -17,13 +17,22 @@ export function PosterWork({
 }: BaseWorkProps) {
   const { openWork } = useWorkNavigation();
   const [isLoaded, setIsLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(() => {
+
+  const initialSrc = useMemo(() => {
+    if (item.thumbnail && item.thumbnail.trim() !== "") return item.thumbnail;
     if (item.image && item.image.trim() !== "") return item.image;
     if (item.platform === "youtube" && item.srcId) {
       return `https://img.youtube.com/vi/${item.srcId}/maxresdefault.jpg`;
     }
     return "";
-  });
+  }, [item.thumbnail, item.image, item.platform, item.srcId]);
+
+  const [imgSrc, setImgSrc] = useState(initialSrc);
+
+  useEffect(() => {
+    setImgSrc(initialSrc);
+    setIsLoaded(false);
+  }, [initialSrc]);
   
   const shouldShowHoverOverlay = useMemo(
     () => showHoverOverlay ?? variant !== "theatre-mobile",
@@ -39,6 +48,11 @@ export function PosterWork({
     >
       {imgSrc ? (
         <img 
+          ref={(img) => {
+            if (img && img.complete && img.naturalWidth > 0 && !isLoaded) {
+              setIsLoaded(true);
+            }
+          }}
           onLoad={(e) => {
             const img = e.currentTarget;
             if (img.naturalWidth === 120 && img.src.includes("youtube.com")) {

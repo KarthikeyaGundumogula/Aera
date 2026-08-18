@@ -14,22 +14,22 @@ export interface BaseWorkProps {
 export type WorkKind = "edit" | "poster" | "storyboard" | "recommendation";
 
 export function isEditWork(item: TheatreItem): boolean {
-  const cat = (item.category || "").toLowerCase();
+  const cat = (item.category || item.workType || "").toLowerCase();
   return cat === "edit" || cat === "";
 }
 
 export function isPosterWork(item: TheatreItem): boolean {
-  const cat = (item.category || "").toLowerCase();
+  const cat = (item.category || item.workType || "").toLowerCase();
   return cat === "poster";
 }
 
 export function isStoryboardWork(item: TheatreItem): boolean {
-  const cat = (item.category || "").toLowerCase();
+  const cat = (item.category || item.workType || "").toLowerCase();
   return cat === "storyboard" || cat === "script";
 }
 
 export function isRecommendationWork(item: TheatreItem): boolean {
-  const cat = (item.category || "").toLowerCase();
+  const cat = (item.category || item.workType || "").toLowerCase();
   return cat === "recommendation";
 }
 

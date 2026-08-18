@@ -26,9 +26,25 @@ export function RecommendationViewer({ item }: RecommendationViewerProps) {
       });
   }, [item.recId]);
 
+  const workData: any = {
+    id: String(item.id),
+    title: item.title,
+    category: "RECOMMENDATION",
+    stars: 0,
+    artist: {
+      id: item.artistId || "",
+      stageName: item.artist || "",
+      userName: item.artist || "",
+      profilePicture: item.artistAvatar || "",
+      favoritesCount: 0,
+      spirit: 0,
+    },
+    originals: [],
+  };
+
   return (
     <ViewerFrame
-      item={item}
+      work={workData}
       showIdentityBlock={false}
       mediaMaxWidth="min(600px,calc(100vw-2rem))"
       mediaSlot={() => (

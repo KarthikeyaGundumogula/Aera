@@ -8,12 +8,12 @@ import { SectionHeader } from "../../../components/SectionHeader";
 import { apiFetch } from "@/lib/api";
 
 interface ArtistContextPanelProps {
-  item: TheatreItem;
+  artistId: string;
+  currentWorkId: string | number;
 }
 
-export function ArtistContextPanel({ item }: ArtistContextPanelProps) {
+export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPanelProps) {
   const [artistWorks, setArtistWorks] = useState<TheatreItem[]>([]);
-  const artistId = item.artistId ?? item.artist ?? "";
 
   useEffect(() => {
     if (!artistId) return;
@@ -30,7 +30,7 @@ export function ArtistContextPanel({ item }: ArtistContextPanelProps) {
   }, [artistId]);
 
   const otherWorks = artistWorks.filter(
-    (w) => String(w.id) !== String(item.id)
+    (w) => String(w.id) !== String(currentWorkId)
   );
 
   const otherWorksClusters = React.useMemo(() => {

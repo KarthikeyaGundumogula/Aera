@@ -1,11 +1,11 @@
 import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
-import { TheatreItem } from "../../../types";
+import { ScriptWorkDetail } from "../../../types";
 import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
 
 interface StoryboardViewerProps {
-  item: TheatreItem;
+  work: ScriptWorkDetail;
 }
 
 const FALLBACK_CAPTIONS = [
@@ -25,16 +25,15 @@ const FALLBACK_CAPTIONS = [
  * StoryboardViewer — wraps ViewerFrame with a 3D flip-card paginated
  * viewer as the media slot. All chrome lives in ViewerFrame.
  */
-export function StoryboardViewer({ item }: StoryboardViewerProps) {
+export function StoryboardViewer({ work }: StoryboardViewerProps) {
   const [{ pageIndex, direction }, setPageState] = useState({ pageIndex: 0, direction: 1 });
   const [isFlipped, setIsFlipped] = useState(false);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
-  const pages = (item.images ?? []).slice(0, 10);
-  const displayPages = pages.length > 0 ? pages : item.image ? [item.image] : [];
+  const displayPages = work.images ?? [];
   const total = displayPages.length;
-  const captions = item.captions?.length ? item.captions : FALLBACK_CAPTIONS.slice(0, total);
+  const captions = work.captions?.length ? work.captions : FALLBACK_CAPTIONS.slice(0, total);
   const caption = captions[pageIndex] || FALLBACK_CAPTIONS[pageIndex % FALLBACK_CAPTIONS.length];
 
   const goTo = (idx: number) => {
@@ -74,7 +73,7 @@ export function StoryboardViewer({ item }: StoryboardViewerProps) {
 
   return (
     <ViewerFrame
-      item={item}
+      work={work}
       mediaMaxWidth="min(460px,calc(100vw-2rem))"
       mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
         <div

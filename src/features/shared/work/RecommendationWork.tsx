@@ -40,7 +40,7 @@ export const RecommendationWork = memo(function RecommendationWork({
     >
       {/* Layer 1: Movie poster */}
       <img
-        src={item.image}
+        src={item.thumbnail || item.image}
         alt={item.title ?? "Recommendation"}
         loading={priority}
         decoding="async"

@@ -94,9 +94,13 @@ export function extractSrcId(
   }
 
   if (plat === "twitter") {
-    const match = trimmed.match(/^(?:https?:\/\/)?(?:www\.|mobile\.)?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+    const match = trimmed.match(/(?:twitter\.com|x\.com)\/(?:[^/]+\/status|i\/web\/status|i\/status)\/(\d+)/i);
     if (match?.[1]) return match[1];
+    const generalStatusMatch = trimmed.match(/status(?:es)?\/(\d+)/i);
+    if (generalStatusMatch?.[1]) return generalStatusMatch[1];
     if (/^\d+$/.test(trimmed)) return trimmed;
+    const digitsMatch = trimmed.match(/\b(\d{10,25})\b/);
+    if (digitsMatch?.[1]) return digitsMatch[1];
     const last = (trimmed.split("/").pop() || "").split("?")[0];
     return last || trimmed;
   }

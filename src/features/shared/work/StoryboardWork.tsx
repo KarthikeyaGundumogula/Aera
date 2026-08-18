@@ -27,7 +27,7 @@ export function StoryboardWork({
   const compact = variant === "theatre-mobile";
   const spacious = variant === "feed";
 
-  const coverImage = item.images?.[0];
+  const coverImage = item.thumbnail || item.images?.[0] || item.image;
 
   return (
     <>

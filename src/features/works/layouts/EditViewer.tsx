@@ -1,13 +1,13 @@
 import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { TheatreItem } from "../../../types";
+import { EditWorkDetail } from "../../../types";
 import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
 
 interface EditViewerProps {
-  item: TheatreItem;
+  work: EditWorkDetail;
 }
 
 /**
@@ -15,27 +15,28 @@ interface EditViewerProps {
  * the media slot. All chrome (identity block, artist panel, nav) lives in
  * ViewerFrame.
  */
-export function EditViewer({ item }: EditViewerProps) {
+export function EditViewer({ work }: EditViewerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isYoutubeLoaded, setIsYoutubeLoaded] = useState(false);
 
-  const isYoutube = item.platform === "youtube";
-  const isTwitter = item.platform === "twitter";
+  const rawPlatform = (work.platform || "").toLowerCase();
+  const isTwitter = rawPlatform === "twitter" || (Boolean(work.srcId) && /twitter\.com|x\.com/.test(work.srcId));
+  const isYoutube = !isTwitter;
 
   const { containerRef: twitterRef, isLoaded: isTwitterLoaded } =
-    useTwitterWidgets(isTwitter ? item.srcId : undefined, true);
+    useTwitterWidgets(isTwitter ? work.srcId : undefined, true);
 
   const isLoaded = isYoutube ? isYoutubeLoaded : isTwitterLoaded;
-  const youtubeEmbedUrl = isYoutube && item.srcId ? buildEmbedUrl("youtube", item.srcId) : "";
+  const youtubeEmbedUrl = isYoutube && work.srcId ? buildEmbedUrl("youtube", work.srcId) : "";
 
   const ambientSrc =
-    isYoutube && item.srcId
-      ? `https://img.youtube.com/vi/${item.srcId}/maxresdefault.jpg`
-      : item.image || "";
+    isYoutube && work.srcId
+      ? `https://img.youtube.com/vi/${work.srcId}/maxresdefault.jpg`
+      : "";
 
   return (
     <ViewerFrame
-      item={item}
+      work={work}
       mediaMaxWidth={isTwitter ? "min(550px,calc(100vw-2rem))" : "min(680px,calc(100vw-2rem))"}
       mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
         <motion.div
@@ -82,12 +83,12 @@ export function EditViewer({ item }: EditViewerProps) {
             >
               <iframe
                 ref={iframeRef}
-                id={`yt-${item.id}`}
+                id={`yt-${work.id}`}
                 src={youtubeEmbedUrl}
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-                title={item.title}
+                title={work.title}
                 loading="eager"
                 onLoad={() => setIsYoutubeLoaded(true)}
               />

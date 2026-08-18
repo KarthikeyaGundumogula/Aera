@@ -74,8 +74,9 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
   if (!recentReleases.length) return null;
 
-  const isYoutube = currentWork?.platform?.toLowerCase() === "youtube" || currentWork?.platform?.toLowerCase() === "edit" || !currentWork?.platform;
-  const isTwitter = currentWork?.platform?.toLowerCase() === "twitter";
+  const rawPlatform = (currentWork?.platform || "").toLowerCase();
+  const isTwitter = rawPlatform === "twitter" || (Boolean(currentWork?.srcId) && /twitter\.com|x\.com/.test(currentWork?.srcId || ""));
+  const isYoutube = !isTwitter;
 
   const embedUrl = isYoutube && currentWork?.srcId
     ? buildEmbedUrl('youtube', currentWork.srcId)

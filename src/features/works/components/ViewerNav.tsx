@@ -1,29 +1,28 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, Layers } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { TheatreItem } from "../../../types";
+import { WorkDetail } from "../../../types";
 import { CurateOverlay } from "../../shared/modals/CurateOverlay";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { ShareAction } from "../../../components/actions/ShareAction";
 
 interface ViewerNavProps {
-  item: TheatreItem;
+  work: WorkDetail;
 }
-
-
 
 /**
  * ViewerNav — ultra-minimal floating chrome.
  * Back pill top-left · Share + Originals top-right.
  * No backgrounds on the bar itself — it floats over the atmosphere.
  */
-export function ViewerNav({ item }: ViewerNavProps) {
+export function ViewerNav({ work }: ViewerNavProps) {
   const navigate = useNavigate();
   const [showCurate, setShowCurate] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
+  const originalIds = work.originals?.map((o) => o.originalId) || [];
 
   return (
     <>
@@ -49,7 +48,7 @@ export function ViewerNav({ item }: ViewerNavProps) {
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
           className="pointer-events-auto flex items-center gap-1.5"
         >
-          {(item.originalIds?.length ?? 0) > 0 && (
+          {originalIds.length > 0 && (
             <button
               onClick={() => setShowCurate(true)}
               aria-label="Originals"
@@ -61,9 +60,9 @@ export function ViewerNav({ item }: ViewerNavProps) {
             </button>
           )}
           <ShareAction
-            title={`${item.title || "Work"} on Aera`}
-            text={`Check out ${item.title || "this work"} on Aera`}
-            url={`${window.location.origin}/works/${item.id}`}
+            title={`${work.title || "Work"} on Aera`}
+            text={`Check out ${work.title || "this work"} on Aera`}
+            url={`${window.location.origin}/works/${work.id}`}
             variant="nav"
             onShareSuccess={() => showToast("LINK COPIED")}
           />
@@ -80,7 +79,7 @@ export function ViewerNav({ item }: ViewerNavProps) {
             <CurateOverlay
               isOpen={showCurate}
               onClose={() => setShowCurate(false)}
-              originalIds={item.originalIds || []}
+              originalIds={originalIds}
               onShowToast={showToast}
             />
           </div>

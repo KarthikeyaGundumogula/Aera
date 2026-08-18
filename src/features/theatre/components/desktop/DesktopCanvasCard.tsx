@@ -35,7 +35,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
           <RecommendationWork
             item={work}
             variant="theatre-desktop"
-            priority="lazy"
+            priority="eager"
           />
         );
       case "storyboard":
@@ -43,7 +43,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
           <StoryboardWork
             item={work}
             variant="theatre-desktop"
-            priority="lazy"
+            priority="eager"
           />
         );
       case "poster":
@@ -51,7 +51,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
           <PosterWork
             item={work}
             variant="theatre-desktop"
-            priority="lazy"
+            priority="eager"
           />
         );
       default:
@@ -59,7 +59,7 @@ export const DesktopCanvasCard = memo(function DesktopCanvasCard({
           <EditWork
             item={work}
             variant="theatre-desktop"
-            priority="lazy"
+            priority="eager"
           />
         );
     }

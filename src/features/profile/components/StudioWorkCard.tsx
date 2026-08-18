@@ -17,13 +17,21 @@ export const StudioWorkCard = memo(function StudioWorkCard({ item, onRename, onD
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(item.title || "");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(() => {
+  const initialSrc = useMemo(() => {
+    if (item.thumbnail && item.thumbnail.trim() !== "") return item.thumbnail;
     if (item.image && item.image.trim() !== "") return item.image;
     if (item.platform === "youtube" && item.srcId) {
       return `https://img.youtube.com/vi/${item.srcId}/maxresdefault.jpg`;
     }
     return "";
-  });
+  }, [item.thumbnail, item.image, item.platform, item.srcId]);
+
+  const [imgSrc, setImgSrc] = useState(initialSrc);
+
+  useEffect(() => {
+    setImgSrc(initialSrc);
+    setIsLoaded(false);
+  }, [initialSrc]);
   const [isSavingTitle, setIsSavingTitle] = useState(false);
   const [titleSaveStatus, setTitleSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);

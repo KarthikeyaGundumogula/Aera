@@ -18,7 +18,7 @@ function getUniqueProfileData(prefix: string) {
     handle: `${prefix}_${shortId}`,
     password: 'kApten@1023',
     tag_line: 'cinematic visionary and director',
-    profile_picture: 'boring-avatar:visionary',
+    profile_picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
     stage_name: 'visionary',
     color_theme: '#FAC107,#0F1A42', // Default yellow & blue
     youtube_profile: 'visionary',

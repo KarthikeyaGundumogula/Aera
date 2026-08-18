@@ -108,6 +108,16 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
     [clusterPool]
   );
 
+  // Map each cluster to a unique, non-repeating grid position (3 columns wide)
+  const clusterPositions = useMemo(() => {
+    const COLS = Math.min(3, Math.max(1, clusterPool.length));
+    return clusterPool.map((cluster, i) => ({
+      cluster,
+      gridX: i % COLS,
+      gridY: Math.floor(i / COLS),
+    }));
+  }, [clusterPool]);
+
   // ── Camera ──────────────────────────────────────────────────────────────
   const camX = useMotionValue(0);
   const camY = useMotionValue(0);
@@ -220,20 +230,17 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
         onTouchMove={(e) => onPointerMove(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchEnd={onPointerUp}
       >
-      {/* Infinite cluster field */}
-      {clusterPool.length > 0 && visibleCells.map(({ x, y }) => {
-        // Bit-mixing hash: spreads (x, y) more uniformly across the pool.
-        // Uses Cantor pairing + multiplicative mixing to minimise adjacent collisions
-        // even when clusterPool is small (e.g. 5–10 clusters).
-        const cantor  = ((x + y) * (x + y + 1)) / 2 + y;
-        const mixed   = Math.abs((cantor * 2654435761) >>> 0); // Knuth multiplicative hash
-        const index = mixed % clusterPool.length;
+      {/* Non-repeating cluster grid */}
+      {clusterPositions.map(({ cluster, gridX, gridY }) => {
+        const isVisible = visibleCells.some((cell) => cell.x === gridX && cell.y === gridY);
+        if (!isVisible) return null;
+
         return (
           <DesktopCluster
-            key={`${x}-${y}`}
-            gridX={x}
-            gridY={y}
-            cluster={clusterPool[index]}
+            key={`${gridX}-${gridY}-${cluster.type}`}
+            gridX={gridX}
+            gridY={gridY}
+            cluster={cluster}
             camX={springX}
             camY={springY}
           />

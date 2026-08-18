@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { OriginalArtist, TheatreItem } from "../types";
 import { apiFetch } from "@/lib/api";
+import { DEFAULT_AVATAR_PLACEHOLDER } from "@/constants/placeholders";
 
 /**
  * Maps a raw WorkPreviewCard from GET /profiles/{id}/works to a TheatreItem
@@ -125,7 +126,9 @@ async function fetchMyProfile(): Promise<OriginalArtist | null> {
       id: data.id,
       name: data.stageName || data.userName,
       userName: data.userName,
-      image: data.profilePicture || `boring-avatar:${data.userName}`,
+      image: (data.profilePicture && data.profilePicture.trim() !== "" && !data.profilePicture.startsWith("boring-avatar:"))
+        ? data.profilePicture
+        : DEFAULT_AVATAR_PLACEHOLDER,
       spirit: data.spirit || 0,
       works: data.worksCount || 0,
       favoritesCount: data.favoritesCount || 0,
@@ -233,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: `art-${cleanUsername}`,
           name: username,
           userName: cleanUsername,
-          image: `boring-avatar:${cleanUsername}`,
+          image: DEFAULT_AVATAR_PLACEHOLDER,
           spirit: 0,
           works: 0,
           role: "organizer",
@@ -263,7 +266,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       handle: cleanHandle,
       tag_line: artist.bio || "Cinematic Visionary",
       password: regPassword,
-      profile_picture: artist.image || `boring-avatar:${cleanHandle}`,
+      profile_picture: (artist.image && !artist.image.startsWith("boring-avatar:") && (artist.image.startsWith("http://") || artist.image.startsWith("https://") || artist.image.startsWith("/")))
+        ? artist.image
+        : DEFAULT_AVATAR_PLACEHOLDER,
       stage_name: stageName,
       color_theme: formatColorTheme(artist.themeTextColor || "#fac107", artist.themeBgColor || "#0f1a42"),
     };
@@ -323,7 +328,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (updates.image !== undefined) {
         const trimmedImg = updates.image.trim();
         if (trimmedImg.length > 0) {
-          payload.profile_picture = trimmedImg;
+          payload.profile_picture = (trimmedImg && !trimmedImg.startsWith("boring-avatar:") && (trimmedImg.startsWith("http://") || trimmedImg.startsWith("https://") || trimmedImg.startsWith("/")))
+            ? trimmedImg
+            : DEFAULT_AVATAR_PLACEHOLDER;
         }
       }
       if (updates.themeTextColor || updates.themeBgColor || updates.color_theme) {

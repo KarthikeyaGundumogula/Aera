@@ -241,45 +241,6 @@ function fillCluster(
     }
   }
 
-  // PASS 3: Fallback pass recycling from masterBucket so no slots remain empty/black
-  const pickFallback = (pool: TheatreItem[]) => {
-    if (!pool.length) return undefined;
-    const idx = Math.floor(rng() * pool.length);
-    return pool[idx];
-  };
-
-  const allMasterItems = [
-    ...masterBucket.edits,
-    ...masterBucket.poster,
-    ...masterBucket.storyboard,
-    ...masterBucket.recommendation,
-  ];
-
-  for (const slot of slots) {
-    if (slot.item) continue;
-    let item: TheatreItem | undefined = undefined;
-
-    switch (slot.type) {
-      case "IMAX":
-      case "WIDE":
-        // IMAX and WIDE (Academy) take EDITS ONLY
-        item = pickFallback(masterBucket.edits);
-        break;
-
-      case "VERTICAL":
-        item = pickFallback(masterBucket.poster) || pickFallback(masterBucket.storyboard) || pickFallback(masterBucket.edits);
-        break;
-
-      case "SQUARE":
-        item = pickFallback(masterBucket.storyboard) || pickFallback(masterBucket.poster) || pickFallback(masterBucket.edits) || pickFallback(masterBucket.recommendation);
-        break;
-    }
-
-    if (item) {
-      slot.item = item;
-    }
-  }
-
   return { type, slots };
 }
 
