@@ -88,6 +88,15 @@ export function ViewerFrame({
     setAvatarError(false);
   }, [rawAvatar]);
 
+  useEffect(() => {
+    if (typeof (work as any).isStarred === "boolean") {
+      setIsStarred((work as any).isStarred);
+    }
+    if (typeof (work as any).isSaved === "boolean") {
+      setSaved((work as any).isSaved);
+    }
+  }, [(work as any).isStarred, (work as any).isSaved]);
+
   const favoritesCount = work.artist?.favoritesCount ?? 0;
   const spiritCount = work.artist?.spirit ?? 0;
   const starsCount = work.stars ?? 0;
@@ -105,7 +114,7 @@ export function ViewerFrame({
     });
   };
 
-  const fireStar = () => {
+  const fireStar = async () => {
     if (starTimeout.current) clearTimeout(starTimeout.current);
     if (flashTimeout.current) clearTimeout(flashTimeout.current);
     setIsStarred(true);
@@ -114,13 +123,22 @@ export function ViewerFrame({
     starTimeout.current = setTimeout(() => setStaring(false), 420);
     flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 1000);
 
-    apiFetch("/artists/star_work", {
-      method: "POST",
-      body: JSON.stringify({ entity_id: work.id }),
-    }).catch((e) => console.warn("[ViewerFrame] fireStar backend error:", e));
+    try {
+      const res = await apiFetch("/artists/star_work", {
+        method: "POST",
+        body: JSON.stringify(work.id),
+      });
+      if (!res.ok) {
+        console.warn(`[ViewerFrame] fireStar failed with status ${res.status}`);
+        setIsStarred(false);
+      }
+    } catch (e) {
+      console.warn("[ViewerFrame] fireStar backend error:", e);
+      setIsStarred(false);
+    }
   };
 
-  const handleStarBtn = () => {
+  const handleStarBtn = async () => {
     if (starTimeout.current) clearTimeout(starTimeout.current);
     if (flashTimeout.current) clearTimeout(flashTimeout.current);
     const next = !isStarred;
@@ -132,12 +150,21 @@ export function ViewerFrame({
     }
     starTimeout.current = setTimeout(() => setStaring(false), 420);
 
-    const endpoint = next ? "/artists/star_work" : "/artists/unstar_work";
-    const method = next ? "POST" : "DELETE";
-    apiFetch(endpoint, {
-      method,
-      body: JSON.stringify({ entity_id: work.id }),
-    }).catch((e) => console.warn("[ViewerFrame] star_work error:", e));
+    try {
+      const endpoint = next ? "/artists/star_work" : "/artists/unstar_work";
+      const method = next ? "POST" : "DELETE";
+      const res = await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(work.id),
+      });
+      if (!res.ok) {
+        console.warn(`[ViewerFrame] star_work failed with status ${res.status}`);
+        setIsStarred(!next);
+      }
+    } catch (e) {
+      console.warn("[ViewerFrame] star_work error:", e);
+      setIsStarred(!next);
+    }
   };
 
   const triggerDoubleTap = () => {
@@ -162,7 +189,7 @@ export function ViewerFrame({
     }
   };
 
-  const handleSaveToggle = () => {
+  const handleSaveToggle = async () => {
     const next = !saved;
     setSaved(next);
     if (next) {
@@ -170,12 +197,21 @@ export function ViewerFrame({
       setTimeout(() => setToastMsg(null), 2500);
     }
 
-    const endpoint = next ? "/artists/save_work" : "/artists/unsave_work";
-    const method = next ? "POST" : "DELETE";
-    apiFetch(endpoint, {
-      method,
-      body: JSON.stringify({ entity_id: work.id }),
-    }).catch((e) => console.warn("[ViewerFrame] save_work error:", e));
+    try {
+      const endpoint = next ? "/artists/save_work" : "/artists/unsave_work";
+      const method = next ? "POST" : "DELETE";
+      const res = await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(work.id),
+      });
+      if (!res.ok) {
+        console.warn(`[ViewerFrame] save_work failed with status ${res.status}`);
+        setSaved(!next);
+      }
+    } catch (e) {
+      console.warn("[ViewerFrame] save_work error:", e);
+      setSaved(!next);
+    }
   };
 
   // ── Media slot context ─────────────────────────────────────────────────────

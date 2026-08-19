@@ -75,6 +75,7 @@ export default function WorkPage() {
   switch (workDetail.category) {
     case "POSTER":
       return <PosterViewer work={workDetail as PosterWorkDetail} />;
+    case "STORYBOARD":
     case "SCRIPT":
       return <StoryboardViewer work={workDetail as ScriptWorkDetail} />;
     case "EDIT":

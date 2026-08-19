@@ -13,23 +13,35 @@ export interface BaseWorkProps {
 
 export type WorkKind = "edit" | "poster" | "storyboard" | "recommendation";
 
+export function getWorkTypeString(item: TheatreItem): string {
+  if (!item) return "";
+  const cat = (
+    item.category ||
+    item.workType ||
+    (item as any).work_type ||
+    (item as any).type ||
+    ""
+  ).toString().toLowerCase();
+  return cat;
+}
+
 export function isEditWork(item: TheatreItem): boolean {
-  const cat = (item.category || item.workType || "").toLowerCase();
-  return cat === "edit" || cat === "";
+  const cat = getWorkTypeString(item);
+  return cat === "edit" || cat === "hype_cut" || cat === "";
 }
 
 export function isPosterWork(item: TheatreItem): boolean {
-  const cat = (item.category || item.workType || "").toLowerCase();
+  const cat = getWorkTypeString(item);
   return cat === "poster";
 }
 
 export function isStoryboardWork(item: TheatreItem): boolean {
-  const cat = (item.category || item.workType || "").toLowerCase();
+  const cat = getWorkTypeString(item);
   return cat === "storyboard" || cat === "script";
 }
 
 export function isRecommendationWork(item: TheatreItem): boolean {
-  const cat = (item.category || item.workType || "").toLowerCase();
+  const cat = getWorkTypeString(item);
   return cat === "recommendation";
 }
 

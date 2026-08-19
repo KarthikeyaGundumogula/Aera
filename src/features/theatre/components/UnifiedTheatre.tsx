@@ -1,9 +1,8 @@
-import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useMemo, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import { TheatreItem } from "../../../types";
-import { buildClusters, Cluster } from "../engine/clusterBuilder";
-import { buildMobileClusters, MobileCluster, getMobileClusterHeight } from "../engine/mobileClusterBuilder";
+import { buildClustersWithRemainder } from "../engine/clusterBuilder";
+import { buildMobileClustersWithRemainder } from "../engine/mobileClusterBuilder";
 import { StaticDesktopCluster } from "./desktop/StaticDesktopCluster";
 import { MobileClusterView } from "./mobile/MobileClusterView";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
@@ -21,12 +20,27 @@ const RenderPartialWork = ({ item, isMobile }: { item: TheatreItem; isMobile: bo
   const kind = getWorkKind(item);
   const variant = isMobile ? "theatre-mobile" : "theatre-desktop";
 
-  let aspectStyle = "aspect-[16/9]";
-  if (kind === "poster") aspectStyle = "aspect-[2/3] max-w-[340px] mx-auto";
-  if (kind === "storyboard") aspectStyle = "aspect-[3/4] max-w-[340px] mx-auto";
+  let containerStyle = "w-full max-w-xl aspect-[16/9]";
+  if (kind === "poster") {
+    containerStyle = isMobile
+      ? "w-full max-w-sm aspect-[2/3] mx-auto"
+      : "w-[280px] h-[420px] aspect-[2/3]";
+  } else if (kind === "storyboard") {
+    containerStyle = isMobile
+      ? "w-full max-w-sm aspect-[3/4] mx-auto"
+      : "w-[320px] h-[420px] aspect-[3/4]";
+  } else if (kind === "edit") {
+    containerStyle = isMobile
+      ? "w-full aspect-[16/9]"
+      : "w-[540px] h-[303px] aspect-[16/9]";
+  } else if (kind === "recommendation") {
+    containerStyle = isMobile
+      ? "w-full max-w-sm aspect-[3/4] mx-auto"
+      : "w-[340px] h-[420px] aspect-[3/4]";
+  }
 
   return (
-    <div className={`relative w-full overflow-hidden rounded-sm ${aspectStyle}`}>
+    <div className={`relative overflow-hidden rounded-xl border border-white/10 shadow-2xl transition-transform duration-300 hover:scale-[1.02] ${containerStyle}`}>
       {kind === "recommendation" && <RecommendationWork item={item} variant={variant} />}
       {kind === "storyboard" && <StoryboardWork item={item} variant={variant} />}
       {kind === "poster" && <PosterWork item={item} variant={variant} />}
@@ -68,32 +82,42 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
   const bottomObserverTarget = useRef<HTMLDivElement>(null);
 
   const isFull = variant === "full";
+  const safeWorks = useMemo(() => (Array.isArray(works) ? works : []), [works]);
 
-  // Build clusters from the provided works
+  // Build clusters & stacked remainders from the provided works
   const allClusters = useMemo(() => {
-    if (!works.length) return { desktop: [], mobile: [] };
+    if (!safeWorks.length) return {
+      desktop: { clusters: [], stackedItems: [] },
+      mobile: { clusters: [], stackedItems: [] }
+    };
     
-    let dClusters = buildClusters(works, "flow");
-    let mClusters = buildMobileClusters(works);
+    let dResult = buildClustersWithRemainder(safeWorks, "flow");
+    let mResult = buildMobileClustersWithRemainder(safeWorks);
 
-    if (maxClusters) {
-      dClusters = dClusters.slice(0, maxClusters);
-      mClusters = mClusters.slice(0, maxClusters);
+    if (maxClusters && maxClusters > 0) {
+      dResult.clusters = dResult.clusters.slice(0, maxClusters);
+      mResult.clusters = mResult.clusters.slice(0, maxClusters);
     }
 
     return {
-      desktop: dClusters,
-      mobile: mClusters,
+      desktop: dResult,
+      mobile: mResult,
     };
-  }, [works, maxClusters]);
+  }, [safeWorks, maxClusters]);
 
   const desktopFlatItems = useMemo(
-    () => allClusters.desktop.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
+    () => [
+      ...allClusters.desktop.clusters.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
+      ...allClusters.desktop.stackedItems,
+    ],
     [allClusters.desktop]
   );
 
   const mobileFlatItems = useMemo(
-    () => allClusters.mobile.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
+    () => [
+      ...allClusters.mobile.clusters.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
+      ...allClusters.mobile.stackedItems,
+    ],
     [allClusters.mobile]
   );
 
@@ -117,7 +141,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
     return () => observer.disconnect();
   }, [isFull, onLoadMore, hasMore, isLoading]);
 
-  if (!works.length && !isLoading) {
+  if (!safeWorks.length && !isLoading) {
     return (
       <div className="py-12 px-4">
         <EmptyState {...EMPTY_PRESETS.theatre} />
@@ -128,15 +152,15 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
   return (
     <div className={`w-full ${isFull ? "min-h-screen bg-surface-deep text-white" : ""}`}>
       {/* FULL PAGE HEADER */}
-      {isFull && !disablePadding && (
-        <header className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex items-center justify-between bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
-          <button 
+      {isFull && (
+        <header className="sticky top-0 z-40 bg-surface-deep/90 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center justify-between">
+          <button
             onClick={onExit}
-            className="group flex items-center gap-3 hover:text-white/70 transition-all active:scale-95"
+            className="flex items-center gap-3 text-white/70 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider group"
           >
-            <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1 text-white/40 group-hover:text-white" />
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <div className="flex flex-col items-start">
-              <span className="text-[8px] font-bold uppercase tracking-widest text-white/40">EXIT THEATRE</span>
+              <span className="text-[10px] text-white/40 font-semibold tracking-widest">Back to</span>
               {subtitle && <span className="text-xs font-black uppercase tracking-tight">{subtitle}</span>}
             </div>
           </button>
@@ -151,52 +175,43 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
       {/* THEATRE CANVAS */}
       <main className={isFull && !disablePadding ? "pt-24 pb-20" : ""}>
         {isMobile ? (
-          works.length < 3 ? (
-            /* ── Partial Mobile: Clean Stacked Feed with Natural Aspect Ratios ── */
-            <div className="flex flex-col gap-6 w-full max-w-xl mx-auto px-4">
-              {works.map((item) => (
-                <RenderPartialWork key={item.id} item={item} isMobile={true} />
+          <FeedContext.Provider value={mobileFlatItems.length > 0 ? mobileFlatItems : safeWorks}>
+            <div className="flex flex-col gap-6 w-full">
+              {/* 1. Mobile Clusters */}
+              {allClusters.mobile.clusters.map((cluster) => (
+                <div key={cluster.id} className="w-full h-[40dvh] min-h-[260px] relative">
+                  <MobileClusterView cluster={cluster} />
+                </div>
               ))}
+
+              {/* 2. Mobile Stacked Remaining Items */}
+              {allClusters.mobile.stackedItems.length > 0 && (
+                <div className="flex flex-col gap-6 w-full max-w-xl mx-auto px-4">
+                  {allClusters.mobile.stackedItems.map((item) => (
+                    <RenderPartialWork key={item.id} item={item} isMobile={true} />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            /* ── Full Mobile Clusters ── */
-            <FeedContext.Provider value={mobileFlatItems}>
-              <div className="flex flex-col" style={{ gap: "0px" }}>
-                {allClusters.mobile.map((cluster) => {
-                  const activeCount = cluster.slots.filter(s => s.item !== null).length;
-                  if (activeCount === 0) return null;
-
-                  const containerClass = activeCount === 1
-                    ? "w-full relative"
-                    : activeCount === 2
-                      ? "w-full h-[26dvh] min-h-[200px] relative"
-                      : "w-full h-[40dvh] min-h-[260px] relative";
-
-                  return (
-                    <div key={cluster.id} className={containerClass}>
-                      <MobileClusterView cluster={cluster} />
-                    </div>
-                  );
-                })}
-              </div>
-            </FeedContext.Provider>
-          )
-        ) : works.length < 4 ? (
-          /* ── Partial Desktop: Masonry Staggered Grid ── */
-          <div className="columns-1 sm:columns-2 gap-6 space-y-6 w-full max-w-5xl mx-auto px-4 md:px-8">
-            {works.map((item) => (
-              <div key={item.id} className="break-inside-avoid">
-                <RenderPartialWork item={item} isMobile={false} />
-              </div>
-            ))}
-          </div>
+          </FeedContext.Provider>
         ) : (
-          /* ── Full Desktop Clusters ── */
-          <FeedContext.Provider value={desktopFlatItems}>
-            <div className="flex flex-col" style={{ gap: "0px" }}>
-              {allClusters.desktop.map((cluster, idx) => (
-                <StaticDesktopCluster key={cluster.id || idx} cluster={cluster} />
+          <FeedContext.Provider value={desktopFlatItems.length > 0 ? desktopFlatItems : safeWorks}>
+            <div className="flex flex-col gap-8 w-full">
+              {/* 1. Desktop Clusters */}
+              {allClusters.desktop.clusters.map((cluster, idx) => (
+                <StaticDesktopCluster key={cluster.id || `dc-${idx}`} cluster={cluster} />
               ))}
+
+              {/* 2. Desktop Stacked Remaining Items */}
+              {allClusters.desktop.stackedItems.length > 0 && (
+                <div className="flex flex-wrap items-center justify-center gap-8 w-full max-w-6xl mx-auto px-4 md:px-8 py-4">
+                  {allClusters.desktop.stackedItems.map((item) => (
+                    <div key={item.id} className="flex-shrink-0">
+                      <RenderPartialWork item={item} isMobile={false} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </FeedContext.Provider>
         )}

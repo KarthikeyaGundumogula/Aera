@@ -263,6 +263,9 @@ const ProfilePage: React.FC = () => {
           const json = await res.json();
           const stage = json.artist_stage || json.data || json;
           if (stage && isMounted) {
+            if (typeof stage.isFavorited === "boolean") {
+              setIsFavorited(stage.isFavorited);
+            }
             // Only overwrite profile display data if we're NOT on the own profile
             // (own profile was already set from currentArtist above)
             if (!isOwnProfile) {
@@ -400,12 +403,20 @@ const ProfilePage: React.FC = () => {
     if (/^[0-9a-fA-F-]{36}$/.test(profile.id)) {
       try {
         const endpoint = nextState ? "/artists/favorite_artist" : "/artists/unfavorite_artist";
-        await apiFetch(endpoint, {
+        const res = await apiFetch(endpoint, {
           method: "POST",
-          body: JSON.stringify({ artist_id: profile.id }),
+          body: JSON.stringify(profile.id),
         });
+
+        if (!res.ok) {
+          console.warn(`[ProfilePage] Favorite request failed with status ${res.status}`);
+          setIsFavorited(!nextState);
+          setBackendProfile(prev => prev ? { ...prev, favoritesCount: currentNum.toLocaleString() } : prev);
+        }
       } catch (e) {
-        console.warn("Failed to update favorite status on backend:", e);
+        console.warn("[ProfilePage] Failed to update favorite status on backend:", e);
+        setIsFavorited(!nextState);
+        setBackendProfile(prev => prev ? { ...prev, favoritesCount: currentNum.toLocaleString() } : prev);
       }
     }
   };

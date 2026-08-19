@@ -82,11 +82,15 @@ export interface PosterWorkDetail {
 export interface ScriptWorkDetail {
   id: string;
   title?: string;
-  category: "SCRIPT";
+  category: "STORYBOARD" | "SCRIPT";
   stars: number;
   createdAt: string;
-  images: string[];
-  captions: string[];
+  images?: string[];
+  captions?: string[];
+  frames?: string[];
+  thoughts?: string[];
+  isStarred?: boolean;
+  isSaved?: boolean;
   artist: WorkArtistInfo;
   originals: WorkCreditItem[];
 }

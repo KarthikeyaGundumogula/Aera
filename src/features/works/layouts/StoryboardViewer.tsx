@@ -31,10 +31,23 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
   const [imgAspect, setImgAspect] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
-  const displayPages = work.images ?? [];
+  const rawPages = work.images?.length
+    ? work.images
+    : work.frames?.length
+    ? work.frames
+    : (work as any).srcId
+    ? [(work as any).srcId]
+    : (work as any).src_id
+    ? [(work as any).src_id]
+    : work.originals?.[0]?.coverPoster
+    ? [work.originals[0].coverPoster]
+    : [];
+
+  const displayPages = rawPages;
   const total = displayPages.length;
-  const captions = work.captions?.length ? work.captions : FALLBACK_CAPTIONS.slice(0, total);
-  const caption = captions[pageIndex] || FALLBACK_CAPTIONS[pageIndex % FALLBACK_CAPTIONS.length];
+  const rawCaptions = work.captions?.length ? work.captions : (work.thoughts?.length ? work.thoughts : []);
+  const captions = rawCaptions.length ? rawCaptions : FALLBACK_CAPTIONS.slice(0, Math.max(1, total));
+  const caption = captions[pageIndex] || (total > 0 ? FALLBACK_CAPTIONS[pageIndex % FALLBACK_CAPTIONS.length] : FALLBACK_CAPTIONS[0]);
 
   const goTo = (idx: number) => {
     setIsFlipped(false);
@@ -45,6 +58,7 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
     }));
   };
   const prev = () => {
+    if (total <= 0) return;
     setIsFlipped(false);
     setImgAspect(null);
     setPageState((prev) => ({
@@ -53,6 +67,7 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
     }));
   };
   const next = () => {
+    if (total <= 0) return;
     setIsFlipped(false);
     setImgAspect(null);
     setPageState((prev) => ({
@@ -83,10 +98,10 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
           onPointerDown={triggerDoubleTap}
           style={{ overscrollBehavior: "contain", touchAction: "manipulation" }}
         >
-          {/* Controls row: page counter + Story/Visuals toggle (Hidden on mobile) */}
-          <div className="hidden sm:flex items-center justify-between pb-0">
+          {/* Controls row: page counter + Story/Board toggle */}
+          <div className="flex items-center justify-between pb-0 px-1">
             <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/25">
-              {pageIndex + 1} / {total}
+              {total > 0 ? `${pageIndex + 1} / ${total}` : "1 / 1"}
             </span>
             <button
               onClick={() => setIsFlipped((f) => !f)}
@@ -103,7 +118,10 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
           </div>
 
           {/* Image & Overlay Container */}
-          <div className="relative w-full flex justify-center">
+          <div
+            onClick={() => setIsFlipped((f) => !f)}
+            className="relative w-full flex justify-center cursor-pointer select-none group"
+          >
             <div className="relative inline-block max-w-full">
               {/* Base Layer: Image */}
               <div

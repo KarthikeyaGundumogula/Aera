@@ -47,7 +47,14 @@ export const DesktopCluster = memo(function DesktopCluster({
         height: CLUSTER_HEIGHT,
       }}
     >
-      <div className="grid grid-cols-12 grid-rows-9 w-full h-full gap-0">
+      <div
+        className="w-full h-full gap-0"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(16, 1fr)",
+          gridTemplateRows: "repeat(8, 1fr)",
+        }}
+      >
         {cluster.slots.map(
           (slot) =>
             slot.item && (

@@ -11,9 +11,9 @@ import {
  * Standard LCG (Linear Congruential Generator).
  */
 function createPRNG(seed: number) {
-  let state = seed;
-  return function() {
-    state = (state * 1664525 + 1013904223) % 4294967296;
+  let state = seed >>> 0;
+  return function(): number {
+    state = (state * 1664525 + 1013904223) >>> 0;
     return state / 4294967296;
   };
 }
@@ -22,13 +22,16 @@ function createPRNG(seed: number) {
  * Generates a stable numeric seed from an array of TheatreItems.
  */
 function getSeedFromItems(items: TheatreItem[]): number {
-  const str = items.map(it => it.id).join("");
+  if (!Array.isArray(items) || items.length === 0) return 1;
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
+  for (let i = 0; i < items.length; i++) {
+    const id = String(items[i]?.id ?? i);
+    for (let j = 0; j < id.length; j++) {
+      hash = (hash << 5) - hash + id.charCodeAt(j);
+      hash |= 0;
+    }
   }
-  return Math.abs(hash);
+  return Math.abs(hash) || 1;
 }
 
 type Bucket = {
@@ -140,6 +143,7 @@ function classify(items: TheatreItem[]): Bucket {
   };
 
   for (const item of items) {
+    if (!item) continue;
     if (isRecommendationWork(item)) {
       bucket.recommendation.push(item);
     } else if (isStoryboardWork(item)) {
@@ -174,16 +178,9 @@ function chooseCluster(
   return "B";
 }
 
-interface ClusterState {
-  sinceLastRec: number;
-}
-
 function fillCluster(
   type: keyof typeof CLUSTER_TEMPLATES, 
-  bucket: Bucket, 
-  masterBucket: Bucket,
-  rng: () => number,
-  _clusterState: ClusterState
+  bucket: Bucket
 ): Cluster {
   const template = CLUSTER_TEMPLATES[type];
   const slots: ClusterSlot[] = template.map(s => ({ ...s, item: undefined })) as ClusterSlot[];
@@ -201,12 +198,10 @@ function fillCluster(
         break;
 
       case "VERTICAL":
-        // VERTICAL takes Posters first, then Storyboards, then Edits as fallback
         item = bucket.poster.shift() || bucket.storyboard.shift() || bucket.edits.shift();
         break;
 
       case "SQUARE":
-        // SQUARE takes everything: Storyboards, Posters, Edits, Recommendations
         item = bucket.storyboard.shift() || bucket.poster.shift() || bucket.edits.shift() || bucket.recommendation.shift();
         break;
     }
@@ -244,8 +239,113 @@ function fillCluster(
   return { type, slots };
 }
 
-export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'canvas'): Cluster[] {
-  if (!items.length) return [];
+function buildAdaptivePartialCluster(items: TheatreItem[], seed: number): Cluster | null {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  const count = items.length;
+
+  const edits = items.filter(isEditWork);
+  const nonEdits = items.filter(i => !isEditWork(i));
+
+  let templateSlots: ClusterSlot[] = [];
+
+  if (count === 1) {
+    if (edits.length === 1) {
+      templateSlots = [{ type: "WIDE", x: 0, y: 0, w: 16, h: 6, item: edits[0] }];
+    } else {
+      templateSlots = [{ type: "VERTICAL", x: 6, y: 0, w: 4, h: 8, item: nonEdits[0] }];
+    }
+  } else if (count === 2) {
+    if (edits.length >= 2) {
+      templateSlots = [
+        { type: "WIDE", x: 0, y: 0, w: 8, h: 4, item: edits[0] },
+        { type: "WIDE", x: 8, y: 0, w: 8, h: 4, item: edits[1] },
+      ];
+    } else if (nonEdits.length >= 2) {
+      templateSlots = [
+        { type: "VERTICAL", x: 4, y: 0, w: 4, h: 8, item: nonEdits[0] },
+        { type: "VERTICAL", x: 8, y: 0, w: 4, h: 8, item: nonEdits[1] },
+      ];
+    } else {
+      templateSlots = [
+        { type: "VERTICAL", x: 2, y: 0, w: 4, h: 8, item: nonEdits[0] },
+        { type: "WIDE", x: 6, y: 2, w: 8, h: 4, item: edits[0] },
+      ];
+    }
+  } else if (count === 3) {
+    if (edits.length >= 1 && nonEdits.length >= 2) {
+      // 1 Hero Edit in center (8x8), flanked by 2 Vertical Posters/Scripts (4x8 left, 4x8 right)
+      templateSlots = [
+        { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8, item: nonEdits[0] },
+        { type: "IMAX", x: 4, y: 0, w: 8, h: 8, item: edits[0] },
+        { type: "VERTICAL", x: 12, y: 0, w: 4, h: 8, item: nonEdits[1] },
+      ];
+    } else if (edits.length >= 2) {
+      templateSlots = [
+        { type: "WIDE", x: 0, y: 0, w: 8, h: 4, item: edits[0] },
+        { type: "WIDE", x: 8, y: 0, w: 8, h: 4, item: edits[1] },
+        { type: "VERTICAL", x: 6, y: 4, w: 4, h: 8, item: nonEdits[0] || edits[2] },
+      ];
+    } else {
+      templateSlots = [
+        { type: "VERTICAL", x: 0, y: 0, w: 5, h: 8, item: nonEdits[0] },
+        { type: "VERTICAL", x: 5, y: 0, w: 6, h: 8, item: nonEdits[1] },
+        { type: "VERTICAL", x: 11, y: 0, w: 5, h: 8, item: nonEdits[2] },
+      ];
+    }
+  } else if (count === 4) {
+    if (edits.length >= 1) {
+      const remaining = [...nonEdits, ...edits.slice(1)];
+      templateSlots = [
+        { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8, item: remaining[0] },
+        { type: "IMAX", x: 4, y: 0, w: 8, h: 8, item: edits[0] },
+        { type: "VERTICAL", x: 12, y: 0, w: 4, h: 4, item: remaining[1] },
+        { type: "VERTICAL", x: 12, y: 4, w: 4, h: 4, item: remaining[2] },
+      ];
+    } else {
+      templateSlots = [
+        { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8, item: nonEdits[0] },
+        { type: "VERTICAL", x: 4, y: 0, w: 4, h: 8, item: nonEdits[1] },
+        { type: "VERTICAL", x: 8, y: 0, w: 4, h: 8, item: nonEdits[2] },
+        { type: "VERTICAL", x: 12, y: 0, w: 4, h: 8, item: nonEdits[3] },
+      ];
+    }
+  } else if (count >= 5) {
+    if (edits.length >= 1) {
+      const remaining = [...nonEdits, ...edits.slice(1)];
+      templateSlots = [
+        { type: "SQUARE", x: 0, y: 0, w: 4, h: 4, item: remaining[0] },
+        { type: "IMAX", x: 4, y: 0, w: 8, h: 8, item: edits[0] },
+        { type: "SQUARE", x: 12, y: 0, w: 4, h: 4, item: remaining[1] },
+        { type: "SQUARE", x: 0, y: 4, w: 4, h: 4, item: remaining[2] },
+        { type: "SQUARE", x: 12, y: 4, w: 4, h: 4, item: remaining[3] },
+      ];
+    } else {
+      templateSlots = items.slice(0, 5).map((item, idx) => ({
+        type: "VERTICAL",
+        x: (idx % 4) * 4,
+        y: Math.floor(idx / 4) * 8,
+        w: 4,
+        h: 8,
+        item,
+      }));
+    }
+  }
+
+  return { id: `pc-${count}-${seed}`, type: `PARTIAL_${count}`, slots: templateSlots };
+}
+
+export interface ClusterResult {
+  clusters: Cluster[];
+  stackedItems: TheatreItem[];
+}
+
+export function buildClustersWithRemainder(
+  items: TheatreItem[], 
+  mode: 'canvas' | 'flow' = 'canvas'
+): ClusterResult {
+  if (!Array.isArray(items) || items.length === 0) {
+    return { clusters: [], stackedItems: [] };
+  }
 
   const seed = getSeedFromItems(items);
   const rng  = createPRNG(seed);
@@ -276,25 +376,55 @@ export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'c
   const hasContent = (b: Bucket) =>
     b.edits.length > 0 || b.poster.length > 0 || b.storyboard.length > 0 || b.recommendation.length > 0;
 
-  const clusterState: ClusterState = { sinceLastRec: 0 };
-
   while (hasContent(bucket)) {
     const isFirst       = clusters.length === 0;
     const imaxWindowSum = imaxPrev + imaxCurr;
-    const type    = chooseCluster(bucket, imaxWindowSum, isFirst, mode, rng);
-    const cluster = fillCluster(type, bucket, masterBucket, rng, clusterState);
 
-    // Only add the cluster if at least one slot was filled with a real item.
-    const hasRealItems = cluster.slots.some(s => !!s.item);
-    if (hasRealItems) {
-      clusters.push(cluster);
+    const bucketCopy: Bucket = {
+      edits: [...bucket.edits],
+      poster: [...bucket.poster],
+      storyboard: [...bucket.storyboard],
+      recommendation: [...bucket.recommendation],
+    };
+
+    const type    = chooseCluster(bucketCopy, imaxWindowSum, isFirst, mode, rng);
+    const candidateCluster = fillCluster(type, bucketCopy);
+
+    const isFullyFilled = candidateCluster.slots.every(s => !!s.item);
+    if (isFullyFilled) {
+      bucket.edits = bucketCopy.edits;
+      bucket.poster = bucketCopy.poster;
+      bucket.storyboard = bucketCopy.storyboard;
+      bucket.recommendation = bucketCopy.recommendation;
+
+      clusters.push(candidateCluster);
+
+      imaxPrev = imaxCurr;
+      imaxCurr = candidateCluster.slots.filter(s => s.type === 'IMAX' && s.item && isEditWork(s.item)).length;
+    } else {
+      const remainingItems = [
+        ...bucket.edits,
+        ...bucket.poster,
+        ...bucket.storyboard,
+        ...bucket.recommendation,
+      ];
+      const partialCluster = buildAdaptivePartialCluster(remainingItems, seed);
+      if (partialCluster) {
+        clusters.push(partialCluster);
+      }
+      bucket.edits = [];
+      bucket.poster = [];
+      bucket.storyboard = [];
+      bucket.recommendation = [];
+      break;
     }
-
-    imaxPrev = imaxCurr;
-    imaxCurr = cluster.slots.filter(s => s.type === 'IMAX' && s.item && isEditWork(s.item)).length;
 
     if (clusters.length > 100) break; // Safety ceiling
   }
 
-  return clusters;
+  return { clusters, stackedItems: [] };
+}
+
+export function buildClusters(items: TheatreItem[], mode: 'canvas' | 'flow' = 'canvas'): Cluster[] {
+  return buildClustersWithRemainder(items, mode).clusters;
 }

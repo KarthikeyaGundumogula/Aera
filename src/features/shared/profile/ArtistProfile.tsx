@@ -17,6 +17,7 @@ import { ArtistAvatar } from "../../../components/ArtistAvatar";
 import { apiFetch } from "@/lib/api";
 
 interface ArtistModalData {
+  profileId?: string;
   profilePicture?: string;
   stageName?: string;
   userName?: string;
@@ -26,6 +27,7 @@ interface ArtistModalData {
   instagramProfile?: string | null;
   spirit?: number;
   works?: number;
+  isFavorited?: boolean;
   originals?: string[];
 }
 
@@ -107,6 +109,9 @@ export const ArtistProfile = memo(
             const data: ArtistModalData = json?.artist_modal || json?.artistModal || null;
             if (data && isMounted) {
               setModalData(data);
+              if (typeof data.isFavorited === "boolean") {
+                setIsFavorited(data.isFavorited);
+              }
             }
           }
         })
@@ -144,6 +149,33 @@ export const ArtistProfile = memo(
 
     const handleProjectClick = () => {
       setIsOpen(false);
+    };
+
+    const handleFavoriteToggle = async () => {
+      const rawTargetId = modalData?.profileId || artist?.id;
+      if (!rawTargetId || !/^[0-9a-fA-F-]{36}$/.test(rawTargetId)) {
+        console.warn("[ArtistProfile] Cannot favorite: valid profile UUID not available");
+        return;
+      }
+
+      const nextState = !isFavorited;
+      setIsFavorited(nextState);
+
+      try {
+        const endpoint = nextState ? "/artists/favorite_artist" : "/artists/unfavorite_artist";
+        const res = await apiFetch(endpoint, {
+          method: "POST",
+          body: JSON.stringify(rawTargetId),
+        });
+
+        if (!res.ok) {
+          console.warn(`[ArtistProfile] Favorite request failed with status ${res.status}`);
+          setIsFavorited(!nextState);
+        }
+      } catch (err) {
+        console.warn("[ArtistProfile] Favorite request error:", err);
+        setIsFavorited(!nextState);
+      }
     };
 
     const cardContent = (
@@ -268,7 +300,7 @@ export const ArtistProfile = memo(
                     <div className="flex flex-col items-center justify-center">
                       <FavoriteButton
                         isFavorited={isFavorited}
-                        onFavorite={() => setIsFavorited(!isFavorited)}
+                        onFavorite={handleFavoriteToggle}
                         activeColor="#B45309"
                         iconSize={20}
                         className="p-1"

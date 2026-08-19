@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { TheatreItem } from "../../../../types";
 import { MobileSlot } from "../../engine/mobileClusterBuilder";
 import {
   EditWork,
@@ -25,34 +24,24 @@ export const MobileCard = memo(function MobileCard({
   slot,
   className = "",
 }: MobileCardProps) {
-  const { item } = slot;
+  const item = slot?.item;
 
   // Slot has no item — return null (no empty box)
   if (!item) return null;
 
-  // Compute once per render — used for both the bg class and the render switch.
   const kind = getWorkKind(item);
-
-  const renderWork = (work: TheatreItem) => {
-    switch (kind) {
-      case "recommendation":
-        return <RecommendationWork item={work} variant="theatre-mobile" priority="lazy" />;
-      case "storyboard":
-        return <StoryboardWork item={work} variant="theatre-mobile" priority="lazy" />;
-      case "poster":
-        return <PosterWork item={work} variant="theatre-mobile" priority="lazy" />;
-      default:
-        return <EditWork item={work} variant="theatre-mobile" priority="lazy" />;
-    }
-  };
+  const isStoryboard = kind === "storyboard";
 
   return (
     <div
       className={`relative w-full h-full overflow-hidden bg-zinc-900/40 active:scale-[0.98] transition-transform ${
-        kind === "storyboard" ? "bg-[#f4f1ea]" : ""
+        isStoryboard ? "bg-[#f4f1ea]" : ""
       } ${className}`}
     >
-      {renderWork(item)}
+      {kind === "recommendation" && <RecommendationWork item={item} variant="theatre-mobile" priority="lazy" />}
+      {kind === "storyboard" && <StoryboardWork item={item} variant="theatre-mobile" priority="lazy" />}
+      {kind === "poster" && <PosterWork item={item} variant="theatre-mobile" priority="lazy" />}
+      {kind === "edit" && <EditWork item={item} variant="theatre-mobile" priority="lazy" />}
     </div>
   );
 });

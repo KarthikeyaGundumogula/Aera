@@ -1,32 +1,39 @@
 import { memo } from "react";
-import { MobileCluster } from "../../engine/mobileClusterBuilder";
+import { MobileCluster, MobileSlot } from "../../engine/mobileClusterBuilder";
 import { MobileCard } from "./MobileCard";
 
 interface MobileClusterViewProps {
   cluster: MobileCluster;
 }
 
+const Cell = memo(function Cell({ slot, spanClass }: { slot?: MobileSlot; spanClass: string }) {
+  if (!slot || !slot.item) return null;
+  return (
+    <div className={`relative w-full h-full overflow-hidden ${spanClass}`}>
+      <MobileCard slot={slot} className="w-full h-full" />
+    </div>
+  );
+});
+
 /**
  * Renders a single mobile cluster inside a fixed-height parent container.
  *
  * All templates share a `grid-cols-2 grid-rows-6` base. The parent div
- * (set to `40dvh` in MobileCanvas) controls total cluster height.
+ * controls total cluster height.
  * CSS Grid handles all aspect-ratio geometry — no inline styles needed.
- *
- * Slot → grid span mapping (3-type model):
- *   Wide     → col-span-2 row-span-3  (full-width banner)
- *   Vertical → col-span-1 row-span-6  (tall portrait)
- *   Square   → col-span-1 row-span-3  (half-width square)
  */
 export const MobileClusterView = memo(function MobileClusterView({
   cluster,
 }: MobileClusterViewProps) {
+  if (!cluster || !Array.isArray(cluster.slots)) return null;
+
   const [s0, s1, s2] = cluster.slots;
-  const activeSlots = cluster.slots.filter(s => !!s?.item);
+  const hasMultiple = (s0?.item ? 1 : 0) + (s1?.item ? 1 : 0) + (s2?.item ? 1 : 0) > 1;
 
   // Single item in mobile cluster -> render as a clean 16:9 cinematic banner tile
-  if (activeSlots.length === 1) {
-    const singleSlot = activeSlots[0];
+  if (!hasMultiple) {
+    const singleSlot = s0?.item ? s0 : s1?.item ? s1 : s2;
+    if (!singleSlot || !singleSlot.item) return null;
     return (
       <div className="w-full aspect-[16/9] relative overflow-hidden rounded-sm">
         <MobileCard slot={singleSlot} className="w-full h-full" />
@@ -34,25 +41,15 @@ export const MobileClusterView = memo(function MobileClusterView({
     );
   }
 
-  // Render a card that fills its grid cell exactly.
-  const cell = (slot: typeof s0, spanClass: string) => {
-    if (!slot || !slot.item) return null;
-    return (
-      <div className={`relative w-full h-full overflow-hidden ${spanClass}`}>
-        <MobileCard slot={slot} className="w-full h-full" />
-      </div>
-    );
-  };
-
   switch (cluster.type) {
     // ── A: Feature Presentation ──────────────────────────────────────────────
     // Wide banner top (3 rows) + two squares below (3 rows each)
     case "A":
       return (
         <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
-          {cell(s0, "col-span-2 row-span-3")}
-          {cell(s1, "col-span-1 row-span-3")}
-          {cell(s2, "col-span-1 row-span-3")}
+          <Cell slot={s0} spanClass="col-span-2 row-span-3" />
+          <Cell slot={s1} spanClass="col-span-1 row-span-3" />
+          <Cell slot={s2} spanClass="col-span-1 row-span-3" />
         </div>
       );
 
@@ -61,10 +58,10 @@ export const MobileClusterView = memo(function MobileClusterView({
     case "B":
       return (
         <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
-          {cell(s0, "col-span-1 row-span-6")}
+          <Cell slot={s0} spanClass="col-span-1 row-span-6" />
           <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-0">
-            {cell(s1, "row-span-3")}
-            {cell(s2, "row-span-3")}
+            <Cell slot={s1} spanClass="row-span-3" />
+            <Cell slot={s2} spanClass="row-span-3" />
           </div>
         </div>
       );
@@ -75,10 +72,10 @@ export const MobileClusterView = memo(function MobileClusterView({
       return (
         <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
           <div className="col-span-1 row-span-6 grid grid-cols-1 grid-rows-6 gap-0">
-            {cell(s0, "row-span-3")}
-            {cell(s2, "row-span-3")}
+            <Cell slot={s0} spanClass="row-span-3" />
+            <Cell slot={s2} spanClass="row-span-3" />
           </div>
-          {cell(s1, "col-span-1 row-span-6")}
+          <Cell slot={s1} spanClass="col-span-1 row-span-6" />
         </div>
       );
 
@@ -87,9 +84,9 @@ export const MobileClusterView = memo(function MobileClusterView({
     case "D":
       return (
         <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
-          {cell(s0, "col-span-1 row-span-3")}
-          {cell(s1, "col-span-1 row-span-3")}
-          {cell(s2, "col-span-2 row-span-3")}
+          <Cell slot={s0} spanClass="col-span-1 row-span-3" />
+          <Cell slot={s1} spanClass="col-span-1 row-span-3" />
+          <Cell slot={s2} spanClass="col-span-2 row-span-3" />
         </div>
       );
 
@@ -98,8 +95,8 @@ export const MobileClusterView = memo(function MobileClusterView({
     case "E":
       return (
         <div className="grid grid-cols-2 grid-rows-6 gap-0 w-full h-full">
-          {cell(s0, "col-span-1 row-span-6")}
-          {cell(s1, "col-span-1 row-span-6")}
+          <Cell slot={s0} spanClass="col-span-1 row-span-6" />
+          <Cell slot={s1} spanClass="col-span-1 row-span-6" />
         </div>
       );
 

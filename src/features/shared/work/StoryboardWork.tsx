@@ -19,15 +19,36 @@ export function StoryboardWork({
   showBadge = true,
   priority = "lazy",
 }: BaseWorkProps) {
+  const rawItem = item as any;
+
+  const textContent = useMemo(() => {
+    if (item.text) return item.text;
+    if (Array.isArray(rawItem?.thoughts) && rawItem.thoughts.length > 0) {
+      return rawItem.thoughts.join("\n");
+    }
+    if (typeof rawItem?.thoughts === "string" && rawItem.thoughts.trim()) {
+      return rawItem.thoughts;
+    }
+    if (rawItem?.description) return rawItem.description;
+    return undefined;
+  }, [item.text, rawItem?.description, rawItem?.thoughts]);
+
   const body = useMemo(
-    () => getStoryboardBody(item.title, item.text),
-    [item.text, item.title],
+    () => getStoryboardBody(item.title, textContent),
+    [item.title, textContent],
   );
   const { openWork } = useWorkNavigation();
   const compact = variant === "theatre-mobile";
   const spacious = variant === "feed";
 
-  const coverImage = item.thumbnail || item.images?.[0] || item.image;
+  const coverImage =
+    item.thumbnail ||
+    item.image ||
+    item.images?.[0] ||
+    rawItem?.src_id ||
+    item.srcId ||
+    (Array.isArray(rawItem?.src_ids) ? rawItem.src_ids[0] : undefined) ||
+    (Array.isArray(rawItem?.srcIds) ? rawItem.srcIds[0] : undefined);
 
   return (
     <>
