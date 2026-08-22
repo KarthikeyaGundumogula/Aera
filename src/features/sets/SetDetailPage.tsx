@@ -25,6 +25,7 @@ import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { SectionHeader } from "../../components/SectionHeader";
 import { UpdateSetModal } from "./components/UpdateSetModal";
 import { CreateFestivalModal } from "./components/CreateFestivalModal";
+import { CreateDiscussionWidget } from "./components/CreateDiscussionWidget";
 import { NotFoundOverlay } from "../../components/NotFoundOverlay";
 import { apiFetch } from "@/lib/api";
 import { Set as SetType, Festival } from "../../types/sets";
@@ -53,7 +54,7 @@ export function SetDetailPage() {
       apiFetch(`/sets/${id}`),
       apiFetch(`/sets/${id}/discussions`),
       apiFetch(`/sets/${id}/theatre`),
-      apiFetch(`/festivals`),
+      apiFetch(`/festivals?set_id=${id}&status=ALL`),
     ])
       .then(async ([setRes, discRes, theatreRes, festRes]) => {
         if (setRes.ok) {
@@ -523,13 +524,21 @@ export function SetDetailPage() {
       {/* Divider */}
 
       {/* ─── Layer I.V: Open Discussions ───────────────────────────────────────── */}
-      {setThoughts.length > 0 && (
-        <section className="px-4 md:px-8 py-6 border-b border-white/[0.04] bg-surface-deep">
-          <SectionHeader
-            icon={MessageSquare}
-            title="Open Discussions"
-            containerClassName="mb-6"
-          />
+      <section className="px-4 md:px-8 py-6 border-b border-white/[0.04] bg-surface-deep">
+        <SectionHeader
+          icon={MessageSquare}
+          title="Open Discussions"
+          containerClassName="mb-6"
+        />
+        <CreateDiscussionWidget
+          setId={id!}
+          isJoined={isJoined}
+          setWorks={setWorks}
+          onDiscussionCreated={(newDiscussion) => {
+            setDiscussions((prev) => [newDiscussion, ...prev]);
+          }}
+        />
+        {setThoughts.length > 0 ? (
           <div className="overflow-x-auto no-scrollbar pb-4">
             <div className="flex gap-4 sm:gap-6 w-max">
               {setThoughts.map((thought) => (
@@ -543,8 +552,12 @@ export function SetDetailPage() {
               ))}
             </div>
           </div>
-        </section>
-      )}
+        ) : (
+          <p className="text-[11px] font-mono text-white/30 italic py-2">
+            No active discussions yet in this set. Be the first to start one above!
+          </p>
+        )}
+      </section>
 
       {/* ─── Layer II: Active Festival Spotlight ────────────────────────────── */}
       {activeFestival ? (
