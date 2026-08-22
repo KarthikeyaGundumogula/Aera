@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Film, Plus, X, Shield } from "lucide-react";
+import { Film, Plus, X, Shield, Bookmark } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { StudioWorkCard } from "./components/StudioWorkCard";
 import { LiveStagePreview } from "./components/LiveStagePreview";
@@ -168,7 +168,14 @@ export default function StudioPage() {
       {/* Header bar (Desktop) */}
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-[100] items-center justify-between px-6 py-4 md:px-8 md:py-6 bg-black/30 backdrop-blur-md border-b border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
         <Logo onClick={() => handleNavigation("/")} showText={false} />
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => handleNavigation("/saved")}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer"
+          >
+            <Bookmark className="w-4 h-4 fill-amber-400/20" />
+            Saved Items
+          </button>
           <ProfileNav beforeNavigate={(path) => {
             if (isDirty) {
               setPendingNavigation(() => () => {
@@ -366,13 +373,22 @@ export default function StudioPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => handleNavigation("/works/new")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              New Release
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleNavigation("/saved")}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 font-black text-[9px] uppercase tracking-[0.2em] transition-all cursor-pointer"
+              >
+                <Bookmark className="w-4 h-4 fill-amber-400/20" />
+                Saved Items
+              </button>
+              <button
+                onClick={() => handleNavigation("/works/new")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                New Release
+              </button>
+            </div>
           </div>
 
           {userWorks.length > 0 ? (

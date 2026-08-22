@@ -1,3 +1,11 @@
+export interface DiscussionReplyWork {
+  id: string;
+  title: string;
+  category?: string;
+  image?: string;
+  artistName?: string;
+}
+
 export interface DiscussionReply {
   id: string;
   authorId: string;
@@ -6,6 +14,7 @@ export interface DiscussionReply {
   text: string;
   timestamp: string;
   taggedWorkId?: string; // ID of a work tagged in this reply
+  work?: DiscussionReplyWork; // Optional attached work
   reactions?: {
     heart?: number;
     zap?: number;
@@ -25,7 +34,14 @@ export const MOCK_DISCUSSION_REPLIES: Record<string, DiscussionReply[]> = {
       text: "Agreed. The editing isn't just invisible; it's driving the tension. Especially the bridge sequence, the cross-cutting was pure musical structure.",
       timestamp: "1 hour ago",
       reactions: { flame: 5, heart: 2 },
-      taggedWorkId: "work-rrr-2", // Let's mock a work tag
+      taggedWorkId: "w-og-7",
+      work: {
+        id: "w-og-7",
+        title: "Unstoppable Run Edit",
+        category: "Edit",
+        image: "https://img.youtube.com/vi/ePOglweqy7o/hqdefault.jpg",
+        artistName: "Andhra_Cuts",
+      },
       replies: [
         {
           id: "rep-1-1-1",
@@ -41,11 +57,11 @@ export const MOCK_DISCUSSION_REPLIES: Record<string, DiscussionReply[]> = {
               authorName: "Arjun Reddy",
               text: "It was a bit jarring at first, but it establishes the chaotic aftermath perfectly.",
               timestamp: "30 mins ago",
-              reactions: { star: 4 }
-            }
-          ]
-        }
-      ]
+              reactions: { star: 4 },
+            },
+          ],
+        },
+      ],
     },
     {
       id: "rep-1-2",
@@ -53,8 +69,8 @@ export const MOCK_DISCUSSION_REPLIES: Record<string, DiscussionReply[]> = {
       authorName: "Karthik G",
       text: "True, but does it leave enough breathing room? Sometimes a rhythm needs a pause to land properly. Priya, what do you think of the slower tracking shots in the warehouse?",
       timestamp: "45 mins ago",
-      reactions: { heart: 3 }
-    }
+      reactions: { heart: 3 },
+    },
   ],
   "th-2": [
     {
@@ -63,15 +79,23 @@ export const MOCK_DISCUSSION_REPLIES: Record<string, DiscussionReply[]> = {
       authorName: "Karthik G",
       text: "The pre-interval sequence is literally where fire and water clash. The color grading makes you feel the moisture in the air turning to steam. It's sensory overload in the best way.",
       timestamp: "4 hours ago",
-      reactions: { flame: 12, star: 2 }
+      reactions: { flame: 12, star: 2 },
+      taggedWorkId: "w-rrr-5",
+      work: {
+        id: "w-rrr-5",
+        title: "RRR Victory Edit",
+        category: "Edit",
+        image: "https://img.youtube.com/vi/5StsXMWRBqQ/hqdefault.jpg",
+        artistName: "Ram_Charan_FC",
+      },
     },
     {
       id: "rep-2-2",
       authorId: "fh-003",
       authorName: "Arjun Reddy",
       text: "Exactly. The warmth is suffocating, but it matches the narrative peak perfectly. A masterclass in thematic color correction.",
-      timestamp: "2 hours ago"
-    }
+      timestamp: "2 hours ago",
+    },
   ],
   "th-3": [
     {
@@ -79,7 +103,7 @@ export const MOCK_DISCUSSION_REPLIES: Record<string, DiscussionReply[]> = {
       authorId: "fh-003",
       authorName: "Arjun Reddy",
       text: "The darkness is a physical presence. Most action sequences try to highlight everything, but KGF embraces the shadows to make the frames feel heavier.",
-      timestamp: "18 hours ago"
+      timestamp: "18 hours ago",
     },
     {
       id: "rep-3-2",
@@ -87,8 +111,16 @@ export const MOCK_DISCUSSION_REPLIES: Record<string, DiscussionReply[]> = {
       authorName: "Priya Nair",
       text: "Exactly. The high-contrast lighting is reminiscent of classic expressionism. Rocky isn't just hiding in the dark, he is part of the shadow itself.",
       timestamp: "12 hours ago",
-      reactions: { heart: 8 }
-    }
+      reactions: { heart: 8 },
+      taggedWorkId: "w-kgf-5",
+      work: {
+        id: "w-kgf-5",
+        title: "KGF Bloodbath Cut",
+        category: "Edit",
+        image: "https://img.youtube.com/vi/1qYdfLA_zlY/hqdefault.jpg",
+        artistName: "KGF_Yash_FC",
+      },
+    },
   ],
   "th-4": [
     {
@@ -96,8 +128,7 @@ export const MOCK_DISCUSSION_REPLIES: Record<string, DiscussionReply[]> = {
       authorId: "fh-001",
       authorName: "Karthik G",
       text: "Sukumar stages the frames like classical paintings. The alignment of secondary characters isn't random; it creates leading lines directly towards Pushpa's silhouette.",
-      timestamp: "1 day ago"
-    }
-  ]
+      timestamp: "1 day ago",
+    },
+  ],
 };
-

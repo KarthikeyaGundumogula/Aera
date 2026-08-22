@@ -5,6 +5,7 @@ import { THOUGHTS_MOCK, MOCK_DISCUSSION_REPLIES, DiscussionReply, GRID_ITEMS, AR
 import { DesktopHeader } from "../navigation/DesktopHeader";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { ArtistProfile } from "../shared/profile";
+import { EmbeddedWorkBox } from "../../components/EmbeddedWorkBox";
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
 
@@ -33,7 +34,6 @@ function ArtistName({ name, className }: { name: string; className?: string }) {
     (a) => a.name.toLowerCase() === name.toLowerCase()
   ) || ARTISTS_MOCK[0];
 
-  // OriginalArtist does not carry themeClasses in the data model — omit the branch
   const themeClasses = undefined;
 
   return (
@@ -87,24 +87,10 @@ function RichText({ text, glowClass }: { text: string; glowClass?: string }) {
       </p>
 
       {workCodes.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {workCodes.map(code => {
-            const work = GRID_ITEMS.find(w => w.id === code);
-            if (!work) return null;
-            return (
-              <button
-                key={code}
-                onClick={() => navigate(`/work/${work.id}`)}
-                className="flex items-center gap-2.5 p-1.5 pr-4 rounded-lg bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors cursor-pointer"
-              >
-                <img src={work.image} alt={work.title} className="w-8 h-8 rounded object-cover object-top" />
-                <div className="flex flex-col text-left">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-white/80">{work.title}</span>
-                  <span className="text-[8px] uppercase tracking-widest text-white/35">{work.category}</span>
-                </div>
-              </button>
-            );
-          })}
+        <div className="flex flex-col gap-3 mt-3 w-full max-w-lg">
+          {workCodes.map(code => (
+            <EmbeddedWorkBox key={code} workId={code} variant="default" />
+          ))}
         </div>
       )}
     </div>
@@ -124,7 +110,6 @@ function InlineReplyBox({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const tagged = extractWorkCodes(text);
 
-  // Auto-focus when it appears
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
@@ -256,7 +241,18 @@ function ThreadNode({
           <>
             <RichText text={reply.text} />
 
-            <div className="flex items-center gap-3 mt-2">
+            {/* Optional Embedded Work Preview in Comment (Full View) */}
+            {(reply.work || reply.taggedWorkId) && (
+              <div className="mt-3 w-full max-w-lg">
+                <EmbeddedWorkBox
+                  work={reply.work}
+                  workId={reply.taggedWorkId}
+                  variant="default"
+                />
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 mt-2.5">
               <button
                 onClick={() => setReplyOpen((v) => !v)}
                 className={`text-[9px] font-bold uppercase tracking-widest transition-colors cursor-pointer ${
@@ -375,6 +371,9 @@ export function DiscussionPage() {
     );
   }
 
+  const postTitle = thought.title || "Set Discussion";
+  const postBody = thought.content || thought.text;
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-20 pb-32">
       <DesktopHeader />
@@ -393,18 +392,32 @@ export function DiscussionPage() {
 
         {/* ── Original Post ── */}
         <div className="pb-6 mb-2 border-b border-white/[0.06]">
-          <div className="flex items-center gap-2 text-white/35 mb-4">
+          <div className="flex items-center gap-2 text-amber-500/90 mb-3">
             <MessageSquare className="w-4 h-4" />
-            <span className="text-[9px] font-bold uppercase tracking-widest">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em]">
               Set Discussion
             </span>
           </div>
 
-          <p className="font-mono text-base md:text-lg leading-relaxed whitespace-pre-wrap mb-4 transition-colors duration-500 text-white/90">
-            {thought.text}
+          {/* Discussion Title */}
+          <h1 className="font-sans font-black text-xl sm:text-2xl uppercase tracking-wide text-white mb-3 leading-tight">
+            {postTitle}
+          </h1>
+
+          {/* Discussion Body Content */}
+          <p className="font-mono text-base md:text-lg leading-relaxed whitespace-pre-wrap mb-5 transition-colors duration-500 text-white/90">
+            {postBody}
           </p>
 
-          <div className="flex items-center gap-2 mb-3">
+          {/* Optional Embedded Work Thumbnail Preview in Main Post */}
+          {thought.work && (
+            <div className="mb-5">
+              <EmbeddedWorkBox work={thought.work} variant="default" />
+            </div>
+          )}
+
+          {/* Author Info */}
+          <div className="flex items-center gap-2 mb-1 pt-2 border-t border-white/[0.04]">
             <span className="text-[11px] text-white/40 mr-1">—</span>
             {(() => {
               const avatar = getAuthorAvatar(thought.authorName);
@@ -414,7 +427,7 @@ export function DiscussionPage() {
                 <div className="w-8 h-8 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[12px] font-bold flex-shrink-0">{thought.authorName[0]}</div>
               );
             })()}
-            <ArtistName name={thought.authorName} className="text-[11px] text-[#e2d7c5]/90" />
+            <ArtistName name={thought.authorName} className="text-[11px] text-[#e2d7c5]/90 font-bold" />
             <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">
               • {thought.timestamp}
             </span>

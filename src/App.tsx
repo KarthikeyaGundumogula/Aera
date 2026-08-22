@@ -37,6 +37,7 @@ import {
   ProfileEditPage,
   ProfilePage,
   WallPostPage,
+  SavedPage,
   // Works
   WorkPage,
   UploadPage,
@@ -155,6 +156,7 @@ function AppRoutes() {
             <Route path="/profile/:profileId/recommendations/:originalId" element={<OriginalRecommendationsPage />} />
             {/* Wall post deep-link — opens full-screen swiper at shared post */}
             <Route path="/wall/:artistId/:postId" element={<WallPostPage />} />
+            <Route path="/saved" element={<SavedPage />} />
 
             {/* ── Studio & Works ──────────────────────────── */}
             <Route path="/studio" element={<StudioPage />} />

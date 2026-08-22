@@ -86,6 +86,10 @@ export const WallPostPage = lazy(
   () => import("@/features/profile/WallPostPage"),
 );
 
+export const SavedPage = lazy(
+  () => import("@/features/saved/SavedPage"),
+);
+
 // ─── Works ───────────────────────────────────────────────────────────────────
 export const WorkPage = lazy(() =>
   import("@/features/works").then((m) => ({ default: m.WorkPage })),

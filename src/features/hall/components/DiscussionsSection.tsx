@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ThoughtCard } from "../../shared/thoughts/ThoughtCard";
+import { DiscussionCard } from "../../shared/discussions/DiscussionCard";
 import { ThoughtItem } from "../../../mock/thoughts";
 
 interface DiscussionsSectionProps {
@@ -15,7 +15,7 @@ export function DiscussionsSection({ thoughts }: DiscussionsSectionProps) {
     <div className="overflow-x-auto no-scrollbar pb-4">
       <div className="flex gap-4 sm:gap-6 w-max px-6 md:px-12">
         {thoughts.map((thought) => (
-          <ThoughtCard
+          <DiscussionCard
             key={thought.id}
             thought={thought}
             onCardClick={() =>

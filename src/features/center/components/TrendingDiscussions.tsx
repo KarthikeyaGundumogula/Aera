@@ -2,7 +2,7 @@ import { MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { THOUGHTS_MOCK } from "../../../mock";
-import { ThoughtCard } from "../../shared/thoughts/ThoughtCard";
+import { DiscussionCard } from "../../shared/discussions/DiscussionCard";
 
 export function TrendingDiscussions() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export function TrendingDiscussions() {
       <div className="overflow-x-auto no-scrollbar pb-6 px-6 md:px-12">
         <div className="flex gap-4 sm:gap-6 w-max">
           {THOUGHTS_MOCK.map((thought) => (
-            <ThoughtCard
+            <DiscussionCard
               key={thought.id}
               thought={thought}
               onCardClick={() => navigate(`/sets/${thought.setId}/discussions/${thought.id}`)}

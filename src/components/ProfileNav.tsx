@@ -8,6 +8,7 @@ import {
   UserCircle,
   MessageSquare,
   BookPlus,
+  Bookmark,
   LogOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -52,6 +53,12 @@ export function ProfileNav({
       icon: <Film className="w-4 h-4" />,
       path: "/studio",
       description: "Manage your stage",
+    },
+    {
+      label: "Saved Items",
+      icon: <Bookmark className="w-4 h-4" />,
+      path: "/saved",
+      description: "Your saved collection",
     },
     {
       label: "Library",
