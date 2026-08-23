@@ -8,6 +8,7 @@ import {
   UserCircle,
   MessageSquare,
   BookPlus,
+  Bookmark,
   LogOut,
   UserPlus,
   LogIn,
@@ -58,6 +59,12 @@ export function ProfileNav({
           description: "Manage your stage",
         },
         {
+          label: "Saved Items",
+          icon: <Bookmark className="w-4 h-4" />,
+          path: "/saved",
+          description: "Your saved collection",
+        },
+        {
           label: "View Profile",
           icon: <UserCircle className="w-4 h-4" />,
           path: `/profile/${currentArtist.userName || currentArtist.id}`,
@@ -82,6 +89,12 @@ export function ProfileNav({
           icon: <LogIn className="w-4 h-4" />,
           path: "/profile/login",
           description: "Access your stage",
+        },
+        {
+          label: "Saved Items",
+          icon: <Bookmark className="w-4 h-4" />,
+          path: "/saved",
+          description: "Your saved collection",
         },
         {
           label: "Contact Founder",

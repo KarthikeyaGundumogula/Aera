@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../../components/SectionHeader';
 import { FHLoader } from '../../../components/FHLoader';
 import { buildEmbedUrl } from '../../../utils/embed';
+import { useTwitterWidgets } from '../../../hooks/useTwitterWidgets';
 
 export interface OriginalReleaseItem {
   id: string;
@@ -11,9 +12,8 @@ export interface OriginalReleaseItem {
   src: string;
   platform?: string;
   releaseType?: string;
+  artist?: string;
 }
-
-import { useTwitterWidgets } from '../../../hooks/useTwitterWidgets';
 
 interface RecentReleasesSectionProps {
   title?: string;
@@ -21,14 +21,16 @@ interface RecentReleasesSectionProps {
   className?: string;
   headerClassName?: string;
   customReleases?: OriginalReleaseItem[];
+  works?: any[];
 }
 
 export const RecentReleasesSection = memo(function RecentReleasesSection({ 
   title = "Recent Original Releases",
   icon,
-  className = "",
-  headerClassName = "",
+  className = "pt-8 pb-12",
+  headerClassName = "mb-8",
   customReleases,
+  works,
 }: RecentReleasesSectionProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -37,19 +39,30 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
   const recentReleases = useMemo(() => {
+    if (works && works.length > 0) {
+      return works.map((w) => ({
+        id: w.id || w.srcId,
+        title: w.title || "Release",
+        srcId: w.srcId || w.id,
+        platform: (w.platform || "YOUTUBE").toUpperCase(),
+        category: w.category || "EDIT",
+        originalIds: w.originalIds || [],
+        artist: w.artist || "Artist",
+      }));
+    }
     if (customReleases && customReleases.length > 0) {
       return customReleases.map(r => ({
         id: r.id,
         title: r.title,
         srcId: r.src,
-        platform: r.platform || "YOUTUBE",
+        platform: (r.platform || "YOUTUBE").toUpperCase(),
         category: r.releaseType || "EDIT",
         originalIds: [r.id],
-        artist: "Official Release",
+        artist: r.artist || "Official Release",
       }));
     }
     return [];
-  }, [customReleases]);
+  }, [works, customReleases]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -70,7 +83,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
     return () => clearTimeout(timer);
   }, [currentIndex, currentWork?.id]);
 
-  const currentOriginal = null as { id: string; title: string } | null;
+  const currentOriginal = null;
 
   if (!recentReleases.length) return null;
 
@@ -101,7 +114,6 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
         
         {/* DESKTOP LAYOUT (hidden md:block) */}
         <div className="hidden md:flex flex-col gap-8 max-w-4xl mx-auto w-full">
-          {/* Neumorphic Player Container */}
           <div 
             className="relative mx-auto rounded-3xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[10px_10px_30px_#000000,-10px_-10px_30px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)]"
             style={{ 
@@ -155,22 +167,9 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
                 >
                   {currentWork.title}
                 </button>
-                {currentOriginal ? (
-                  <div className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1.5 flex items-center gap-1.5">
-                    <span>From:</span>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); navigate(`/originals/${currentOriginal.id}`); }} 
-                      className="text-white hover:underline font-black tracking-widest"
-                    >
-                      {currentOriginal.title}
-                    </button>
-                  </div>
-                ) : (
-                  <p className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1.5">By. {currentWork.artist}</p>
-                )}
+                <p className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1.5">By. {currentWork.artist}</p>
              </div>
 
-             {/* Neumorphic Buttons */}
              <div className="flex items-center gap-4">
                 <button 
                   onClick={handlePrev}
@@ -204,11 +203,10 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
         {/* MOBILE LAYOUT (block md:hidden) */}
         <div className="block md:hidden">
           <div className="px-2">
-            {/* Neumorphic Player Container */}
             <div className="relative aspect-video rounded-2xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
                 {!isMobileFullyLoaded && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
-                    <FHLoader label="Loading Celebration" />
+                    <FHLoader label="Loading" />
                   </div>
                 )}
 
@@ -242,7 +240,6 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
             </div>
           </div>
 
-          {/* Navigation arrows and Title/From text in the same row */}
           <div className="mt-4 flex items-center justify-between px-2 gap-2">
             <button
               onClick={handlePrev}
@@ -264,19 +261,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
               >
                 {currentWork.title}
               </button>
-              {currentOriginal ? (
-                <div className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1 flex items-center gap-1.5 justify-center truncate w-full">
-                  <span>From:</span>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); navigate(`/originals/${currentOriginal.id}`); }} 
-                    className="text-white hover:underline font-black tracking-widest truncate"
-                  >
-                    {currentOriginal.title}
-                  </button>
-                </div>
-              ) : (
-                <p className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1 truncate w-full">By. {currentWork.artist}</p>
-              )}
+              <p className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1 truncate w-full">By. {currentWork.artist}</p>
             </div>
 
             <button
@@ -297,4 +282,3 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
     </section>
   );
 });
-

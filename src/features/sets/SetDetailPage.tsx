@@ -16,7 +16,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { ThoughtCard } from "../shared/thoughts/ThoughtCard";
+import { DiscussionCard } from "../shared/discussions/DiscussionCard";
 import { ActiveFestivalSpotlight } from "./components/ActiveFestivalSpotlight";
 import { FestivalArchive } from "./components/FestivalArchive";
 import { TheatrePreviewSection } from "../theatre/components/TheatrePreviewSection";
@@ -542,7 +542,7 @@ export function SetDetailPage() {
           <div className="overflow-x-auto no-scrollbar pb-4">
             <div className="flex gap-4 sm:gap-6 w-max">
               {setThoughts.map((thought) => (
-                <ThoughtCard
+                <DiscussionCard
                   key={thought.id}
                   thought={thought}
                   onCardClick={() =>

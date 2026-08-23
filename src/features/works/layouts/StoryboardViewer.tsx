@@ -1,8 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { ScriptWorkDetail } from "../../../types";
 import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
+import { parseMarkdownBold } from "../../../utils/markdown";
 
 interface StoryboardViewerProps {
   work: ScriptWorkDetail;
@@ -21,31 +22,76 @@ const FALLBACK_CAPTIONS = [
   "End of reel. Begin again. The archive never forgets.",
 ];
 
+interface StreamingTextProps {
+  text: string;
+  speed?: number;
+  delay?: number;
+  active?: boolean;
+}
+
+export function StreamingText({
+  text,
+  speed = 15,
+  delay = 350,
+  active = true,
+}: StreamingTextProps) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    if (!active) {
+      setDisplayedText("");
+      return;
+    }
+
+    setDisplayedText("");
+
+    const startTimer = setTimeout(() => {
+      let index = 0;
+      const interval = setInterval(() => {
+        setDisplayedText((prev) => prev + text.charAt(index));
+        index++;
+        if (index >= text.length) {
+          clearInterval(interval);
+        }
+      }, speed);
+
+      return () => clearInterval(interval);
+    }, delay);
+
+    return () => clearTimeout(startTimer);
+  }, [text, speed, delay, active]);
+
+  return <>{parseMarkdownBold(displayedText)}</>;
+}
+
 /**
- * StoryboardViewer — wraps ViewerFrame with a 3D flip-card paginated
+ * StoryboardViewer — wraps ViewerFrame with a paginated
  * viewer as the media slot. All chrome lives in ViewerFrame.
  */
-export function StoryboardViewer({ work }: StoryboardViewerProps) {
+export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?: any }) {
+  const activeWork = work || item;
   const [{ pageIndex, direction }, setPageState] = useState({ pageIndex: 0, direction: 1 });
   const [isFlipped, setIsFlipped] = useState(false);
+  const isRevealed = isFlipped;
+  const setIsRevealed = (val: any) => setIsFlipped(typeof val === "function" ? val(isFlipped) : val);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
-  const rawPages = work.images?.length
-    ? work.images
-    : work.frames?.length
-    ? work.frames
-    : (work as any).srcId
-    ? [(work as any).srcId]
-    : (work as any).src_id
-    ? [(work as any).src_id]
-    : work.originals?.[0]?.coverPoster
-    ? [work.originals[0].coverPoster]
+  const rawPages = activeWork?.images?.length
+    ? activeWork.images
+    : activeWork?.frames?.length
+    ? activeWork.frames
+    : (activeWork as any)?.srcId
+    ? [(activeWork as any).srcId]
+    : (activeWork as any)?.src_id
+    ? [(activeWork as any).src_id]
+    : activeWork?.originals?.[0]?.coverPoster
+    ? [activeWork.originals[0].coverPoster]
     : [];
 
   const displayPages = rawPages;
   const total = displayPages.length;
-  const rawCaptions = work.captions?.length ? work.captions : (work.thoughts?.length ? work.thoughts : []);
+  const rawCaptions = activeWork?.captions?.length ? activeWork.captions : (activeWork?.thoughts?.length ? activeWork.thoughts : []);
   const captions = rawCaptions.length ? rawCaptions : FALLBACK_CAPTIONS.slice(0, Math.max(1, total));
   const caption = captions[pageIndex] || (total > 0 ? FALLBACK_CAPTIONS[pageIndex % FALLBACK_CAPTIONS.length] : FALLBACK_CAPTIONS[0]);
 
@@ -104,16 +150,16 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
               {total > 0 ? `${pageIndex + 1} / ${total}` : "1 / 1"}
             </span>
             <button
-              onClick={() => setIsFlipped((f) => !f)}
+              onClick={() => setIsRevealed((r: boolean) => !r)}
               className={`flex items-center gap-1.5 px-3 h-6 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-200 active:scale-[0.95] ${
-                isFlipped
+                isRevealed
                   ? "bg-white text-black border-white"
                   : "bg-transparent text-white/35 border-white/10 hover:border-white/25 hover:text-white/55"
               }`}
               style={{ touchAction: "manipulation" }}
             >
               <RotateCw size={8} strokeWidth={2.5} />
-              {isFlipped ? "Story" : "Board"}
+              {isRevealed ? "Story" : "Board"}
             </button>
           </div>
 
@@ -170,7 +216,7 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
 
               {/* Overlay Layer: Story Text */}
               <AnimatePresence>
-                {isFlipped && (
+                {isRevealed && (
                   <motion.div
                     initial="hidden"
                     animate="visible"
@@ -205,8 +251,8 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
                       </div>
                       
                       <div className="flex-1 flex flex-col justify-center text-center">
-                        <p className="text-sm sm:text-[15px] font-medium text-white leading-relaxed italic">
-                          &ldquo;{caption}&rdquo;
+                        <p className="text-sm sm:text-[15px] font-medium text-white leading-relaxed">
+                          <StreamingText text={caption} active={isRevealed} />
                         </p>
                       </div>
                       
@@ -265,16 +311,16 @@ export function StoryboardViewer({ work }: StoryboardViewerProps) {
                   <ChevronRight size={13} />
                 </button>
                 <button
-                  onClick={() => setIsFlipped((f) => !f)}
+                  onClick={() => setIsRevealed((r: boolean) => !r)}
                   className={`flex sm:hidden items-center gap-1.5 px-3 h-8 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 ${
-                    isFlipped
+                    isRevealed
                       ? "bg-white text-black border-white"
                       : "bg-transparent text-white/35 border-white/10 hover:border-white/25 hover:text-white/55"
                   }`}
                   style={{ touchAction: "manipulation" }}
                 >
                   <RotateCw size={10} strokeWidth={2.5} />
-                  {isFlipped ? "Story" : "board"}
+                  {isRevealed ? "Story" : "board"}
                 </button>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { CategoryBadge } from "../../theatre/components/CategoryBadge";
 import { BaseWorkProps, getCategoryBadgeVariant } from "./types";
 import { WorkOverlay } from "./WorkOverlay";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
+import { parseMarkdownBold } from "../../../utils/markdown";
 
 function getStoryboardBody(title?: string, text?: string) {
   if (title && title.split(":").length > 1) {
@@ -100,7 +101,7 @@ export function StoryboardWork({
               INT. THE CANVAS - DAY
             </div>
             <div
-              className={`italic opacity-70 ${
+              className={`opacity-70 ${
                 compact
                   ? "mb-2 line-clamp-3 leading-relaxed"
                   : spacious
@@ -108,7 +109,7 @@ export function StoryboardWork({
                     : "mb-4 leading-relaxed"
               }`}
             >
-              {body}
+              {parseMarkdownBold(body)}
             </div>
             <div
               className={`w-full text-center font-bold uppercase tracking-[0.2em] ${
@@ -123,11 +124,11 @@ export function StoryboardWork({
             </div>
             {!compact && (
               <div
-                className={`w-full px-4 text-center italic opacity-90 ${
+                className={`w-full px-4 text-center opacity-90 ${
                   spacious ? "text-sm" : ""
                 }`}
               >
-                "{item.title?.split(":")[0]}"
+                {item.title?.split(":")[0]}
               </div>
             )}
             <div

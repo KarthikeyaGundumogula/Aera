@@ -319,11 +319,11 @@ export function OriginalPage() {
       </motion.div>
 
       {/* RECENT RELEASES */}
-      <RecentReleasesSection customReleases={officialReleases} />
+      <RecentReleasesSection customReleases={officialReleases} className="pt-8 pb-6" />
 
       {/* Star Spotlight */}
       {original.stars && original.stars.length > 0 && (
-        <section className="px-8 pt-10 pb-4">
+        <section className="px-8 pt-6 pb-4">
           <SectionHeader title="Stars" containerClassName="mb-6" />
 
           <div className="overflow-x-auto no-scrollbar pb-6 -mx-8 px-8">

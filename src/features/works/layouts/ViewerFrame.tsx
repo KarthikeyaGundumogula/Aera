@@ -8,7 +8,7 @@ import { WorkDetail, OriginalArtist, TheatreItem } from "../../../types";
 import { ViewerNav } from "../components/ViewerNav";
 import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
-import { Heart } from "lucide-react";
+import { Heart, Pin, BookPlus } from "lucide-react";
 import { ShareAction } from "../../../components/actions/ShareAction";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
@@ -373,7 +373,6 @@ export function ViewerFrame({
                       onClick={handleSaveToggle}
                       variant="viewer"
                     />
-
                     <ShareAction
                       title={`${work.title || "Work"} on Aera`}
                       text={`Check out ${work.title || "this work"} on Aera`}

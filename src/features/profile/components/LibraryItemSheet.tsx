@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { X, Eye, Clock, ArrowRight } from "lucide-react";
+import { X, Eye, Clock, ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { SurgeScoreDisplay } from "../../../components/surge/SurgeScoreDisplay";
 import { PosterImage } from "../../../components/PosterImage";
-
-
 import { apiFetch } from "@/lib/api";
 
 interface LibraryItemSheetProps {
@@ -22,7 +20,6 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
   const [original, setOriginal] = useState<any>(originalData || null);
   const [sheetDetail, setSheetDetail] = useState<any>(null);
 
-
   const [entryStatus, setEntryStatus] = useState<"watched" | "want_to_watch">("watched");
   const [surgeScore, setSurgeScore] = useState<number>(0);
   const [peakMagnitude, setPeakMagnitude] = useState<number>(1000);
@@ -32,123 +29,95 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
   const [creditedWorksCount, setCreditedWorksCount] = useState<number>(0);
 
   useEffect(() => {
-    let isMounted = true;
-    if (!originalId && !libraryEntryId) return;
-
-    // 1. Fetch original metadata if not passed
-    if (!originalData) {
+    if (originalData) {
+      setOriginal(originalData);
+    } else if (originalId) {
       apiFetch(`/originals/${originalId}`)
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            const data = json.data || json;
-            if (data && isMounted) {
-              setOriginal({
-                id: data.id,
-                title: data.title || data.name,
-                coverImage: data.coverImage || data.cover_image || data.cover_img || "",
-                releaseDate: data.releaseDate || data.release_date || "",
-                genre: data.genres || data.genre || [],
-                description: data.description || "",
-              });
-            }
+            setOriginal(json.data || json);
           }
         })
-        .catch((err) => {
-          console.error("[LibraryItemSheet] Failed to fetch original data:", err);
-        });
+        .catch(console.error);
     }
+  }, [originalId, originalData]);
 
-    // 2. Fetch compact sheet detail strictly by libraryEntryId (lib.id) retrieved from get_user_library
-    const entryId = libraryEntryId || originalData?.libraryEntryId || originalData?.library_entry_id;
-
-    if (entryId) {
-      apiFetch(`/library/sheet/${entryId}`)
-        .then(async (res) => {
-          if (res.ok) {
-            const json = await res.json();
-            const data = json.data || json;
-            if (data && isMounted) {
-              setSheetDetail(data);
-              const count = data.creditedWorksCount ?? data.credited_works_count;
-              if (typeof count === "number") setCreditedWorksCount(count);
-
-              const st = String(data.status || "").toLowerCase();
-              setEntryStatus(st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched");
-              if (typeof data.surgeScore === "number") setSurgeScore(data.surgeScore);
-
-              const snapPeak = data.peakSnapshot ?? data.peak_snapshot;
-              if (typeof snapPeak === "number") setPeakMagnitude(snapPeak);
-              const currPeak = data.currentPeakScore ?? data.current_peak_score;
-              if (typeof currPeak === "number") setCurrentPeakScore(currPeak);
-
-              const hype = data.userHypeThought || data.preThought || data.pre_thought;
-              if (hype) setPreThoughts(hype);
-              const after = data.userAfterThought || data.postImpression || data.post_impression;
-              if (after) setAfterThoughts(after);
-            }
-          }
-        })
-        .catch((err) => {
-          console.error("[LibraryItemSheet] Failed to fetch sheet detail:", err);
-        });
-    }
-
-
-    return () => {
-      isMounted = false;
-    };
-  }, [originalId, profileId, libraryEntryId, originalData]);
+  useEffect(() => {
+    if (!libraryEntryId && !originalId) return;
+    const targetId = libraryEntryId || originalId;
+    apiFetch(`/library/${targetId}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.data || json;
+          setSheetDetail(data);
+          if (data.status) setEntryStatus(data.status);
+          if (data.surgeScore !== undefined) setSurgeScore(data.surgeScore);
+          if (data.surge_score !== undefined) setSurgeScore(data.surge_score);
+          if (data.peakMagnitude !== undefined) setPeakMagnitude(data.peakMagnitude);
+          if (data.peak_magnitude !== undefined) setPeakMagnitude(data.peak_magnitude);
+          if (data.currentPeakScore !== undefined) setCurrentPeakScore(data.currentPeakScore);
+          if (data.current_peak_score !== undefined) setCurrentPeakScore(data.current_peak_score);
+          if (data.preThoughts) setPreThoughts(data.preThoughts);
+          if (data.pre_thoughts) setPreThoughts(data.pre_thoughts);
+          if (data.afterThoughts) setAfterThoughts(data.afterThoughts);
+          if (data.after_thoughts) setAfterThoughts(data.after_thoughts);
+          if (data.creditedWorksCount !== undefined) setCreditedWorksCount(data.creditedWorksCount);
+          if (data.credited_works_count !== undefined) setCreditedWorksCount(data.credited_works_count);
+        }
+      })
+      .catch(console.error);
+  }, [libraryEntryId, originalId]);
 
   const handleStatusChange = (newStatus: "watched" | "want_to_watch") => {
     setEntryStatus(newStatus);
+    const targetId = libraryEntryId || originalId;
+    if (!targetId) return;
+    apiFetch(`/library/${targetId}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    }).catch(console.error);
   };
 
   const handleOpenFullViewer = () => {
-    const entryId = libraryEntryId || sheetDetail?.libraryEntryId || sheetDetail?.library_entry_id;
-    if (!entryId) return;
     onClose();
-    navigate(`/breakdowns/${entryId}`);
+    if (libraryEntryId) {
+      navigate(`/ledger/${libraryEntryId}`);
+    } else {
+      navigate(`/ledger/${originalId}`);
+    }
   };
-
-
-
-
-  if (typeof document === "undefined") return null;
 
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md"
       onClick={onClose}
+      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4"
     >
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 220 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-[#0F0E0C] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-5 overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl"
+        className="w-full max-w-lg bg-[#0a0a0c] border-t sm:border border-white/10 sm:rounded-3xl p-6 space-y-6 max-h-[90vh] overflow-y-auto"
       >
-        {/* Top Handle / Close Bar */}
         <div className="flex items-center justify-between">
-          <div className="w-12 h-1 bg-white/20 rounded-full mx-auto sm:hidden" />
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D97706]">
-              Library Item Details
-            </span>
-          </div>
+          <span className="text-[10px] font-mono tracking-widest text-amber-400 uppercase">
+            Library Dossier
+          </span>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors ml-auto cursor-pointer"
+            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content Body */}
         {original ? (
           <>
             {/* Poster + Meta Row */}
@@ -250,6 +219,22 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
               )}
             </div>
 
+            {/* Collection Button */}
+            <div className="pt-2">
+              <button
+                onClick={() => {
+                  onClose();
+                  navigate(`/tagged-works/${originalId || libraryEntryId || "og-original"}`);
+                }}
+                className="w-full py-3 px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-wider flex items-center justify-between cursor-pointer transition-all"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  Check Collection
+                </span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
             {/* Compact Side-by-Side Action Pills */}
             <div className="pt-2 space-y-3">

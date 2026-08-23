@@ -41,7 +41,9 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
 
   const hasBreakdown = React.useMemo(() => {
     return Boolean(rec.notes);
-  }, [rec]);
+  }, [rec.notes]);
+
+
 
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [boosted, setBoosted] = useState(false);

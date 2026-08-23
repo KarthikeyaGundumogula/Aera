@@ -14,6 +14,8 @@ import { LibraryItemSheet } from "./components/LibraryItemSheet";
 import { AnimatePresence } from "motion/react";
 import { UnifiedTheatre } from "../theatre/components/UnifiedTheatre";
 import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
+import { SectionHeader } from "../../components/SectionHeader";
+import { Film, ArrowRight, Sparkles } from "lucide-react";
 import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
 import { ProfileHero } from "../shared/profile/ProfileHero";
@@ -160,7 +162,6 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showHeaderTabs, setShowHeaderTabs] = useState(false);
-
   const [backendProfile, setBackendProfile] = useState<ProfileDisplayData | null>(null);
   const [backendWorks, setBackendWorks] = useState<TheatreItem[]>([]);
   const [backendWallPosts, setBackendWallPosts] = useState<any[]>([]);

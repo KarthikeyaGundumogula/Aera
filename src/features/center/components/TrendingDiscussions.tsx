@@ -1,14 +1,13 @@
 import { MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { ThoughtCard } from "../../shared/thoughts/ThoughtCard";
+import { DiscussionCard } from "../../shared/discussions/DiscussionCard";
 import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
-import type { Thought } from "@/types/thoughts";
 
 export function TrendingDiscussions() {
   const navigate = useNavigate();
-  const [thoughts, setThoughts] = useState<Thought[]>([]);
+  const [thoughts, setThoughts] = useState<any[]>([]);
 
   useEffect(() => {
     apiFetch("/thoughts")
@@ -32,11 +31,11 @@ export function TrendingDiscussions() {
       />
       <div className="overflow-x-auto no-scrollbar pb-6 px-6 md:px-12">
         <div className="flex gap-4 sm:gap-6 w-max">
-          {thoughts.map((thought: Thought) => (
-            <ThoughtCard
+          {thoughts.map((thought: any) => (
+            <DiscussionCard
               key={thought.id}
               thought={thought}
-              onCardClick={() => navigate(`/sets/${thought.setId}/discussions/${thought.id}`)}
+              onCardClick={() => navigate(`/sets/${thought.setId || "default"}/discussions/${thought.id}`)}
             />
           ))}
         </div>

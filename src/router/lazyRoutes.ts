@@ -86,6 +86,10 @@ export const WallPostPage = lazy(
   () => import("@/features/profile/WallPostPage"),
 );
 
+export const SavedPage = lazy(
+  () => import("@/features/saved/SavedPage"),
+);
+
 // ─── Works ───────────────────────────────────────────────────────────────────
 export const WorkPage = lazy(() =>
   import("@/features/works").then((m) => ({ default: m.WorkPage })),
@@ -94,6 +98,14 @@ export const WorkPage = lazy(() =>
 export const UploadPage = lazy(() => import("@/features/upload/UploadPage"));
 
 export const BreakdownViewer = lazy(() =>
+  import("@/features/ledger/LedgerViewer").then((m) => ({ default: m.LedgerViewer }))
+);
+
+export const LedgerPage = lazy(() =>
+  import("@/features/ledger/LedgerPage").then((m) => ({ default: m.LedgerPage }))
+);
+
+export const LedgerViewer = lazy(() =>
   import("@/features/ledger/LedgerViewer").then((m) => ({ default: m.LedgerViewer }))
 );
 

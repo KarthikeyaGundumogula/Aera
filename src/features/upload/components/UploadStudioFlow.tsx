@@ -294,13 +294,11 @@ export function UploadStudioFlow({
 
     setIsSubmitting(false);
 
-    // Only navigate to Studio if the upload actually worked
     if (uploadSucceeded) {
       window.setTimeout(() => {
         onComplete();
       }, 1800);
     }
-    // If it failed, uploadError is set — ReviewStep will show the error banner.
   }, [onComplete, formData, addWork, fetchUserWorks, currentArtist, festivalId, setId, role]);
 
 

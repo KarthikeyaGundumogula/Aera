@@ -38,6 +38,7 @@ import { SurgeScoreDisplay } from "../../components/surge/SurgeScoreDisplay";
 import { SurgeInputSection } from "../../components/surge/SurgeInputSection";
 import { ArtistAvatar } from "@/components/ArtistAvatar";
 import { PosterImage } from "@/components/PosterImage";
+import { useAuth } from "../../context/AuthContext";
 
 // ─── Easing constant (strong ease-out per Emil design-eng principles) ──────────
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -428,7 +429,7 @@ function InPlaceBreakdownEditor({
   setIsEditing: (val: boolean) => void;
 }) {
   const peakMagnitude = 10000;
-  const pctScore = Math.round((surgeScore / peakMagnitude) * 100);
+  const pctScore = Math.min(Math.round((surgeScore / peakMagnitude) * 100), 100);
 
   return (
     <motion.div
@@ -547,18 +548,16 @@ import { apiFetch } from "@/lib/api";
 
 export function LedgerViewer() {
   const { id } = useParams<{ id: string }>();
-
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [copied, setCopied] = useState(false);
   const [remoteEntry, setRemoteEntry] = useState<LedgerItem | null>(null);
+  const { currentArtist } = useAuth();
 
   useEffect(() => {
     if (!id) return;
     let isMounted = true;
 
-    // Fetch full entry detail — GET /library/entry/:id
-    // The :id is the library entry UUID returned by GET /library/sheet/:profileId/:originalId
     apiFetch(`/library/entry/${id}`)
       .then(async (res) => {
         if (!res.ok || !isMounted) return;
@@ -569,7 +568,7 @@ export function LedgerViewer() {
         const st = String(item.status || "").toLowerCase();
         setRemoteEntry({
           id: item.id,
-          artistId: item.originalId ? "" : "fh-001",
+          artistId: item.artistId || (item.originalId ? "" : "fh-001"),
           originalId: item.originalId,
           originalName: item.originalName || "Original",
           originalPosterUrl: item.originalPosterUrl || "",
@@ -577,8 +576,8 @@ export function LedgerViewer() {
           genre: Array.isArray(item.genre) ? item.genre : [item.genre || "Drama"],
           starName: "",
           status: st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched",
-          preThoughts: item.userHypeThought || "",
-          afterThoughts: item.userAfterThought || "",
+          preThoughts: item.userHypeThought || item.preThoughts || "",
+          afterThoughts: item.userAfterThought || item.afterThoughts || "",
           surgeScore: item.surgeScore || 0,
           peakScore: item.peakScore || 1000,
           peakSnapshot: item.peakSnapshot ?? item.peak_snapshot ?? item.peakScore ?? 1000,
@@ -599,11 +598,9 @@ export function LedgerViewer() {
     };
   }, [id]);
 
-
-
   const entry: LedgerItem | undefined = remoteEntry || undefined;
-
-  const isOwner = true;
+  const currentArtistId = currentArtist?.id || "fh-001";
+  const isOwner = Boolean(entry && (!entry.artistId || entry.artistId === currentArtistId || entry.artistId === "fh-001"));
 
   const [isEditing, setIsEditing] = useState<boolean>(
     searchParams.get("edit") === "true" && isOwner
@@ -647,7 +644,6 @@ export function LedgerViewer() {
   }, [entry]);
 
   const alreadyInUserLedger = false;
-
   const [addedToLedger, setAddedToLedger] = useState(alreadyInUserLedger);
 
   if (!entry) {
@@ -728,7 +724,6 @@ export function LedgerViewer() {
     } catch (err) {
       console.warn("Failed to persist breakdown to backend library:", err);
     }
-
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -777,8 +772,6 @@ export function LedgerViewer() {
   const hasPreThoughts = Boolean(preThoughts);
   const hasAfterThoughts = Boolean(afterThoughts);
   const hasSurge = entryStatus === "watched" && Boolean(surgeScore);
-
-
 
   const handleAddToLedger = () => {
     apiFetch(`/library/entry`, {
@@ -892,14 +885,14 @@ export function LedgerViewer() {
             className="flex items-center gap-3 px-10 py-5 border-b border-white/[0.06]"
           >
             <ArtistAvatar
-              src={entry.artistProfilePicture || entry.originalPosterUrl}
-              name={entry.artistStageName || entry.originalName}
+              src={entry.artistProfilePicture || authorProfile.image || entry.originalPosterUrl}
+              name={entry.artistStageName || authorProfile.name || entry.originalName}
               size={32}
               className="w-8 h-8 rounded-xl shrink-0"
             />
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90">
-                {entry.artistStageName || entry.originalName}
+                {entry.artistStageName || authorProfile.name || entry.originalName}
               </p>
               {watchedDate && (
                 <p className="text-[9px] font-medium text-white/30 flex items-center gap-1 mt-0.5">
@@ -909,17 +902,19 @@ export function LedgerViewer() {
               )}
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 border cursor-pointer shadow-md ${
-                  isEditing
-                    ? "bg-white text-black border-white font-bold"
-                    : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
-                }`}
-              >
-                <Edit3 className="w-3 h-3" />
-                {isEditing ? "Done" : "Update"}
-              </button>
+              {isOwner && (
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 border cursor-pointer shadow-md ${
+                    isEditing
+                      ? "bg-white text-black border-white font-bold"
+                      : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
+                  }`}
+                >
+                  <Edit3 className="w-3 h-3" />
+                  {isEditing ? "Done" : "Update Breakdown"}
+                </button>
+              )}
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
                   isWatched
@@ -1138,18 +1133,19 @@ export function LedgerViewer() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-wider transition-all flex items-center gap-1 border cursor-pointer shadow-sm ${
-                isEditing
-                  ? "bg-white text-black border-white font-bold"
-                  : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
-              }`}
-            >
-              <Edit3 className="w-2.5 h-2.5" />
-              {isEditing ? "Done" : "Update"}
-            </button>
-
+            {isOwner && (
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-wider transition-all flex items-center gap-1 border cursor-pointer shadow-sm ${
+                  isEditing
+                    ? "bg-white text-black border-white font-bold"
+                    : "bg-amber-500 text-black border-amber-500 hover:bg-amber-400 font-bold shadow-amber-500/20"
+                }`}
+              >
+                <Edit3 className="w-2.5 h-2.5" />
+                {isEditing ? "Done" : "Update Breakdown"}
+              </button>
+            )}
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
                 isWatched
@@ -1232,7 +1228,6 @@ export function LedgerViewer() {
                     return (
                       <div className="text-[15px] font-medium leading-[1.75] text-white/70">
                         <DropCapSVG letter={firstChar} artistId={entry.artistColorTheme || entry.artistId} />
-
                         <span>{line1AfterChar}</span>
                         <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
                           <MakerCardContent entry={entry} />
@@ -1245,7 +1240,6 @@ export function LedgerViewer() {
                 {hasPreThoughts && hasAfterThoughts && (
                   <p className="text-[15px] font-medium leading-[1.75] text-white/70">
                     <DropCapSVG letter={afterThoughts.charAt(0)} artistId={entry.artistColorTheme || entry.artistId} />
-
                     {afterThoughts.slice(1)}
                   </p>
                 )}
@@ -1270,7 +1264,6 @@ export function LedgerViewer() {
                   surgeScore={surgeScore}
                   peakScore={entry.peakScore || 10000}
                 />
-
               </motion.div>
             )}
           </motion.div>
