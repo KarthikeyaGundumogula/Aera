@@ -179,20 +179,26 @@ export function SetDetailPage() {
     }));
   }, [theatreWorks]);
 
-  const setThoughts = useMemo(() => {
+  const setDiscussionItems = useMemo(() => {
     return discussions.map((d: any) => ({
       id: d.id,
-      artistId: d.author_id || "artist-1",
+      title: d.title || "",
+      body: d.body || d.content || "",
+      content: d.body || d.content || "",
+      artistId: d.author_id || d.authorId || "artist-1",
       originalId: "",
       originalTitle: "",
-      thoughtText: d.body || "",
-      createdAt: d.created_at || new Date().toISOString(),
-      hits: d.comment_count || 0,
-      text: d.title ? `${d.title}\n\n${d.body}` : d.body,
-      artistName: d.author_name || "Artist",
-      artistPicture: d.author_avatar || "",
+      thoughtText: d.body || d.content || "",
+      createdAt: d.created_at || d.createdAt || new Date().toISOString(),
+      hits: d.comment_count ?? d.commentCount ?? 0,
+      threadCount: d.comment_count ?? d.commentCount ?? 0,
+      text: d.title ? `${d.title}\n\n${d.body || d.content || ""}` : (d.body || d.content || ""),
+      artistName: d.author_name || d.authorName || "Artist",
+      artistPicture: d.author_avatar || d.authorAvatar || "",
       setId: id || "",
-      timestamp: d.created_at ? new Date(d.created_at).toLocaleDateString() : "Just now",
+      timestamp: (d.created_at || d.createdAt)
+        ? new Date(d.created_at || d.createdAt).toLocaleDateString()
+        : "Just now",
     }));
   }, [id, discussions]);
 
@@ -538,15 +544,15 @@ export function SetDetailPage() {
             setDiscussions((prev) => [newDiscussion, ...prev]);
           }}
         />
-        {setThoughts.length > 0 ? (
+        {setDiscussionItems.length > 0 ? (
           <div className="overflow-x-auto no-scrollbar pb-4">
             <div className="flex gap-4 sm:gap-6 w-max">
-              {setThoughts.map((thought) => (
+              {setDiscussionItems.map((disc) => (
                 <DiscussionCard
-                  key={thought.id}
-                  thought={thought}
+                  key={disc.id}
+                  discussion={disc}
                   onCardClick={() =>
-                    navigate(`/sets/${id}/discussions/${thought.id}`)
+                    navigate(`/sets/${id}/discussions/${disc.id}`)
                   }
                 />
               ))}

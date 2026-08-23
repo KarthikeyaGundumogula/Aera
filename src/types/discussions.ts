@@ -1,4 +1,4 @@
-export interface Thought {
+export interface DiscussionItem {
   id: string;
   artistId?: string;
   artistName?: string;
@@ -22,4 +22,4 @@ export interface Thought {
   createdAt?: string;
 }
 
-export type ThoughtItem = Thought;
+export type DiscussionPostItem = DiscussionItem;

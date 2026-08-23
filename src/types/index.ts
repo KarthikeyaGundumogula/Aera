@@ -9,3 +9,5 @@ export * from "./ledger";
 export * from "./recommendations";
 export * from "./artists";
 export * from "./thoughts";
+export * from "./discussions";
+

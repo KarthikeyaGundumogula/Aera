@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { GitCommit, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { ThoughtItem } from "../../../types/thoughts";
+import type { DiscussionItem } from "../../../types/discussions";
 const ARTISTS_MOCK: any[] = [];
 import { ArtistProfile } from "../profile";
 import { EmbeddedWorkBox } from "../../../components/EmbeddedWorkBox";
 
 export interface DiscussionCardProps {
-  thought?: ThoughtItem;
-  discussion?: ThoughtItem;
+  thought?: DiscussionItem;
+  discussion?: DiscussionItem;
   onCardClick?: () => void;
 }
 
