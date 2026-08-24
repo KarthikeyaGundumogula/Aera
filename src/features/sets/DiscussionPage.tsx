@@ -1,23 +1,30 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { DesktopHeader } from "../navigation/DesktopHeader";
 import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { ArtistProfile } from "../shared/profile";
 import { apiFetch } from "@/lib/api";
 import { EmbeddedWorkBox } from "../../components/EmbeddedWorkBox";
+import { useAuth } from "../../context/AuthContext";
 
-export interface DiscussionReply {
+export interface DiscussionCommentItem {
   id: string;
-  authorName: string;
+  discussionPostId: string;
   authorId?: string;
-  text: string;
-  createdAt: string;
-  timestamp?: string;
+  authorName?: string;
+  authorAvatar?: string;
   parentId?: string | null;
-  work?: any;
-  taggedWorkId?: string;
-  replies?: DiscussionReply[];
+  content: string;
+  replyCount: number;
+  createdAt: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  totalCount: number;
+  hasMore: boolean;
 }
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
@@ -27,8 +34,9 @@ function extractWorkCodes(text: string): string[] {
   return matches ? matches.map((m) => m.slice(1)) : [];
 }
 
-function getAuthorAvatar(name: string): string {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D0D0D&color=fff`;
+function getAuthorAvatar(name?: string, avatar?: string): string {
+  if (avatar && (avatar.startsWith("http") || avatar.startsWith("/"))) return avatar;
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Artist")}&background=0D0D0D&color=fff`;
 }
 
 /* ─── Clickable Artist Name ──────────────────────────────────── */
@@ -169,59 +177,148 @@ function ReplyForm({
   );
 }
 
-/* ─── 1-Level Comment Node (Immediate Children Only) ─────────────── */
+/* ─── 1-Level Comment Node (With On-Demand Child Reply Fetching & Deletion) ────── */
 
 function CommentNode({
   comment,
+  setId,
+  discussionId,
+  currentUserId,
+  currentUserName,
   onSubmitReply,
+  onDeleteComment,
 }: {
-  comment: DiscussionReply;
+  comment: DiscussionCommentItem;
+  setId: string;
+  discussionId: string;
+  currentUserId?: string;
+  currentUserName?: string;
   onSubmitReply: (parentId: string, text: string) => void;
+  onDeleteComment: (commentId: string, parentId?: string | null) => void;
 }) {
   const [replyOpen, setReplyOpen] = useState(false);
-  const hasChildren = comment.replies && comment.replies.length > 0;
+  const [showReplies, setShowReplies] = useState(false);
+  const [childReplies, setChildReplies] = useState<DiscussionCommentItem[]>([]);
+  const [childMeta, setChildMeta] = useState<PaginationMeta | null>(null);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [replyCount, setReplyCount] = useState(comment.replyCount || 0);
+
+  const fetchChildReplies = useCallback(
+    async (pageToFetch: number = 1) => {
+      setLoadingReplies(true);
+      try {
+        const res = await apiFetch(
+          `/sets/${setId}/discussions/${discussionId}/comments?parent_id=${comment.id}&page=${pageToFetch}&limit=20`
+        );
+        if (res.ok) {
+          const json = await res.json();
+          const items: DiscussionCommentItem[] = (json.data || []).map((c: any) => ({
+            id: c.id,
+            discussionPostId: c.discussionPostId || c.discussion_post_id,
+            authorId: c.authorId || c.author_id,
+            authorName: c.authorName || c.author_name || "Artist",
+            authorAvatar: c.authorAvatar || c.author_avatar,
+            parentId: c.parentId || c.parent_id,
+            content: c.content || c.text || "",
+            replyCount: c.replyCount ?? c.reply_count ?? 0,
+            createdAt: c.createdAt || c.created_at || new Date().toISOString(),
+          }));
+
+          if (pageToFetch === 1) {
+            setChildReplies(items);
+          } else {
+            setChildReplies((prev) => [...prev, ...items]);
+          }
+
+          if (json.meta) {
+            setChildMeta(json.meta);
+          }
+        }
+      } catch (err) {
+        console.error("[CommentNode] Failed to fetch child replies:", err);
+      } finally {
+        setLoadingReplies(false);
+      }
+    },
+    [setId, discussionId, comment.id]
+  );
+
+  const handleToggleReplies = () => {
+    if (!showReplies && childReplies.length === 0) {
+      fetchChildReplies(1);
+    }
+    setShowReplies((prev) => !prev);
+  };
+
+  const handleAddReply = (text: string) => {
+    onSubmitReply(comment.id, text);
+    setReplyCount((prev) => prev + 1);
+    setReplyOpen(false);
+  };
+
+  const handleDeleteChild = async (childId: string) => {
+    setDeletingId(childId);
+    try {
+      await apiFetch(`/sets/delete/comment/${childId}`, { method: "DELETE" });
+      setChildReplies((prev) => prev.filter((c) => c.id !== childId));
+      setReplyCount((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error("[CommentNode] Failed to delete child comment:", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const authorName = comment.authorName || "Artist";
+  const isCommentOwner = Boolean(
+    currentUserId && comment.authorId && String(comment.authorId) === String(currentUserId)
+  );
 
   return (
     <div className="border-t border-white/[0.04] pt-4 mt-3 flex flex-col">
       {/* Main Comment */}
       <div className="flex-grow min-w-0">
-        <div className="flex items-center gap-2 mb-1.5">
-          {(() => {
-            const avatar = getAuthorAvatar(comment.authorName);
-            return avatar ? (
-              <img
-                src={avatar}
-                className="w-7 h-7 rounded-md object-cover border border-white/10 flex-shrink-0"
-                alt={comment.authorName}
-              />
-            ) : (
-              <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                {comment.authorName[0]}
-              </div>
-            );
-          })()}
-          <ArtistName
-            name={comment.authorName}
-            className="text-[10px] text-[#e2d7c5]/90 font-bold tracking-widest"
-          />
-          <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
-            · {comment.timestamp || "Just now"}
-          </span>
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-2">
+            {(() => {
+              const avatar = getAuthorAvatar(authorName, comment.authorAvatar);
+              return avatar ? (
+                <img
+                  src={avatar}
+                  className="w-7 h-7 rounded-md object-cover border border-white/10 flex-shrink-0"
+                  alt={authorName}
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                  {authorName[0]}
+                </div>
+              );
+            })()}
+            <ArtistName
+              name={authorName}
+              className="text-[10px] text-[#e2d7c5]/90 font-bold tracking-widest"
+            />
+            <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
+              · {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "Just now"}
+            </span>
+          </div>
+
+          {/* Delete action for author */}
+          {isCommentOwner && (
+            <button
+              onClick={() => onDeleteComment(comment.id, comment.parentId)}
+              title="Delete Comment"
+              className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <RichText text={comment.text} />
+        <RichText text={comment.content} />
 
-        {(comment.work || comment.taggedWorkId) && (
-          <div className="mt-3 w-full max-w-lg">
-            <EmbeddedWorkBox
-              work={comment.work}
-              workId={comment.taggedWorkId}
-              variant="default"
-            />
-          </div>
-        )}
-
-        <div className="flex items-center gap-3 mt-2.5">
+        <div className="flex items-center gap-4 mt-2.5">
           <button
             onClick={() => setReplyOpen((v) => !v)}
             className={`text-[9px] font-bold uppercase tracking-widest transition-colors cursor-pointer ${
@@ -230,59 +327,98 @@ function CommentNode({
           >
             {replyOpen ? "Cancel" : "Reply"}
           </button>
+
+          {replyCount > 0 && (
+            <button
+              onClick={handleToggleReplies}
+              className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-amber-500/80 hover:text-amber-400 transition-colors cursor-pointer"
+            >
+              <ChevronDown className={`w-3 h-3 transition-transform ${showReplies ? "rotate-180" : ""}`} />
+              <span>{showReplies ? "Hide replies" : `Show ${replyCount} ${replyCount === 1 ? "reply" : "replies"}`}</span>
+            </button>
+          )}
         </div>
 
         {replyOpen && (
           <ReplyForm
-            onSubmit={(text) => {
-              onSubmitReply(comment.id, text);
-              setReplyOpen(false);
-            }}
+            onSubmit={handleAddReply}
             onCancel={() => setReplyOpen(false)}
           />
         )}
       </div>
 
       {/* Immediate 1-Level Child Replies */}
-      {hasChildren && (
+      {showReplies && (
         <div className="ml-5 mt-3 pl-4 border-l border-white/10 flex flex-col gap-3">
-          {comment.replies!.map((child) => (
-            <div key={child.id} className="pt-2">
-              <div className="flex items-center gap-2 mb-1">
-                {(() => {
-                  const avatar = getAuthorAvatar(child.authorName);
-                  return avatar ? (
-                    <img
-                      src={avatar}
-                      className="w-6 h-6 rounded-md object-cover border border-white/10 flex-shrink-0"
-                      alt={child.authorName}
-                    />
-                  ) : (
-                    <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
-                      {child.authorName[0]}
-                    </div>
-                  );
-                })()}
-                <ArtistName
-                  name={child.authorName}
-                  className="text-[10px] text-[#e2d7c5]/90 font-bold tracking-widest"
-                />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
-                  · {child.timestamp || "Just now"}
-                </span>
-              </div>
-              <RichText text={child.text} />
-              {(child.work || child.taggedWorkId) && (
-                <div className="mt-2 w-full max-w-md">
-                  <EmbeddedWorkBox
-                    work={child.work}
-                    workId={child.taggedWorkId}
-                    variant="compact"
-                  />
-                </div>
-              )}
+          {loadingReplies && childReplies.length === 0 ? (
+            <div className="flex items-center gap-2 text-white/30 text-[10px] font-mono py-2">
+              <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
+              <span>Fetching replies...</span>
             </div>
-          ))}
+          ) : (
+            childReplies.map((child) => {
+              const childAuthor = child.authorName || "Artist";
+              const isChildOwner = Boolean(
+                currentUserId && child.authorId && String(child.authorId) === String(currentUserId)
+              );
+
+              return (
+                <div key={child.id} className="pt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const avatar = getAuthorAvatar(childAuthor, child.authorAvatar);
+                        return avatar ? (
+                          <img
+                            src={avatar}
+                            className="w-6 h-6 rounded-md object-cover border border-white/10 flex-shrink-0"
+                            alt={childAuthor}
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
+                            {childAuthor[0]}
+                          </div>
+                        );
+                      })()}
+                      <ArtistName
+                        name={childAuthor}
+                        className="text-[10px] text-[#e2d7c5]/90 font-bold tracking-widest"
+                      />
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
+                        · {child.createdAt ? new Date(child.createdAt).toLocaleDateString() : "Just now"}
+                      </span>
+                    </div>
+
+                    {isChildOwner && (
+                      <button
+                        onClick={() => handleDeleteChild(child.id)}
+                        disabled={deletingId === child.id}
+                        title="Delete Reply"
+                        className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-30"
+                      >
+                        {deletingId === child.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <RichText text={child.content} />
+                </div>
+              );
+            })
+          )}
+
+          {childMeta && childMeta.hasMore && (
+            <button
+              onClick={() => fetchChildReplies(childMeta.page + 1)}
+              disabled={loadingReplies}
+              className="text-[9px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors cursor-pointer text-left py-1"
+            >
+              {loadingReplies ? "Loading..." : "Load more replies →"}
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -294,17 +430,44 @@ function CommentNode({
 export function DiscussionPage() {
   const { setId, discussionId } = useParams<{ setId: string; discussionId: string }>();
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
 
   const [thought, setThought] = useState<any>(null);
-  const [replies, setReplies] = useState<DiscussionReply[]>([]);
+  const [topComments, setTopComments] = useState<DiscussionCommentItem[]>([]);
+  const [commentsMeta, setCommentsMeta] = useState<PaginationMeta | null>(null);
+  const [loadingPost, setLoadingPost] = useState(true);
+  const [loadingComments, setLoadingComments] = useState(false);
   const [rootText, setRootText] = useState("");
 
+  // Stage 1: Fetch Parent Discussion Post Details
   useEffect(() => {
-    if (setId && discussionId) {
-      apiFetch(`/sets/${setId}/discussions`)
-        .then(async (res) => {
-          if (res.ok) {
-            const json = await res.json();
+    if (!setId || !discussionId) return;
+    setLoadingPost(true);
+
+    apiFetch(`/sets/${setId}/discussions/${discussionId}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.data || json;
+          setThought({
+            id: data.id,
+            title: data.title,
+            content: data.body || data.content,
+            text: data.body || data.content,
+            authorName: data.authorName || data.author_name || "Artist",
+            authorAvatar: data.authorAvatar || data.author_avatar,
+            commentCount: data.commentCount ?? data.comment_count ?? 0,
+            createdAt: data.createdAt || data.created_at,
+            timestamp: (data.createdAt || data.created_at)
+              ? new Date(data.createdAt || data.created_at).toLocaleDateString()
+              : "Just now",
+            work: data.work || null,
+          });
+        } else {
+          // Fallback: list search if single endpoint is not supported
+          const listRes = await apiFetch(`/sets/${setId}/discussions`).catch(() => null);
+          if (listRes && listRes.ok) {
+            const json = await listRes.json();
             const list = json.data || json;
             if (Array.isArray(list)) {
               const found = list.find((d: any) => String(d.id) === String(discussionId));
@@ -316,71 +479,84 @@ export function DiscussionPage() {
                   text: found.body || found.content,
                   authorName: found.authorName || found.author_name || "Artist",
                   authorAvatar: found.authorAvatar || found.author_avatar,
+                  commentCount: found.commentCount ?? found.comment_count ?? 0,
                   createdAt: found.createdAt || found.created_at,
                   timestamp: (found.createdAt || found.created_at)
                     ? new Date(found.createdAt || found.created_at).toLocaleDateString()
                     : "Just now",
                   work: found.work || null,
                 });
-                if (found.comments && Array.isArray(found.comments)) {
-                  setReplies(
-                    found.comments.map((c: any) => ({
-                      id: c.id,
-                      authorName: c.author_name || c.authorName || "Artist",
-                      authorId: c.author_id || c.authorId,
-                      text: c.content || c.text || "",
-                      createdAt: c.created_at || c.createdAt || new Date().toISOString(),
-                      timestamp: (c.created_at || c.createdAt)
-                        ? new Date(c.created_at || c.createdAt).toLocaleDateString()
-                        : "Just now",
-                      parentId: c.parent_id || c.parentId || null,
-                      work: c.work || null,
-                    }))
-                  );
-                }
               }
             }
           }
-        })
-        .catch((err) => {
-          console.error("[DiscussionPage] Failed to fetch discussion details:", err);
-        });
-    }
+        }
+      })
+      .catch((err) => {
+        console.error("[DiscussionPage] Failed to fetch discussion details:", err);
+      })
+      .finally(() => {
+        setLoadingPost(false);
+      });
   }, [setId, discussionId]);
 
-  // Group flat comments into top-level comments and 1-level immediate children ONLY
-  const formattedComments = useMemo(() => {
-    const topLevel: DiscussionReply[] = [];
-    const childrenMap: Record<string, DiscussionReply[]> = {};
+  // Stage 2: Fetch Paginated Top-Level Comments (no parent_id)
+  const fetchTopComments = useCallback(
+    async (pageToFetch: number = 1) => {
+      if (!setId || !discussionId) return;
+      setLoadingComments(true);
+      try {
+        const res = await apiFetch(
+          `/sets/${setId}/discussions/${discussionId}/comments?page=${pageToFetch}&limit=20`
+        );
+        if (res.ok) {
+          const json = await res.json();
+          const items: DiscussionCommentItem[] = (json.data || []).map((c: any) => ({
+            id: c.id,
+            discussionPostId: c.discussionPostId || c.discussion_post_id,
+            authorId: c.authorId || c.author_id,
+            authorName: c.authorName || c.author_name || "Artist",
+            authorAvatar: c.authorAvatar || c.author_avatar,
+            parentId: c.parentId || c.parent_id,
+            content: c.content || c.text || "",
+            replyCount: c.replyCount ?? c.reply_count ?? 0,
+            createdAt: c.createdAt || c.created_at || new Date().toISOString(),
+          }));
 
-    replies.forEach((r) => {
-      if (!r.parentId || String(r.parentId) === String(discussionId)) {
-        topLevel.push({ ...r, replies: [] });
-      } else {
-        const pId = String(r.parentId);
-        if (!childrenMap[pId]) {
-          childrenMap[pId] = [];
+          if (pageToFetch === 1) {
+            setTopComments(items);
+          } else {
+            setTopComments((prev) => [...prev, ...items]);
+          }
+
+          if (json.meta) {
+            setCommentsMeta(json.meta);
+          }
         }
-        childrenMap[pId].push(r);
+      } catch (err) {
+        console.error("[DiscussionPage] Failed to fetch top-level comments:", err);
+      } finally {
+        setLoadingComments(false);
       }
-    });
+    },
+    [setId, discussionId]
+  );
 
-    topLevel.forEach((parent) => {
-      parent.replies = childrenMap[parent.id] || [];
-    });
-
-    return topLevel;
-  }, [replies, discussionId]);
+  useEffect(() => {
+    if (discussionId) {
+      fetchTopComments(1);
+    }
+  }, [discussionId, fetchTopComments]);
 
   /** Called when user submits an inline reply to a comment */
   const handleSubmitReply = async (parentId: string, text: string) => {
-    const newReply: DiscussionReply = {
+    const newReply: DiscussionCommentItem = {
       id: `rep-${Date.now()}`,
-      authorId: "user-current",
-      authorName: "YOU (ARTIST)",
-      text,
+      discussionPostId: discussionId!,
+      authorId: currentArtist?.id || "user-current",
+      authorName: currentArtist?.name || "YOU (ARTIST)",
+      content: text,
+      replyCount: 0,
       createdAt: new Date().toISOString(),
-      timestamp: "Just now",
       parentId: parentId,
     };
 
@@ -390,7 +566,7 @@ export function DiscussionPage() {
           method: "POST",
           body: JSON.stringify({
             discussion_id: discussionId,
-            parent_id: parentId.startsWith("rep-") ? null : parentId,
+            parent_id: parentId,
             content: text,
           }),
         });
@@ -398,43 +574,70 @@ export function DiscussionPage() {
         console.error("[DiscussionPage] Failed to post reply:", err);
       }
     }
+  };
 
-    setReplies((prev) => [...prev, newReply]);
+  /** Delete a top-level comment */
+  const handleDeleteComment = async (commentId: string) => {
+    setTopComments((prev) => prev.filter((c) => c.id !== commentId));
+    if (thought) {
+      setThought((prev: any) =>
+        prev ? { ...prev, commentCount: Math.max(0, (prev.commentCount || 0) - 1) } : prev
+      );
+    }
+    try {
+      await apiFetch(`/sets/delete/comment/${commentId}`, { method: "DELETE" });
+    } catch (err) {
+      console.error("[DiscussionPage] Failed to delete comment:", err);
+    }
   };
 
   /** Root-level comment submit */
   const handleRootSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rootText.trim()) return;
+    if (!rootText.trim() || !setId || !discussionId) return;
     const textToPost = rootText.trim();
-    const newComment: DiscussionReply = {
+
+    const newComment: DiscussionCommentItem = {
       id: `rep-${Date.now()}`,
-      authorId: "user-current",
-      authorName: "YOU (ARTIST)",
-      text: textToPost,
+      discussionPostId: discussionId,
+      authorId: currentArtist?.id || "user-current",
+      authorName: currentArtist?.name || "YOU (ARTIST)",
+      content: textToPost,
+      replyCount: 0,
       createdAt: new Date().toISOString(),
-      timestamp: "Just now",
       parentId: null,
     };
 
-    if (setId && discussionId) {
-      try {
-        await apiFetch(`/sets/${setId}/new/comment`, {
-          method: "POST",
-          body: JSON.stringify({
-            discussion_id: discussionId,
-            parent_id: null,
-            content: textToPost,
-          }),
-        });
-      } catch (err) {
-        console.error("[DiscussionPage] Failed to post comment:", err);
-      }
+    setTopComments((prev) => [newComment, ...prev]);
+    setRootText("");
+
+    if (thought) {
+      setThought((prev: any) =>
+        prev ? { ...prev, commentCount: (prev.commentCount || 0) + 1 } : prev
+      );
     }
 
-    setReplies((prev) => [...prev, newComment]);
-    setRootText("");
+    try {
+      await apiFetch(`/sets/${setId}/new/comment`, {
+        method: "POST",
+        body: JSON.stringify({
+          discussion_id: discussionId,
+          parent_id: null,
+          content: textToPost,
+        }),
+      });
+    } catch (err) {
+      console.error("[DiscussionPage] Failed to post comment:", err);
+    }
   };
+
+  if (loadingPost) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!thought) {
     return (
@@ -532,20 +735,52 @@ export function DiscussionPage() {
           </form>
         </div>
 
-        {/* 1-Level Comments List */}
+        {/* Paginated Top-Level Comments List */}
         <div className="flex flex-col mt-2">
-          {formattedComments.length === 0 ? (
+          {loadingComments && topComments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-white/30">
+              <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+              <span className="text-[10px] font-mono uppercase tracking-widest">
+                Fetching discussions…
+              </span>
+            </div>
+          ) : topComments.length === 0 ? (
             <p className="text-center py-8 text-[11px] font-sans font-bold uppercase tracking-widest text-white/20">
               Silence in the lobby. Be the first to push a thought.
             </p>
           ) : (
-            formattedComments.map((comment) => (
+            topComments.map((comment) => (
               <CommentNode
                 key={comment.id}
                 comment={comment}
+                setId={setId!}
+                discussionId={discussionId!}
+                currentUserId={currentArtist?.id}
+                currentUserName={currentArtist?.name}
                 onSubmitReply={handleSubmitReply}
+                onDeleteComment={handleDeleteComment}
               />
             ))
+          )}
+
+          {/* Load More Top-Level Comments Button */}
+          {commentsMeta && commentsMeta.hasMore && (
+            <div className="pt-6 text-center">
+              <button
+                onClick={() => fetchTopComments(commentsMeta.page + 1)}
+                disabled={loadingComments}
+                className="px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-all cursor-pointer inline-flex items-center gap-2"
+              >
+                {loadingComments ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <span>Load More Comments</span>
+                )}
+              </button>
+            </div>
           )}
         </div>
       </main>

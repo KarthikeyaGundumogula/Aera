@@ -30,7 +30,6 @@ import {
   OriginalPage,
   OriginalCreatePage,
   OriginalsListPage,
-  OriginalRecommendationsPage,
   // Profile
   ArtistSetupPage,
   LoginPage,
@@ -38,6 +37,7 @@ import {
   StudioPage,
   ProfileEditPage,
   ProfilePage,
+  OriginalRecommendationsPage,
   WallPostPage,
   SavedPage,
   // Works
@@ -51,11 +51,6 @@ import {
   FestivalDetailPage,
   // Center
   CenterPage,
-  RecommendationsPage,
-  TaggedWorksPage,
-  BreakdownViewer,
-  LedgerPage,
-  LedgerViewer,
   // Misc
   ContactPage,
   AdminPage,
@@ -99,7 +94,6 @@ function AppRoutes() {
 
             {/* ── Discovery ───────────────────────────────── */}
             <Route path="/center" element={<CenterPage />} />
-            <Route path="/recommendations" element={<RecommendationsPage />} />
             <Route path="/theatre" element={<TheatrePage />} />
 
             {/* ── Originals ───────────────────────────────── */}
@@ -150,10 +144,6 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
-            <Route path="/breakdowns/:id" element={<BreakdownViewer />} />
-            <Route path="/ledger" element={<LedgerPage />} />
-            <Route path="/ledger/:id" element={<LedgerViewer />} />
-            <Route path="/tagged-works/:id" element={<TaggedWorksPage />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}
             <Route
