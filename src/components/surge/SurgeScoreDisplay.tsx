@@ -11,9 +11,9 @@ const PEAK_CROSSED_LINES = [
 interface SurgeScoreDisplayProps {
   /** The user's surge score */
   surgeScore: number;
-  /** The snapshot peak at time of watching */
-  peakSnapshot: number;
-  /** The current live peak (shown in brackets) */
+  /** The snapshot peak at time of watching (what library peak was when entry was created) */
+  peakSnapshot?: number;
+  /** The current live library peak (shown in brackets when it differs from snapshot) */
   currentPeakScore?: number;
   /** Controls the size of the percentage number and bars */
   size?: "sm" | "lg";
@@ -33,9 +33,11 @@ export function SurgeScoreDisplay({
   size = "lg",
   label,
 }: SurgeScoreDisplayProps) {
-  const effectivePeak = peakSnapshot || 1000;
-  const pct = effectivePeak > 0 ? Math.round((surgeScore / effectivePeak) * 100) : 0;
-  const peakCrossed = surgeScore >= effectivePeak;
+  // peakSnapshot = library peak at the time this entry was logged
+  // currentPeakScore = the profile's current live library peak from the backend
+  const effectivePeak = peakSnapshot || currentPeakScore;
+  const pct = effectivePeak && effectivePeak > 0 ? Math.round((surgeScore / effectivePeak) * 100) : 0;
+  const peakCrossed = effectivePeak !== undefined && surgeScore >= effectivePeak;
   const peakLine =
     PEAK_CROSSED_LINES[Math.abs(Math.round(surgeScore)) % PEAK_CROSSED_LINES.length];
 
@@ -60,8 +62,8 @@ export function SurgeScoreDisplay({
             {pct}%
           </span>
           <span className={ratioClass}>
-            {surgeScore.toLocaleString()} / {effectivePeak.toLocaleString()}
-            {currentPeakScore ? (
+            {surgeScore.toLocaleString()} / {effectivePeak !== undefined ? effectivePeak.toLocaleString() : "—"}
+            {currentPeakScore && currentPeakScore !== effectivePeak ? (
               <span className="text-amber-400/80 font-mono text-[10px] ml-1.5 lowercase">
                 [{currentPeakScore.toLocaleString()}]
               </span>

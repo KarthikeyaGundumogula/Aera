@@ -55,14 +55,14 @@ const PROFILE_NAME_GRADIENTS: Record<string, [string, string]> = {
 };
 
 function getAuthorThemeGradient(artistId?: string): [string, string] {
-  if (!artistId) return ["#334155", "#64748b"];
+  if (!artistId) return ["#F59E0B", "#D97706"];
   if (PROFILE_NAME_GRADIENTS[artistId]) return PROFILE_NAME_GRADIENTS[artistId];
   // If artistId is a raw color_theme string ("#hex1,#hex2"), parse it directly
   if (artistId.includes(",")) {
     const parts = artistId.split(",").map((s) => s.trim());
     if (parts.length >= 2) return [parts[0], parts[1]] as [string, string];
   }
-  return ["#334155", "#64748b"];
+  return ["#F59E0B", "#D97706"];
 }
 
 // ─── Surge Score counter animation ───────────────────────────────────────────
@@ -186,18 +186,16 @@ function MakerCardContent({ entry }: { entry: LedgerItem }) {
 interface MobileSurgeProps {
   surgeCount: number;
   surgeScore: number;
-  peakScore: number;
   peakSnapshot?: number;
   currentPeakScore?: number;
 }
 
-function MobileSurgeScore({ surgeCount, peakScore, peakSnapshot, currentPeakScore }: MobileSurgeProps) {
-  const effectiveSnapshotPeak = peakSnapshot || peakScore || 1000;
+function MobileSurgeScore({ surgeCount, peakSnapshot, currentPeakScore }: MobileSurgeProps) {
   return (
     <div className="pt-6 border-t border-white/[0.05]">
       <SurgeScoreDisplay
         surgeScore={surgeCount}
-        peakSnapshot={effectiveSnapshotPeak}
+        peakSnapshot={peakSnapshot}
         currentPeakScore={currentPeakScore}
         size="sm"
       />
@@ -211,7 +209,8 @@ function MobileSurgeScore({ surgeCount, peakScore, peakSnapshot, currentPeakScor
 
 function DropCapSVG({ letter, artistId }: { letter: string; artistId?: string }) {
   const [stop1, stop2] = getAuthorThemeGradient(artistId);
-  const gradId = `dropCapGrad-${letter.charCodeAt(0)}-${(artistId ?? "default").replace(/[^a-zA-Z0-9]/g, "")}`;
+  const uniqueId = React.useId();
+  const gradId = `dropCapGrad-${uniqueId.replace(/[^a-zA-Z0-9]/g, "")}`;
 
   return (
     <span className="float-left mr-2.5 select-none block mt-0.5">
@@ -238,7 +237,7 @@ function DropCapSVG({ letter, artistId }: { letter: string; artistId?: string })
           fontWeight="900"
           fontFamily="Inter, system-ui, -apple-system, sans-serif"
         >
-          {letter}
+          {letter.toUpperCase()}
         </text>
       </svg>
     </span>
@@ -415,6 +414,8 @@ function InPlaceBreakdownEditor({
   handleStatusChangeInViewer,
   handleSaveInPlace,
   setIsEditing,
+  currentPeak = 1000,
+  peakSnapshot = 1000,
 }: {
   entryStatus: "watched" | "want_to_watch";
   preThoughts: string;
@@ -427,9 +428,13 @@ function InPlaceBreakdownEditor({
   handleStatusChangeInViewer: (status: "watched" | "want_to_watch") => void;
   handleSaveInPlace: () => void;
   setIsEditing: (val: boolean) => void;
+  currentPeak?: number;
+  peakSnapshot?: number;
 }) {
-  const peakMagnitude = 10000;
-  const pctScore = Math.min(Math.round((surgeScore / peakMagnitude) * 100), 100);
+  // When score < currentPeak (user is decrementing/reducing score),
+  // switch the effective peak for ratio/bars to peakSnapshot so the user realizes how much they are decreasing relative to snapshot!
+  const isDecrementing = surgeScore < currentPeak;
+  const effectiveInputPeak = isDecrementing ? peakSnapshot : currentPeak;
 
   return (
     <motion.div
@@ -512,13 +517,30 @@ function InPlaceBreakdownEditor({
 
       {/* Surge Score Component (when watched) — Placed AFTER pre & post text inputs */}
       {entryStatus === "watched" && (
-        <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] relative overflow-hidden space-y-2">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
-            Surge Resonance Score
-          </label>
+        <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] relative overflow-hidden space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+              Surge Resonance Score
+            </label>
+            <div className="flex items-center gap-3 text-[9px] font-mono">
+              <span className="text-white/40">
+                Snapshot: <strong className="text-white/70">{peakSnapshot.toLocaleString()}</strong>
+              </span>
+              <span className="text-amber-400/80">
+                Current Peak: <strong className="text-amber-300">{currentPeak.toLocaleString()}</strong>
+              </span>
+            </div>
+          </div>
+
+          {isDecrementing && peakSnapshot !== currentPeak && (
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 flex items-center justify-between">
+              <span>Score below current peak ({currentPeak.toLocaleString()}) — scaled to entry snapshot ({peakSnapshot.toLocaleString()})</span>
+            </div>
+          )}
+
           <SurgeInputSection
             score={surgeScore}
-            peak={10000}
+            peak={effectiveInputPeak}
             onChange={setSurgeScore}
           />
         </div>
@@ -552,7 +574,7 @@ export function LedgerViewer() {
   const [searchParams] = useSearchParams();
   const [copied, setCopied] = useState(false);
   const [remoteEntry, setRemoteEntry] = useState<LedgerItem | null>(null);
-  const { currentArtist } = useAuth();
+  const { currentArtist, refreshProfile } = useAuth();
 
   useEffect(() => {
     if (!id) return;
@@ -578,10 +600,12 @@ export function LedgerViewer() {
           status: st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched",
           preThoughts: item.userHypeThought || item.preThoughts || "",
           afterThoughts: item.userAfterThought || item.afterThoughts || "",
-          surgeScore: item.surgeScore || 0,
-          peakScore: item.peakScore || 1000,
-          peakSnapshot: item.peakSnapshot ?? item.peak_snapshot ?? item.peakScore ?? 1000,
-          currentPeakScore: item.currentPeakScore ?? item.current_peak_score ?? 1000,
+          surgeScore: item.surgeScore ?? 0,
+          // peak_snapshot: the library peak at the time this entry was created (historical)
+          peakScore: item.peakScore ?? undefined,
+          peakSnapshot: item.peakSnapshot ?? item.peak_snapshot ?? undefined,
+          // current_peak_score: the profile's current_peak_library (live, from backend)
+          currentPeakScore: item.currentPeakScore ?? item.current_peak_score ?? undefined,
           taggedWorks: item.taggedWorks || [],
           addedAt: item.addedAt || new Date().toISOString(),
           artistStageName: item.artistStageName || "",
@@ -601,6 +625,11 @@ export function LedgerViewer() {
   const entry: LedgerItem | undefined = remoteEntry || undefined;
   const currentArtistId = currentArtist?.id || "fh-001";
   const isOwner = Boolean(entry && (!entry.artistId || entry.artistId === currentArtistId || entry.artistId === "fh-001"));
+  // For ledger (library) entries:
+  // - currentPeak: profile's current live library peak from AuthContext / DB
+  // - peakSnapshot: library peak at the time entry was logged (1000)
+  const currentPeak = currentArtist?.currentPeakLibrary ?? entry?.currentPeakScore ?? 1000;
+  const peakSnapshot = entry?.peakSnapshot || 1000;
 
   const [isEditing, setIsEditing] = useState<boolean>(
     searchParams.get("edit") === "true" && isOwner
@@ -615,7 +644,7 @@ export function LedgerViewer() {
     entry?.afterThoughts ?? ""
   );
   const [surgeScore, setSurgeScore] = useState<number>(
-    entry?.surgeScore ?? 5000
+    entry?.surgeScore ?? 0
   );
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
@@ -720,6 +749,26 @@ export function LedgerViewer() {
             surge_score: entryStatus === "watched" ? surgeScore : null,
           }),
         });
+      }
+      await refreshProfile();
+
+      // Re-fetch entry detail from backend so entry.currentPeakScore and entry.peakSnapshot reflect latest DB state
+      const freshRes = await apiFetch(`/library/entry/${entry.id}`).catch(() => null);
+      if (freshRes && freshRes.ok) {
+        const freshJson = await freshRes.json().catch(() => ({}));
+        const freshItem = freshJson.data || freshJson;
+        if (freshItem && freshItem.id) {
+          setRemoteEntry((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  surgeScore: freshItem.surgeScore ?? freshItem.surge_score ?? surgeScore,
+                  peakSnapshot: freshItem.peakSnapshot ?? freshItem.peak_snapshot ?? prev.peakSnapshot,
+                  currentPeakScore: freshItem.currentPeakScore ?? freshItem.current_peak_score ?? prev.currentPeakScore,
+                }
+              : prev
+          );
+        }
       }
     } catch (err) {
       console.warn("Failed to persist breakdown to backend library:", err);
@@ -942,6 +991,8 @@ export function LedgerViewer() {
               handleStatusChangeInViewer={handleStatusChangeInViewer}
               handleSaveInPlace={handleSaveInPlace}
               setIsEditing={setIsEditing}
+              currentPeak={currentPeak}
+              peakSnapshot={peakSnapshot}
             />
           ) : (
             <>
@@ -966,36 +1017,34 @@ export function LedgerViewer() {
                 </div>
               )}
 
-              {/* Pre-thoughts — the "BEFORE" headline */}
+              {/* Pre-thoughts — headline styling */}
               {hasPreThoughts && (
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.5, ease: EASE_OUT }}
-                  className="px-10 pt-8 pb-6 border-b border-white/[0.06]"
+                  className="px-10 pt-8 pb-3"
                 >
-                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-4">
-                    Before
-                  </p>
-                  <p className="text-[28px] font-black uppercase tracking-tight leading-[1.15] text-white/90">
+                  <p className="text-[26px] lg:text-[30px] font-black uppercase tracking-tight leading-[1.2] text-white/90">
                     {preThoughts}
                   </p>
                 </motion.div>
               )}
 
-              {/* Post-experience — the "AFTER" body */}
+              {/* Post-experience — paragraph body with DropCapSVG */}
               {hasAfterThoughts && (
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.5, ease: EASE_OUT }}
-                  className="px-10 pt-8 pb-8 border-b border-white/[0.06]"
+                  className="px-10 pt-3 pb-8 border-b border-white/[0.06]"
                 >
-                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/25 mb-4">
-                    After
-                  </p>
-                  <p className="text-[19px] font-medium leading-[1.75] text-white/75">
-                    {afterThoughts}
+                  <p className="text-[18px] font-medium leading-[1.75] text-white/80">
+                    <DropCapSVG
+                      letter={afterThoughts.charAt(0)}
+                      artistId={entry.artistColorTheme || entry.artistId}
+                    />
+                    {afterThoughts.slice(1)}
                   </p>
                 </motion.div>
               )}
@@ -1015,8 +1064,8 @@ export function LedgerViewer() {
                     <div className="flex items-baseline gap-3 flex-wrap">
                     <SurgeScoreDisplay
                       surgeScore={surgeCount}
-                      peakSnapshot={entry.peakSnapshot || entry.peakScore || 1000}
-                      currentPeakScore={entry.currentPeakScore || undefined}
+                      peakSnapshot={entry.peakSnapshot}
+                      currentPeakScore={entry.currentPeakScore}
                       size="lg"
                       label="Resonance at time of watching"
                     />
@@ -1026,7 +1075,7 @@ export function LedgerViewer() {
                   <div className="pb-2">
                     <SurgeBars
                       score={surgeCount}
-                      highestScore={entry.peakSnapshot || entry.peakScore || 1000}
+                      highestScore={entry.peakSnapshot || entry.currentPeakScore}
                       colorVariant="amber"
                       size="lg"
                     />
@@ -1173,6 +1222,8 @@ export function LedgerViewer() {
             handleStatusChangeInViewer={handleStatusChangeInViewer}
             handleSaveInPlace={handleSaveInPlace}
             setIsEditing={setIsEditing}
+            currentPeak={currentPeak}
+            peakSnapshot={peakSnapshot}
           />
         ) : (
           <motion.div
@@ -1262,7 +1313,8 @@ export function LedgerViewer() {
                 <MobileSurgeScore
                   surgeCount={surgeCount}
                   surgeScore={surgeScore}
-                  peakScore={entry.peakScore || 10000}
+                  peakSnapshot={entry.peakSnapshot}
+                  currentPeakScore={entry.currentPeakScore}
                 />
               </motion.div>
             )}

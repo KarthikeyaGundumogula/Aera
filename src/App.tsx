@@ -44,6 +44,8 @@ import {
   WorkPage,
   UploadPage,
   OriginalReleaseUploadPage,
+  LedgerPage,
+  LedgerViewer,
   // Sets & Festivals
   SetsPage,
   SetDetailPage,
@@ -144,6 +146,8 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
+            <Route path="/ledger" element={<LedgerPage />} />
+            <Route path="/ledger/:id" element={<LedgerViewer />} />
 
             {/* ── Artists (placeholder) ───────────────────── */}
             <Route

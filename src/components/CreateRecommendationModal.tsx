@@ -6,6 +6,7 @@ import { GrainOverlay } from "./effects/GrainOverlay";
 import { CinematicInput } from "./recommendation/CinematicInput";
 import { OriginalsSearch } from "./recommendation/OriginalsSearch";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 // Amber: cinematic projection light — the colour of the reel burning through.
@@ -30,6 +31,9 @@ export function CreateRecommendationModal({
   isOpen,
   onClose,
 }: CreateRecommendationModalProps) {
+  const { currentArtist } = useAuth();
+  const userPeak = currentArtist?.currentPeakRecommendations || currentArtist?.currentPeakLibrary;
+
   // Form
   const [selectedOriginal, setSelectedOriginal] = useState<Original | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -247,7 +251,7 @@ export function CreateRecommendationModal({
                           <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white">Change</span>
                         </div>
                         
-                        {score >= 4200 && (
+                        {userPeak !== undefined && score >= userPeak && (
                           <div className="absolute top-2 left-2 z-20 -rotate-[8deg] pointer-events-none opacity-95 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]">
                             <div className="inline-block text-[7px] font-mono font-black uppercase tracking-[0.2em] text-[#EF4444] bg-[#050302]/40 border-[1.5px] border-[#EF4444]/90 px-1.5 py-0.5 rounded-[2px] backdrop-blur-md whitespace-nowrap">
                               PEAK EXP.
@@ -307,7 +311,7 @@ export function CreateRecommendationModal({
                   {/* Score Area */}
                   <SurgeInputSection
                     score={score}
-                    peak={4200}
+                    peak={userPeak}
                     onChange={setScore}
                   />
 

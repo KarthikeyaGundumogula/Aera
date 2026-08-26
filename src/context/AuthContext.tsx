@@ -137,8 +137,8 @@ async function fetchMyProfile(): Promise<OriginalArtist | null> {
       color_theme: data.colorTheme || "#FAC107,#0F1A42",
       themeTextColor,
       themeBgColor,
-      currentPeakLibrary: data.currentPeakLibrary || data.current_peak_library || 1000,
-      currentPeakRecommendations: data.currentPeakRecommendations || data.current_peak_recommendations || 1000,
+      currentPeakLibrary: data.currentPeakLibrary ?? data.current_peak_library,
+      currentPeakRecommendations: data.currentPeakRecommendations ?? data.current_peak_recommendations,
       socials: {
         instagram: data.instagramProfile || undefined,
         twitter: data.twitterProfile || undefined,

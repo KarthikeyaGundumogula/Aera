@@ -101,6 +101,14 @@ export const OriginalReleaseUploadPage = lazy(
   () => import("@/features/upload/OriginalReleaseUploadPage"),
 );
 
+export const LedgerPage = lazy(() =>
+  import("@/features/ledger/LedgerPage").then((m) => ({ default: m.LedgerPage }))
+);
+
+export const LedgerViewer = lazy(() =>
+  import("@/features/ledger/LedgerViewer").then((m) => ({ default: m.LedgerViewer }))
+);
+
 // ─── Sets & Festivals ─────────────────────────────────────────────────────────
 export const SetsPage = lazy(() =>
   import("@/features/sets").then((m) => ({ default: m.SetsPage })),

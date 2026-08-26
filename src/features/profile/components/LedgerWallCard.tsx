@@ -164,15 +164,22 @@ export const LedgerWallCard = memo(function LedgerWallCard({
                       WebkitTextFillColor: "transparent",
                     }}
                   >
-                    {Math.min(Math.round((entry.surgeScore / 10000) * 100), 100)}%
+                    {(() => {
+                      const effectivePeak = entry.peakSnapshot || entry.currentPeakScore || entry.peakScore || entry.surgeScore;
+                      const pct = effectivePeak ? Math.min(Math.round((entry.surgeScore / effectivePeak) * 100), 100) : 0;
+                      return `${pct}%`;
+                    })()}
                   </span>
                   <span className="text-[9px] font-bold text-white/40 tracking-tight font-mono">
-                    {entry.surgeScore.toLocaleString()} / 10,000
+                    {(() => {
+                      const effectivePeak = entry.peakSnapshot || entry.currentPeakScore || entry.peakScore || entry.surgeScore;
+                      return `${entry.surgeScore.toLocaleString()} / ${effectivePeak ? effectivePeak.toLocaleString() : "—"}`;
+                    })()}
                   </span>
                 </div>
                 <SurgeBars
                   score={entry.surgeScore}
-                  highestScore={10000}
+                  highestScore={entry.peakSnapshot || entry.currentPeakScore || entry.peakScore || entry.surgeScore}
                   colorVariant="amber"
                   size="sm"
                 />

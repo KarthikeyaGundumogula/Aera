@@ -57,7 +57,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
   // Sync internal refs if parent changes score directly (e.g., reset)
   useEffect(() => {
     scoreRef.current = score;
-    const effectiveMax = peak ?? VISUAL_MAX;
+    const effectiveMax = (peak && peak > 0) ? peak : (score > 0 ? score : 1000);
     const ratio = score / effectiveMax;
     scoreColorMV.set(scoreRatioToColor(ratio));
     const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
@@ -73,7 +73,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
     // Snap to the ceiling of the current percentage so the displayed score and
     // the stored score always match (e.g. 4189/4200 → 100% → stores 4200, not 4189)
     if (scoreRef.current > 0) {
-      const eMax = peak ?? VISUAL_MAX;
+      const eMax = (peak && peak > 0) ? peak : (scoreRef.current > 0 ? scoreRef.current : 1000);
       const ceiledPct = Math.ceil((scoreRef.current / eMax) * 100);
       const snapped = Math.round((ceiledPct / 100) * eMax);
       scoreRef.current = snapped;
@@ -87,7 +87,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
     // Invert the score→time formula so re-holds continue from the current position.
     // score(t) = eMax*(t/FILL_S) for t≤FILL_S  →  t = score/eMax * FILL_S
     // score(t) = eMax*(1 + 0.2*(t-FILL_S)) for t>FILL_S  →  t = FILL_S + (score/eMax-1)/0.2
-    const effectiveMaxInit = peak ?? VISUAL_MAX;
+    const effectiveMaxInit = (peak && peak > 0) ? peak : (scoreRef.current > 0 ? scoreRef.current : 1000);
     const FILL_S_INIT = 2.5;
     const cur = scoreRef.current;
     const prevElapsed = cur <= effectiveMaxInit
@@ -102,7 +102,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
 
     const tick = () => {
       const elapsed = (performance.now() - holdStartRef.current) / 1000; // seconds since hold start
-      const effectiveMax = peak ?? VISUAL_MAX;
+      const effectiveMax = (peak && peak > 0) ? peak : (scoreRef.current > 0 ? scoreRef.current : 1000);
       const FILL_S = 2.5; // seconds to fill all 5 bars
 
       // Pure time-to-score: score is derived directly from elapsed time.
@@ -141,7 +141,9 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch (_) {}
 
     // Detect which zone was tapped (left / middle / right thirds of the button)
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -158,7 +160,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
       startHold();
     } else {
       // Left / right zone: immediate ±1% step, no hold animation
-      const eMax = peak ?? VISUAL_MAX;
+      const eMax = (peak && peak > 0) ? peak : (scoreRef.current > 0 ? scoreRef.current : 1000);
       const ceiledPct = Math.ceil((scoreRef.current / eMax) * 100);
       const newPct = zone === 'left'
         ? Math.max(0, ceiledPct - 1)
@@ -200,7 +202,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
 
     const direction = deltaX < 0 ? -1 : 1;
     const RATE_PER_S = 0.08; // 8% of effectiveMax per second
-    const effectiveMax = peak ?? VISUAL_MAX;
+    const effectiveMax = (peak && peak > 0) ? peak : (scoreRef.current > 0 ? scoreRef.current : 1000);
     const newScore = Math.max(0, scoreRef.current + direction * RATE_PER_S * effectiveMax * (dt / 1000));
     scoreRef.current = newScore;
     const rounded = Math.round(newScore);
@@ -226,7 +228,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
     onChange(newScore);
     scoreRef.current = newScore;
 
-    const effectiveMax = peak ?? VISUAL_MAX;
+    const effectiveMax = (peak && peak > 0) ? peak : (newScore > 0 ? newScore : 1000);
     const ratio = newScore / effectiveMax;
     scoreColorMV.set(scoreRatioToColor(ratio));
     const glowT = ratio < 0.5 ? 0 : Math.min((ratio - 0.5) / 0.5, 1);
@@ -246,7 +248,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
   }, []);
 
   // Render-level derived values — computed once per render, shared across JSX
-  const renderEMax   = peak ?? VISUAL_MAX;
+  const renderEMax   = (peak && peak > 0) ? peak : (score > 0 ? score : 1000);
   const ceiledPct   = score === 0 ? 0 : Math.ceil((score / renderEMax) * 100);
   const ceiledScore = Math.round((ceiledPct / 100) * renderEMax);
 
@@ -330,7 +332,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
         <input
           type="range"
           min={0}
-          max={peak ?? VISUAL_MAX}
+          max={renderEMax}
           value={score}
           onChange={(e) => handleScrub(Number(e.target.value))}
           className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
@@ -339,7 +341,7 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
 
         <AnimatePresence>
           {[0, 1, 2, 3, 4, 5].map((i) => {
-            const effectiveMax = peak ?? VISUAL_MAX;
+            const effectiveMax = renderEMax;
             if (i === 5 && score <= effectiveMax) return null;
 
             const heights = [20, 26, 32, 38, 44, 50];

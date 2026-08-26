@@ -2,7 +2,7 @@ import React from "react";
 
 interface SurgeBarsProps {
   score: number;
-  highestScore: number;
+  highestScore?: number;
   size?: "sm" | "md" | "lg" | "xl";
   colorVariant?: "white" | "amber" | "emerald";
   className?: string;
@@ -15,7 +15,8 @@ export function SurgeBars({
   colorVariant = "white",
   className = "",
 }: SurgeBarsProps) {
-  const ratio = Math.min(score / highestScore, 1);
+  const maxScore = highestScore || score || 1000;
+  const ratio = Math.min(score / maxScore, 1);
 
   // Define sizing presets (6 heights now)
   const sizeConfig = {
@@ -89,19 +90,19 @@ export function SurgeBars({
       style={{ gap: `${sizeConfig.gap}px` }}
     >
       {[0, 1, 2, 3, 4, 5].map((i) => {
-        if (i === 5 && score <= highestScore) return null;
+        if (i === 5 && score <= maxScore) return null;
 
         let fillPct = 0;
         
         if (i < 5) {
-          // Bars 1-5 represent 0 to highestScore (each 20%)
+          // Bars 1-5 represent 0 to maxScore (each 20%)
           const chunkStart = i * 0.2;
           const chunkEnd = (i + 1) * 0.2;
           if (ratio >= chunkEnd) fillPct = 1;
           else if (ratio > chunkStart) fillPct = (ratio - chunkStart) / 0.2;
         } else {
-          // Bar 6 is the Peak Bar (beyond highestScore)
-          const overRatio = Math.max(0, (score - highestScore) / highestScore);
+          // Bar 6 is the Peak Bar (beyond maxScore)
+          const overRatio = Math.max(0, (score - maxScore) / maxScore);
           fillPct = Math.min(overRatio / 0.2, 1);
         }
         

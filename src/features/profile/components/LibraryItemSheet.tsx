@@ -46,26 +46,43 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
   useEffect(() => {
     if (!libraryEntryId && !originalId) return;
     const targetId = libraryEntryId || originalId;
-    apiFetch(`/library/${targetId}`)
+    apiFetch(`/library/entry/${targetId}`)
       .then(async (res) => {
-        if (res.ok) {
-          const json = await res.json();
-          const data = json.data || json;
-          setSheetDetail(data);
-          if (data.status) setEntryStatus(data.status);
-          if (data.surgeScore !== undefined) setSurgeScore(data.surgeScore);
-          if (data.surge_score !== undefined) setSurgeScore(data.surge_score);
-          if (data.peakMagnitude !== undefined) setPeakMagnitude(data.peakMagnitude);
-          if (data.peak_magnitude !== undefined) setPeakMagnitude(data.peak_magnitude);
-          if (data.currentPeakScore !== undefined) setCurrentPeakScore(data.currentPeakScore);
-          if (data.current_peak_score !== undefined) setCurrentPeakScore(data.current_peak_score);
-          if (data.preThoughts) setPreThoughts(data.preThoughts);
-          if (data.pre_thoughts) setPreThoughts(data.pre_thoughts);
-          if (data.afterThoughts) setAfterThoughts(data.afterThoughts);
-          if (data.after_thoughts) setAfterThoughts(data.after_thoughts);
-          if (data.creditedWorksCount !== undefined) setCreditedWorksCount(data.creditedWorksCount);
-          if (data.credited_works_count !== undefined) setCreditedWorksCount(data.credited_works_count);
+        if (!res.ok) {
+          const sheetRes = await apiFetch(`/library/sheet/${targetId}`).catch(() => null);
+          if (!sheetRes || !sheetRes.ok) return null;
+          const sheetJson = await sheetRes.json().catch(() => ({}));
+          return sheetJson.data || sheetJson;
         }
+        const json = await res.json().catch(() => ({}));
+        return json.data || json;
+      })
+      .then((data) => {
+        if (!data) return;
+        setSheetDetail(data);
+        if (data.status) {
+          const st = String(data.status).toLowerCase();
+          setEntryStatus(st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched");
+        }
+        if (typeof data.surgeScore === "number") setSurgeScore(data.surgeScore);
+        else if (typeof data.surge_score === "number") setSurgeScore(data.surge_score);
+
+        if (typeof data.peakSnapshot === "number") setPeakMagnitude(data.peakSnapshot);
+        else if (typeof data.peak_snapshot === "number") setPeakMagnitude(data.peak_snapshot);
+
+        if (typeof data.currentPeakScore === "number") setCurrentPeakScore(data.currentPeakScore);
+        else if (typeof data.current_peak_score === "number") setCurrentPeakScore(data.current_peak_score);
+
+        if (data.userHypeThought) setPreThoughts(data.userHypeThought);
+        else if (data.preThought) setPreThoughts(data.preThought);
+        else if (data.pre_thought) setPreThoughts(data.pre_thought);
+
+        if (data.userAfterThought) setAfterThoughts(data.userAfterThought);
+        else if (data.postImpression) setAfterThoughts(data.postImpression);
+        else if (data.post_impression) setAfterThoughts(data.post_impression);
+
+        if (typeof data.creditedWorksCount === "number") setCreditedWorksCount(data.creditedWorksCount);
+        else if (typeof data.credited_works_count === "number") setCreditedWorksCount(data.credited_works_count);
       })
       .catch(console.error);
   }, [libraryEntryId, originalId]);
@@ -83,10 +100,9 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
 
   const handleOpenFullViewer = () => {
     onClose();
-    if (libraryEntryId) {
-      navigate(`/ledger/${libraryEntryId}`);
-    } else {
-      navigate(`/ledger/${originalId}`);
+    const entryIdToNavigate = sheetDetail?.id || libraryEntryId || originalId;
+    if (entryIdToNavigate) {
+      navigate(`/ledger/${entryIdToNavigate}`);
     }
   };
 
@@ -268,10 +284,13 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
 
               {/* Primary Hero Action Button */}
               <button
-                onClick={() => handleOpenFullViewer()}
+                onClick={() => {
+                  onClose();
+                  navigate(`/originals/${originalId}`);
+                }}
                 className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(245,158,11,0.25)] hover:shadow-[0_0_32px_rgba(245,158,11,0.4)] cursor-pointer font-extrabold"
               >
-                <span>Read Full Breakdown</span>
+                <span>View Original</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

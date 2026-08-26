@@ -16,8 +16,8 @@ export const HeroResonanceSignature = memo(
 
     const renderBattery = (density: number) => {
       const totalBlocks = 10;
-      const filledCount = Math.round(density / 10);
-      const emptyCount = totalBlocks - filledCount;
+      const filledCount = Math.max(0, Math.min(totalBlocks, Math.round(density / 10)));
+      const emptyCount = Math.max(0, totalBlocks - filledCount);
 
       // █ = U+2588, ░ = U+2591
       const filled = "█".repeat(filledCount);

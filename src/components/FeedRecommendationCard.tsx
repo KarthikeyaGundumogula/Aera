@@ -32,12 +32,13 @@ interface FeedRecommendationCardProps {
 
 export const FeedRecommendationCard = memo(function FeedRecommendationCard({
   rec,
-  highestScore = 10000,
+  highestScore,
   variant,
 }: FeedRecommendationCardProps) {
   const navigate = useNavigate();
+  const effectivePeak = highestScore || rec.artist?.highestScore || rec.surgeScore;
 
-  const isHighestRated = rec.isPeakRecorded || ((rec.surgeScore || 0) > 0 && (rec.surgeScore || 0) === highestScore);
+  const isHighestRated = rec.isPeakRecorded || (effectivePeak !== undefined && (rec.surgeScore || 0) > 0 && (rec.surgeScore || 0) === effectivePeak);
 
   const hasBreakdown = React.useMemo(() => {
     return Boolean(rec.notes);
@@ -382,8 +383,8 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                   >
                     {/* Bars */}
                     <SurgeBars
-                      score={rec.score || 0}
-                      highestScore={highestScore}
+                      score={rec.score || rec.surgeScore || 0}
+                      highestScore={effectivePeak}
                       size="md"
                       colorVariant="amber"
                     />
@@ -391,12 +392,12 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     {/* Score numbers */}
                     <div className="flex items-baseline gap-0.5 whitespace-nowrap">
                       <span className="text-[14px] font-black text-white leading-none tracking-tighter">
-                        {Math.round(((rec.score || 0) / highestScore) * 100)}%
+                        {effectivePeak ? Math.min(Math.round(((rec.score || rec.surgeScore || 0) / effectivePeak) * 100), 100) : 0}%
                       </span>
                       <span className="text-[7px] font-black tracking-widest uppercase ml-1">
                         <span className="text-white/30">
-                          {(rec.score || 0).toString()} /{" "}
-                          {highestScore.toString()}
+                          {(rec.score || rec.surgeScore || 0).toString()} /{" "}
+                          {effectivePeak ? effectivePeak.toString() : "—"}
                         </span>
                       </span>
                     </div>
