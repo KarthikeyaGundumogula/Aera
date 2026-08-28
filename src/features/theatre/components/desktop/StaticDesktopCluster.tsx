@@ -31,7 +31,7 @@ export const StaticDesktopCluster = memo(function StaticDesktopCluster({
   if (activeSlots.length === 1) {
     const singleSlot = activeSlots[0];
     return (
-      <div className="w-full aspect-[2.2/1] max-h-[400px] min-h-[220px] relative overflow-hidden flex items-center justify-center rounded-sm">
+      <div className="w-full aspect-[2.2/1] max-h-[400px] min-h-[220px] relative overflow-hidden flex items-center justify-center rounded-none">
         <DesktopCanvasCard
           slot={{ ...singleSlot, x: 0, y: 0, w: cols || 16, h: filledRows || 4 }}
           item={singleSlot.item!}

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { StarAction } from "../../../components/actions/StarAction";
-import { CameraAction } from "../../../components/actions/CameraAction";
+import { FrameAction } from "../../../components/actions/FrameAction";
 import { SaveAction } from "../../../components/actions/SaveAction";
 import { QuoteModal } from "../../../components/QuoteModal";
 import { WorkDetail, OriginalArtist, TheatreItem } from "../../../types";
@@ -360,10 +360,10 @@ export function ViewerFrame({
                       isStaring={staring}
                     />
                     
-                    <CameraAction
+                    <FrameAction
                       isActive={pinned}
-                      isPinned={pinned}
-                      onPin={handlePin}
+                      isFramed={pinned}
+                      onFrame={handlePin}
                       onQuote={() => setIsQuoteModalOpen(true)}
                       variant="viewer"
                     />

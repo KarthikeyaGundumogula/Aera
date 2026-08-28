@@ -22,13 +22,22 @@ import { EmbeddedWorkBox } from "./EmbeddedWorkBox";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+function formatRelativeTime(iso?: string): string {
+  if (!iso) return "just now";
+  const time = new Date(iso).getTime();
+  if (isNaN(time)) return "just now";
+  const diff = Date.now() - time;
+  if (diff <= 0) return "just now";
   const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes}m`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h`;
-  return `${Math.floor(hours / 24)}d`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 52) return `${weeks}w`;
+  return `${Math.floor(days / 365)}y`;
 }
 
 function generateStat(id: string | number, multiplier: number, offset: number = 0): number {
@@ -50,7 +59,8 @@ export interface ArtistOverride {
   image?: string;
   handle?: string;
   followersCount?: number;
-  spirit?: number;
+  spirit?: number | string;
+  favoritesCount?: string | number;
 }
 
 // ─── Shared Layout Container ──────────────────────────────────────────────────
@@ -62,6 +72,7 @@ interface CardLayoutProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistOverride?: ArtistOverride;
   text?: string;
   quoteHeader?: string;
   themeGradient?: [string, string];
@@ -78,6 +89,7 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   postId,
   artistId,
   artistHandle,
+  artistOverride,
   text,
   quoteHeader,
   themeGradient,
@@ -99,13 +111,25 @@ const CardLayout: React.FC<CardLayoutProps> = ({
     (a: any) => a.id === artistId || a.name.toLowerCase() === artistName.toLowerCase()
   );
   const followersCount =
+    artistOverride?.followersCount ??
+    (artistOverride?.favoritesCount
+      ? typeof artistOverride.favoritesCount === "number"
+        ? artistOverride.favoritesCount
+        : parseInt(String(artistOverride.favoritesCount).replace(/,/g, ""), 10) || 0
+      : undefined) ??
     (artistObj as any)?.followersCount ??
     generateStat(artistId || artistName || "a", 30000, 5000);
+
   const spiritCount =
-    artistObj?.spirit ?? generateStat(artistId || artistName || "a", 2000, 500);
+    artistOverride?.spirit !== undefined
+      ? String(artistOverride.spirit)
+      : artistObj?.spirit
+      ? String(artistObj.spirit)
+      : String(generateStat(artistId || artistName || "a", 2000, 500));
 
   const displayHandle =
     artistHandle ||
+    artistOverride?.handle ||
     (artistObj as any)?.handle ||
     `//${artistName.toUpperCase().replace(/\s+/g, "_")}`;
 
@@ -169,8 +193,8 @@ const CardLayout: React.FC<CardLayoutProps> = ({
 
       {/* Main Content Area */}
       <div className="flex flex-col w-full min-w-0">
-        {/* Main Post Text / Quote */}
-        {text && (
+        {/* Main Post Text / Quote (only rendered if non-empty text/line exists) */}
+        {text && text.trim().length > 0 && (
           <div
             className={children ? "mb-3 relative pl-3.5 py-0.5" : ""}
             style={
@@ -195,7 +219,7 @@ const CardLayout: React.FC<CardLayoutProps> = ({
                 children ? "italic" : "font-normal"
               }`}
             >
-              {children ? `"${text}"` : text}
+              {children ? `"${text.trim()}"` : text.trim()}
             </p>
           </div>
         )}
@@ -203,7 +227,7 @@ const CardLayout: React.FC<CardLayoutProps> = ({
         {/* Attached Media */}
         {children && <div className="mt-3 w-full">{children}</div>}
 
-        {/* Unified Action Row: Reaction + Save + Share */}
+        {/* Action Row: Reaction + Save + Share (Wall Posts ONLY) */}
         {!hideReactions && (
           <div className="flex items-center gap-2 mt-4 mb-1 w-full">
             <div className="flex-1 min-w-0">
@@ -251,6 +275,7 @@ interface LineVariantProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
   isSaved?: boolean;
   onToggleSave?: () => void;
@@ -264,6 +289,7 @@ const LineVariant: React.FC<LineVariantProps> = ({
   postId,
   artistId,
   artistHandle,
+  artistOverride,
   themeGradient,
   isSaved,
   onToggleSave,
@@ -275,6 +301,7 @@ const LineVariant: React.FC<LineVariantProps> = ({
     postId={postId}
     artistId={artistId}
     artistHandle={artistHandle}
+    artistOverride={artistOverride}
     text={text}
     themeGradient={themeGradient}
     isSaved={isSaved}
@@ -294,6 +321,8 @@ interface PinMediaPreviewProps {
   pinnedWorkId?: string;
   pinnedOriginalId?: string;
   hideReactions?: boolean;
+  hideCameraPin?: boolean;
+  postType?: string;
 }
 
 const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
@@ -305,6 +334,8 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
   pinnedWorkId,
   pinnedOriginalId,
   hideReactions = false,
+  hideCameraPin = false,
+  postType,
 }) => {
   const navigate = useNavigate();
 
@@ -315,7 +346,7 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
           work={resolvedWork}
           workId={pinnedWorkId}
           variant="default"
-          showCameraPin={!hideReactions}
+          showCameraPin={postType === "PIN_WORK" && !hideReactions && !hideCameraPin}
         />
       </div>
     );
@@ -336,13 +367,13 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
   return (
     <div
       onClick={handleClick}
-      className="relative w-full rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 cursor-pointer group/pin hover:opacity-95 transition-opacity"
+      className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 cursor-pointer group/pin hover:opacity-95 transition-opacity"
     >
       {displayImage ? (
         <img
           src={displayImage}
           alt={displayTitle ?? "Pinned item"}
-          className="w-full h-auto max-h-[360px] object-cover object-center group-hover/pin:scale-[1.01] transition-transform duration-300"
+          className="w-full h-full object-cover object-center group-hover/pin:scale-[1.01] transition-transform duration-300"
           loading="lazy"
         />
       ) : (
@@ -364,7 +395,7 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
       )}
 
       {/* Category chip for Originals */}
-      <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10">
+      <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded bg-black/60 backdrop-blur-md border border-white/10">
         <span className="text-[8px] font-black uppercase tracking-widest text-white/70">
           Original
         </span>
@@ -394,6 +425,7 @@ interface PinVariantProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistOverride?: ArtistOverride;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
   isOriginal?: boolean;
@@ -401,6 +433,7 @@ interface PinVariantProps {
   pinnedWorkId?: string;
   pinnedOriginalId?: string;
   hideReactions?: boolean;
+  hideCameraPin?: boolean;
   isSaved?: boolean;
   onToggleSave?: () => void;
 }
@@ -415,6 +448,7 @@ const PinVariant: React.FC<PinVariantProps> = ({
   postId,
   artistId,
   artistHandle,
+  artistOverride,
   resolvedWork,
   resolvedOriginal,
   isOriginal = false,
@@ -422,6 +456,7 @@ const PinVariant: React.FC<PinVariantProps> = ({
   pinnedWorkId,
   pinnedOriginalId,
   hideReactions,
+  hideCameraPin,
   isSaved,
   onToggleSave,
 }) => (
@@ -432,6 +467,7 @@ const PinVariant: React.FC<PinVariantProps> = ({
     postId={postId}
     artistId={artistId}
     artistHandle={artistHandle}
+    artistOverride={artistOverride}
     text={text}
     themeGradient={themeGradient}
     hideReactions={hideReactions}
@@ -448,6 +484,8 @@ const PinVariant: React.FC<PinVariantProps> = ({
       pinnedWorkId={pinnedWorkId}
       pinnedOriginalId={pinnedOriginalId}
       hideReactions={hideReactions}
+      hideCameraPin={hideCameraPin}
+      postType={isOriginal ? "PIN_ORIGINAL" : "PIN_WORK"}
     />
   </CardLayout>
 );
@@ -463,6 +501,7 @@ interface RecommendationVariantProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
   isSaved?: boolean;
   onToggleSave?: () => void;
@@ -523,6 +562,7 @@ export interface PostCardProps {
   themeGradient?: [string, string];
   className?: string;
   hideReactions?: boolean;
+  hideCameraPin?: boolean;
   isSaved?: boolean;
   onToggleSave?: () => void;
   onClick?: () => void;
@@ -539,37 +579,94 @@ export const PostCard = memo<PostCardProps>(
     themeGradient,
     className,
     hideReactions,
+    hideCameraPin,
     isSaved,
     onToggleSave,
     onClick,
   }) => {
     const isMobile = useMediaQuery();
 
-    const artistName = artistOverride?.name || post.artistName;
-    const artistImage = artistOverride?.image || post.artistImage;
-    const artistId = artistOverride?.id || post.artistId;
+    const artistName = artistOverride?.name || post.artistName || "Artist";
+    const artistImage = artistOverride?.image || post.artistImage || "";
+    const artistId = artistOverride?.id || post.artistId || "";
     const artistHandle = artistOverride?.handle;
 
     const effectiveWork =
       resolvedWork ||
-      (post.pinnedWorkId
-        ? GRID_ITEMS.find((w: any) => String(w.id) === String(post.pinnedWorkId))
+      (post.framedWork
+        ? ({
+            id: post.framedWork.id,
+            title: post.framedWork.title,
+            category: (post.framedWork as any).workType || (post.framedWork as any).category,
+            image: post.framedWork.thumbnail,
+          } as any)
+        : undefined) ||
+      (post.pinnedWorkId || post.framedWorkId
+        ? GRID_ITEMS.find((w: any) => String(w.id) === String(post.pinnedWorkId || post.framedWorkId))
+        : undefined);
+
+    const effectiveOriginal =
+      resolvedOriginal ||
+      (post.framedOriginal
+        ? ({
+            id: post.framedOriginal.id,
+            title: post.framedOriginal.title,
+            coverImage: post.framedOriginal?.coverImage,
+          } as any)
         : undefined);
 
     const effectiveRecommendation =
       resolvedRecommendation ||
-      (post.pinnedRecommendationId
-        ? MOCK_RECOMMENDATIONS.find((r: any) => String(r.id) === String(post.pinnedRecommendationId))
+      (post.framedRecommendation
+        ? ({
+            id: post.framedRecommendation.id,
+            notes: post.framedRecommendation.notes,
+            title: post.framedRecommendation.originalTitle,
+            coverImage: post.framedRecommendation?.coverImage,
+            surgeScore: post.framedRecommendation.surgeScore,
+            score: post.framedRecommendation.score,
+            director: post.framedRecommendation.director,
+            cast: post.framedRecommendation.cast,
+            postedAt: post.postedAt || post.framedRecommendation.createdAt,
+            original: {
+              id: post.framedRecommendation.originalId || "",
+              title: post.framedRecommendation.originalTitle || "",
+              coverImage: post.framedRecommendation.coverImage || "",
+              director: post.framedRecommendation.director,
+              stars: post.framedRecommendation.cast,
+            },
+            artist: {
+              id: post.framedRecommendation.authorId || post.artistId || "",
+              name: post.framedRecommendation.authorName || post.artistName || "",
+              stageName: post.framedRecommendation.authorName || post.artistName || "",
+              handle: post.framedRecommendation.authorHandle || "",
+              profilePicture: post.framedRecommendation.authorAvatar || post.artistImage || "",
+              spirit: post.framedRecommendation.authorSpirit || 0,
+              works: post.framedRecommendation.authorWorksCount || 0,
+            },
+            author: post.framedRecommendation.authorName
+              ? {
+                  id: post.framedRecommendation.authorId,
+                  name: post.framedRecommendation.authorName,
+                  handle: post.framedRecommendation.authorHandle,
+                  avatar: post.framedRecommendation.authorAvatar,
+                  spirit: post.framedRecommendation.authorSpirit,
+                  worksCount: post.framedRecommendation.authorWorksCount,
+                }
+              : undefined,
+          } as any)
         : undefined) ||
-      (post.type === "RECOMMENDATION" ? MOCK_RECOMMENDATIONS[0] : undefined);
+      (post.pinnedRecommendationId || post.framedRecommendationId
+        ? MOCK_RECOMMENDATIONS.find((r: any) => String(r.id) === String(post.pinnedRecommendationId || post.framedRecommendationId))
+        : undefined);
 
     const pinnedImage: string | undefined =
       effectiveWork?.image ||
-      (post.type === "PIN_ORIGINAL" ? resolvedOriginal?.coverImage : undefined);
+      (post.type === "PIN_ORIGINAL" ? effectiveOriginal?.coverImage : undefined);
 
     const pinnedTitle: string | undefined =
       effectiveWork?.title ||
-      (post.type === "PIN_ORIGINAL" ? resolvedOriginal?.title : undefined);
+      (post.type === "PIN_ORIGINAL" ? effectiveOriginal?.title : undefined);
 
     const cardContent = (
       <>
@@ -589,6 +686,7 @@ export const PostCard = memo<PostCardProps>(
             postId={post.id}
             artistId={artistId}
             artistHandle={artistHandle}
+            artistOverride={artistOverride}
             themeGradient={themeGradient}
             isSaved={isSaved}
             onToggleSave={onToggleSave}
@@ -608,6 +706,7 @@ export const PostCard = memo<PostCardProps>(
               postId={post.id}
               artistId={artistId}
               artistHandle={artistHandle}
+              artistOverride={artistOverride}
               resolvedWork={effectiveWork}
               resolvedOriginal={resolvedOriginal}
               isOriginal={post.type === "PIN_ORIGINAL"}
@@ -615,6 +714,7 @@ export const PostCard = memo<PostCardProps>(
               pinnedWorkId={post.pinnedWorkId}
               pinnedOriginalId={post.pinnedOriginalId}
               hideReactions={hideReactions}
+              hideCameraPin={hideCameraPin}
               isSaved={isSaved}
               onToggleSave={onToggleSave}
             />
@@ -622,13 +722,14 @@ export const PostCard = memo<PostCardProps>(
         {post.type === "RECOMMENDATION" && effectiveRecommendation && (
           <RecommendationVariant
             rec={effectiveRecommendation}
-            text={post.text || effectiveRecommendation.notes}
+            text={post.text}
             artistName={artistName}
             artistImage={artistImage}
             postedAt={post.postedAt}
             postId={post.id}
             artistId={artistId}
             artistHandle={artistHandle}
+            artistOverride={artistOverride}
             themeGradient={themeGradient}
             isSaved={isSaved}
             onToggleSave={onToggleSave}
@@ -646,9 +747,9 @@ export const PostCard = memo<PostCardProps>(
         className={`
           relative select-none
           py-2 md:py-0
-          md:rounded-xl md:overflow-hidden
-          md:bg-[#0d0d0d] md:border md:border-white/[0.06]
-          md:shadow-[0_4px_24px_rgba(0,0,0,0.5)]
+          rounded-2xl overflow-hidden
+          bg-[#0d0d0d] border border-white/[0.06]
+          shadow-[0_4px_24px_rgba(0,0,0,0.5)]
           ${onClick ? "cursor-pointer" : "cursor-default"}
           ${className ?? ""}
         `}

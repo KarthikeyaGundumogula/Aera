@@ -1,34 +1,23 @@
 import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import { WallPost } from "../../../types/wall";
-import { WallPostCard } from "./WallPostCard";
+import { WallPostCard, ArtistOverride } from "./WallPostCard";
 import { EmptyState, EMPTY_PRESETS } from "../../../components/EmptyState";
 
 interface WallFeedProps {
   posts: WallPost[];
+  artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
 }
 
 /**
  * WallFeed — 2-column masonry feed of WallPostCards.
- *
- * Layout:
- *   - 2 columns at ALL screen sizes (mobile included) per design spec.
- *   - LINE posts span both columns (always full-width) for text breathing room.
- *   - PIN posts fill one column.
- *   - Cards stagger in at 40ms intervals.
- *
- * Interaction:
- *   - Inline interactions (Reaction bar, Save, Share, direct navigation to Work/Original/Ledger).
  */
-export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
-
+export const WallFeed: React.FC<WallFeedProps> = ({ posts, artistOverride, themeGradient }) => {
   const worksById = {};
   const originalsById = {};
   const recommendationsById = {};
   const ledgerById = {};
-
-
 
   if (posts.length === 0) {
     return (
@@ -40,8 +29,8 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
 
   return (
     <>
-      {/* ── Responsive Layout: Twitter-like feed on mobile, Masonry on desktop ── */}
-      <div className="flex flex-col md:block md:columns-3 lg:columns-4 md:gap-4">
+      {/* ── Responsive Layout: Twitter-like feed on mobile, multi-column Masonry on desktop ── */}
+      <div className="flex flex-col md:block md:columns-2 lg:columns-3 xl:columns-4 md:gap-4">
         {posts.map((post, index) => {
           const resolvedWork = post.pinnedWorkId ? (worksById as any)[post.pinnedWorkId] : undefined;
           const resolvedOriginal = post.pinnedOriginalId ? (originalsById as any)[post.pinnedOriginalId] : undefined;
@@ -50,8 +39,8 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
             : undefined;
           const resolvedLedgerEntry = post.ledgerEntryId ? (ledgerById as any)[post.ledgerEntryId] : undefined;
 
-          // LEDGER_ENTRY posts span full width like LINE posts
-          const isFullWidth = post.type === "LINE" || post.type === "LEDGER_ENTRY";
+          // Only LEDGER_ENTRY posts span full width across both columns
+          const isFullWidth = post.type === "LEDGER_ENTRY";
 
           return (
             <React.Fragment key={post.id}>
@@ -70,6 +59,7 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, themeGradient }) => {
               >
                 <WallPostCard
                   post={post}
+                  artistOverride={artistOverride}
                   resolvedWork={resolvedWork}
                   resolvedOriginal={resolvedOriginal}
                   resolvedRecommendation={resolvedRecommendation}

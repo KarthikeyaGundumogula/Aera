@@ -40,7 +40,7 @@ const RenderPartialWork = ({ item, isMobile }: { item: TheatreItem; isMobile: bo
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border border-white/10 shadow-2xl transition-transform duration-300 hover:scale-[1.02] ${containerStyle}`}>
+    <div className={`relative overflow-hidden rounded-none border border-white/10 shadow-2xl transition-transform duration-300 hover:scale-[1.02] ${containerStyle}`}>
       {kind === "recommendation" && <RecommendationWork item={item} variant={variant} />}
       {kind === "storyboard" && <StoryboardWork item={item} variant={variant} />}
       {kind === "poster" && <PosterWork item={item} variant={variant} />}

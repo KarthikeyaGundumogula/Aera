@@ -240,7 +240,9 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
               <button
                 onClick={() => {
                   onClose();
-                  navigate(`/tagged-works/${originalId || libraryEntryId || "og-original"}`);
+                  const targetOgId = originalId || sheetDetail?.originalId || libraryEntryId;
+                  const queryArtist = profileId ? `?artistId=${profileId}` : "";
+                  navigate(`/tagged-works/${targetOgId}${queryArtist}`);
                 }}
                 className="w-full py-3 px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-wider flex items-center justify-between cursor-pointer transition-all"
               >

@@ -42,6 +42,7 @@ import {
   SavedPage,
   // Works
   WorkPage,
+  TaggedWorksPage,
   UploadPage,
   OriginalReleaseUploadPage,
   LedgerPage,
@@ -146,6 +147,7 @@ function AppRoutes() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/works/new" element={<UploadPage />} />
             <Route path="/works/:id" element={<WorkPage />} />
+            <Route path="/tagged-works/:originalId" element={<TaggedWorksPage />} />
             <Route path="/ledger" element={<LedgerPage />} />
             <Route path="/ledger/:id" element={<LedgerViewer />} />
 

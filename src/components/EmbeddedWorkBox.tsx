@@ -165,14 +165,14 @@ export function EmbeddedWorkBox({
   return (
     <div
       onClick={handleClick}
-      className={`group relative w-full rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 cursor-pointer hover:border-white/25 transition-all shadow-xl ${className}`}
+      className={`group relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 cursor-pointer hover:border-white/25 transition-all shadow-xl ${className}`}
     >
       {image ? (
         <img
           src={image}
           alt={title}
           onError={() => setImageError(true)}
-          className="w-full h-auto max-h-[360px] object-cover object-center group-hover:scale-[1.01] transition-transform duration-300"
+          className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-300"
           loading="lazy"
         />
       ) : (

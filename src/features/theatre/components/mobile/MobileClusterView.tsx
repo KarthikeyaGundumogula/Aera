@@ -35,7 +35,7 @@ export const MobileClusterView = memo(function MobileClusterView({
     const singleSlot = s0?.item ? s0 : s1?.item ? s1 : s2;
     if (!singleSlot || !singleSlot.item) return null;
     return (
-      <div className="w-full aspect-[16/9] relative overflow-hidden rounded-sm">
+      <div className="w-full aspect-[16/9] relative overflow-hidden rounded-none">
         <MobileCard slot={singleSlot} className="w-full h-full" />
       </div>
     );

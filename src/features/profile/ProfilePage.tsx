@@ -31,32 +31,36 @@ import { DEFAULT_AVATAR_PLACEHOLDER } from "@/constants/placeholders";
  * Maps a TARS WallPostItem (GET /profiles/{id}/wall) to the frontend WallPost type.
  * Infers the post type from which optional pin field is present.
  */
-function mapBackendWallPost(raw: {
-  id: string;
-  artistId: string;
-  artistName: string;
-  artistImage: string;
-  text?: string | null;
-  pinnedWorkId?: string | null;
-  pinnedOriginalId?: string | null;
-  pinnedRecommendationId?: string | null;
-  postedAt: string;
-}): WallPost {
+function mapBackendWallPost(raw: any): WallPost {
+  const framedWorkId = raw.framedWorkId || raw.pinnedWorkId;
+  const framedOriginalId = raw.framedOriginalId || raw.pinnedOriginalId;
+  const framedRecommendationId = raw.framedRecommendationId || raw.pinnedRecommendationId;
+
   let type: WallPost["type"] = "LINE";
-  if (raw.pinnedWorkId) type = "PIN_WORK";
-  else if (raw.pinnedOriginalId) type = "PIN_ORIGINAL";
-  else if (raw.pinnedRecommendationId) type = "RECOMMENDATION";
+  if (framedWorkId) type = "PIN_WORK";
+  else if (framedOriginalId) type = "PIN_ORIGINAL";
+  else if (framedRecommendationId) type = "RECOMMENDATION";
 
   return {
     id: raw.id,
-    artistId: raw.artistId,
-    artistName: raw.artistName,
+    artistId: raw.artistId || "",
+    artistName: raw.artistName || "Artist",
     artistImage: raw.artistImage || DEFAULT_AVATAR_PLACEHOLDER,
     type,
     text: raw.text ?? undefined,
-    pinnedWorkId: raw.pinnedWorkId ?? undefined,
-    pinnedOriginalId: raw.pinnedOriginalId ?? undefined,
-    pinnedRecommendationId: raw.pinnedRecommendationId ?? undefined,
+    framedWorkId: framedWorkId ?? undefined,
+    pinnedWorkId: framedWorkId ?? undefined,
+    framedWork: raw.framedWork ?? undefined,
+    framedOriginalId: framedOriginalId ?? undefined,
+    pinnedOriginalId: framedOriginalId ?? undefined,
+    framedOriginal: raw.framedOriginal ?? undefined,
+    framedRecommendationId: framedRecommendationId ?? undefined,
+    pinnedRecommendationId: framedRecommendationId ?? undefined,
+    framedRecommendation: raw.framedRecommendation ?? undefined,
+    totalReactions: raw.totalReactions,
+    totalSaves: raw.totalSaves,
+    isSaved: raw.isSaved,
+    userReaction: raw.userReaction,
     postedAt: raw.postedAt,
   };
 }
@@ -639,6 +643,18 @@ const ProfilePage: React.FC = () => {
               <div className="mt-4 -mx-8 md:mx-0">
                 <WallFeed
                   posts={mappedWallPosts}
+                  artistOverride={
+                    profile
+                      ? {
+                          id: profile.id,
+                          name: profile.name,
+                          handle: profile.handle,
+                          image: profile.image,
+                          spirit: profile.spirit,
+                          favoritesCount: profile.favoritesCount,
+                        }
+                      : undefined
+                  }
                   themeGradient={[parsedTheme.themeTextColor, parsedTheme.themeTextColor]}
                 />
               </div>

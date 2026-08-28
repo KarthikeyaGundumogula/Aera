@@ -68,9 +68,19 @@ export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: 
       const payload: Record<string, unknown> = {
         text_line: cleanQuote,
       };
-      if (isUuid) {
-        payload.work_id = item.id;
+
+      const recId = (item as any).recommendationId || (item.category === "RECOMMENDATION" ? item.id : undefined);
+      const ogId = (item as any).originalId || (item.category === "ORIGINAL" ? item.id : undefined);
+      const workId = (item as any).workId || (!recId && !ogId && isUuid ? item.id : undefined);
+
+      if (recId) {
+        payload.recommendation_id = recId;
+      } else if (ogId) {
+        payload.original_id = ogId;
+      } else if (workId) {
+        payload.work_id = workId;
       }
+
       try {
         await apiFetch("/artists/new/wall_post", {
           method: "POST",

@@ -19,11 +19,12 @@ import { QuoteModal } from "./QuoteModal";
 import { FHLoader } from "./FHLoader";
 import { BoostAction } from "./actions/BoostAction";
 import { LedgerAction } from "./actions/LedgerAction";
-import { CameraAction } from "./actions/CameraAction";
+import { FrameAction } from "./actions/FrameAction";
 import { SurgeBars } from "./SurgeBars";
 import { formatRelativeTime } from "../utils/time";
 import { useWorkNavigation } from "@/hooks/useWorkNavigation";
 import type { TheatreItem } from "../types/theatre";
+import { apiFetch } from "@/lib/api";
 
 interface Props {
   rec: Recommendation;
@@ -98,17 +99,37 @@ export const RecommendationCard = memo(function RecommendationCard({
 
   const { openWork } = useWorkNavigation();
 
-    const theatreItem: TheatreItem = {
-      id: `rec-${rec.id}`,
-      category: "Recommendation",
-      recId: rec.id,
-      image: rec.original.coverImage,
-      title: rec.original.title,
-      artist: rec.artist.name,
-      artistId: rec.artist.id,
-      artistAvatar: rec.artist.profilePicture,
-      originalIds: [rec.original.id],
-    };
+  const original = rec.original || {
+    id: (rec as any).originalId || "",
+    title: (rec as any).title || (rec as any).originalTitle || "",
+    coverImage: (rec as any).coverImage || "",
+    director: (rec as any).director,
+    stars: (rec as any).cast || (rec as any).stars,
+    dop: (rec as any).dop,
+  };
+
+  const artist = rec.artist || {
+    id: (rec as any).author?.id || (rec as any).artistId || "",
+    name: (rec as any).author?.name || (rec as any).artistName || "",
+    stageName: (rec as any).author?.name || (rec as any).artistName || "",
+    handle: (rec as any).author?.handle || "",
+    profilePicture: (rec as any).author?.avatar || (rec as any).artistImage || "",
+    spirit: (rec as any).author?.spirit || 0,
+    works: (rec as any).author?.worksCount || 0,
+    highestScore: 4500,
+  };
+
+  const theatreItem: TheatreItem = {
+    id: `rec-${rec.id}`,
+    category: "Recommendation",
+    recId: rec.id,
+    image: original.coverImage,
+    title: original.title,
+    artist: artist.name || artist.stageName,
+    artistId: artist.id,
+    artistAvatar: artist.profilePicture,
+    originalIds: [original.id],
+  };
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -117,7 +138,7 @@ export const RecommendationCard = memo(function RecommendationCard({
     openWork(theatreItem);
   };
 
-  const highestScore = rec.artist.highestScore || 4500;
+  const highestScore = artist.highestScore || 4500;
   const isHighestRated = (rec.score || 0) >= highestScore;
   const ratio = (rec.score || 0) / highestScore;
 
@@ -188,15 +209,15 @@ export const RecommendationCard = memo(function RecommendationCard({
                     navigate(`/originals/${rec.original.id}`);
                   }
                 }}
-                className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
+                className="relative w-full h-[170px] overflow-hidden rounded-md border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/originals/${rec.original.id}`);
+                  navigate(`/originals/${original.id}`);
                 }}
               >
                 <PosterImage
-                  src={rec.original.coverImage}
-                  alt={rec.original.title}
+                  src={original.coverImage}
+                  alt={original.title}
                   className="w-full h-full object-cover object-top transition-[transform,filter] duration-700 group-hover/poster:scale-105 group-hover/poster:brightness-[0.6]"
                 />
 
@@ -216,12 +237,12 @@ export const RecommendationCard = memo(function RecommendationCard({
 
             {/* Maker Credits + Stars */}
             <div className="px-2.5 pb-2.5 flex flex-col gap-1.5">
-              {rec.original.director && (
+              {original.director && (
                 <div
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/profile/${rec.original.director}`);
+                    navigate(`/profile/${original.director}`);
                   }}
                 >
                   <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/25 mb-0.5">
@@ -229,18 +250,18 @@ export const RecommendationCard = memo(function RecommendationCard({
                   </p>
                   <div className="flex items-center gap-0.5">
                     <p className="text-[9px] font-black text-white/80 leading-tight truncate group-hover/credit:text-white transition-colors">
-                      {rec.original.director}
+                      {original.director}
                     </p>
                     <ArrowUpRight className="w-2.5 h-2.5 text-white/20 group-hover/credit:text-white/60 transition-colors shrink-0" />
                   </div>
                 </div>
               )}
-              {rec.original.dop && (
+              {original.dop && (
                 <div
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/profile/${rec.original.dop}`);
+                    navigate(`/profile/${original.dop}`);
                   }}
                 >
                   <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/25 mb-0.5">
@@ -248,19 +269,19 @@ export const RecommendationCard = memo(function RecommendationCard({
                   </p>
                   <div className="flex items-center gap-0.5">
                     <p className="text-[9px] font-black text-white/80 leading-tight truncate group-hover/credit:text-white transition-colors">
-                      {rec.original.dop}
+                      {original.dop}
                     </p>
                     <ArrowUpRight className="w-2.5 h-2.5 text-white/20 group-hover/credit:text-white/60 transition-colors shrink-0" />
                   </div>
                 </div>
               )}
-              {rec.original.stars && rec.original.stars.length > 0 && (
+              {original.stars && original.stars.length > 0 && (
                 <div>
                   <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/25 mb-1">
                     Stars
                   </p>
                   <div className="flex flex-col gap-1">
-                    {rec.original.stars.slice(0, 3).map((star) => (
+                    {original.stars.slice(0, 3).map((star) => (
                       <div
                         key={star}
                         role="button"
@@ -304,14 +325,14 @@ export const RecommendationCard = memo(function RecommendationCard({
                 className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2"
                 style={{ textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}
               >
-                {rec.original.title}
+                {original.title}
               </h3>
               <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
                 {hasBreakdown && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/profile/${rec.artist.id}/recommendations/${rec.original.id}`);
+                      navigate(`/profile/${artist.id}/recommendations/${original.id}`);
                     }}
                     className="flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-white/40 hover:text-amber-400 hover:bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/10 transition-colors cursor-pointer"
                     title="View Breakdown"
@@ -329,9 +350,7 @@ export const RecommendationCard = memo(function RecommendationCard({
               </div>
             </div>
 
-            {/* NOTES — flex-1 fills all remaining space so footer+action are pinned to bottom.
-                min-h-[122px] = 5 lines × 13px × 1.625 line-height + py-2 padding.
-                Short notes show empty space inside this zone; gap below action row = 0. */}
+            {/* NOTES */}
             <motion.div
               ref={scrollContainerRef}
               onScroll={handleScroll}
@@ -374,7 +393,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 </motion.div>
               )}
 
-              {/* Scroll down hint overlay (zero height so it doesn't add to scrollHeight) */}
+              {/* Scroll down hint overlay */}
               {notesExpanded && !isScrolledToBottom && (
                 <div className="sticky bottom-0 left-0 right-0 h-0 pointer-events-none z-10 overflow-visible">
                   <div className="absolute bottom-[-8px] -left-3 -right-3 h-10 bg-gradient-to-t from-[#080604] via-[#080604]/90 to-transparent flex items-end justify-center pb-1.5">
@@ -384,11 +403,11 @@ export const RecommendationCard = memo(function RecommendationCard({
               )}
             </motion.div>
 
-            {/* FOOTER: Artist + Separator + Score — shrink-0, no gap above */}
+            {/* FOOTER: Artist + Separator + Score */}
             <div
               className={`px-3 flex flex-col shrink-0 border-t border-white/[0.04] w-full relative z-10 ${hideScoreRow ? "pt-2 pb-0.5 gap-0" : "py-2 gap-2"}`}
             >
-              {/* Artist row: avatar + name + stats + artistLiked heart */}
+              {/* Artist row */}
               <motion.div
                 style={{ overflow: "hidden" }}
                 animate={{
@@ -399,7 +418,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                 className="flex items-center gap-2.5"
               >
-                {/* Artist Avatar — clickable */}
+                {/* Artist Avatar */}
                 <button
                   className="shrink-0 hover:opacity-80 transition-opacity focus:outline-none"
                   onClick={(e) => {
@@ -408,8 +427,8 @@ export const RecommendationCard = memo(function RecommendationCard({
                   }}
                 >
                   <img
-                    src={rec.artist.profilePicture}
-                    alt={rec.artist.name || rec.artist.stageName}
+                    src={artist.profilePicture}
+                    alt={artist.name || artist.stageName}
                     className="w-7 h-7 rounded-lg border border-white/[0.1] object-cover object-top"
                   />
                 </button>
@@ -418,7 +437,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/85 leading-none truncate">
-                      {rec.artist.name || rec.artist.stageName}
+                      {artist.name || artist.stageName}
                     </span>
                     {/* Artist's own liked status on this original */}
                     {rec.artistLiked && (
@@ -564,10 +583,23 @@ export const RecommendationCard = memo(function RecommendationCard({
 
                 {/* Secondary Action */}
                 <div className="mr-1 translate-y-[1px] shrink-0">
-                  <CameraAction 
+                  <FrameAction 
                     isActive={pinned} 
-                    isPinned={pinned}
-                    onPin={() => setPinned(!pinned)} 
+                    isFramed={pinned}
+                    onFrame={async () => {
+                      const next = !pinned;
+                      setPinned(next);
+                      if (next) {
+                        try {
+                          await apiFetch("/artists/new/wall_post", {
+                            method: "POST",
+                            body: JSON.stringify({ recommendation_id: rec.id }),
+                          });
+                        } catch (e) {
+                          console.warn("[RecommendationCard] frame wall_post error:", e);
+                        }
+                      }
+                    }} 
                     onQuote={() => setIsQuoteModalOpen(true)}
                     variant="viewer" 
                     iconOnly
@@ -605,7 +637,7 @@ export const RecommendationCard = memo(function RecommendationCard({
           <QuoteModal
             isOpen={isQuoteModalOpen}
             onClose={() => setIsQuoteModalOpen(false)}
-            item={theatreItem}
+            item={{ ...theatreItem, category: "RECOMMENDATION", recommendationId: rec.id } as any}
             renderTop={
               <div className="p-4 sm:p-5 pointer-events-none bg-[#111111]/40 overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/40 to-[#0a0a0a] pointer-events-none z-10" />

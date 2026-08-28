@@ -243,8 +243,8 @@ function CoverCard({ item, onNavigate }: CoverCardProps) {
 const LineFull: React.FC<{ post: WallPost }> = ({ post }) => (
   <div className="flex flex-col items-center justify-center w-full h-full max-w-lg mx-auto px-8 text-center gap-6 pointer-events-none">
     <AvatarImage
-      src={post.artistImage}
-      alt={post.artistName}
+      src={post.artistImage || ""}
+      alt={post.artistName || "Artist"}
       className="w-12 h-12 rounded-xl object-cover object-top border border-white/15 shrink-0"
     />
     <p className="text-[18px] sm:text-[22px] leading-[1.6] font-normal text-white/90">
@@ -252,7 +252,7 @@ const LineFull: React.FC<{ post: WallPost }> = ({ post }) => (
     </p>
     <div className="flex flex-col items-center gap-1">
       <span className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">
-        {post.artistName}
+        {post.artistName || "Artist"}
       </span>
       <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white/20">
         {formatRelativeTime(post.postedAt)}

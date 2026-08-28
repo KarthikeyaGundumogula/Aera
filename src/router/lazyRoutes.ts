@@ -95,6 +95,10 @@ export const WorkPage = lazy(() =>
   import("@/features/works").then((m) => ({ default: m.WorkPage })),
 );
 
+export const TaggedWorksPage = lazy(() =>
+  import("@/features/works/TaggedWorksPage")
+);
+
 export const UploadPage = lazy(() => import("@/features/upload/UploadPage"));
 
 export const OriginalReleaseUploadPage = lazy(

@@ -2,13 +2,15 @@
  * Formats an ISO date string into standard social media compact relative format.
  * e.g., "2h", "1d", "just now"
  */
-export function formatRelativeTime(isoString: string): string {
+export function formatRelativeTime(isoString?: string): string {
+  if (!isoString) return "just now";
   const date = new Date(isoString);
+  if (isNaN(date.getTime())) return "just now";
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return "now";
+    return "just now";
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);

@@ -15,7 +15,7 @@ import type { Recommendation } from "@/types/recommendations";
 import { BoostAction } from "./actions/BoostAction";
 import { LedgerAction } from "./actions/LedgerAction";
 import { SaveAction } from "./actions/SaveAction";
-import { CameraAction } from "./actions/CameraAction";
+import { FrameAction } from "./actions/FrameAction";
 import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { SurgeBars } from "./SurgeBars";
 import { PosterImage } from "./PosterImage";
@@ -23,6 +23,7 @@ import { QuoteModal } from "./QuoteModal";
 import { formatRelativeTime } from "../utils/time";
 import { useWorkNavigation } from "@/hooks/useWorkNavigation";
 import type { TheatreItem } from "../types/theatre";
+import { apiFetch } from "@/lib/api";
 
 interface FeedRecommendationCardProps {
   rec: Recommendation;
@@ -56,16 +57,35 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const { openWork } = useWorkNavigation();
 
+  const original = rec.original || {
+    id: (rec as any).originalId || "",
+    title: (rec as any).title || (rec as any).originalTitle || "",
+    coverImage: (rec as any).coverImage || "",
+    director: (rec as any).director,
+    stars: (rec as any).cast || (rec as any).stars,
+    dop: (rec as any).dop,
+  };
+
+  const artist = rec.artist || {
+    id: (rec as any).author?.id || (rec as any).artistId || "",
+    name: (rec as any).author?.name || (rec as any).artistName || "",
+    stageName: (rec as any).author?.name || (rec as any).artistName || "",
+    handle: (rec as any).author?.handle || "",
+    profilePicture: (rec as any).author?.avatar || (rec as any).artistImage || "",
+    spirit: (rec as any).author?.spirit || 0,
+    works: (rec as any).author?.worksCount || 0,
+  };
+
   const theatreItem: TheatreItem = {
     id: `rec-${rec.id}`,
     category: "Recommendation",
     recId: rec.id,
-    image: rec.original.coverImage,
-    title: rec.original.title,
-    artist: rec.artist.name,
-    artistId: rec.artist.id,
-    artistAvatar: rec.artist.profilePicture,
-    originalIds: [rec.original.id],
+    image: original.coverImage,
+    title: original.title,
+    artist: artist.name || artist.stageName,
+    artistId: artist.id,
+    artistAvatar: artist.profilePicture,
+    originalIds: [original.id],
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -117,8 +137,8 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                 onClick={handleCardClick}
               >
                 <PosterImage
-                  src={rec.original.coverImage}
-                  alt={rec.original.title}
+                  src={original.coverImage}
+                  alt={original.title}
                   className="w-full h-full object-cover object-top transition-[transform,filter] duration-700 group-hover/poster:scale-105 group-hover/poster:brightness-[0.6]"
                 />
 
@@ -138,7 +158,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
 
             {/* Maker Credits + Stars */}
             <div className="px-2.5 pb-2 flex flex-col gap-1 sm:gap-1.5">
-              {rec.original.director && (
+              {original.director && (
                 <div
                   role="button"
                   tabIndex={0}
@@ -467,10 +487,23 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                 {/* Secondary Action */}
                 {variant !== "wall-embed" && (
                   <div className="mr-1 translate-y-[1px] shrink-0">
-                    <CameraAction 
+                    <FrameAction 
                       isActive={pinned} 
-                      isPinned={pinned}
-                      onPin={() => setPinned(!pinned)} 
+                      isFramed={pinned}
+                      onFrame={async () => {
+                        const next = !pinned;
+                        setPinned(next);
+                        if (next) {
+                          try {
+                            await apiFetch("/artists/new/wall_post", {
+                              method: "POST",
+                              body: JSON.stringify({ recommendation_id: rec.id }),
+                            });
+                          } catch (e) {
+                            console.warn("[FeedRecommendationCard] frame wall_post error:", e);
+                          }
+                        }
+                      }} 
                       onQuote={() => setIsQuoteModalOpen(true)}
                       variant="viewer" 
                       iconOnly
