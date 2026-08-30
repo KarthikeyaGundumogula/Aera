@@ -211,7 +211,7 @@ export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: 
                         {item.artist || "Unknown Artist"}
                       </span>
                       <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30">
-                        {item.category === "Recommendation" ? "Recommender" : "Original Creator"}
+                        {item.category === "Recommendation" ? "Recommender" : "Original Artist"}
                       </span>
                     </div>
                   </div>

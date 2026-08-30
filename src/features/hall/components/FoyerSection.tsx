@@ -25,6 +25,14 @@ function AvatarImage({ src, alt, className }: { src?: string; alt: string; class
   return <img src={src} alt={alt} className={className} draggable={false} onError={() => setError(true)} />;
 }
 
+function getPostType(entry: any): "LINE" | "FRAME" | "QUOTE" {
+  if (!entry) return "LINE";
+  const type: string = entry.postType || entry.post?.type || "LINE";
+  if (type === "QUOTE") return "QUOTE";
+  if (type === "FRAME") return "FRAME";
+  return "LINE";
+}
+
 export function FoyerSection() {
   const [selectedSwiperIndex, setSelectedSwiperIndex] = useState<number | null>(null);
   const [artistGroups, setArtistGroups] = useState<FoyerArtistGroup[]>([]);
@@ -56,14 +64,13 @@ export function FoyerSection() {
 
   return (
     <section className="mb-6 pt-2">
-      
       <div className="overflow-x-auto no-scrollbar pb-6 w-full">
         <div className="flex gap-4 sm:gap-6 w-max px-6 md:px-12 mx-auto">
           {artistGroups.map((group, idx) => {
-            const firstPost = group.entries[0]?.post;
-            if (!firstPost) return null;
+            const firstEntry = group.entries[0];
+            if (!firstEntry) return null;
             
-            const isLine = firstPost.type === "LINE";
+            const postType = getPostType(firstEntry);
             
             return (
               <motion.button
@@ -86,26 +93,26 @@ export function FoyerSection() {
                   
                   {/* Visual Language Badge based on their most recent post */}
                   <div className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg backdrop-blur-md border shadow-sm w-max
-                    ${firstPost.type === 'LINE' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : ''}
-                    ${firstPost.type === 'PIN_WORK' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : ''}
-                    ${firstPost.type === 'PIN_ORIGINAL' ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : ''}
+                    ${postType === 'LINE' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : ''}
+                    ${postType === 'FRAME' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : ''}
+                    ${postType === 'QUOTE' ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : ''}
                   `}>
-                    {firstPost.type === 'LINE' && (
+                    {postType === 'LINE' && (
                       <>
                         <Quote size={8} className="fill-amber-500/20" />
                         <span className="text-[6.5px] font-black uppercase tracking-[0.2em]">Line</span>
                       </>
                     )}
-                    {firstPost.type === 'PIN_WORK' && (
+                    {postType === 'FRAME' && (
                       <>
                         <Film size={8} className="fill-blue-500/20" />
-                        <span className="text-[6.5px] font-black uppercase tracking-[0.2em]">Work</span>
+                        <span className="text-[6.5px] font-black uppercase tracking-[0.2em]">Frame</span>
                       </>
                     )}
-                    {firstPost.type === 'PIN_ORIGINAL' && (
+                    {postType === 'QUOTE' && (
                       <>
                         <Sparkles size={8} className="fill-purple-500/20" />
-                        <span className="text-[6.5px] font-black uppercase tracking-[0.2em]">Original</span>
+                        <span className="text-[6.5px] font-black uppercase tracking-[0.2em]">Quote</span>
                       </>
                     )}
                   </div>

@@ -49,8 +49,8 @@ export const ArtistProfile = memo(
     const [modalData, setModalData] = useState<ArtistModalData | null>(null);
     const [isLoadingModal, setIsLoadingModal] = useState(false);
     
-    // Support both internal (click card) and external (WorkModal) triggers
-    const isOpen = onClose ? !!artist : localIsOpen;
+    // Support inline variant (e.g. FoyerSwiper 5th slide), internal click triggers, and external triggers
+    const isOpen = variant === "inline" ? true : (onClose ? !!artist : localIsOpen);
     const setIsOpen = (val: boolean) => {
       if (onClose && !val) {
         onClose();
@@ -149,6 +149,7 @@ export const ArtistProfile = memo(
 
     const handleProjectClick = () => {
       setIsOpen(false);
+      onClose?.();
     };
 
     const handleFavoriteToggle = async () => {
@@ -190,13 +191,12 @@ export const ArtistProfile = memo(
               style={{ transformStyle: "preserve-3d" }}
               onClick={(e) => {
                 e.stopPropagation();
-                if (variant === "inline") return;
-                // Prevent flipping if an interactive element (like CreditTag or Social Link) was clicked
+                // Prevent flipping if an interactive element (like CreditTag or Social Link or Button) was clicked
                 const target = e.target as HTMLElement;
                 if (target.closest("button") || target.closest("a")) return;
                 setIsFlipped(!isFlipped);
               }}
-              className={`relative w-full h-full ${variant === "inline" ? "" : "cursor-pointer"}`}
+              className="relative w-full h-full cursor-pointer"
             >
               {/* FRONT SIDE (RESTORED CLASSIC ID CARD) */}
               <div
@@ -220,9 +220,10 @@ export const ArtistProfile = memo(
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsOpen(false);
+                        onClose?.();
                         navigate(`/profile/${currentUsername || artist.id}`);
                       }}
-                      className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
+                      className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md cursor-pointer pointer-events-auto"
                     >
                       Visit
                     </button>

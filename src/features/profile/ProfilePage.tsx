@@ -238,10 +238,20 @@ const ProfilePage: React.FC = () => {
           currentArtist.id.toLowerCase().includes(cleanHandle))
       ) {
         if (isMounted) {
+          const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
+          const ownHandle = (currentArtist.userName && !isUuid(currentArtist.userName))
+            ? currentArtist.userName
+            : (!isUuid(cleanHandle) && cleanHandle)
+            ? cleanHandle
+            : (currentArtist.name && !isUuid(currentArtist.name))
+            ? currentArtist.name.toLowerCase().replace(/\s+/g, "")
+            : "artist";
+          const ownName = (currentArtist.name && !isUuid(currentArtist.name)) ? currentArtist.name : "ARTIST";
+
           setBackendProfile({
             id: currentArtist.id,
-            name: currentArtist.name,
-            handle: cleanHandle,
+            name: ownName,
+            handle: ownHandle,
             tagline: currentArtist.bio || "Visionary Artist",
             image: currentArtist.image || DEFAULT_AVATAR_PLACEHOLDER,
             spirit: (currentArtist.spirit || 0).toLocaleString(),
@@ -254,30 +264,43 @@ const ProfilePage: React.FC = () => {
         // Fall through to fetch originals from backend
       }
 
-      // Check 2: Call backend GET /profiles/get_profile_details/{username}
-      // Always called — even for own profile — to populate originals from the library.
-      const isOwnProfile = !!(
-        currentArtist &&
-        (currentArtist.name.toLowerCase() === cleanHandle ||
-          currentArtist.id.toLowerCase() === profileId.toLowerCase() ||
-          currentArtist.id.toLowerCase().includes(cleanHandle))
-      );
-      try {
-        const res = await apiFetch(`/profiles/get_profile_details/${cleanHandle}`);
-        if (res.ok) {
-          const json = await res.json();
-          const stage = json.artist_stage || json.data || json;
-          if (stage && isMounted) {
-            if (typeof stage.isFavorited === "boolean") {
-              setIsFavorited(stage.isFavorited);
-            }
-            // Only overwrite profile display data if we're NOT on the own profile
-            // (own profile was already set from currentArtist above)
-            if (!isOwnProfile) {
+        // Check 2: Call backend GET /profiles/get_profile_details/{username}
+        // Always called — even for own profile — to populate originals from the library.
+        const isOwnProfile = !!(
+          currentArtist &&
+          (currentArtist.name.toLowerCase() === cleanHandle ||
+            currentArtist.id.toLowerCase() === profileId.toLowerCase() ||
+            currentArtist.id.toLowerCase().includes(cleanHandle))
+        );
+        try {
+          const res = await apiFetch(`/profiles/get_profile_details/${cleanHandle}`);
+          if (res.ok) {
+            const json = await res.json();
+            const stage = json.artist_stage || json.data || json;
+            if (stage && isMounted) {
+              if (typeof stage.isFavorited === "boolean") {
+                setIsFavorited(stage.isFavorited);
+              }
+              const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
+              const rawUserName = stage.userName || stage.user_name || stage.username;
+              const rawStageName = stage.stageName || stage.stage_name;
+
+              const fetchedHandle = (rawUserName && !isUuid(rawUserName))
+                ? rawUserName
+                : (rawStageName && !isUuid(rawStageName))
+                ? rawStageName.toLowerCase().replace(/\s+/g, "")
+                : (!isUuid(cleanHandle) ? cleanHandle : "artist");
+
+              const fetchedName = (rawStageName && !isUuid(rawStageName))
+                ? rawStageName
+                : (rawUserName && !isUuid(rawUserName))
+                ? rawUserName
+                : (!isUuid(cleanHandle) ? cleanHandle : "ARTIST");
+
               setBackendProfile({
                 id: stage.id || profileId,
-                name: stage.stageName || stage.userName || cleanHandle,
-                handle: stage.userName || cleanHandle,
+                name: fetchedName,
+                handle: fetchedHandle,
                 tagline: stage.tagLine || "Visionary Artist",
                 image: stage.profilePicture || DEFAULT_AVATAR_PLACEHOLDER,
                 spirit: (stage.spirit || 0).toLocaleString(),
@@ -290,7 +313,6 @@ const ProfilePage: React.FC = () => {
                 },
                 colorTheme: stage.colorTheme || "#fac107,#0f1a42",
               });
-            }
 
             const rawOriginals = stage.originals || json.originals || [];
             if (Array.isArray(rawOriginals) && rawOriginals.length > 0) {

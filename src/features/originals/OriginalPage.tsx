@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, BookPlus, Settings, Plus, Loader2 } from "lucide-react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
@@ -28,6 +28,7 @@ interface OriginalClaims {
 export function OriginalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentArtist } = useAuth();
 
   const [showToast, setShowToast] = useState(false);
@@ -213,6 +214,11 @@ export function OriginalPage() {
     return deferredOriginal.topArtists;
   }, [deferredOriginal]);
 
+  useEffect(() => {
+    if (!original || location.hash !== "#releases") return;
+    document.getElementById("releases")?.scrollIntoView({ behavior: "smooth" });
+  }, [original, location.hash]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-3">
@@ -303,7 +309,11 @@ export function OriginalPage() {
               />
               <div className="hidden sm:block h-4 w-px bg-white/10" />
               <button
-                onClick={() => navigate(`/originals/${original.id}/releases`)}
+                onClick={() =>
+                  document
+                    .getElementById("releases")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
                 className="group flex items-center gap-2 transition-all hover:text-white/70 active:scale-95 text-white"
               >
                 <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-[0.2em] pt-0.5">
@@ -319,7 +329,9 @@ export function OriginalPage() {
       </motion.div>
 
       {/* RECENT RELEASES */}
-      <RecentReleasesSection customReleases={officialReleases} className="pt-8 pb-6" />
+      <div id="releases">
+        <RecentReleasesSection customReleases={officialReleases} className="pt-8 pb-6" />
+      </div>
 
       {/* Star Spotlight */}
       {original.stars && original.stars.length > 0 && (

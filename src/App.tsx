@@ -10,6 +10,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useParams,
 } from "react-router-dom";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { MobileNavBar } from "@/features/navigation/MobileNavBar";
@@ -57,7 +58,6 @@ import {
   // Misc
   ContactPage,
   AdminPage,
-  ComingSoon,
 } from "@/router/lazyRoutes";
 
 // ─── Loading fallback ─────────────────────────────────────────────────────────
@@ -76,6 +76,19 @@ import { NotFoundOverlay } from "@/components/NotFoundOverlay";
 
 function NotFoundPage() {
   return <NotFoundOverlay mode="page" />;
+}
+
+function RedirectParam({
+  param,
+  to,
+}: {
+  param: string;
+  to: (value: string) => string;
+}) {
+  const params = useParams();
+  const value = params[param];
+  if (!value) return <Navigate to="/" replace />;
+  return <Navigate to={to(value)} replace />;
 }
 
 /**
@@ -108,7 +121,12 @@ function AppRoutes() {
             />
             <Route
               path="/originals/:id/releases"
-              element={<ComingSoon label="Official Releases" />}
+              element={
+                <RedirectParam
+                  param="id"
+                  to={(id) => `/originals/${id}#releases`}
+                />
+              }
             />
             <Route
               path="/originals/:id/releases/new"
@@ -139,8 +157,10 @@ function AppRoutes() {
             <Route path="/profile/edit" element={<ProfileEditPage />} />
             <Route path="/profile/:profileId" element={<ProfilePage />} />
             <Route path="/profile/:profileId/recommendations/:originalId" element={<OriginalRecommendationsPage />} />
-            {/* Wall post deep-link — opens full-screen swiper at shared post */}
+            {/* Wall post deep-link — standalone single post viewer */}
             <Route path="/wall/:artistId/:postId" element={<WallPostPage />} />
+            <Route path="/wall/:postId" element={<WallPostPage />} />
+            <Route path="/post/:postId" element={<WallPostPage />} />
             <Route path="/saved" element={<SavedPage />} />
 
             {/* ── Studio & Works ──────────────────────────── */}
@@ -151,10 +171,15 @@ function AppRoutes() {
             <Route path="/ledger" element={<LedgerPage />} />
             <Route path="/ledger/:id" element={<LedgerViewer />} />
 
-            {/* ── Artists (placeholder) ───────────────────── */}
+            {/* ── Artists (alias of profile) ─────────────────── */}
             <Route
               path="/artists/:id"
-              element={<ComingSoon label="Artist Profile" />}
+              element={
+                <RedirectParam
+                  param="id"
+                  to={(id) => `/profile/${id}`}
+                />
+              }
             />
 
             {/* ── Admin ───────────────────────────────────── */}

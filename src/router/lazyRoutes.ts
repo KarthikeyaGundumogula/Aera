@@ -9,13 +9,6 @@
  */
 import { lazy } from "react";
 
-// ─── Shared ──────────────────────────────────────────────────────────────────
-export const ComingSoon = lazy(() =>
-  import("@/features/shared/ComingSoonPage").then((m) => ({
-    default: m.ComingSoonPage,
-  })),
-);
-
 // ─── Hall (Home) ──────────────────────────────────────────────────────────────
 export const HallPage = lazy(() =>
   import("@/features/hall").then((m) => ({ default: m.HallPage })),

@@ -38,10 +38,11 @@ export const RecommendationCard = memo(function RecommendationCard({
   compact = false,
 }: Props) {
   const navigate = useNavigate();
+  const ledgerEntryId = rec.ledgerEntryId || (rec as any).ledger_entry_id || (rec as any).ledgerEntryId;
 
   const hasBreakdown = React.useMemo(() => {
-    return Boolean(rec.notes);
-  }, [rec.notes]);
+    return Boolean(ledgerEntryId);
+  }, [ledgerEntryId]);
 
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [boosted, setBoosted] = useState(false);
@@ -108,15 +109,15 @@ export const RecommendationCard = memo(function RecommendationCard({
     dop: (rec as any).dop,
   };
 
-  const artist = rec.artist || {
-    id: (rec as any).author?.id || (rec as any).artistId || "",
-    name: (rec as any).author?.name || (rec as any).artistName || "",
-    stageName: (rec as any).author?.name || (rec as any).artistName || "",
-    handle: (rec as any).author?.handle || "",
-    profilePicture: (rec as any).author?.avatar || (rec as any).artistImage || "",
-    spirit: (rec as any).author?.spirit || 0,
-    works: (rec as any).author?.worksCount || 0,
-    highestScore: 4500,
+  const artist = {
+    id: rec.artist?.id || (rec as any).author?.id || (rec as any).artistId || "",
+    name: rec.artist?.name || rec.artist?.stageName || (rec as any).author?.name || (rec as any).artistName || "Artist",
+    stageName: rec.artist?.stageName || rec.artist?.name || (rec as any).author?.name || (rec as any).artistName || "",
+    handle: rec.artist?.handle || (rec as any).author?.handle || "",
+    profilePicture: rec.artist?.profilePicture || (rec as any).author?.avatar || (rec as any).artistImage || "",
+    spirit: rec.artist?.spirit ?? (rec as any).author?.spirit ?? 0,
+    works: rec.artist?.works ?? (rec as any).author?.worksCount ?? 0,
+    highestScore: rec.artist?.highestScore || (rec as any).author?.spirit,
   };
 
   const theatreItem: TheatreItem = {
@@ -138,7 +139,7 @@ export const RecommendationCard = memo(function RecommendationCard({
     openWork(theatreItem);
   };
 
-  const highestScore = artist.highestScore || 4500;
+  const highestScore = artist.highestScore || artist.spirit || 10000;
   const isHighestRated = (rec.score || 0) >= highestScore;
   const ratio = (rec.score || 0) / highestScore;
 
@@ -209,7 +210,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                     navigate(`/originals/${rec.original.id}`);
                   }
                 }}
-                className="relative w-full h-[170px] overflow-hidden rounded-md border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
+                className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/originals/${original.id}`);
@@ -332,7 +333,9 @@ export const RecommendationCard = memo(function RecommendationCard({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/profile/${artist.id}/recommendations/${original.id}`);
+                      if (ledgerEntryId) {
+                        navigate(`/ledger/${ledgerEntryId}`);
+                      }
                     }}
                     className="flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-white/40 hover:text-amber-400 hover:bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/10 transition-colors cursor-pointer"
                     title="View Breakdown"

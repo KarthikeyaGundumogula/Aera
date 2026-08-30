@@ -4,22 +4,30 @@
  * The Wall is a curated, personal moodboard on an Artist's profile.
  * Posts are distributed exclusively to users who have Favorited the Artist (Foyer).
  *
- * Five post variants:
- *   LINE          — a conversational text post (like a tweet, no big quote marks)
- *   PIN_WORK      — a pinned Work (Edit/Poster/Script) with an optional artist Line
- *   PIN_ORIGINAL  — a pinned Original with an optional artist Line
- *   RECOMMENDATION — a pinned Recommendation card with an optional quote
- *   LEDGER_ENTRY  — a public Ledger experience log (editorial preview on Wall, full Viewer on tap)
+ * Three post variants:
+ *   LINE   — a text-only post (conversational, no framed content)
+ *   FRAME  — a framed Work / Original / Recommendation with no artist text
+ *   QUOTE  — a framed Work / Original / Recommendation + artist text together
  */
 
-type WallPostType = "LINE" | "PIN_WORK" | "PIN_ORIGINAL" | "RECOMMENDATION" | "LEDGER_ENTRY";
+/**
+ * LINE  — text only
+ * FRAME — a framed work / original / recommendation, no artist text
+ * QUOTE — framed content + artist text together
+ */
+type WallPostType = "LINE" | "FRAME" | "QUOTE";
 
 export interface FramedWorkPreview {
   id: string;
   title: string;
-  category: string;
+  category?: string;
+  workType?: string;
   thumbnail?: string;
+  srcId?: string;
+  platform?: string;
   artistName?: string;
+  artistAvatar?: string;
+  artistHandle?: string;
 }
 
 export interface FramedOriginalPreview {
@@ -45,6 +53,7 @@ export interface FramedRecommendationPreview {
   authorAvatar?: string;
   authorSpirit?: number;
   authorWorksCount?: number;
+  ledgerEntryId?: string;
 }
 
 export interface WallPost {
@@ -60,8 +69,12 @@ export interface WallPost {
   /** Avatar image URL of the artist */
   artistImage: string;
 
-  /** Discriminator — determines which data fields are present */
-  type: WallPostType;
+  /**
+   * Post type discriminator.
+   * Canonical values: "LINE" | "FRAME" | "QUOTE"
+   * Legacy values from older call sites may also appear at runtime.
+   */
+  type: string;
 
   /** The Line / comment text */
   text?: string;

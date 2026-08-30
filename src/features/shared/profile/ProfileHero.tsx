@@ -56,6 +56,12 @@ export function ProfileHero({
   leftFlankContent,
 }: ProfileHeroProps & { portraitOverlay?: React.ReactNode }) {
   const gradientId = `profileHeroGradient-${useId()}`;
+  const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
+  const cleanHandleStr = handle && !isUuid(handle)
+    ? (handle.startsWith("@") ? handle : `@${handle}`)
+    : name && !isUuid(name)
+    ? `@${name.toLowerCase().replace(/\s+/g, "")}`
+    : "@ARTIST";
 
   return (
     <div 
@@ -182,7 +188,7 @@ export function ProfileHero({
           <div className="flex items-center gap-4">
             <div className="w-8 h-[1px] bg-white/20" />
             <span className="text-[10px] font-mono tracking-[0.6em] uppercase text-white/60 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
-              {handle ? (handle.startsWith("@") ? handle : `@${handle}`) : "@USERNAME"}
+              {cleanHandleStr}
             </span>
             <div className="w-8 h-[1px] bg-white/20" />
           </div>

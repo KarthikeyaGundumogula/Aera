@@ -22,6 +22,7 @@ import { SaveAction } from "../../../components/actions/SaveAction";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
+import { apiFetch } from "@/lib/api";
 import type { LedgerItem } from "@/types/ledger";
 import { LedgerWallCard } from "../../profile/components/LedgerWallCard";
 import { ReactionAction } from "../../../components/actions/ReactionAction";
@@ -110,7 +111,7 @@ function WorkActions({ item, onNavigate }: WorkActionsProps) {
             {item.artist || "Framehouse Artist"}
           </span>
           <span className="text-[8px] font-medium text-white/40 uppercase tracking-widest">
-            Original Creator
+            Original Artist
           </span>
         </div>
       </div>
@@ -238,6 +239,8 @@ function CoverCard({ item, onNavigate }: CoverCardProps) {
   );
 }
 
+export { AvatarImage, formatRelativeTime, LineFull, PinFull, RecommendationFull, LedgerFull };
+
 // ─── Full-screen Line viewer ──────────────────────────────────────────────────
 
 const LineFull: React.FC<{ post: WallPost }> = ({ post }) => (
@@ -288,11 +291,12 @@ const PinFull: React.FC<PinFullProps> = ({
     [navigate, onClose],
   );
 
-  if (post.type === "PIN_WORK" && resolvedWork) {
+  if (resolvedWork) {
     const isEdit =
       !resolvedWork.category ||
       resolvedWork.category === "Edit" ||
-      resolvedWork.category === "Call";
+      resolvedWork.category === "Call" ||
+      resolvedWork.category.toUpperCase() === "EDIT";
     return (
       <div className="w-full flex flex-col gap-4 max-w-[700px] mx-auto pointer-events-none">
         <div className="w-full text-left px-1 pointer-events-none mb-1">
@@ -331,8 +335,8 @@ const PinFull: React.FC<PinFullProps> = ({
   }
 
   // PIN_ORIGINAL or unresolved
-  const image = resolvedWork?.image ?? resolvedOriginal?.coverImage;
-  const title = resolvedWork?.title ?? resolvedOriginal?.title;
+  const image = resolvedOriginal?.coverImage;
+  const title = resolvedOriginal?.title;
 
   return (
     <div className="w-full flex flex-col gap-4 px-4 max-w-[700px] mx-auto pointer-events-none">
@@ -494,12 +498,38 @@ const ProgressDots: React.FC<{ total: number; current: number }> = ({
 
 // ─── FoyerSwiper ───────────────────────────────────────────────────────────────
 
-interface FoyerSwiperEntry {
-  post: WallPost;
+export interface FoyerSwiperEntry {
+  id: string;
+  artistId?: string;
+  artistName?: string;
+  artistImage?: string;
+  postType: string;
+  postedAt: string;
+  // client-side resolved fields (populated after GET /artists/wall_post/{id})
+  post?: WallPost;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
   resolvedRecommendation?: Recommendation;
   resolvedLedgerEntry?: LedgerItem;
+}
+
+export function getEntryPost(
+  entry?: FoyerSwiperEntry | null,
+  group?: FoyerArtistGroup,
+): WallPost | null {
+  if (!entry) return null;
+  if (entry.post) return entry.post;
+
+  const postType = (entry.postType || "LINE") as WallPost["type"];
+
+  return {
+    id: entry.id,
+    artistId: entry.artistId || group?.artistId || "",
+    artistName: entry.artistName || group?.artistName || "Artist",
+    artistImage: entry.artistImage || group?.artistImage || "",
+    type: postType,
+    postedAt: entry.postedAt || new Date().toISOString(),
+  } as any;
 }
 
 export interface FoyerArtistGroup {
@@ -584,10 +614,10 @@ export function FoyerSwiper({
 
   const activePostIndex = postIndices[activeGroup.artistId] || 0;
 
-  // Only show terminal card if artist group has more posts to load
-  const canShowTerminalCard = activeGroup.hasMore;
+  // Always show terminal artist card after wall posts
+  const canShowTerminalCard = true;
   const isShowingOlderCard =
-    canShowTerminalCard && activePostIndex === activeGroup.entries.length;
+    activePostIndex === activeGroup.entries.length;
 
   const reactionsCount =
     activeGroup.artistName.length * 12 + activePostIndex * 5 + 15;
@@ -633,9 +663,10 @@ export function FoyerSwiper({
     async (e: React.MouseEvent) => {
       e.stopPropagation();
       const currentPost = !isShowingOlderCard
-        ? activeGroup.entries[activePostIndex]?.post
+        ? getEntryPost(activeGroup.entries[activePostIndex], activeGroup)
         : null;
-      const postId = currentPost?.id ?? activeGroup.entries[0]?.post.id;
+      const firstPost = getEntryPost(activeGroup.entries[0], activeGroup);
+      const postId = currentPost?.id ?? firstPost?.id ?? "";
       const shareUrl = `${window.location.origin}/wall/${activeGroup.artistId}/${postId}`;
 
       // Try native share sheet first (mobile / supported desktop)
@@ -695,9 +726,8 @@ export function FoyerSwiper({
         const current = prev[activeGroup.artistId] || 0;
         const next = current + dir;
 
-        const canShowTerminalCard = activeGroup.hasMore;
-        const isOnTerminalCard =
-          canShowTerminalCard && current === activeGroup.entries.length;
+        const canShowTerminalCard = true;
+        const isOnTerminalCard = current === activeGroup.entries.length;
 
         // ── Tapping RIGHT on the terminal card
         // We used to fetch older posts here, but since the Foyer decoupling,
@@ -706,9 +736,7 @@ export function FoyerSwiper({
         // ── Tap LEFT at post 0 → go to previous artist, land on their last post (or terminal card)
         if (next < 0) {
           const target = groups[wrap(groupIndex - 1)];
-          const landingIdx = target.hasMore
-            ? target.entries.length
-            : Math.max(0, target.entries.length - 1);
+          const landingIdx = target.entries.length;
           paginateGroup(-1);
           return { ...prev, [target.artistId]: landingIdx };
         }
@@ -809,22 +837,27 @@ export function FoyerSwiper({
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90">
                 {activeGroup.artistName}
               </span>
-              {!isShowingOlderCard && activeGroup.entries[activePostIndex] && (
-                <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/40">
-                  {activeGroup.entries[activePostIndex].post.type === "LINE"
-                    ? "Line"
-                    : activeGroup.entries[activePostIndex].post.type ===
-                        "RECOMMENDATION"
+              {!isShowingOlderCard && (
+                (() => {
+                  const activeEntry = activeGroup.entries[activePostIndex];
+                  const activePost = getEntryPost(activeEntry, activeGroup);
+                  if (!activePost) return null;
+                  const label =
+                    activePost.type === "LINE"
+                      ? "Line"
+                      : activePost.type === "RECOMMENDATION"
                       ? "Recommendation"
-                      : activeGroup.entries[activePostIndex].post.type ===
-                          "LEDGER_ENTRY"
-                        ? "Ledger Entry"
-                        : "Pin"}{" "}
-                  ·{" "}
-                  {formatRelativeTime(
-                    activeGroup.entries[activePostIndex].post.postedAt,
-                  )}
-                </span>
+                      : activePost.type === "LEDGER_ENTRY"
+                      ? "Ledger Entry"
+                      : activePost.type === "PIN_ORIGINAL"
+                      ? "Original"
+                      : "Pin";
+                  return (
+                    <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/40">
+                      {label} · {formatRelativeTime(activePost.postedAt)}
+                    </span>
+                  );
+                })()
               )}
             </div>
           </motion.div>
@@ -1017,24 +1050,58 @@ export function FoyerSwiper({
             transition={{ type: "spring", stiffness: 400, damping: 35 }}
           >
             <ProgressDots
-              total={
-                activeGroup.hasMore
-                  ? activeGroup.entries.length + 1
-                  : activeGroup.entries.length
-              }
+              total={activeGroup.entries.length + 1}
               current={activePostIndex}
             />
           </motion.div>
         </AnimatePresence>
       </div>
-
-      {/* Bottom-right controls: Removed from global Foyer, embedded in SlideContent instead */}
     </ModalWrapper>,
     document.body,
   );
 }
 
-// ─── Slide Content (extracted to avoid unmount/remount on parent render) ──────
+export function mapFramedToRecommendation(framed: any, post?: any): Recommendation {
+  if (!framed) return null as any;
+  return {
+    id: framed.id,
+    notes: framed.notes || "",
+    title: framed.originalTitle || framed.original_title || "",
+    coverImage: framed.coverImage || framed.cover_image || framed.cover_picture || "",
+    surgeScore: framed.surgeScore || framed.score || 85,
+    score: framed.score || framed.surgeScore || 85,
+    director: framed.director,
+    cast: framed.cast || framed.cast_names,
+    postedAt: post?.postedAt || framed.createdAt || framed.created_at || new Date().toISOString(),
+    ledgerEntryId: framed.ledgerEntryId || framed.ledger_entry_id,
+    original: {
+      id: framed.originalId || framed.original_id || "",
+      title: framed.originalTitle || framed.original_title || "",
+      coverImage: framed.coverImage || framed.cover_image || "",
+      director: framed.director,
+      stars: framed.cast || framed.cast_names,
+    },
+    artist: {
+      id: framed.authorId || framed.author_id || post?.artistId || "",
+      name: framed.authorName || framed.author_name || post?.artistName || "Artist",
+      stageName: framed.authorName || framed.author_name || post?.artistName || "Artist",
+      handle: framed.authorHandle || framed.author_handle || "",
+      profilePicture: framed.authorAvatar || framed.author_avatar || post?.artistImage || "",
+      spirit: framed.authorSpirit || framed.author_spirit || 0,
+      works: framed.authorWorksCount || framed.author_works_count || 0,
+    },
+    author: (framed.authorName || framed.author_name)
+      ? {
+          id: framed.authorId || framed.author_id || "",
+          name: framed.authorName || framed.author_name || "",
+          handle: framed.authorHandle || framed.author_handle || "",
+          avatar: framed.authorAvatar || framed.author_avatar || "",
+          spirit: framed.authorSpirit || framed.author_spirit || 0,
+          worksCount: framed.authorWorksCount || framed.author_works_count || 0,
+        }
+      : undefined,
+  } as any;
+}
 
 interface SlideContentProps {
   group: FoyerArtistGroup;
@@ -1044,11 +1111,11 @@ interface SlideContentProps {
   isActive: boolean;
   postIndex: number;
   isFetching: boolean;
-  onFetchOlder: () => void;
+  onFetchOlder?: (artistId: string) => Promise<void>;
   onClose: () => void;
   onNavigateToProfile: () => void;
   activeReaction: ReactionId | null;
-  onReact: (reaction: ReactionId | null) => void;
+  onReact: (reactionId: ReactionId | null) => void;
 }
 
 const SlideContent = React.memo(function SlideContent({
@@ -1067,6 +1134,101 @@ const SlideContent = React.memo(function SlideContent({
 }: SlideContentProps) {
   const isOlderCard = postIndex === group.entries.length;
   const entry = group.entries[postIndex];
+  const initialPost = getEntryPost(entry, group);
+
+  const [detailData, setDetailData] = useState<{
+    post?: WallPost;
+    resolvedWork?: TheatreItem;
+    resolvedOriginal?: Original;
+    resolvedRecommendation?: Recommendation;
+  } | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
+
+  const postId = entry?.id;
+
+  useEffect(() => {
+    if (isOlderCard || !postId || !isActive) return;
+
+    let isMounted = true;
+    setIsLoadingDetails(true);
+
+    apiFetch(`/artists/wall_post/${postId}`)
+      .then(async (res) => {
+        if (!isMounted) return;
+        if (res.ok) {
+          const json = await res.json();
+          const item = json.data || json.post;
+          if (item && isMounted) {
+            const mappedPost: WallPost = {
+              id: item.id,
+              artistId: item.artistId || item.artist_id || group.artistId,
+              artistName: item.artistName || item.artist_name || group.artistName,
+              artistImage: item.artistImage || item.artist_image || group.artistImage,
+              type: (() => {
+                const hasFrame = !!(item.framedRecommendation || item.framed_recommendation || item.framedWork || item.framed_work || item.framedOriginal || item.framed_original);
+                const hasText = !!(item.text || item.text_line);
+                if (hasFrame && hasText) return "QUOTE";
+                if (hasFrame) return "FRAME";
+                return "LINE";
+              })() as WallPost["type"],
+              text: item.text || item.text_line,
+              postedAt: item.postedAt || item.posted_at || item.createdAt || new Date().toISOString(),
+              totalReactions: item.totalReactions || item.total_reactions || 0,
+              totalSaves: item.totalSaves || item.total_saves || 0,
+              isSaved: item.isSaved || item.is_saved,
+              userReaction: item.userReaction || item.user_reaction,
+            } as any;
+
+            let mappedRec: Recommendation | undefined = undefined;
+            if (item.framedRecommendation || item.framed_recommendation) {
+              mappedRec = mapFramedToRecommendation(
+                item.framedRecommendation || item.framed_recommendation,
+                mappedPost,
+              );
+            }
+
+            let mappedWork: TheatreItem | undefined = undefined;
+            if (item.framedWork || item.framed_work) {
+              const fw = item.framedWork || item.framed_work;
+              mappedWork = {
+                id: fw.id,
+                title: fw.title,
+                category: fw.workType || fw.work_type || "Edit",
+                image: fw.thumbnail,
+                thumbnail: fw.thumbnail,
+                srcId: fw.srcId || fw.src_id,
+                platform: (fw.platform || "youtube").toLowerCase(),
+                artist: fw.artistName || fw.artist_name || fw.artistHandle || fw.artist_handle || mappedPost.artistName,
+                artistId: fw.artistId || fw.artist_id || mappedPost.artistId,
+                artistAvatar: fw.artistAvatar || fw.artist_avatar || mappedPost.artistImage,
+              } as any;
+            }
+
+            setDetailData({
+              post: mappedPost,
+              resolvedWork: mappedWork || entry?.resolvedWork,
+              resolvedOriginal: item.framedOriginal || item.framed_original || entry?.resolvedOriginal,
+              resolvedRecommendation: mappedRec || entry?.resolvedRecommendation,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("[FoyerSwiper] Error fetching wall post detail:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingDetails(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [postId, isOlderCard, isActive, group.artistId]);
+
+  const post = detailData?.post || initialPost;
+  const resolvedWork = detailData?.resolvedWork || entry?.resolvedWork;
+  const resolvedOriginal = detailData?.resolvedOriginal || entry?.resolvedOriginal;
+  const resolvedRecommendation = detailData?.resolvedRecommendation || entry?.resolvedRecommendation;
 
   const artistProfile = React.useMemo(() => {
     if (!isOlderCard) return null;
@@ -1093,36 +1255,40 @@ const SlideContent = React.memo(function SlideContent({
       <div className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none">
         <div className="w-full my-auto pointer-events-none shrink-0 flex items-center justify-center">
           {isOlderCard ? (
-            <ArtistProfile artist={artistProfile} variant="inline" />
+            <ArtistProfile artist={artistProfile} variant="inline" onClose={onClose} />
+          ) : isLoadingDetails ? (
+            <div className="w-full min-h-[300px] flex flex-col items-center justify-center pointer-events-none">
+              <FHLoader label="Loading Post Details..." />
+            </div>
           ) : (
-            entry &&
-            (entry.post.type === "LINE" ? (
+            post &&
+            (post.type === "LINE" ? (
               <div className="w-full pointer-events-none">
-                <LineFull post={entry.post} />
+                <LineFull post={post} />
               </div>
-            ) : entry.post.type === "RECOMMENDATION" ? (
-              <div className="w-full pointer-events-none">
-                <RecommendationFull
-                  post={entry.post}
-                  rec={entry.resolvedRecommendation}
-                />
-              </div>
-            ) : entry.post.type === "LEDGER_ENTRY" ? (
-              <div className="w-full pointer-events-none">
-                <LedgerFull
-                  post={entry.post}
-                  entry={entry.resolvedLedgerEntry}
-                />
-              </div>
+            ) : (post.type === "FRAME" || post.type === "QUOTE") ? (
+              resolvedRecommendation ? (
+                <div className="w-full pointer-events-none">
+                  <RecommendationFull
+                    post={post}
+                    rec={resolvedRecommendation}
+                  />
+                </div>
+              ) : (
+                <div className="w-full pointer-events-none">
+                  <PinFull
+                    post={post}
+                    resolvedWork={resolvedWork}
+                    resolvedOriginal={resolvedOriginal}
+                    isActive={isActive}
+                    onClose={onClose}
+                  />
+                </div>
+              )
             ) : (
+              // fallback — render as line
               <div className="w-full pointer-events-none">
-                <PinFull
-                  post={entry.post}
-                  resolvedWork={entry.resolvedWork}
-                  resolvedOriginal={entry.resolvedOriginal}
-                  isActive={isActive}
-                  onClose={onClose}
-                />
+                <LineFull post={post} />
               </div>
             ))
           )}
@@ -1132,7 +1298,7 @@ const SlideContent = React.memo(function SlideContent({
       {/* Embedded Reactions: Belongs to this specific slide! */}
       <div className="absolute bottom-6 sm:bottom-8 right-4 z-[300] flex flex-col items-end pointer-events-auto">
         <AnimatePresence>
-          {!isOlderCard && entry?.post.type !== "LEDGER_ENTRY" && (
+          {!isOlderCard && post?.type !== "LEDGER_ENTRY" && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}

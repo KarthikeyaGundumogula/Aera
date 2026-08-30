@@ -40,13 +40,6 @@ function formatRelativeTime(iso?: string): string {
   return `${Math.floor(days / 365)}y`;
 }
 
-function generateStat(id: string | number, multiplier: number, offset: number = 0): number {
-  let hash = 0;
-  const str = String(id);
-  for (let i = 0; i < str.length; i++) hash = (hash << 5) - hash + str.charCodeAt(i);
-  return (Math.abs(hash) % multiplier) + offset;
-}
-
 function formatStat(num: number): string {
   if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
   if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
@@ -72,6 +65,8 @@ interface CardLayoutProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistSpirit?: number;
+  artistFavoritesCount?: number;
   artistOverride?: ArtistOverride;
   text?: string;
   quoteHeader?: string;
@@ -89,6 +84,8 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   postId,
   artistId,
   artistHandle,
+  artistSpirit,
+  artistFavoritesCount,
   artistOverride,
   text,
   quoteHeader,
@@ -117,15 +114,18 @@ const CardLayout: React.FC<CardLayoutProps> = ({
         ? artistOverride.favoritesCount
         : parseInt(String(artistOverride.favoritesCount).replace(/,/g, ""), 10) || 0
       : undefined) ??
+    artistFavoritesCount ??
     (artistObj as any)?.followersCount ??
-    generateStat(artistId || artistName || "a", 30000, 5000);
+    0;
 
   const spiritCount =
     artistOverride?.spirit !== undefined
       ? String(artistOverride.spirit)
+      : artistSpirit !== undefined
+      ? String(artistSpirit)
       : artistObj?.spirit
       ? String(artistObj.spirit)
-      : String(generateStat(artistId || artistName || "a", 2000, 500));
+      : "0";
 
   const displayHandle =
     artistHandle ||
@@ -275,6 +275,8 @@ interface LineVariantProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistSpirit?: number;
+  artistFavoritesCount?: number;
   artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
   isSaved?: boolean;
@@ -289,6 +291,8 @@ const LineVariant: React.FC<LineVariantProps> = ({
   postId,
   artistId,
   artistHandle,
+  artistSpirit,
+  artistFavoritesCount,
   artistOverride,
   themeGradient,
   isSaved,
@@ -301,6 +305,8 @@ const LineVariant: React.FC<LineVariantProps> = ({
     postId={postId}
     artistId={artistId}
     artistHandle={artistHandle}
+    artistSpirit={artistSpirit}
+    artistFavoritesCount={artistFavoritesCount}
     artistOverride={artistOverride}
     text={text}
     themeGradient={themeGradient}
@@ -425,6 +431,8 @@ interface PinVariantProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistSpirit?: number;
+  artistFavoritesCount?: number;
   artistOverride?: ArtistOverride;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
@@ -448,6 +456,8 @@ const PinVariant: React.FC<PinVariantProps> = ({
   postId,
   artistId,
   artistHandle,
+  artistSpirit,
+  artistFavoritesCount,
   artistOverride,
   resolvedWork,
   resolvedOriginal,
@@ -467,6 +477,8 @@ const PinVariant: React.FC<PinVariantProps> = ({
     postId={postId}
     artistId={artistId}
     artistHandle={artistHandle}
+    artistSpirit={artistSpirit}
+    artistFavoritesCount={artistFavoritesCount}
     artistOverride={artistOverride}
     text={text}
     themeGradient={themeGradient}
@@ -501,6 +513,8 @@ interface RecommendationVariantProps {
   postId: string;
   artistId: string;
   artistHandle?: string;
+  artistSpirit?: number;
+  artistFavoritesCount?: number;
   artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
   isSaved?: boolean;
@@ -516,6 +530,9 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
   postId,
   artistId,
   artistHandle,
+  artistSpirit,
+  artistFavoritesCount,
+  artistOverride,
   themeGradient,
   isSaved,
   onToggleSave,
@@ -528,6 +545,9 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
       postId={postId}
       artistId={artistId}
       artistHandle={artistHandle}
+      artistSpirit={artistSpirit}
+      artistFavoritesCount={artistFavoritesCount}
+      artistOverride={artistOverride}
       themeGradient={themeGradient}
       isSaved={isSaved}
       onToggleSave={onToggleSave}
@@ -628,6 +648,7 @@ export const PostCard = memo<PostCardProps>(
             director: post.framedRecommendation.director,
             cast: post.framedRecommendation.cast,
             postedAt: post.postedAt || post.framedRecommendation.createdAt,
+            ledgerEntryId: post.framedRecommendation.ledgerEntryId,
             original: {
               id: post.framedRecommendation.originalId || "",
               title: post.framedRecommendation.originalTitle || "",
@@ -686,6 +707,7 @@ export const PostCard = memo<PostCardProps>(
             postId={post.id}
             artistId={artistId}
             artistHandle={artistHandle}
+            artistSpirit={post.framedRecommendation?.authorSpirit}
             artistOverride={artistOverride}
             themeGradient={themeGradient}
             isSaved={isSaved}
@@ -706,6 +728,7 @@ export const PostCard = memo<PostCardProps>(
               postId={post.id}
               artistId={artistId}
               artistHandle={artistHandle}
+              artistSpirit={post.framedRecommendation?.authorSpirit}
               artistOverride={artistOverride}
               resolvedWork={effectiveWork}
               resolvedOriginal={resolvedOriginal}
@@ -729,6 +752,7 @@ export const PostCard = memo<PostCardProps>(
             postId={post.id}
             artistId={artistId}
             artistHandle={artistHandle}
+            artistSpirit={post.framedRecommendation?.authorSpirit}
             artistOverride={artistOverride}
             themeGradient={themeGradient}
             isSaved={isSaved}

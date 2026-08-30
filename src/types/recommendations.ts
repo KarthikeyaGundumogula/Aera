@@ -7,6 +7,7 @@ export interface Recommendation {
     profilePicture: string;
     spirit: number | string;
     works?: number;
+    handle?: string;
     highestScore?: number;
   };
   original: {
@@ -32,4 +33,5 @@ export interface Recommendation {
   sequenceThumbnail?: string;
   sequenceId?: string;
   artistLiked?: boolean;
+  ledgerEntryId?: string;
 }
