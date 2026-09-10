@@ -15,11 +15,7 @@ import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { apiFetch } from "@/lib/api";
 
-function formatStat(num: number): string {
-  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + 'K';
-  return num.toString();
-}
+import { formatStat } from "@/utils/number";
 
 interface ViewerFrameProps {
   work: WorkDetail;

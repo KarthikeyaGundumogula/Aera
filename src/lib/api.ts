@@ -1,7 +1,7 @@
 /**
  * src/lib/api.ts
  *
- * Central API client configuration for Aera.
+ * Central API client configuration & error interceptor for Aera.
  *
  * The base URL is driven by the VITE_API_URL environment variable:
  *   - Local dev:    VITE_API_URL=http://localhost:8000  (tars in local mode)
@@ -9,26 +9,20 @@
  *   - Production:   VITE_API_URL=https://api.framehouse.in  (or equivalent)
  *
  * USAGE:
- *   import { apiUrl, apiFetch } from '@/lib/api';
+ *   import { apiUrl, apiFetch, onApiError } from '@/lib/api';
  *
- *   // Build a URL manually
- *   const url = apiUrl('/auth/login');
+ *   // Listen to all API errors globally
+ *   const unbind = onApiError((err) => console.log(err.message));
  *
- *   // Use the fetch wrapper (handles credentials cookie forwarding automatically)
+ *   // Perform API call — response.apiError holds structured error details if !res.ok
  *   const response = await apiFetch('/auth/me');
- *   const data = await apiFetch('/works/new/film', { method: 'POST', body: JSON.stringify(payload) });
+ *   if (!response.ok) {
+ *     console.log(response.apiError?.message);
+ *   }
  */
 
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 
-/**
- * API base URL resolved from the VITE_API_URL environment variable.
- *
- * Vite inlines `import.meta.env.VITE_*` at build time.
- * At runtime during `vite dev`, these are resolved from the active .env file.
- *
- * Falls back to empty string if not set (relative URLs — useful for proxy setups).
- */
 const API_BASE_URL: string =
   (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 
@@ -37,24 +31,53 @@ const API_BASE_URL: string =
  *
  * @param path - API path starting with `/`, e.g. `/auth/login`
  * @returns Full URL string, e.g. `http://localhost:8000/auth/login`
- *
- * @example
- * apiUrl('/auth/me')         // → "http://localhost:8000/auth/me"
- * apiUrl('/works/new/film')  // → "http://localhost:8000/works/new/film"
  */
-function apiUrl(path: string): string {
+export function apiUrl(path: string): string {
   const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${base}${normalizedPath}`;
 }
 
-// ─── Fetch Wrapper ─────────────────────────────────────────────────────────────
+// ─── Types & Global Error Interceptor ─────────────────────────────────────────
+
+export interface ApiErrorDetail {
+  path: string;
+  url: string;
+  method: string;
+  status?: number;
+  statusText?: string;
+  message: string;
+  errorData?: unknown;
+  timestamp: string;
+  networkError?: Error;
+}
+
+export type ApiErrorListener = (error: ApiErrorDetail) => void;
+
+const errorListeners = new Set<ApiErrorListener>();
 
 /**
- * Default fetch options applied to every API request:
- * - `credentials: 'include'` — forwards the HttpOnly auth cookie set by tars
- * - `headers` — sets Content-Type to application/json by default
+ * Register a global listener to be called whenever any API request fails
+ * (either a non-2xx HTTP response or a network exception).
+ *
+ * Returns an unbind function.
  */
+export function onApiError(listener: ApiErrorListener): () => void {
+  errorListeners.add(listener);
+  return () => {
+    errorListeners.delete(listener);
+  };
+}
+
+/**
+ * Response object augmented with parsed API error metadata on non-OK responses.
+ */
+export interface ApiResponse extends Response {
+  apiError?: ApiErrorDetail;
+}
+
+// ─── Fetch Wrapper ─────────────────────────────────────────────────────────────
+
 const DEFAULT_OPTIONS: RequestInit = {
   credentials: 'include',
   headers: {
@@ -63,28 +86,105 @@ const DEFAULT_OPTIONS: RequestInit = {
 };
 
 /**
+ * Helper function to extract a human-readable error message from an error payload.
+ */
+function extractErrorMessage(data: unknown, fallback: string): string {
+  if (!data) return fallback;
+  if (typeof data === 'string') return data.trim() || fallback;
+  if (typeof data === 'object') {
+    const obj = data as Record<string, any>;
+    if (typeof obj.message === 'string' && obj.message.trim()) return obj.message;
+    if (typeof obj.error === 'string' && obj.error.trim()) return obj.error;
+    if (typeof obj.detail === 'string' && obj.detail.trim()) return obj.detail;
+    if (typeof obj.msg === 'string' && obj.msg.trim()) return obj.msg;
+    if (Array.isArray(obj.errors) && obj.errors.length > 0) {
+      return obj.errors.map((e) => (typeof e === 'string' ? e : JSON.stringify(e))).join(', ');
+    }
+  }
+  return fallback;
+}
+
+/**
+ * Parses and dispatches API errors to listeners and window events.
+ */
+async function processApiError(
+  path: string,
+  url: string,
+  method: string,
+  res?: Response,
+  networkErr?: Error
+): Promise<ApiErrorDetail> {
+  let message = res ? `HTTP ${res.status} ${res.statusText || 'Error'}` : (networkErr?.message || 'Network request failed');
+  let errorData: unknown = null;
+
+  if (res) {
+    try {
+      const clone = res.clone();
+      const text = await clone.text();
+      try {
+        const json = JSON.parse(text);
+        errorData = json;
+        message = extractErrorMessage(json, message);
+      } catch {
+        if (text && text.trim()) {
+          message = text.trim();
+        }
+      }
+    } catch {
+      // Ignore cloning/text parsing failures
+    }
+  }
+
+  const errorDetail: ApiErrorDetail = {
+    path,
+    url,
+    method,
+    status: res?.status,
+    statusText: res?.statusText,
+    message,
+    errorData,
+    timestamp: new Date().toISOString(),
+    networkError: networkErr,
+  };
+
+  // Structured console warning for debugging
+  console.warn(`[API Error] ${method} ${path}${res ? ` (${res.status})` : ' [Network Failure]'}:`, message, errorData ?? '');
+
+  // Dispatch custom DOM event if running in browser
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent<ApiErrorDetail>('aera:api-error', { detail: errorDetail })
+    );
+  }
+
+  // Notify registered callbacks
+  errorListeners.forEach((listener) => {
+    try {
+      listener(errorDetail);
+    } catch (e) {
+      console.error('[API Error Listener Error]', e);
+    }
+  });
+
+  return errorDetail;
+}
+
+/**
  * Typed API fetch wrapper.
  *
- * Wraps the native `fetch` API with:
- *   - Automatic base URL resolution
- *   - Cookie credential forwarding
+ * Wraps native `fetch` with:
+ *   - Base URL resolution (`VITE_API_URL`)
+ *   - Cookie credential forwarding (`credentials: 'include'`)
  *   - Content-Type JSON header
+ *   - Automatic error intercepting & parsing for non-2xx responses and network failures
  *
  * @param path    - API path relative to base URL
  * @param options - Optional RequestInit overrides (method, body, headers, etc.)
- * @returns Raw `Response` object — caller is responsible for parsing
- *
- * @example
- * const res = await apiFetch('/auth/login', {
- *   method: 'POST',
- *   body: JSON.stringify({ user_name: 'john', password: 'secret' }),
- * });
- * if (res.ok) {
- *   const data = await res.json();
- * }
+ * @returns Response object carrying optional `.apiError` property if !res.ok
  */
-export async function apiFetch(path: string, options?: RequestInit): Promise<Response> {
+export async function apiFetch(path: string, options?: RequestInit): Promise<ApiResponse> {
   const url = apiUrl(path);
+  const method = (options?.method ?? 'GET').toUpperCase();
   const mergedOptions: RequestInit = {
     ...DEFAULT_OPTIONS,
     ...options,
@@ -93,5 +193,19 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
       ...(options?.headers ?? {}),
     },
   };
-  return fetch(url, mergedOptions);
+
+  try {
+    const response: ApiResponse = await fetch(url, mergedOptions);
+
+    if (!response.ok) {
+      const errorDetail = await processApiError(path, url, method, response);
+      response.apiError = errorDetail;
+    }
+
+    return response;
+  } catch (err: any) {
+    const networkErr = err instanceof Error ? err : new Error(String(err));
+    await processApiError(path, url, method, undefined, networkErr);
+    throw err;
+  }
 }

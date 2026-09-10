@@ -22,6 +22,7 @@ import { SaveAction } from "../../../components/actions/SaveAction";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
+import { formatRelativeTime } from "../../../utils/time";
 import { apiFetch } from "@/lib/api";
 import type { LedgerItem } from "@/types/ledger";
 import { LedgerWallCard } from "../../profile/components/LedgerWallCard";
@@ -68,16 +69,7 @@ function AvatarImage({
   );
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 // ─── Inline action row (Honour + Share + Open Viewer) ────────────────────
 
@@ -258,7 +250,7 @@ const LineFull: React.FC<{ post: WallPost }> = ({ post }) => (
         {post.artistName || "Artist"}
       </span>
       <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white/20">
-        {formatRelativeTime(post.postedAt)}
+        {formatRelativeTime(post.postedAt, true)}
       </span>
     </div>
   </div>
@@ -854,7 +846,7 @@ export function FoyerSwiper({
                       : "Pin";
                   return (
                     <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/40">
-                      {label} · {formatRelativeTime(activePost.postedAt)}
+                      {label} · {formatRelativeTime(activePost.postedAt, true)}
                     </span>
                   );
                 })()
