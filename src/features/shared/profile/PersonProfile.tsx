@@ -13,8 +13,6 @@ interface PersonProfileProps {
 }
 
 export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonProfileProps) => {
-    if (!person) return null;
-    
     const [isOpen, setIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
     const navigate = useNavigate();
@@ -26,7 +24,9 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
       }
     }, [isOpen]);
 
-    const nameParts = person.actorName.split(" ");
+    if (!person) return null;
+
+    const nameParts = (person.actorName || "").split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 

@@ -1,21 +1,26 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { apiFetch } from "@/lib/api";
-import type { WorkDetail, EditWorkDetail, PosterWorkDetail, ScriptWorkDetail } from "../../types";
+import type { WorkDetail, EditWorkDetail, PosterWorkDetail, ScriptWorkDetail, TheatreItem } from "../../types";
 import { EditViewer } from "./layouts/EditViewer";
 import { PosterViewer } from "./layouts/PosterViewer";
 import { StoryboardViewer } from "./layouts/StoryboardViewer";
+import { RecommendationViewer } from "./layouts/RecommendationViewer";
 import { FHLoader } from "@/components/FHLoader";
 
 export default function WorkPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as { item?: TheatreItem } | null;
+  const isRec = id?.startsWith("rec-") || locationState?.item?.category === "Recommendation" || locationState?.item?.category === "RECOMMENDATION";
+
   const [workDetail, setWorkDetail] = useState<WorkDetail | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(!isRec);
   const [hasError, setHasError] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || isRec) return;
     let isMounted = true;
 
     const fetchWork = async () => {
@@ -46,7 +51,19 @@ export default function WorkPage() {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, isRec]);
+
+  if (isRec && id) {
+    const item: TheatreItem = locationState?.item || {
+      id,
+      category: "Recommendation",
+      recId: id.replace(/^rec-/, ""),
+      title: "Recommendation",
+      image: "",
+      artist: "",
+    };
+    return <RecommendationViewer item={item} />;
+  }
 
   if (isLoading) {
     return (

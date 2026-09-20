@@ -383,26 +383,28 @@ const RecommendationFull: React.FC<{
         </div>
       )}
 
-      {/* Subtle view option */}
+      {/* View recommendation viewer */}
       <button
         onClick={(e) => {
           e.stopPropagation();
+          const targetRecId = rec.id;
           const theatreItem: TheatreItem = {
-            id: `rec-${rec.id}`,
+            id: `rec-${targetRecId}`,
             category: "Recommendation",
-            recId: rec.id,
-            image: rec.original.coverImage,
-            title: rec.original.title,
-            artist: rec.artist.stageName || rec.artist.name,
-            artistId: rec.artist.id,
-            artistAvatar: rec.artist.profilePicture,
-            originalIds: [rec.original.id],
-          };
-          navigate(`/works/rec-${rec.id}`, { state: { item: theatreItem } });
+            recId: targetRecId,
+            image: rec.original?.coverImage || (rec as any).coverImage || "",
+            title: rec.original?.title || (rec as any).title || "Recommendation",
+            artist: rec.artist?.stageName || rec.artist?.name || (rec as any).author?.name || "",
+            artistId: rec.artist?.id || (rec as any).artistId || "",
+            artistAvatar: rec.artist?.profilePicture || (rec as any).author?.avatar || "",
+            originalIds: rec.original?.id ? [rec.original.id] : [],
+            raw: rec,
+          } as any;
+          navigate(`/works/rec-${targetRecId}`, { state: { item: theatreItem } });
         }}
         className="mx-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white/90 hover:text-white text-xs font-black uppercase tracking-widest transition-all pointer-events-auto active:scale-95"
       >
-        view
+        View
       </button>
     </div>
   );

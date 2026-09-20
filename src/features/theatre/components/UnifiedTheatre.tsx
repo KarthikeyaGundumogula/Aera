@@ -52,6 +52,7 @@ const RenderPartialWork = ({ item, isMobile }: { item: TheatreItem; isMobile: bo
 interface UnifiedTheatreProps {
   works: TheatreItem[];
   variant?: "preview" | "full";
+  showHeader?: boolean;
   title?: string;
   subtitle?: string;
   onExit?: () => void;
@@ -69,6 +70,7 @@ interface UnifiedTheatreProps {
 export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
   works,
   variant = "full",
+  showHeader: explicitShowHeader,
   title,
   subtitle,
   onExit,
@@ -82,6 +84,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
   const bottomObserverTarget = useRef<HTMLDivElement>(null);
 
   const isFull = variant === "full";
+  const showHeader = explicitShowHeader ?? (isFull && Boolean(onExit || subtitle));
   const safeWorks = useMemo(() => (Array.isArray(works) ? works : []), [works]);
 
   // Build clusters & stacked remainders from the provided works
@@ -105,33 +108,40 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
     };
   }, [safeWorks, maxClusters]);
 
-  const desktopFlatItems = useMemo(
-    () => [
-      ...allClusters.desktop.clusters.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
-      ...allClusters.desktop.stackedItems,
-    ],
-    [allClusters.desktop]
-  );
+  // Flatten the clustered items so the modal reels navigate them sequentially
+  const desktopFlatItems = useMemo(() => {
+    const list: TheatreItem[] = [];
+    allClusters.desktop.clusters.forEach(c => {
+      c.slots.forEach(s => {
+        if (s.item) list.push(s.item);
+      });
+    });
+    list.push(...allClusters.desktop.stackedItems);
+    return list;
+  }, [allClusters.desktop]);
 
-  const mobileFlatItems = useMemo(
-    () => [
-      ...allClusters.mobile.clusters.flatMap(c => c.slots.map(s => s.item).filter(Boolean) as TheatreItem[]),
-      ...allClusters.mobile.stackedItems,
-    ],
-    [allClusters.mobile]
-  );
+  const mobileFlatItems = useMemo(() => {
+    const list: TheatreItem[] = [];
+    allClusters.mobile.clusters.forEach(c => {
+      c.slots.forEach(s => {
+        if (s.item) list.push(s.item);
+      });
+    });
+    list.push(...allClusters.mobile.stackedItems);
+    return list;
+  }, [allClusters.mobile]);
 
-  // Infinite scroll observer
+  // Infinite Scroll Trigger via Intersection Observer
   useEffect(() => {
-    if (!isFull || !onLoadMore || !hasMore) return;
+    if (!isFull || !onLoadMore || !hasMore || isLoading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
+        if (entries[0].isIntersecting) {
           onLoadMore();
         }
       },
-      { threshold: 0.1, rootMargin: "200px" }
+      { threshold: 0.1, rootMargin: "600px" }
     );
 
     if (bottomObserverTarget.current) {
@@ -152,7 +162,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
   return (
     <div className={`w-full ${isFull ? "min-h-screen bg-surface-deep text-white" : ""}`}>
       {/* FULL PAGE HEADER */}
-      {isFull && (
+      {isFull && showHeader && (
         <header className="sticky top-0 z-40 bg-surface-deep/90 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center justify-between">
           <button
             onClick={onExit}
@@ -173,10 +183,10 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
       )}
 
       {/* THEATRE CANVAS */}
-      <main className={isFull && !disablePadding ? "pt-24 pb-20" : ""}>
+      <main className={isFull && showHeader && !disablePadding ? "pt-24 pb-20" : ""}>
         {isMobile ? (
           <FeedContext.Provider value={mobileFlatItems.length > 0 ? mobileFlatItems : safeWorks}>
-            <div className="flex flex-col gap-6 w-full">
+            <div className="flex flex-col gap-0 w-full">
               {/* 1. Mobile Clusters */}
               {allClusters.mobile.clusters.map((cluster) => (
                 <div key={cluster.id} className="w-full h-[40dvh] min-h-[260px] relative">
@@ -186,7 +196,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
 
               {/* 2. Mobile Stacked Remaining Items */}
               {allClusters.mobile.stackedItems.length > 0 && (
-                <div className="flex flex-col gap-6 w-full max-w-xl mx-auto px-4">
+                <div className="flex flex-col gap-0 w-full max-w-xl mx-auto px-4">
                   {allClusters.mobile.stackedItems.map((item) => (
                     <RenderPartialWork key={item.id} item={item} isMobile={true} />
                   ))}
@@ -196,7 +206,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
           </FeedContext.Provider>
         ) : (
           <FeedContext.Provider value={desktopFlatItems.length > 0 ? desktopFlatItems : safeWorks}>
-            <div className="flex flex-col gap-8 w-full">
+            <div className="flex flex-col gap-0 w-full">
               {/* 1. Desktop Clusters */}
               {allClusters.desktop.clusters.map((cluster, idx) => (
                 <StaticDesktopCluster key={cluster.id || `dc-${idx}`} cluster={cluster} />
@@ -204,7 +214,7 @@ export const UnifiedTheatre: React.FC<UnifiedTheatreProps> = ({
 
               {/* 2. Desktop Stacked Remaining Items */}
               {allClusters.desktop.stackedItems.length > 0 && (
-                <div className="flex flex-wrap items-center justify-center gap-8 w-full max-w-6xl mx-auto px-4 md:px-8 py-4">
+                <div className="flex flex-wrap items-center justify-center gap-0 w-full max-w-6xl mx-auto px-4 md:px-8 py-4">
                   {allClusters.desktop.stackedItems.map((item) => (
                     <div key={item.id} className="flex-shrink-0">
                       <RenderPartialWork item={item} isMobile={false} />

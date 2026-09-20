@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { SurgeScoreDisplay } from "../../../components/surge/SurgeScoreDisplay";
 import { PosterImage } from "../../../components/PosterImage";
+import { formatReleaseDate } from "../../../utils/time";
 import { apiFetch } from "@/lib/api";
 
 interface LibraryItemSheetProps {
@@ -144,14 +145,7 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
                     {original.title}
                   </h2>
                   <p className="text-[10px] font-mono text-white/40 mt-1">
-                    {(() => {
-                      if (!original?.releaseDate && !original?.release_date) return "2026";
-                      const raw = String(original.releaseDate || original.release_date).trim();
-                      if (/^\d{4}$/.test(raw)) return raw;
-                      const d = new Date(raw);
-                      if (isNaN(d.getTime())) return raw;
-                      return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-                    })()} • {Array.isArray(original.genre) ? original.genre.join(", ") : original.genre || "Drama"}
+                    {formatReleaseDate(original?.releaseDate || original?.release_date) || "2026"} • {Array.isArray(original.genre) ? original.genre.join(", ") : original.genre || "Drama"}
                   </p>
                 </div>
               </div>

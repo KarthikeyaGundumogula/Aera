@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { Sparkles, Sun, Users, QrCode, Film } from "lucide-react";
 import { PosterImage } from "../../../components/PosterImage";
+import { formatReleaseDate } from "../../../utils/time";
 import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
 import type { Original } from "@/types/originals";
@@ -118,7 +119,7 @@ export function TopOriginalsSection() {
 
                   {/* Bottom Fixed Section */}
                   <div className="shrink-0 mt-auto pt-2">
-                    {orig.releaseDate && (
+                    {orig.releaseDate && formatReleaseDate(orig.releaseDate) && (
                       <div className="flex items-end gap-4 mb-2 sm:mb-3">
                         <div className="text-[6px] sm:text-[7px] text-white/40 uppercase tracking-[0.2em] font-bold leading-[1.1]">
                           RELEASING
@@ -126,7 +127,7 @@ export function TopOriginalsSection() {
                           ON
                         </div>
                         <div className="text-[7px] sm:text-[8px] text-white uppercase tracking-widest font-mono">
-                          {orig.releaseDate}
+                          {formatReleaseDate(orig.releaseDate)}
                         </div>
                       </div>
                     )}

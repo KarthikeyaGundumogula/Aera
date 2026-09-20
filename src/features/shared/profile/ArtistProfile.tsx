@@ -46,10 +46,8 @@ interface ArtistProfileProps {
 
 export const ArtistProfile = memo(
   ({ artist, index = 0, variant = "default", onClose, zIndex = "z-[160]" }: ArtistProfileProps) => {
-    if (!artist) return null;
-
     const { currentArtist } = useAuth();
-    const targetIdentifier = artist.userName || artist.id;
+    const targetIdentifier = artist ? (artist.userName || artist.id) : undefined;
 
     const [localIsOpen, setLocalIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);

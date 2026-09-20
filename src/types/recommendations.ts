@@ -34,4 +34,6 @@ export interface Recommendation {
   sequenceId?: string;
   artistLiked?: boolean;
   ledgerEntryId?: string;
+  peakSnapshot?: number;
+  currentPeakScore?: number;
 }

@@ -22,6 +22,7 @@ import type { LedgerItem } from "@/types/ledger";
 import { SurgeScore } from "../../../components/surge/SurgeScore";
 import { SurgeInputSection } from "../../../components/surge/SurgeInputSection";
 import { PosterImage } from "@/components/PosterImage";
+import { formatReleaseDate } from "@/utils/time";
 import { useSearchQuery } from "@/lib/search";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -159,16 +160,18 @@ function OriginalsSearch({
                 loading="lazy"
                 src={original.coverImage}
                 alt={original.title}
-                info={original.releaseDate}
+                info={formatReleaseDate(original.releaseDate)}
                 className="w-9 rounded-lg object-cover object-top opacity-70 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <span className="block text-xs font-light text-white/80 truncate">
                   {original.title}
                 </span>
-                <span className="block text-[9px] text-white/25 mt-0.5 tracking-wider">
-                  {original.releaseDate}
-                </span>
+                {original.releaseDate && formatReleaseDate(original.releaseDate) && (
+                  <span className="block text-[9px] text-white/25 mt-0.5 tracking-wider">
+                    {formatReleaseDate(original.releaseDate)}
+                  </span>
+                )}
               </div>
               <Film className="w-3 h-3 text-white/10 flex-shrink-0" />
             </button>

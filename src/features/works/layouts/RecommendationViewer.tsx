@@ -10,21 +10,25 @@ interface RecommendationViewerProps {
 }
 
 export function RecommendationViewer({ item }: RecommendationViewerProps) {
-  const [rec, setRec] = useState<any>(null);
+  const [rec, setRec] = useState<any>((item as any)?.raw || (item as any)?.rec || null);
 
   useEffect(() => {
-    if (!item.recId) return;
-    apiFetch(`/library/recommendations/${item.recId}`)
+    if (rec) return;
+    const recId = item.recId || String(item.id).replace(/^rec-/, "");
+    if (!recId) return;
+    apiFetch(`/library/recommendations`)
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setRec(json.data);
+          const list = json.data || [];
+          const found = list.find((r: any) => String(r.id) === String(recId));
+          if (found) setRec(found);
         }
       })
       .catch((err) => {
         console.error("[RecommendationViewer] Failed to fetch recommendation detail:", err);
       });
-  }, [item.recId]);
+  }, [item.recId, item.id, rec]);
 
   const workData: any = {
     id: String(item.id),
@@ -32,12 +36,12 @@ export function RecommendationViewer({ item }: RecommendationViewerProps) {
     category: "RECOMMENDATION",
     stars: 0,
     artist: {
-      id: item.artistId || "",
-      stageName: item.artist || "",
-      userName: item.artist || "",
-      profilePicture: item.artistAvatar || "",
+      id: item.artistId || (rec as any)?.artist?.id || "",
+      stageName: item.artist || (rec as any)?.artist?.stageName || (rec as any)?.artist?.name || "",
+      userName: item.artist || (rec as any)?.artist?.handle || (rec as any)?.artist?.stageName || "",
+      profilePicture: item.artistAvatar || (rec as any)?.artist?.profilePicture || "",
       favoritesCount: 0,
-      spirit: 0,
+      spirit: (rec as any)?.artist?.spirit ?? 0,
     },
     originals: [],
   };

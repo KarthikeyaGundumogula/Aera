@@ -17,6 +17,7 @@ import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
 import { RecentReleasesSection } from "../shared/components/RecentReleasesSection";
 import { PosterImage } from "../../components/PosterImage";
+import { formatReleaseDate } from "../../utils/time";
 import { Original } from "../../types/originals";
 import { TheatreItem } from "../../types";
 
@@ -410,13 +411,13 @@ export function OriginalPage() {
             </p>
           </div>
 
-          {original.releaseDate && (
+          {original.releaseDate && formatReleaseDate(original.releaseDate) && (
             <div>
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2">
                 Release Date
               </h4>
               <p className="text-sm text-white/80 font-mono tracking-tighter">
-                {original.releaseDate}
+                {formatReleaseDate(original.releaseDate)}
               </p>
             </div>
           )}

@@ -113,6 +113,7 @@ export function ViewerNav({ work }: ViewerNavProps) {
               isOpen={showCurate}
               onClose={() => setShowCurate(false)}
               originals={activeOriginals}
+              workId={work.id}
               isLoading={isLoadingOriginals}
               onShowToast={showToast}
             />

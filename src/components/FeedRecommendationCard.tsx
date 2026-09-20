@@ -37,9 +37,11 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
   variant,
 }: FeedRecommendationCardProps) {
   const navigate = useNavigate();
-  const effectivePeak = highestScore || rec.artist?.highestScore || rec.surgeScore;
-
-  const isHighestRated = rec.isPeakRecorded || (effectivePeak !== undefined && (rec.surgeScore || 0) > 0 && (rec.surgeScore || 0) === effectivePeak);
+  const score = Number(rec.score || rec.surgeScore || 0);
+  const peakSnapshot = Number((rec as any).peakSnapshot ?? (rec as any).peak_snapshot ?? 1000);
+  const currentPeak = Number(highestScore || rec.artist?.highestScore || (rec as any).author?.highestScore || 1000);
+  const isHighestRated = rec.isPeakRecorded || (peakSnapshot > 0 && score >= peakSnapshot) || (currentPeak > 0 && score >= currentPeak);
+  const pct = peakSnapshot > 0 ? Math.round((score / peakSnapshot) * 100) : 0;
 
   const ledgerEntryId = rec.ledgerEntryId;
 
@@ -76,7 +78,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
     profilePicture: rec.artist?.profilePicture || (rec as any).author?.avatar || (rec as any).artistImage || "",
     spirit: rec.artist?.spirit ?? (rec as any).author?.spirit ?? 0,
     works: rec.artist?.works ?? (rec as any).author?.worksCount ?? 0,
-    highestScore: rec.artist?.highestScore || (rec as any).author?.spirit,
+    highestScore: rec.artist?.highestScore || (rec as any).author?.highestScore,
   };
 
   const theatreItem: TheatreItem = {
@@ -93,7 +95,10 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    openWork(theatreItem);
+    if (variant === "modal") return;
+    if (original.id) {
+      navigate(`/originals/${original.id}`);
+    }
   };
 
   const textRef = useRef<HTMLParagraphElement>(null);
@@ -113,9 +118,8 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
     return () => window.removeEventListener("resize", checkOverflow);
   }, [rec.notes, notesExpanded]);
 
-  const artistPeak = artist.highestScore || artist.spirit || 10000;
-  const isArtistPeak = (rec.score || 0) >= artistPeak;
-  const ratio = (rec.score || 0) / artistPeak;
+  const isArtistPeak = (rec.score || 0) >= currentPeak;
+  const ratio = currentPeak > 0 ? Math.min(score / currentPeak, 1) : 0;
 
   return (
     <div className="flex flex-col gap-1.5 shrink-0 w-full">
@@ -367,9 +371,15 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                           }}
                         />
                       )}
-                      <span className="text-[8px] font-mono text-white/30 leading-none truncate">
-                        {rec.artist.stageName}
-                      </span>
+                      {artist.handle ? (
+                        <span className="text-[8px] font-mono text-white/30 leading-none truncate">
+                          @{artist.handle.replace(/^@/, "")}
+                        </span>
+                      ) : artist.stageName && artist.stageName !== artist.name ? (
+                        <span className="text-[8px] font-mono text-white/30 leading-none truncate">
+                          {artist.stageName}
+                        </span>
+                      ) : null}
                     </div>
                     {/* Artist stats */}
                     <div className="flex items-center gap-2 mt-1">
@@ -408,8 +418,8 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                   >
                     {/* Bars */}
                     <SurgeBars
-                      score={rec.score || rec.surgeScore || 0}
-                      highestScore={effectivePeak}
+                      score={score}
+                      highestScore={peakSnapshot}
                       size="md"
                       colorVariant="amber"
                     />
@@ -417,13 +427,17 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     {/* Score numbers */}
                     <div className="flex items-baseline gap-0.5 whitespace-nowrap">
                       <span className="text-[14px] font-black text-white leading-none tracking-tighter">
-                        {effectivePeak ? Math.min(Math.round(((rec.score || rec.surgeScore || 0) / effectivePeak) * 100), 100) : 0}%
+                        {pct}%
                       </span>
                       <span className="text-[7px] font-black tracking-widest uppercase ml-1">
                         <span className="text-white/30">
-                          {(rec.score || rec.surgeScore || 0).toString()} /{" "}
-                          {effectivePeak ? effectivePeak.toString() : "—"}
+                          {score.toLocaleString()} / {peakSnapshot.toLocaleString()}
                         </span>
+                        {currentPeak ? (
+                          <span className="text-amber-400/80 font-mono text-[7px] ml-1 lowercase">
+                            [{currentPeak.toLocaleString()}]
+                          </span>
+                        ) : null}
                       </span>
                     </div>
 
@@ -445,8 +459,9 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                           Personal Score
                         </span>
                         <p className="text-[10px] text-white/75 leading-relaxed font-medium">
-                          How strongly {rec.artist.name} recommends this —
-                          measured against their personal all-time peak.
+                          How strongly {artist.name || artist.stageName} recommends this —
+                          measured against their snapshot peak ({peakSnapshot.toLocaleString()})
+                          {currentPeak && currentPeak !== peakSnapshot ? ` [Current living peak: ${currentPeak.toLocaleString()}]` : ""}.
                         </p>
                       </div>
                     </div>

@@ -38,6 +38,7 @@ import { SurgeScoreDisplay } from "../../components/surge/SurgeScoreDisplay";
 import { SurgeInputSection } from "../../components/surge/SurgeInputSection";
 import { ArtistAvatar } from "@/components/ArtistAvatar";
 import { PosterImage } from "@/components/PosterImage";
+import { formatReleaseYear } from "@/utils/time";
 import { useAuth } from "../../context/AuthContext";
 
 // ─── Easing constant (strong ease-out per Emil design-eng principles) ──────────
@@ -617,7 +618,7 @@ export function LedgerViewer() {
           originalId: item.originalId,
           originalName: item.originalName || "Original",
           originalPosterUrl: item.originalPosterUrl || "",
-          releaseYear: item.releaseDate ? new Date(item.releaseDate).getFullYear().toString() : "2026",
+          releaseYear: formatReleaseYear(item.releaseDate) || "2026",
           genre: Array.isArray(item.genre) ? item.genre : [item.genre || "Drama"],
           starName: firstStar?.actorName || "",
           starImageUrl: firstStar?.imageUrl,

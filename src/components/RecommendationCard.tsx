@@ -117,7 +117,7 @@ export const RecommendationCard = memo(function RecommendationCard({
     profilePicture: rec.artist?.profilePicture || (rec as any).author?.avatar || (rec as any).artistImage || "",
     spirit: rec.artist?.spirit ?? (rec as any).author?.spirit ?? 0,
     works: rec.artist?.works ?? (rec as any).author?.worksCount ?? 0,
-    highestScore: rec.artist?.highestScore || (rec as any).author?.spirit,
+    highestScore: rec.artist?.highestScore || (rec as any).author?.highestScore,
   };
 
   const theatreItem: TheatreItem = {
@@ -136,12 +136,17 @@ export const RecommendationCard = memo(function RecommendationCard({
     e.stopPropagation();
     if (variant === "modal") return;
 
-    openWork(theatreItem);
+    if (original.id) {
+      navigate(`/originals/${original.id}`);
+    }
   };
 
-  const highestScore = artist.highestScore || artist.spirit || 10000;
-  const isHighestRated = (rec.score || 0) >= highestScore;
-  const ratio = (rec.score || 0) / highestScore;
+  const score = Number(rec.score || rec.surgeScore || 0);
+  const peakSnapshot = Number((rec as any).peakSnapshot ?? (rec as any).peak_snapshot ?? 1000);
+  const currentPeak = Number(artist.highestScore || rec.artist?.highestScore || (rec as any).author?.highestScore || 1000);
+  const isHighestRated = rec.isPeakRecorded || (peakSnapshot > 0 && score >= peakSnapshot) || (currentPeak > 0 && score >= currentPeak);
+  const pct = peakSnapshot > 0 ? Math.round((score / peakSnapshot) * 100) : 0;
+  const ratio = peakSnapshot > 0 ? Math.min(score / peakSnapshot, 1) : 0;
 
   // Hiding the score row frees up ~43px of space (row height + gap + padding adjustments).
   // Hiding the artist row frees up an additional ~28px of space.
@@ -453,9 +458,15 @@ export const RecommendationCard = memo(function RecommendationCard({
                         }}
                       />
                     )}
-                    <span className="text-[8px] font-mono text-white/30 leading-none truncate">
-                      {rec.artist.stageName}
-                    </span>
+                    {artist.handle ? (
+                      <span className="text-[8px] font-mono text-white/30 leading-none truncate">
+                        @{artist.handle.replace(/^@/, "")}
+                      </span>
+                    ) : artist.stageName && artist.stageName !== artist.name ? (
+                      <span className="text-[8px] font-mono text-white/30 leading-none truncate">
+                        {artist.stageName}
+                      </span>
+                    ) : null}
                   </div>
                   {/* Artist stats */}
                   <div className="flex items-center gap-2 mt-1">
@@ -508,8 +519,8 @@ export const RecommendationCard = memo(function RecommendationCard({
                 >
                   {/* Bars */}
                   <SurgeBars
-                    score={rec.score || 0}
-                    highestScore={highestScore}
+                    score={score}
+                    highestScore={peakSnapshot}
                     size="md"
                     colorVariant="amber"
                   />
@@ -517,13 +528,17 @@ export const RecommendationCard = memo(function RecommendationCard({
                   {/* Score numbers */}
                   <div className="flex items-baseline gap-0.5 whitespace-nowrap">
                     <span className="text-[14px] font-black text-white leading-none tracking-tighter">
-                      {Math.round(((rec.score || 0) / highestScore) * 100)}%
+                      {pct}%
                     </span>
                     <span className="text-[7px] font-black tracking-widest uppercase ml-1">
                       <span className="text-white/30">
-                        {(rec.score || 0).toString()} /{" "}
-                        {highestScore.toString()}
+                        {score.toLocaleString()} / {peakSnapshot.toLocaleString()}
                       </span>
+                      {currentPeak ? (
+                        <span className="text-amber-400/80 font-mono text-[7px] ml-1 lowercase">
+                          [{currentPeak.toLocaleString()}]
+                        </span>
+                      ) : null}
                     </span>
                   </div>
 
@@ -545,8 +560,9 @@ export const RecommendationCard = memo(function RecommendationCard({
                         Personal Score
                       </span>
                       <p className="text-[10px] text-white/75 leading-relaxed font-medium">
-                        How strongly {rec.artist.name || rec.artist.stageName} recommends this —
-                        measured against their personal all-time peak.
+                        How strongly {artist.name || artist.stageName} recommends this —
+                        measured against their snapshot peak ({peakSnapshot.toLocaleString()})
+                        {currentPeak && currentPeak !== peakSnapshot ? ` [Current living peak: ${currentPeak.toLocaleString()}]` : ""}.
                       </p>
                     </div>
                   </div>

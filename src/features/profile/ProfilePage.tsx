@@ -654,6 +654,7 @@ const ProfilePage: React.FC = () => {
                 <UnifiedTheatre
                   works={userWorks}
                   variant="full"
+                  showHeader={false}
                   disablePadding={true}
                   isLoading={isWorksLoadingMore}
                   onLoadMore={loadMoreWorks}

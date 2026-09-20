@@ -83,10 +83,6 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
     return () => clearTimeout(timer);
   }, [currentIndex, currentWork?.id]);
 
-  const currentOriginal = null;
-
-  if (!recentReleases.length) return null;
-
   const rawPlatform = (currentWork?.platform || "").toLowerCase();
   const isTwitter = rawPlatform === "twitter" || (Boolean(currentWork?.srcId) && /twitter\.com|x\.com/.test(currentWork?.srcId || ""));
   const isYoutube = !isTwitter;
@@ -100,6 +96,8 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
   const { containerRef: mobileTwitterRef, isLoaded: isMobileTwitterLoaded } =
     useTwitterWidgets(isTwitter ? currentWork?.srcId : undefined);
+
+  if (!recentReleases.length) return null;
 
   const isDesktopFullyLoaded = isYoutube ? isIframeLoaded : isTwitter ? isDesktopTwitterLoaded : true;
   const isMobileFullyLoaded = isYoutube ? isIframeLoaded : isTwitter ? isMobileTwitterLoaded : true;

@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Tag } from "lucide-react";
 import { LedgerAction } from "../../../components/actions/LedgerAction";
+import { useAuth } from "../../../context/AuthContext";
+import { apiFetch } from "@/lib/api";
 import type { LinkedOriginal } from "../../../types";
 
 interface CurateOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   originals: LinkedOriginal[];
+  workId?: string | number;
   isLoading?: boolean;
   onShowToast: (msg: string) => void;
 }
@@ -17,34 +20,91 @@ export function CurateOverlay({
   isOpen,
   onClose,
   originals,
+  workId,
   isLoading = false,
   onShowToast,
 }: CurateOverlayProps) {
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
   const [ledgerOriginals, setLedgerOriginals] = useState<string[]>([]);
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
-  const handleAddToLedger = (id: string) => {
-    if (ledgerOriginals.includes(id)) {
-      onShowToast("Already Saved to Ledger");
-    } else {
-      setLedgerOriginals((prev) => [...prev, id]);
-      onShowToast("Original Added to Ledger");
+  // Pre-load user's favorited originals if logged in
+  useEffect(() => {
+    if (isOpen && currentArtist) {
+      apiFetch("/library")
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const items = json.data ?? [];
+            if (Array.isArray(items)) {
+              const favoritedIds = items.map((e: any) => e.originalId || e.id).filter(Boolean);
+              setLedgerOriginals(favoritedIds);
+            }
+          }
+        })
+        .catch(() => undefined);
+    }
+  }, [isOpen, currentArtist]);
+
+  const handleAddToLedger = async (id: string) => {
+    if (!currentArtist) {
+      onShowToast("Sign in required to add to Ledger");
+      return;
+    }
+
+    const isCurrentlyInLedger = ledgerOriginals.includes(id);
+
+    try {
+      const endpoint = isCurrentlyInLedger ? "/originals/unfavorite" : "/originals/favorite";
+      const res = await apiFetch(endpoint, {
+        method: "POST",
+        body: JSON.stringify(id),
+      });
+
+      if (res.ok) {
+        if (isCurrentlyInLedger) {
+          setLedgerOriginals((prev) => prev.filter((item) => item !== id));
+          onShowToast("Original Removed from Ledger");
+        } else {
+          setLedgerOriginals((prev) => [...prev, id]);
+          onShowToast("Original Added to Ledger");
+        }
+      } else {
+        onShowToast("Failed to update Ledger");
+      }
+    } catch (err) {
+      console.error("[CurateOverlay] Failed to update ledger status:", err);
+      onShowToast("Network error updating Ledger");
     }
   };
 
-  const handleTagToLedger = (id: string) => {
+  const handleTagToLedger = async (id: string) => {
+    if (!currentArtist) {
+      onShowToast("Sign in required to tag work");
+      return;
+    }
+
     if (taggedOriginals.includes(id)) {
       onShowToast("Already Tagged to Original");
       return;
     }
 
-    setTaggedOriginals((prev) => [...prev, id]);
-    if (!ledgerOriginals.includes(id)) {
-      setLedgerOriginals((prev) => [...prev, id]);
-      onShowToast("Original collection created with Work");
-    } else {
-      onShowToast("Work added to original collection");
+    try {
+      // Ensure the original is favorited in the ledger first
+      if (!ledgerOriginals.includes(id)) {
+        await apiFetch("/originals/favorite", {
+          method: "POST",
+          body: JSON.stringify(id),
+        });
+        setLedgerOriginals((prev) => [...prev, id]);
+      }
+
+      setTaggedOriginals((prev) => [...prev, id]);
+      onShowToast("Work tagged to Original");
+    } catch (err) {
+      console.error("[CurateOverlay] Failed to tag work:", err);
+      onShowToast("Network error tagging work");
     }
   };
 
