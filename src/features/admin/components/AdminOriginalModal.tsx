@@ -254,7 +254,7 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
         if (onSuccess) onSuccess();
       } else {
         const errData = await res.json().catch(() => ({}));
-        const errMsg = errData.message || `Failed to upload official release (HTTP ${res.status}). Ensure Admin session is active.`;
+        const errMsg = errData.error || errData.message || `Failed to upload official release (HTTP ${res.status}). Ensure Admin session is active.`;
         setMessage({ text: errMsg, type: "error" });
       }
     } catch (err) {

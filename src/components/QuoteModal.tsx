@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send, Pin, Star, BookPlus } from "lucide-react";
+import { X, Send, Pin, Star, BookPlus, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { TheatreItem } from "../types";
+import { useAuth } from "@/context/AuthContext";
 
 import { apiFetch } from "@/lib/api";
 
@@ -16,15 +18,19 @@ interface QuoteModalProps {
 const AMBER_GLOW = "rgba(217,119,6,0.30)";
 
 export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: QuoteModalProps) {
+  const { currentArtist } = useAuth();
+  const navigate = useNavigate();
   const [quoteText, setQuoteText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [peakFlash, setPeakFlash] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setQuoteText("");
       setSubmitted(false);
       setPeakFlash(false);
+      setErrorMessage(null);
     }
   }, [isOpen]);
 
@@ -58,11 +64,13 @@ export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: 
     const cleanQuote = quoteText.trim();
     if (!cleanQuote) return;
 
-    setSubmitted(true);
-    setPeakFlash(true);
+    setErrorMessage(null);
 
     if (onQuoteSubmit) {
+      setSubmitted(true);
+      setPeakFlash(true);
       await onQuoteSubmit(cleanQuote, item);
+      setTimeout(() => onClose(), 1000);
     } else {
       const isUuid = typeof item.id === "string" && /^[0-9a-fA-F-]{36}$/.test(item.id);
       const payload: Record<string, unknown> = {
@@ -82,16 +90,25 @@ export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: 
       }
 
       try {
-        await apiFetch("/artists/new/wall_post", {
+        const res = await apiFetch("/artists/new/wall_post", {
           method: "POST",
           body: JSON.stringify(payload),
         });
+
+        if (res.ok) {
+          setSubmitted(true);
+          setPeakFlash(true);
+          setTimeout(() => onClose(), 1000);
+        } else {
+          const errJson = await res.json().catch(() => ({}));
+          const errMsg = errJson.error || errJson.message || "Failed to post quote. Please try again.";
+          setErrorMessage(errMsg);
+        }
       } catch (e) {
         console.warn("[QuoteModal] Failed to post wall quote:", e);
+        setErrorMessage("Network error. Please check your connection.");
       }
     }
-
-    setTimeout(() => onClose(), 1000);
   };
 
   return (
@@ -241,67 +258,91 @@ export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: 
 
                 {/* Quote Input (Bottom) */}
                 <div className="p-5 pb-6">
-                  <div className="flex">
-                    {/* Orange Vertical Bar */}
-                    <div className="w-[3px] bg-[#B45309] rounded-full shrink-0 mr-4" />
-                    
-                    <div className="flex flex-col flex-1 gap-2">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">
-                        Quoted by You
-                      </span>
+                  {!currentArtist ? (
+                    <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
+                      <p className="text-xs text-white/60">
+                        Sign in to frame this work and share your thoughts.
+                      </p>
+                      <button
+                        onClick={() => {
+                          onClose();
+                          navigate("/profile/login");
+                        }}
+                        className="flex items-center gap-2 h-9 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase tracking-widest transition-transform active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(217,119,6,0.3)]"
+                      >
+                        <LogIn size={13} strokeWidth={2.5} />
+                        <span>Sign In</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex">
+                      {/* Orange Vertical Bar */}
+                      <div className="w-[3px] bg-[#B45309] rounded-full shrink-0 mr-4" />
                       
-                      <textarea
-                        autoFocus
-                        placeholder="Add a thought..."
-                        value={quoteText}
-                        onChange={(e) => setQuoteText(e.target.value)}
-                        className="w-full min-h-[80px] bg-transparent text-[15px] italic text-white/90 placeholder:text-white/20 resize-none focus:outline-none leading-relaxed"
-                      />
-                      
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-[10px] font-mono text-white/20">
-                          {quoteText.length} / 280
+                      <div className="flex flex-col flex-1 gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">
+                          Quoted by You
                         </span>
                         
-                        <button
-                          onClick={handleSubmit}
-                          disabled={!canSubmit || submitted}
-                          className={`
-                            relative overflow-hidden flex items-center gap-2 h-9 px-5 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all duration-300
-                            ${
-                              canSubmit && !submitted
-                                ? "bg-[#B45309] text-white shadow-[0_0_20px_rgba(180,83,9,0.3)] hover:scale-[1.02] active:scale-95"
-                                : "bg-white/5 text-white/30 cursor-not-allowed"
-                            }
-                          `}
-                        >
-                          <AnimatePresence mode="wait">
-                            {submitted ? (
-                              <motion.span
-                                key="submitted"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-2"
-                              >
-                                Quoted
-                              </motion.span>
-                            ) : (
-                              <motion.span
-                                key="default"
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                className="flex items-center gap-2"
-                              >
-                                Post
-                                <Send className="w-3 h-3" />
-                              </motion.span>
-                            )}
-                          </AnimatePresence>
-                        </button>
+                        <textarea
+                          autoFocus
+                          placeholder="Add a thought..."
+                          value={quoteText}
+                          onChange={(e) => setQuoteText(e.target.value)}
+                          className="w-full min-h-[80px] bg-transparent text-[15px] italic text-white/90 placeholder:text-white/20 resize-none focus:outline-none leading-relaxed"
+                        />
+
+                        {errorMessage && (
+                          <p className="text-[11px] font-medium text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-lg">
+                            {errorMessage}
+                          </p>
+                        )}
+                        
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-[10px] font-mono text-white/20">
+                            {quoteText.length} / 280
+                          </span>
+                          
+                          <button
+                            onClick={handleSubmit}
+                            disabled={!canSubmit || submitted}
+                            className={`
+                              relative overflow-hidden flex items-center gap-2 h-9 px-5 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all duration-300
+                              ${
+                                canSubmit && !submitted
+                                  ? "bg-[#B45309] text-white shadow-[0_0_20px_rgba(180,83,9,0.3)] hover:scale-[1.02] active:scale-95"
+                                  : "bg-white/5 text-white/30 cursor-not-allowed"
+                              }
+                            `}
+                          >
+                            <AnimatePresence mode="wait">
+                              {submitted ? (
+                                <motion.span
+                                  key="submitted"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="flex items-center gap-2"
+                                >
+                                  Quoted
+                                </motion.span>
+                              ) : (
+                                <motion.span
+                                  key="default"
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 10 }}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Send size={12} />
+                                  <span>Post</span>
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </motion.div>

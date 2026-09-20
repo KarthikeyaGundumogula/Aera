@@ -24,7 +24,7 @@ export function LedgerTabsZone() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setLedgerItems(json.items || json.data || []);
+          setLedgerItems(json.data ?? []);
         }
       })
       .catch((err) => {

@@ -12,6 +12,20 @@ export interface DiscussionCardProps {
   onCardClick?: () => void;
 }
 
+function formatDiscussionTime(raw?: string): string {
+  if (!raw) return "Recent";
+  if (!raw.includes("T") && !raw.includes("-")) return raw;
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return raw;
+  const now = new Date();
+  const diffSec = Math.floor((now.getTime() - d.getTime()) / 1000);
+  if (diffSec < 60) return "Just now";
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  if (diffSec < 86400 * 7) return `${Math.floor(diffSec / 86400)}d ago`;
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 export function DiscussionCard({
   thought: rawThought,
   discussion: rawDiscussion,
@@ -20,17 +34,27 @@ export function DiscussionCard({
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
 
-  const discussionItem = rawDiscussion || rawThought;
-  if (!discussionItem) return null;
+  const item = rawDiscussion || rawThought;
+  if (!item) return null;
 
-  const authorName = discussionItem.authorName || discussionItem.artistName || "";
-  const artistData =
-    ARTISTS_MOCK.find(
-      (a: any) => a.name.toLowerCase() === authorName.toLowerCase()
-    ) || ARTISTS_MOCK[0];
+  const authorName = item.authorName || "Artist";
+  const authorAvatar = item.authorAvatar || "";
+  const authorId = item.authorId || "";
+  const artistData = {
+    id: authorId || "artist",
+    name: authorName,
+    image: authorAvatar,
+    spirit: 0,
+    works: 0,
+    bio: "Artist",
+  };
 
-  const title = discussionItem.title || "Set Discussion";
-  const bodyText = discussionItem.content || discussionItem.text;
+  const title = item.title || "Set Discussion";
+  const bodyText = item.body || "";
+  const threadCount = item.commentCount ?? 0;
+  const displayTime = formatDiscussionTime(item.createdAt);
+  const setId = item.setId;
+  const setName = item.setName;
 
   return (
     <>
@@ -49,16 +73,16 @@ export function DiscussionCard({
                 Discussion
               </span>
             </div>
-            {discussionItem.setName && discussionItem.setId && (
+            {setName && setId && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/sets/${discussionItem.setId}`);
+                  navigate(`/sets/${setId}`);
                 }}
                 className="text-[9px] font-sans font-extrabold uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors duration-200 cursor-pointer truncate max-w-[140px]"
-                title={discussionItem.setName}
+                title={setName}
               >
-                //{discussionItem.setName}
+                //{setName}
               </button>
             )}
           </div>
@@ -75,7 +99,7 @@ export function DiscussionCard({
             {bodyText && (
               <p
                 className={`font-mono text-[13px] leading-relaxed text-white/80 whitespace-pre-wrap overflow-hidden ${
-                  discussionItem.work ? "line-clamp-3" : "line-clamp-4"
+                  item.work ? "line-clamp-3" : "line-clamp-4"
                 }`}
               >
                 "{bodyText}"
@@ -83,9 +107,9 @@ export function DiscussionCard({
             )}
 
             {/* Optional Embedded Work Preview — Docks above partition line with exact 1px gap */}
-            {discussionItem.work && (
+            {item.work && (
               <div className="mt-auto mb-[1px] shrink-0">
-                <EmbeddedWorkBox work={discussionItem.work} variant="compact" />
+                <EmbeddedWorkBox work={item.work} variant="compact" />
               </div>
             )}
           </div>
@@ -100,7 +124,7 @@ export function DiscussionCard({
               >
                 <GitCommit className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-bold font-sans">
-                  {discussionItem.threadCount || 0}
+                  {threadCount}
                 </span>
               </div>
             </div>
@@ -113,12 +137,12 @@ export function DiscussionCard({
                   setShowProfile(true);
                 }}
                 className="text-[10px] font-sans font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors duration-200 cursor-pointer truncate max-w-[120px]"
-                title={discussionItem.authorName}
+                title={authorName}
               >
-                - {discussionItem.authorName}
+                - {authorName}
               </button>
               <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 shrink-0">
-                • {discussionItem.timestamp}
+                • {displayTime}
               </span>
             </div>
           </div>

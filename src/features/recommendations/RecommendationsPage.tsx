@@ -15,7 +15,7 @@ export function RecommendationsPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setRecommendations(json.items || json.data || []);
+          setRecommendations(json.data ?? []);
         }
       })
       .catch((err) => {

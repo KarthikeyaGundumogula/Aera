@@ -25,11 +25,11 @@ import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { SectionHeader } from "../../components/SectionHeader";
 import { UpdateSetModal } from "./components/UpdateSetModal";
 import { CreateFestivalModal } from "./components/CreateFestivalModal";
-import { CreateDiscussionWidget } from "./components/CreateDiscussionWidget";
+import { CreateDiscussionWidget, SetWorkItem } from "./components/CreateDiscussionWidget";
 import { NotFoundOverlay } from "../../components/NotFoundOverlay";
 import { apiFetch } from "@/lib/api";
 import { Set as SetType, Festival } from "../../types/sets";
-import { TheatreItem } from "../../types";
+import { TheatreItem, DiscussionItem } from "../../types";
 
 /**
  * SetDetailPage — /sets/:id
@@ -41,7 +41,7 @@ export function SetDetailPage() {
 
   const [localSet, setLocalSet] = useState<SetType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [discussions, setDiscussions] = useState<any[]>([]);
+  const [discussions, setDiscussions] = useState<DiscussionItem[]>([]);
   const [theatreWorks, setTheatreWorks] = useState<TheatreItem[]>([]);
   const [fetchedFestivals, setFetchedFestivals] = useState<Festival[]>([]);
 
@@ -59,30 +59,30 @@ export function SetDetailPage() {
       .then(async ([setRes, discRes, theatreRes, festRes]) => {
         if (setRes.ok) {
           const json = await setRes.json();
-          const remote = json.data || json;
+          const remote = json.data;
           if (remote && isMounted) {
             const mappedMembers = (remote.members || []).map((m: any) => ({
-              profileId: m.profileId || m.profile_id,
+              profileId: m.profileId,
               role: m.role || "Member",
-              joinedAt: m.joinedAt || m.joined_at || new Date().toISOString(),
+              joinedAt: m.joinedAt || new Date().toISOString(),
             }));
 
             const mappedSet = {
               id: remote.id,
               title: remote.title,
               description: remote.description,
-              captainId: remote.captainId || remote.captain_id,
-              coverImage: remote.coverImage || remote.cover_image || "",
-              accentColor: remote.accentColor || remote.accent_color,
-              themeLine: remote.themeLine || remote.theme_line || "",
+              captainId: remote.captainId,
+              coverImage: remote.coverImage || "",
+              accentColor: remote.accentColor,
+              themeLine: remote.themeLine || "",
               members: mappedMembers,
-              memberCount: remote.memberCount ?? remote.member_count ?? mappedMembers.length,
-              totalFestivals: remote.totalFestivals ?? remote.total_festivals,
-              liveFestivals: remote.liveFestivals ?? remote.live_festivals,
-              isMember: remote.isMember ?? remote.is_member,
-              activeFestivalId: remote.activeFestivalId || remote.active_festival_id,
-              festivalStatus: remote.festivalStatus || remote.festival_status,
-              tickerText: remote.tickerText || remote.ticker_text,
+              memberCount: remote.memberCount ?? mappedMembers.length,
+              totalFestivals: remote.totalFestivals,
+              liveFestivals: remote.liveFestivals,
+              isMember: remote.isMember,
+              activeFestivalId: remote.activeFestivalId,
+              festivalStatus: remote.festivalStatus,
+              tickerText: remote.tickerText,
             };
             setLocalSet(mappedSet);
 
@@ -90,7 +90,7 @@ export function SetDetailPage() {
               const userInMembers = mappedMembers.some(
                 (m: any) => String(m.profileId) === String(currentArtist.id)
               );
-              if (userInMembers || remote.isMember || remote.is_member) {
+              if (userInMembers || remote.isMember) {
                 setIsJoined(true);
               }
             }
@@ -99,7 +99,7 @@ export function SetDetailPage() {
 
         if (discRes.ok) {
           const json = await discRes.json();
-          const list = json.data || json;
+          const list = json.data ?? [];
           if (Array.isArray(list) && isMounted) {
             setDiscussions(list);
           }
@@ -107,7 +107,7 @@ export function SetDetailPage() {
 
         if (theatreRes && theatreRes.ok) {
           const json = await theatreRes.json();
-          const list = json.data || json;
+          const list = json.data ?? [];
           if (Array.isArray(list) && isMounted) {
             setTheatreWorks(list);
           }
@@ -115,20 +115,21 @@ export function SetDetailPage() {
 
         if (festRes && festRes.ok) {
           const json = await festRes.json();
-          const list = json.data || json;
+          const list = json.data ?? [];
           if (Array.isArray(list) && isMounted) {
             const mappedFestivals: Festival[] = list.map((f: any) => ({
               id: f.id,
-              setId: f.setId || f.set_id || "",
-              organizerId: f.organizerId || f.organizer_id || "",
-              title: f.title || f.name || "Festival",
+              setId: f.setId || "",
+              setName: f.setName,
+              organizerId: f.organizerId || "",
+              title: f.title || "Festival",
               description: f.description || "",
               rules: Array.isArray(f.rules) ? f.rules : f.rules ? [f.rules] : [],
-              startDate: f.startDate || f.start_date || new Date().toISOString(),
-              endDate: f.endDate || f.end_date || new Date().toISOString(),
-              coverImage: f.coverImage || f.cover_image || "",
+              startDate: f.startDate || new Date().toISOString(),
+              endDate: f.endDate || new Date().toISOString(),
+              coverImage: f.coverImage || "",
               status: f.status || "LIVE",
-              presenceLeader: f.presenceLeader || f.presence_leader,
+              presenceLeader: f.presenceLeader,
             }));
             setFetchedFestivals(mappedFestivals);
           }
@@ -144,7 +145,7 @@ export function SetDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [id, currentArtist?.id]);
+  }, [id]);
 
   const set = localSet;
 
@@ -167,40 +168,16 @@ export function SetDetailPage() {
 
   const captain = null as { id: string; name: string; profilePicture?: string } | null;
 
-  const setWorks = useMemo(() => {
-    if (!theatreWorks || !Array.isArray(theatreWorks)) return [];
-    return theatreWorks.map((w: any) => ({
-      id: w.id,
-      title: w.title || "Untitled",
-      type: (w.workType || w.work_type || w.category || "EDIT").toLowerCase() as any,
-      thumbnail: w.thumbnail || "",
-      artistId: w.artistId || w.artist_id || "",
-      artistName: w.artistName || w.artist_name || "",
+  const setWorks: SetWorkItem[] = useMemo(() => {
+    return theatreWorks.map((tw) => ({
+      id: String(tw.id),
+      title: tw.title || "Untitled",
+      type: tw.category || "Original",
+      thumbnail: tw.image || "",
+      artistId: tw.artistId || "",
+      artistName: tw.artist || "",
     }));
   }, [theatreWorks]);
-
-  const setDiscussionItems = useMemo(() => {
-    return discussions.map((d: any) => ({
-      id: d.id,
-      title: d.title || "",
-      body: d.body || d.content || "",
-      content: d.body || d.content || "",
-      artistId: d.author_id || d.authorId || "artist-1",
-      originalId: "",
-      originalTitle: "",
-      thoughtText: d.body || d.content || "",
-      createdAt: d.created_at || d.createdAt || new Date().toISOString(),
-      hits: d.comment_count ?? d.commentCount ?? 0,
-      threadCount: d.comment_count ?? d.commentCount ?? 0,
-      text: d.title ? `${d.title}\n\n${d.body || d.content || ""}` : (d.body || d.content || ""),
-      artistName: d.author_name || d.authorName || "Artist",
-      artistPicture: d.author_avatar || d.authorAvatar || "",
-      setId: id || "",
-      timestamp: (d.created_at || d.createdAt)
-        ? new Date(d.created_at || d.createdAt).toLocaleDateString()
-        : "Just now",
-    }));
-  }, [id, discussions]);
 
   const [isJoined, setIsJoined] = useState(false);
   const memberCount = set?.memberCount ?? ((set?.members?.length ?? 0) + (isJoined ? 1 : 0));
@@ -307,12 +284,12 @@ export function SetDetailPage() {
           async ([setRes, festRes]) => {
             if (setRes.ok) {
               const json = await setRes.json();
-              const remote = json.data || json;
+              const remote = json.data;
               if (remote) {
                 setLocalSet((prev: any) => ({
                   ...prev,
-                  activeFestivalId: remote.activeFestivalId || remote.active_festival_id || prev?.activeFestivalId,
-                  festivalStatus: remote.festivalStatus || remote.festival_status || prev?.festivalStatus,
+                  activeFestivalId: remote.activeFestivalId || prev?.activeFestivalId,
+                  festivalStatus: remote.festivalStatus || prev?.festivalStatus,
                   totalFestivals: (prev?.totalFestivals || 0) + 1,
                   liveFestivals: (prev?.liveFestivals || 0) + 1,
                 }));
@@ -320,21 +297,21 @@ export function SetDetailPage() {
             }
             if (festRes.ok) {
               const json = await festRes.json();
-              const list = json.data || json;
+              const list = json.data ?? [];
               if (Array.isArray(list)) {
                 const mappedFestivals: Festival[] = list.map((f: any) => ({
                   id: f.id,
-                  setId: f.setId || f.set_id || "",
-                  setName: f.setName || f.set_name || "",
-                  organizerId: f.organizerId || f.organizer_id || "",
-                  title: f.title || f.name || "Festival",
+                  setId: f.setId || "",
+                  setName: f.setName || "",
+                  organizerId: f.organizerId || "",
+                  title: f.title || "Festival",
                   description: f.description || "",
                   rules: Array.isArray(f.rules) ? f.rules : f.rules ? [f.rules] : [],
-                  startDate: f.startDate || f.start_date || new Date().toISOString(),
-                  endDate: f.endDate || f.end_date || new Date().toISOString(),
-                  coverImage: f.coverImage || f.cover_image || "",
+                  startDate: f.startDate || new Date().toISOString(),
+                  endDate: f.endDate || new Date().toISOString(),
+                  coverImage: f.coverImage || "",
                   status: f.status || "LIVE",
-                  presenceLeader: f.presenceLeader || f.presence_leader,
+                  presenceLeader: f.presenceLeader,
                 }));
                 setFetchedFestivals(mappedFestivals);
               }
@@ -544,10 +521,10 @@ export function SetDetailPage() {
             setDiscussions((prev) => [newDiscussion, ...prev]);
           }}
         />
-        {setDiscussionItems.length > 0 ? (
+        {discussions.length > 0 ? (
           <div className="overflow-x-auto no-scrollbar pb-4">
             <div className="flex gap-4 sm:gap-6 w-max">
-              {setDiscussionItems.map((disc) => (
+              {discussions.map((disc) => (
                 <DiscussionCard
                   key={disc.id}
                   discussion={disc}

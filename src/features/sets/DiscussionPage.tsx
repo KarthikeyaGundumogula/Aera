@@ -213,16 +213,16 @@ function CommentNode({
         );
         if (res.ok) {
           const json = await res.json();
-          const items: DiscussionCommentItem[] = (json.data || []).map((c: any) => ({
+          const items: DiscussionCommentItem[] = (json.data ?? []).map((c: any) => ({
             id: c.id,
-            discussionPostId: c.discussionPostId || c.discussion_post_id,
-            authorId: c.authorId || c.author_id,
-            authorName: c.authorName || c.author_name || "Artist",
-            authorAvatar: c.authorAvatar || c.author_avatar,
-            parentId: c.parentId || c.parent_id,
-            content: c.content || c.text || "",
-            replyCount: c.replyCount ?? c.reply_count ?? 0,
-            createdAt: c.createdAt || c.created_at || new Date().toISOString(),
+            discussionPostId: c.discussionPostId,
+            authorId: c.authorId,
+            authorName: c.authorName || "Artist",
+            authorAvatar: c.authorAvatar,
+            parentId: c.parentId,
+            content: c.content || "",
+            replyCount: c.replyCount ?? 0,
+            createdAt: c.createdAt || new Date().toISOString(),
           }));
 
           if (pageToFetch === 1) {
@@ -448,18 +448,18 @@ export function DiscussionPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const data = json.data || json;
+          const data = json.data;
           setThought({
             id: data.id,
             title: data.title,
-            content: data.body || data.content,
-            text: data.body || data.content,
-            authorName: data.authorName || data.author_name || "Artist",
-            authorAvatar: data.authorAvatar || data.author_avatar,
-            commentCount: data.commentCount ?? data.comment_count ?? 0,
-            createdAt: data.createdAt || data.created_at,
-            timestamp: (data.createdAt || data.created_at)
-              ? new Date(data.createdAt || data.created_at).toLocaleDateString()
+            content: data.body,
+            text: data.body,
+            authorName: data.authorName || "Artist",
+            authorAvatar: data.authorAvatar,
+            commentCount: data.commentCount ?? 0,
+            createdAt: data.createdAt,
+            timestamp: data.createdAt
+              ? new Date(data.createdAt).toLocaleDateString()
               : "Just now",
             work: data.work || null,
           });
@@ -468,21 +468,21 @@ export function DiscussionPage() {
           const listRes = await apiFetch(`/sets/${setId}/discussions`).catch(() => null);
           if (listRes && listRes.ok) {
             const json = await listRes.json();
-            const list = json.data || json;
+            const list = json.data ?? [];
             if (Array.isArray(list)) {
               const found = list.find((d: any) => String(d.id) === String(discussionId));
               if (found) {
                 setThought({
                   id: found.id,
                   title: found.title,
-                  content: found.body || found.content,
-                  text: found.body || found.content,
-                  authorName: found.authorName || found.author_name || "Artist",
-                  authorAvatar: found.authorAvatar || found.author_avatar,
-                  commentCount: found.commentCount ?? found.comment_count ?? 0,
-                  createdAt: found.createdAt || found.created_at,
-                  timestamp: (found.createdAt || found.created_at)
-                    ? new Date(found.createdAt || found.created_at).toLocaleDateString()
+                  content: found.body,
+                  text: found.body,
+                  authorName: found.authorName || "Artist",
+                  authorAvatar: found.authorAvatar,
+                  commentCount: found.commentCount ?? 0,
+                  createdAt: found.createdAt,
+                  timestamp: found.createdAt
+                    ? new Date(found.createdAt).toLocaleDateString()
                     : "Just now",
                   work: found.work || null,
                 });
@@ -510,16 +510,16 @@ export function DiscussionPage() {
         );
         if (res.ok) {
           const json = await res.json();
-          const items: DiscussionCommentItem[] = (json.data || []).map((c: any) => ({
+          const items: DiscussionCommentItem[] = (json.data ?? []).map((c: any) => ({
             id: c.id,
-            discussionPostId: c.discussionPostId || c.discussion_post_id,
-            authorId: c.authorId || c.author_id,
-            authorName: c.authorName || c.author_name || "Artist",
-            authorAvatar: c.authorAvatar || c.author_avatar,
-            parentId: c.parentId || c.parent_id,
-            content: c.content || c.text || "",
-            replyCount: c.replyCount ?? c.reply_count ?? 0,
-            createdAt: c.createdAt || c.created_at || new Date().toISOString(),
+            discussionPostId: c.discussionPostId,
+            authorId: c.authorId,
+            authorName: c.authorName || "Artist",
+            authorAvatar: c.authorAvatar,
+            parentId: c.parentId,
+            content: c.content || "",
+            replyCount: c.replyCount ?? 0,
+            createdAt: c.createdAt || new Date().toISOString(),
           }));
 
           if (pageToFetch === 1) {
@@ -549,6 +549,11 @@ export function DiscussionPage() {
 
   /** Called when user submits an inline reply to a comment */
   const handleSubmitReply = async (parentId: string, text: string) => {
+    if (!currentArtist) {
+      navigate("/profile/login");
+      return;
+    }
+
     const newReply: DiscussionCommentItem = {
       id: `rep-${Date.now()}`,
       discussionPostId: discussionId!,
@@ -594,6 +599,10 @@ export function DiscussionPage() {
   /** Root-level comment submit */
   const handleRootSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentArtist) {
+      navigate("/profile/login");
+      return;
+    }
     if (!rootText.trim() || !setId || !discussionId) return;
     const textToPost = rootText.trim();
 
@@ -710,29 +719,43 @@ export function DiscussionPage() {
 
         {/* Root input — new top-level comment */}
         <div className="mb-6">
-          <form onSubmit={handleRootSubmit} className="flex flex-col gap-2">
-            <textarea
-              value={rootText}
-              onChange={(e) => setRootText(e.target.value)}
-              placeholder="Cast a new comment into the discussion…"
-              rows={2}
-              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  handleRootSubmit({ preventDefault: () => {} } as React.FormEvent);
-                }
-              }}
-            />
-            <div className="flex justify-end">
+          {!currentArtist ? (
+            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-4">
+              <p className="text-xs text-white/50 font-mono">
+                Sign in to participate in this discussion and cast comments.
+              </p>
               <button
-                type="submit"
-                disabled={!rootText.trim()}
-                className="h-9 px-6 rounded-xl bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer flex-shrink-0"
+                onClick={() => navigate("/profile/login")}
+                className="h-8 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[9px] font-black uppercase tracking-widest transition-transform active:scale-95 cursor-pointer shrink-0"
               >
-                Cast
+                Sign In
               </button>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={handleRootSubmit} className="flex flex-col gap-2">
+              <textarea
+                value={rootText}
+                onChange={(e) => setRootText(e.target.value)}
+                placeholder="Cast a new comment into the discussion…"
+                rows={2}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    handleRootSubmit({ preventDefault: () => {} } as React.FormEvent);
+                  }
+                }}
+              />
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={!rootText.trim()}
+                  className="h-9 px-6 rounded-xl bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer flex-shrink-0"
+                >
+                  Cast
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* Paginated Top-Level Comments List */}

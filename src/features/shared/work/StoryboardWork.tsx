@@ -46,10 +46,8 @@ export function StoryboardWork({
     item.thumbnail ||
     item.image ||
     item.images?.[0] ||
-    rawItem?.src_id ||
     item.srcId ||
-    (Array.isArray(rawItem?.src_ids) ? rawItem.src_ids[0] : undefined) ||
-    (Array.isArray(rawItem?.srcIds) ? rawItem.srcIds[0] : undefined);
+    (Array.isArray((item as any).srcIds) ? (item as any).srcIds[0] : undefined);
 
   return (
     <>

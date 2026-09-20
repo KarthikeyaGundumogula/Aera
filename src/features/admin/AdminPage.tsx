@@ -50,7 +50,7 @@ export function AdminPage() {
         setAdminPassword("");
       } else {
         const errData = await res.json().catch(() => ({}));
-        let rawMsg = errData.message || `Admin authentication failed (HTTP ${res.status}).`;
+        let rawMsg = errData.error || errData.message || `Admin authentication failed (HTTP ${res.status}).`;
         if (res.status === 422 || rawMsg.includes("Unable to process")) {
           rawMsg = "Payload validation failed: Username must be lowercase. Password requires 8+ chars with uppercase, lowercase & number (e.g. SecurePass123).";
         }

@@ -39,9 +39,9 @@ function VideoBadgeDesktop() {
           animate={{ scale: 1, opacity: 1 }}
           className="relative group/play pointer-events-auto"
         >
-          <div className="absolute inset-0 rounded-none bg-white/10 blur-md scale-150 group-hover/play:bg-white/30 transition-colors duration-700" />
-          <div className="relative w-12 h-12 rounded-none bg-black/30 backdrop-blur-2xl border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl">
-            <EditsIcon className="h-[18px] w-[18px] text-white fill-white/10 ml-1 group-hover/play:scale-110 transition-transform duration-500" />
+          <div className="absolute inset-0 rounded-2xl bg-white/10 blur-md scale-125 group-hover/play:bg-white/30 transition-colors duration-500" />
+          <div className="relative w-12 h-12 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/15 flex items-center justify-center overflow-hidden shadow-2xl">
+            <EditsIcon className="h-5 w-5 text-white fill-white/10 ml-0.5 group-hover/play:scale-110 transition-transform duration-300" />
             <ScanLine />
           </div>
         </motion.div>
@@ -52,8 +52,8 @@ function VideoBadgeDesktop() {
 
 function VideoBadgeMobile() {
   return (
-    <div className="absolute top-2 right-2 z-10 w-6 h-6 rounded-none bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center">
-      <EditsIcon className="h-3 w-3 text-white fill-white/10 ml-0.5" />
+    <div className="absolute top-2 right-2 z-10 w-7 h-7 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center">
+      <EditsIcon className="h-3.5 w-3.5 text-white fill-white/10 ml-0.5" />
     </div>
   );
 }
@@ -67,9 +67,9 @@ function VideoBadgeFeed() {
         viewport={{ once: true }}
         className="relative group/play pointer-events-auto"
       >
-        <div className="absolute inset-0 rounded-none bg-white/10 blur-xl scale-150 group-hover/play:bg-white/30 transition-colors duration-700" />
-        <div className="relative w-14 h-14 rounded-none bg-black/40 backdrop-blur-2xl border border-white/20 flex items-center justify-center overflow-hidden shadow-2xl">
-          <EditsIcon className="h-5 w-5 text-white fill-white/10 ml-1 group-hover/play:scale-110 transition-transform duration-500" />
+        <div className="absolute inset-0 rounded-2xl bg-white/10 blur-xl scale-125 group-hover/play:bg-white/30 transition-colors duration-500" />
+        <div className="relative w-14 h-14 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/20 flex items-center justify-center overflow-hidden shadow-2xl">
+          <EditsIcon className="h-6 w-6 text-white fill-white/10 ml-0.5 group-hover/play:scale-110 transition-transform duration-300" />
           <ScanLine />
         </div>
       </motion.div>
@@ -88,9 +88,9 @@ function PosterBadgeDesktop() {
           animate={{ scale: 1, opacity: 1 }}
           className="relative group/sparkle pointer-events-auto"
         >
-          <div className="absolute inset-0 rounded-none bg-white/10 blur-sm scale-125 group-hover/sparkle:bg-white/30 transition-colors duration-500" />
-          <div className="relative w-7 h-7 rounded-none bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center overflow-hidden">
-            <PostersIcon className="h-3 w-3 text-white fill-white/10 group-hover/sparkle:rotate-12 transition-transform" />
+          <div className="absolute inset-0 rounded-xl bg-white/10 blur-sm scale-110 group-hover/sparkle:bg-white/30 transition-colors duration-300" />
+          <div className="relative w-8 h-8 rounded-xl bg-black/40 backdrop-blur-xl border border-white/15 flex items-center justify-center overflow-hidden">
+            <PostersIcon className="h-3.5 w-3.5 text-white fill-white/10 group-hover/sparkle:rotate-12 transition-transform" />
             <ScanLine range={40} />
           </div>
         </motion.div>
@@ -101,8 +101,8 @@ function PosterBadgeDesktop() {
 
 function PosterBadgeMobile() {
   return (
-    <div className="absolute top-2 right-2 z-10 w-5 h-5 rounded-none bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center">
-      <PostersIcon className="h-2 w-2 text-white fill-white/10" />
+    <div className="absolute top-2 right-2 z-10 w-6 h-6 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center">
+      <PostersIcon className="h-2.5 w-2.5 text-white fill-white/10" />
     </div>
   );
 }
@@ -116,8 +116,8 @@ function PosterBadgeFeed() {
         viewport={{ once: true }}
         className="relative group/sparkle pointer-events-auto"
       >
-        <div className="absolute inset-0 rounded-none bg-white/10 blur-sm scale-125 group-hover/sparkle:bg-white/30 transition-colors duration-500" />
-        <div className="relative w-8 h-8 rounded-none bg-black/50 backdrop-blur-xl border border-white/20 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 rounded-xl bg-white/10 blur-sm scale-110 group-hover/sparkle:bg-white/30 transition-colors duration-300" />
+        <div className="relative w-8 h-8 rounded-xl bg-black/50 backdrop-blur-xl border border-white/20 flex items-center justify-center overflow-hidden">
           <PostersIcon className="h-3.5 w-3.5 text-white fill-white/10 group-hover/sparkle:rotate-12 transition-transform" />
         </div>
       </motion.div>
@@ -129,17 +129,17 @@ function PosterBadgeFeed() {
 
 function StoryboardBadgeDesktop() {
   return (
-    <div className="absolute bottom-3 right-3 z-10">
-      <Tooltip content="Storyboard Edit" position="top">
+    <div className="absolute top-3 right-3 z-10">
+      <Tooltip content="Storyboard Edit" position="bottom">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="relative group/pen pointer-events-auto"
         >
-          <div className="absolute inset-0 rounded-none bg-white/10 blur-sm scale-125 group-hover/pen:bg-white/30 transition-colors duration-500" />
-          <div className="relative w-7 h-7 rounded-none bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center overflow-hidden shadow-xl">
-            <ScriptsIcon className="h-3 w-3 text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-500" />
-            <ScanLine range={40} />
+          <div className="absolute inset-0 rounded-xl bg-white/10 blur-sm scale-110 group-hover/pen:bg-white/30 transition-colors duration-300" />
+          <div className="relative w-7 h-7 rounded-xl bg-black/40 backdrop-blur-xl border border-white/15 flex items-center justify-center overflow-hidden shadow-xl">
+            <ScriptsIcon className="h-3 w-3 text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-300" />
+            <ScanLine range={35} />
           </div>
         </motion.div>
       </Tooltip>
@@ -149,8 +149,8 @@ function StoryboardBadgeDesktop() {
 
 function StoryboardBadgeMobile() {
   return (
-    <div className="absolute top-2 right-2 z-10 w-5 h-5 rounded-none bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-sm">
-      <ScriptsIcon className="h-2 w-2 text-white fill-white/10" />
+    <div className="absolute top-2 right-2 z-10 w-5.5 h-5.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-sm">
+      <ScriptsIcon className="h-2.5 w-2.5 text-white fill-white/10" />
     </div>
   );
 }
@@ -164,9 +164,9 @@ function StoryboardBadgeFeed() {
         viewport={{ once: true }}
         className="relative group/pen pointer-events-auto"
       >
-        <div className="absolute inset-0 rounded-none bg-black/10 blur-sm scale-125 transition-colors duration-500" />
-        <div className="relative w-8 h-8 rounded-none bg-black/80 backdrop-blur-xl border border-black flex items-center justify-center overflow-hidden shadow-xl">
-          <ScriptsIcon className="h-3.5 w-3.5 text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-500" />
+        <div className="absolute inset-0 rounded-xl bg-black/10 blur-sm scale-110 transition-colors duration-300" />
+        <div className="relative w-7 h-7 rounded-xl bg-black/80 backdrop-blur-xl border border-white/20 flex items-center justify-center overflow-hidden shadow-xl">
+          <ScriptsIcon className="h-3 w-3 text-white fill-white/10 group-hover/pen:scale-110 transition-transform duration-300" />
         </div>
       </motion.div>
     </div>

@@ -13,7 +13,7 @@ export const FestivalStage = memo(function FestivalStage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const items = json.items || json.data || [];
+          const items = json.data ?? [];
           setActiveFestivals(
             items.filter((f: any) => f.status === "LIVE" || f.status === "UPCOMING")
           );

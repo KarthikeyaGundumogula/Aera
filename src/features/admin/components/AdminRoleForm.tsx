@@ -61,7 +61,7 @@ export function AdminRoleForm() {
         setLoginMsg({ text: `Logged in as Admin '${loginAdminName}'! Admin cookie set.`, type: "success" });
       } else {
         const errData = await res.json().catch(() => ({}));
-        setLoginMsg({ text: errData.message || `Admin login failed (HTTP ${res.status}). Verify credentials.`, type: "error" });
+        setLoginMsg({ text: errData.error || errData.message || `Admin login failed (HTTP ${res.status}). Verify credentials.`, type: "error" });
       }
     } catch (err) {
       setLoginMsg({ text: `Network error: ${String(err)}`, type: "error" });
@@ -97,7 +97,7 @@ export function AdminRoleForm() {
         setAdminPassword("");
       } else {
         const errData = await res.json().catch(() => ({}));
-        let rawMsg = errData.message || `Failed to create admin (HTTP ${res.status}).`;
+        let rawMsg = errData.error || errData.message || `Failed to create admin (HTTP ${res.status}).`;
         if (res.status === 422 || rawMsg.includes("Unable to process")) {
           rawMsg = "Payload validation failed: Username must be lowercase. Password requires 8+ chars with uppercase, lowercase & number (e.g. SecurePass123).";
         }
@@ -138,7 +138,7 @@ export function AdminRoleForm() {
         setTargetAdminId("");
       } else {
         const errData = await res.json().catch(() => ({}));
-        setAdminAccountMsg({ text: errData.message || `Failed to delete admin (HTTP ${res.status})`, type: "error" });
+        setAdminAccountMsg({ text: errData.error || errData.message || `Failed to delete admin (HTTP ${res.status})`, type: "error" });
       }
     } catch (err) {
       setAdminAccountMsg({ text: `Network error: ${String(err)}`, type: "error" });
@@ -183,7 +183,7 @@ export function AdminRoleForm() {
         setProfileId("");
       } else {
         const errData = await res.json().catch(() => ({}));
-        let message = errData.message || `Failed to update profile role (HTTP ${res.status})`;
+        let message = errData.error || errData.message || `Failed to update profile role (HTTP ${res.status})`;
         if (res.status === 422 || message.includes("Unable to process")) {
           message = "Payload validation failed: Profile ID must be a valid 36-character UUID and role name must contain alphanumeric characters.";
         } else if (res.status === 401) {
@@ -220,7 +220,7 @@ export function AdminRoleForm() {
         }
       } else {
         const errData = await res.json().catch(() => ({}));
-        let message = errData.message || `Failed to update profile role (HTTP ${res.status})`;
+        let message = errData.error || errData.message || `Failed to update profile role (HTTP ${res.status})`;
         setRoleMessage({ text: message, type: "error" });
       }
     } catch (err) {
@@ -247,7 +247,7 @@ export function AdminRoleForm() {
         setRoleDesc("");
       } else {
         const errData = await res.json().catch(() => ({}));
-        let message = errData.message || `Failed to create role (HTTP ${res.status})`;
+        let message = errData.error || errData.message || `Failed to create role (HTTP ${res.status})`;
         if (res.status === 422 || message.includes("Unable to process")) {
           message = "Payload validation failed: Role name can only contain alphanumeric characters, hyphens or underscores (no spaces).";
         } else if (res.status === 401) {
@@ -277,7 +277,7 @@ export function AdminRoleForm() {
         setPermDesc("");
       } else {
         const errData = await res.json().catch(() => ({}));
-        let message = errData.message || `Failed to create permission (HTTP ${res.status})`;
+        let message = errData.error || errData.message || `Failed to create permission (HTTP ${res.status})`;
         if (res.status === 422 || message.includes("Unable to process")) {
           message = "Payload validation failed: Permission name can only contain alphanumeric characters, hyphens or underscores.";
         } else if (res.status === 401) {

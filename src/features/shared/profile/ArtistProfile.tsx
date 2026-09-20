@@ -15,6 +15,7 @@ import { CreditTag } from "../tags";
 import { ModalWrapper } from "../modals/ModalWrapper";
 import { ArtistAvatar } from "../../../components/ArtistAvatar";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 interface ArtistModalData {
   profileId?: string;
@@ -31,6 +32,10 @@ interface ArtistModalData {
   originals?: string[];
 }
 
+// In-memory cache and in-flight request deduplication
+const artistModalCache = new Map<string, ArtistModalData>();
+const pendingModalRequests = new Map<string, Promise<ArtistModalData | null>>();
+
 interface ArtistProfileProps {
   artist: OriginalArtist | null;
   onClose?: () => void;
@@ -43,10 +48,23 @@ export const ArtistProfile = memo(
   ({ artist, index = 0, variant = "default", onClose, zIndex = "z-[160]" }: ArtistProfileProps) => {
     if (!artist) return null;
 
+    const { currentArtist } = useAuth();
+    const targetIdentifier = artist.userName || artist.id;
+
     const [localIsOpen, setLocalIsOpen] = useState(false);
     const [isFlipped, setIsFlipped] = useState(false);
-    const [isFavorited, setIsFavorited] = useState(false);
-    const [modalData, setModalData] = useState<ArtistModalData | null>(null);
+    const [modalData, setModalData] = useState<ArtistModalData | null>(() => {
+      if (targetIdentifier && artistModalCache.has(targetIdentifier)) {
+        return artistModalCache.get(targetIdentifier)!;
+      }
+      return null;
+    });
+    const [isFavorited, setIsFavorited] = useState<boolean>(() => {
+      if (targetIdentifier && artistModalCache.has(targetIdentifier)) {
+        return !!artistModalCache.get(targetIdentifier)!.isFavorited;
+      }
+      return false;
+    });
     const [isLoadingModal, setIsLoadingModal] = useState(false);
     
     // Support inline variant (e.g. FoyerSwiper 5th slide), internal click triggers, and external triggers
@@ -91,36 +109,64 @@ export const ArtistProfile = memo(
       }
     }, [isOpen]);
 
-    // Fetch ArtistModal data when open
+    // Fetch ArtistModal data when open with deduplication and caching
     useEffect(() => {
       if (!isOpen || !artist) return;
 
-      const targetIdentifier = artist.userName || artist.id;
-      if (!targetIdentifier) return;
+      const identifier = artist.userName || artist.id;
+      if (!identifier) return;
+
+      // 1. If already cached, apply immediately without network call
+      if (artistModalCache.has(identifier)) {
+        const cached = artistModalCache.get(identifier)!;
+        setModalData(cached);
+        if (typeof cached.isFavorited === "boolean") {
+          setIsFavorited(cached.isFavorited);
+        }
+        return;
+      }
 
       let isMounted = true;
       setIsLoadingModal(true);
 
-      apiFetch(`/profiles/modal/${encodeURIComponent(targetIdentifier)}`, { method: "GET" })
-        .then(async (res) => {
-          if (!isMounted) return;
-          if (res.ok) {
-            const json = await res.json();
-            const data: ArtistModalData = json?.artist_modal || json?.artistModal || null;
-            if (data && isMounted) {
-              setModalData(data);
-              if (typeof data.isFavorited === "boolean") {
-                setIsFavorited(data.isFavorited);
+      // 2. Deduplicate in-flight requests for the same identifier
+      let reqPromise = pendingModalRequests.get(identifier);
+      if (!reqPromise) {
+        reqPromise = apiFetch(`/profiles/modal/${encodeURIComponent(identifier)}`, { method: "GET" })
+          .then(async (res) => {
+            if (res.ok) {
+              const json = await res.json();
+              const data: ArtistModalData = json?.artist_modal || json?.artistModal || null;
+              if (data) {
+                artistModalCache.set(identifier, data);
+                if (data.profileId) artistModalCache.set(data.profileId, data);
+                if (data.userName) artistModalCache.set(data.userName, data);
               }
+              return data;
             }
+            return null;
+          })
+          .catch((err) => {
+            console.warn("[ArtistProfile] Failed to fetch artist modal data:", err);
+            return null;
+          })
+          .finally(() => {
+            pendingModalRequests.delete(identifier);
+          });
+
+        pendingModalRequests.set(identifier, reqPromise);
+      }
+
+      reqPromise.then((data) => {
+        if (!isMounted) return;
+        if (data) {
+          setModalData(data);
+          if (typeof data.isFavorited === "boolean") {
+            setIsFavorited(data.isFavorited);
           }
-        })
-        .catch((err) => {
-          console.warn("[ArtistProfile] Failed to fetch artist modal data:", err);
-        })
-        .finally(() => {
-          if (isMounted) setIsLoadingModal(false);
-        });
+        }
+        setIsLoadingModal(false);
+      });
 
       return () => {
         isMounted = false;
@@ -153,6 +199,13 @@ export const ArtistProfile = memo(
     };
 
     const handleFavoriteToggle = async () => {
+      if (!currentArtist) {
+        setIsOpen(false);
+        onClose?.();
+        navigate("/profile/login");
+        return;
+      }
+
       const rawTargetId = modalData?.profileId || artist?.id;
       if (!rawTargetId || !/^[0-9a-fA-F-]{36}$/.test(rawTargetId)) {
         console.warn("[ArtistProfile] Cannot favorite: valid profile UUID not available");
@@ -161,6 +214,12 @@ export const ArtistProfile = memo(
 
       const nextState = !isFavorited;
       setIsFavorited(nextState);
+      if (modalData) {
+        const updated = { ...modalData, isFavorited: nextState };
+        setModalData(updated);
+        if (rawTargetId) artistModalCache.set(rawTargetId, updated);
+        if (modalData.userName) artistModalCache.set(modalData.userName, updated);
+      }
 
       try {
         const endpoint = nextState ? "/artists/favorite_artist" : "/artists/unfavorite_artist";
@@ -172,10 +231,22 @@ export const ArtistProfile = memo(
         if (!res.ok) {
           console.warn(`[ArtistProfile] Favorite request failed with status ${res.status}`);
           setIsFavorited(!nextState);
+          if (modalData) {
+            const reverted = { ...modalData, isFavorited: !nextState };
+            setModalData(reverted);
+            if (rawTargetId) artistModalCache.set(rawTargetId, reverted);
+            if (modalData.userName) artistModalCache.set(modalData.userName, reverted);
+          }
         }
       } catch (err) {
         console.warn("[ArtistProfile] Favorite request error:", err);
         setIsFavorited(!nextState);
+        if (modalData) {
+          const reverted = { ...modalData, isFavorited: !nextState };
+          setModalData(reverted);
+          if (rawTargetId) artistModalCache.set(rawTargetId, reverted);
+          if (modalData.userName) artistModalCache.set(modalData.userName, reverted);
+        }
       }
     };
 

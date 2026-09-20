@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, Layers } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { WorkDetail } from "../../../types";
+import { WorkDetail, LinkedOriginal } from "../../../types";
 import { CurateOverlay } from "../../shared/modals/CurateOverlay";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { ShareAction } from "../../../components/actions/ShareAction";
+import { apiFetch } from "@/lib/api";
 
 interface ViewerNavProps {
   work: WorkDetail;
 }
+
+// Module-level in-memory cache across navigation sessions
+const linkedOriginalsCache = new Map<string, LinkedOriginal[]>();
 
 /**
  * ViewerNav — ultra-minimal floating chrome.
@@ -20,13 +24,44 @@ export function ViewerNav({ work }: ViewerNavProps) {
   const navigate = useNavigate();
   const [showCurate, setShowCurate] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [activeOriginals, setActiveOriginals] = useState<LinkedOriginal[]>([]);
+  const [isLoadingOriginals, setIsLoadingOriginals] = useState(false);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
-  const originalIds = work.originals?.map((o) => o.originalId) || [];
+
+  const handleOpenOriginals = useCallback(() => {
+    setShowCurate(true);
+    const workKey = String(work.id);
+
+    if (linkedOriginalsCache.has(workKey)) {
+      setActiveOriginals(linkedOriginalsCache.get(workKey)!);
+      return;
+    }
+
+    setIsLoadingOriginals(true);
+    apiFetch(`/works/${work.id}/originals`)
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const items: LinkedOriginal[] = json.data ?? [];
+          linkedOriginalsCache.set(workKey, items);
+          setActiveOriginals(items);
+        } else {
+          showToast("Failed to load linked originals");
+        }
+      })
+      .catch((err) => {
+        console.error("[ViewerNav] Failed to fetch linked originals:", err);
+        showToast("Network error loading originals");
+      })
+      .finally(() => {
+        setIsLoadingOriginals(false);
+      });
+  }, [work.id]);
 
   return (
     <>
-      <div className="absolute inset-x-0 top-0 z-30 flex items-start justify-between px-4 pt-5 sm:px-7 sm:pt-6 pointer-events-none">
+      <div className="absolute inset-x-0 top-0 z-30 flex items-start justify-between px-4 pt-3.5 sm:px-7 sm:pt-4 pointer-events-none">
         {/* Back */}
         <motion.button
           initial={{ opacity: 0, y: -6 }}
@@ -48,17 +83,15 @@ export function ViewerNav({ work }: ViewerNavProps) {
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
           className="pointer-events-auto flex items-center gap-1.5"
         >
-          {originalIds.length > 0 && (
-            <button
-              onClick={() => setShowCurate(true)}
-              aria-label="Originals"
-              className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-black/55 backdrop-blur-md border border-white/8 text-white/40 hover:text-white hover:border-white/20 transition-all duration-200 active:scale-[0.95]"
-              style={{ touchAction: "manipulation" }}
-            >
-              <Layers size={12} strokeWidth={2} />
-              <span className="text-[8.5px] font-black uppercase tracking-[0.22em] hidden sm:inline">Originals</span>
-            </button>
-          )}
+          <button
+            onClick={handleOpenOriginals}
+            aria-label="Originals"
+            className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-black/55 backdrop-blur-md border border-white/8 text-white/40 hover:text-white hover:border-white/20 transition-all duration-200 active:scale-[0.95]"
+            style={{ touchAction: "manipulation" }}
+          >
+            <Layers size={12} strokeWidth={2} />
+            <span className="text-[8.5px] font-black uppercase tracking-[0.22em] hidden sm:inline">Originals</span>
+          </button>
           <ShareAction
             title={`${work.title || "Work"} on Aera`}
             text={`Check out ${work.title || "this work"} on Aera`}
@@ -79,7 +112,8 @@ export function ViewerNav({ work }: ViewerNavProps) {
             <CurateOverlay
               isOpen={showCurate}
               onClose={() => setShowCurate(false)}
-              originalIds={originalIds}
+              originals={activeOriginals}
+              isLoading={isLoadingOriginals}
               onShowToast={showToast}
             />
           </div>

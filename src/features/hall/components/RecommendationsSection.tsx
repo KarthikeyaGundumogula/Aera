@@ -12,7 +12,7 @@ export function RecommendationsSection() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setRecommendedWorks(json.items || json.data || []);
+          setRecommendedWorks(json.data ?? []);
         }
       })
       .catch((err) => {

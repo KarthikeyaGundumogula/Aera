@@ -35,9 +35,9 @@ export function FestivalDetailPage() {
       .then(async (res) => {
         if (res.ok && isMounted) {
           const json = await res.json();
-          const data = json.festival || json.data || json;
+          const data = json.data;
           setLocalFestival(data);
-          if (data.panelists && Array.isArray(data.panelists)) {
+          if (data?.panelists && Array.isArray(data.panelists)) {
             setBackendPanelists(data.panelists);
           }
         }
@@ -60,8 +60,7 @@ export function FestivalDetailPage() {
       .then(async (res) => {
         if (res.ok && isMounted) {
           const json = await res.json();
-          const data = json.data || json;
-          const items = data.items || [];
+          const items = json.data?.items ?? [];
           setSpotlightWorks(items);
         }
       })
@@ -83,8 +82,7 @@ export function FestivalDetailPage() {
       .then(async (res) => {
         if (res.ok && isMounted) {
           const json = await res.json();
-          const data = json.data || json;
-          const items = data.items || [];
+          const items = json.data?.items ?? [];
           const mapped: TheatreItem[] = items.map((w: any) => ({
             id: w.id,
             title: w.title || undefined,

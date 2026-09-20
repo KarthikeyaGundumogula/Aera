@@ -55,7 +55,7 @@ export function RecommendationModal({
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            const items = json.items || json.data || [];
+            const items = json.data ?? [];
             setRecs(items);
           }
         })

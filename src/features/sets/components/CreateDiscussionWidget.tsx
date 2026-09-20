@@ -74,17 +74,18 @@ export function CreateDiscussionWidget({
 
       if (res.ok) {
         const json = await res.json();
-        const newId = json.discussion_id || json.id || `disc-${Date.now()}`;
+        const newId = json.discussion_id || `disc-${Date.now()}`;
         const newDiscussion = {
           id: newId,
-          author_id: currentArtist?.id || "user-current",
-          author_name: currentArtist?.name || "YOU (ARTIST)",
-          author_avatar: currentArtist?.image || (currentArtist as any)?.profilePicture || "",
+          setId: setId,
+          authorId: currentArtist?.id || "user-current",
+          authorName: currentArtist?.name || "YOU (ARTIST)",
+          authorAvatar: currentArtist?.image || (currentArtist as any)?.profilePicture || "",
           title: title.trim(),
           body: content.trim(),
-          comment_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          commentCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
         onDiscussionCreated(newDiscussion);

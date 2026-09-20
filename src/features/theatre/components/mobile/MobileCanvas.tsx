@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from "react";
 
-import { buildMobileClusters, MobileCluster } from "../../engine/mobileClusterBuilder";
+import { buildMobileClusters, getMobileClusterHeight, MobileCluster } from "../../engine/mobileClusterBuilder";
 import { MobileClusterView } from "./MobileClusterView";
 import { FeedContext } from "../../../../context/FeedContext";
 import { apiFetch } from "../../../../lib/api";
@@ -15,6 +15,7 @@ export function MobileCanvas() {
   const isLoadingRef = useRef(true);
   const pageRef      = useRef(0);
   const sentinelRef  = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const nextCursorRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -22,12 +23,13 @@ export function MobileCanvas() {
   }, [nextCursor]);
 
   useEffect(() => {
+    let isMounted = true;
     isLoadingRef.current = true;
     apiFetch("/theatre")
       .then(async (res) => {
-        if (res.ok) {
+        if (res.ok && isMounted) {
           const json = await res.json();
-          const items: TheatreItem[] = json.items || json.data || [];
+          const items: TheatreItem[] = json.data ?? [];
           const cursor: string | null = json.meta?.nextCursor || null;
           const built = buildMobileClusters(items).map((c, i) => ({ ...c, id: `${c.id}-p0-${i}` }));
           setClusters(built);
@@ -38,8 +40,14 @@ export function MobileCanvas() {
         console.error("[MobileCanvas] Failed to fetch theatre items:", err);
       })
       .finally(() => {
-        isLoadingRef.current = false;
+        if (isMounted) {
+          isLoadingRef.current = false;
+        }
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // ── Load next page ─────────────────────────────────────────────────────────
@@ -55,7 +63,7 @@ export function MobileCanvas() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const items: TheatreItem[] = json.items || json.data || [];
+          const items: TheatreItem[] = json.data ?? [];
           const newCursor: string | null = json.meta?.nextCursor || null;
 
           if (items.length > 0) {
@@ -81,12 +89,14 @@ export function MobileCanvas() {
 
   // ── Sentinel IntersectionObserver ──────────────────────────────────────────
   useEffect(() => {
+    if (!nextCursor) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) loadMore();
       },
       // rootMargin pre-loads the next page before the user hits the bottom.
-      { threshold: 0.05, rootMargin: "600px" },
+      { root: scrollContainerRef.current, threshold: 0.05, rootMargin: "600px" },
     );
 
     const sentinel = sentinelRef.current;
@@ -95,7 +105,7 @@ export function MobileCanvas() {
     return () => {
       observer.disconnect();
     };
-  }, [loadMore]);
+  }, [nextCursor, loadMore]);
 
   // ── FeedContext flat items ─────────────────────────────────────────────────
   // Only recomputed when the clusters array reference changes (i.e. on append).
@@ -107,20 +117,27 @@ export function MobileCanvas() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <FeedContext.Provider value={flatItems}>
-      <div className="w-full h-full bg-transparent overflow-y-auto pt-16 pb-32">
+      <div 
+        ref={scrollContainerRef}
+        className="w-full h-full bg-transparent overflow-y-auto pt-16 pb-32"
+      >
         <div className="flex flex-col gap-0 w-full">
-          {clusters.map((cluster) => (
-            // `content-visibility: auto` tells the browser it can skip layout
-            // and paint for off-screen clusters entirely, which is the single
-            // biggest GPU/CPU win on a long mobile scroll list.
-            <div
-              key={cluster.id}
-              className="w-full"
-              style={{ height: "40dvh", contentVisibility: "auto", containIntrinsicSize: "0 40dvh" }}
-            >
-              <MobileClusterView cluster={cluster} />
-            </div>
-          ))}
+          {clusters.map((cluster) => {
+            const height = getMobileClusterHeight(cluster);
+            return (
+              <div
+                key={cluster.id}
+                className="w-full"
+                style={{
+                  height,
+                  contentVisibility: "auto",
+                  containIntrinsicSize: height === "auto" ? "0 220px" : `0 ${height}`,
+                }}
+              >
+                <MobileClusterView cluster={cluster} />
+              </div>
+            );
+          })}
 
           {/* Infinite scroll sentinel when nextCursor exists, or End of Feed message when depleted */}
           {nextCursor ? (

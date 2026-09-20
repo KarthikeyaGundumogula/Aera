@@ -73,7 +73,7 @@ export function DesktopCanvas({ onScroll }: DesktopCanvasProps) {
           if (!res.ok) break;
 
           const json = await res.json();
-          const pageItems: TheatreItem[] = json.items || json.data || [];
+          const pageItems: TheatreItem[] = json.data ?? [];
           const nextCur: string | null = json.meta?.nextCursor || null;
 
           if (pageItems.length > 0) {

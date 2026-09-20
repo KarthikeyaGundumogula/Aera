@@ -53,7 +53,7 @@ export function PersonSearchInput({
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setProfiles(json.items || json.data || []);
+          setProfiles(json.data ?? []);
         }
       })
       .catch((err) => {

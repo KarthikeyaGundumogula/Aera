@@ -70,7 +70,7 @@ export function CreateSetModal({ isOpen, onClose, onCreate }: CreateSetModalProp
         }, 1200);
       } else {
         const errData = await res.json().catch(() => ({}));
-        let msg = errData.message || `Failed to create Set (HTTP ${res.status})`;
+        let msg = errData.error || errData.message || `Failed to create Set (HTTP ${res.status})`;
         if (res.status === 401) {
           msg = "Unauthorized: Set creation requires an active Artist profile with the 'organizer' role.";
         }

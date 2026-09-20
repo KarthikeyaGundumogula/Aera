@@ -9,11 +9,13 @@ import { ViewerNav } from "../components/ViewerNav";
 import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
 import { Heart, Pin, BookPlus } from "lucide-react";
-import { ShareAction } from "../../../components/actions/ShareAction";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import { DesktopHeader } from "../../navigation/DesktopHeader";
+import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 
 import { formatStat } from "@/utils/number";
 
@@ -48,11 +50,14 @@ export function ViewerFrame({
   showIdentityBlock = true,
   mediaMaxWidth,
 }: ViewerFrameProps) {
+  const { currentArtist } = useAuth();
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
-  const [isStarred, setIsStarred] = useState(false);
+  const [isStarred, setIsStarred] = useState(Boolean(work.isStarred));
+  const [starsDelta, setStarsDelta] = useState(0);
   const [staring, setStaring] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [pinned, setPinned] = useState(Boolean(work.isFramed));
+  const [saved, setSaved] = useState(Boolean(work.isSaved));
+  const [savesDelta, setSavesDelta] = useState(0);
   const [doubleTapFlash, setDoubleTapFlash] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -85,17 +90,23 @@ export function ViewerFrame({
   }, [rawAvatar]);
 
   useEffect(() => {
-    if (typeof (work as any).isStarred === "boolean") {
-      setIsStarred((work as any).isStarred);
+    if (typeof work.isStarred === "boolean") {
+      setIsStarred(work.isStarred);
+      setStarsDelta(0);
     }
-    if (typeof (work as any).isSaved === "boolean") {
-      setSaved((work as any).isSaved);
+    if (typeof work.isSaved === "boolean") {
+      setSaved(work.isSaved);
+      setSavesDelta(0);
     }
-  }, [(work as any).isStarred, (work as any).isSaved]);
+    if (typeof work.isFramed === "boolean") {
+      setPinned(work.isFramed);
+    }
+  }, [work.isStarred, work.isSaved, work.isFramed]);
 
   const favoritesCount = work.artist?.favoritesCount ?? 0;
   const spiritCount = work.artist?.spirit ?? 0;
-  const starsCount = work.stars ?? 0;
+  const totalStars = Math.max(0, (work.stars ?? 0) + starsDelta);
+  const totalSaves = Math.max(0, (work.saves ?? 0) + savesDelta);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -111,9 +122,19 @@ export function ViewerFrame({
   };
 
   const fireStar = async () => {
+    if (!currentArtist) {
+      setToastMsg("Sign in required to star works");
+      setTimeout(() => setToastMsg(null), 3000);
+      return;
+    }
+
     if (starTimeout.current) clearTimeout(starTimeout.current);
     if (flashTimeout.current) clearTimeout(flashTimeout.current);
-    setIsStarred(true);
+    const baseStarred = work.isStarred ?? false;
+    if (!isStarred) {
+      setIsStarred(true);
+      setStarsDelta(baseStarred ? 0 : 1);
+    }
     setStaring(true);
     setDoubleTapFlash(true);
     starTimeout.current = setTimeout(() => setStaring(false), 420);
@@ -127,18 +148,28 @@ export function ViewerFrame({
       if (!res.ok) {
         console.warn(`[ViewerFrame] fireStar failed with status ${res.status}`);
         setIsStarred(false);
+        setStarsDelta(baseStarred ? -1 : 0);
       }
     } catch (e) {
       console.warn("[ViewerFrame] fireStar backend error:", e);
       setIsStarred(false);
+      setStarsDelta(baseStarred ? -1 : 0);
     }
   };
 
   const handleStarBtn = async () => {
+    if (!currentArtist) {
+      setToastMsg("Sign in required to star works");
+      setTimeout(() => setToastMsg(null), 3000);
+      return;
+    }
+
     if (starTimeout.current) clearTimeout(starTimeout.current);
     if (flashTimeout.current) clearTimeout(flashTimeout.current);
     const next = !isStarred;
+    const baseStarred = work.isStarred ?? false;
     setIsStarred(next);
+    setStarsDelta(next ? (baseStarred ? 0 : 1) : (baseStarred ? -1 : 0));
     setStaring(true);
     if (next) {
       setDoubleTapFlash(true);
@@ -154,12 +185,19 @@ export function ViewerFrame({
         body: JSON.stringify(work.id),
       });
       if (!res.ok) {
-        console.warn(`[ViewerFrame] star_work failed with status ${res.status}`);
+        const errJson = await res.json().catch(() => ({}));
+        const errMsg = errJson.error || errJson.message || "Action failed. Please try again.";
+        setToastMsg(errMsg);
+        setTimeout(() => setToastMsg(null), 2500);
         setIsStarred(!next);
+        setStarsDelta(!next ? (baseStarred ? 0 : 1) : (baseStarred ? -1 : 0));
       }
     } catch (e) {
       console.warn("[ViewerFrame] star_work error:", e);
+      setToastMsg("Network error. Please try again.");
+      setTimeout(() => setToastMsg(null), 2500);
       setIsStarred(!next);
+      setStarsDelta(!next ? (baseStarred ? 0 : 1) : (baseStarred ? -1 : 0));
     }
   };
 
@@ -171,27 +209,50 @@ export function ViewerFrame({
     lastTapRef.current = now;
   };
 
-  const handlePin = () => {
+  const handlePin = async () => {
+    if (!currentArtist) {
+      setToastMsg("Sign in required to frame works on your wall");
+      setTimeout(() => setToastMsg(null), 3000);
+      return;
+    }
+
     const next = !pinned;
     setPinned(next);
-    if (next) {
-      setToastMsg("Pinned to Wall");
-      setTimeout(() => setToastMsg(null), 3000);
 
-      apiFetch("/artists/new/wall_post", {
+    try {
+      const res = await apiFetch("/artists/new/wall_post", {
         method: "POST",
         body: JSON.stringify({ work_id: work.id }),
-      }).catch((e) => console.warn("[ViewerFrame] pin wall_post error:", e));
+      });
+      if (res.ok) {
+        setToastMsg(next ? "Pinned to Wall" : "Removed from Wall");
+        setTimeout(() => setToastMsg(null), 3000);
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        const errMsg = errJson.error || errJson.message || "Failed to pin to Wall.";
+        setToastMsg(errMsg);
+        setTimeout(() => setToastMsg(null), 3000);
+        setPinned(!next);
+      }
+    } catch (e) {
+      console.warn("[ViewerFrame] pin wall_post error:", e);
+      setToastMsg("Network error while pinning to Wall.");
+      setTimeout(() => setToastMsg(null), 3000);
+      setPinned(!next);
     }
   };
 
   const handleSaveToggle = async () => {
-    const next = !saved;
-    setSaved(next);
-    if (next) {
-      setToastMsg("Saved to Library");
-      setTimeout(() => setToastMsg(null), 2500);
+    if (!currentArtist) {
+      setToastMsg("Sign in required to save works to your library");
+      setTimeout(() => setToastMsg(null), 3000);
+      return;
     }
+
+    const next = !saved;
+    const baseSaved = work.isSaved ?? false;
+    setSaved(next);
+    setSavesDelta(next ? (baseSaved ? 0 : 1) : (baseSaved ? -1 : 0));
 
     try {
       const endpoint = next ? "/artists/save_work" : "/artists/unsave_work";
@@ -200,13 +261,23 @@ export function ViewerFrame({
         method,
         body: JSON.stringify(work.id),
       });
-      if (!res.ok) {
-        console.warn(`[ViewerFrame] save_work failed with status ${res.status}`);
+      if (res.ok) {
+        setToastMsg(next ? "Saved to Library" : "Removed from Library");
+        setTimeout(() => setToastMsg(null), 2500);
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        const errMsg = errJson.error || errJson.message || "Failed to update Library save.";
+        setToastMsg(errMsg);
+        setTimeout(() => setToastMsg(null), 2500);
         setSaved(!next);
+        setSavesDelta(!next ? (baseSaved ? 0 : 1) : (baseSaved ? -1 : 0));
       }
     } catch (e) {
       console.warn("[ViewerFrame] save_work error:", e);
+      setToastMsg("Network error while updating save.");
+      setTimeout(() => setToastMsg(null), 2500);
       setSaved(!next);
+      setSavesDelta(!next ? (baseSaved ? 0 : 1) : (baseSaved ? -1 : 0));
     }
   };
 
@@ -221,16 +292,21 @@ export function ViewerFrame({
   const maxW = mediaMaxWidth ?? "min(900px,calc(100vw-2rem))";
 
   return (
-    <div className="min-h-screen bg-[#070706] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#070706] text-white overflow-x-hidden pt-16 md:pt-20">
+      {/* Mobile Header */}
+      <MobileTopHeader />
+
+      {/* Sticky Header (Desktop) */}
+      <DesktopHeader />
 
       {/* ── Two-column grid: media left, artist context right ─────────────── */}
-      <main className="relative z-10 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px] min-h-screen">
+      <main className="relative z-10 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px] min-h-[calc(100vh-5rem)]">
 
         {/* Left column ─────────────────────────────────────────────────────── */}
         <div className="flex flex-col relative">
           <ViewerNav work={work} />
 
-          <div className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-[60px] pb-8 sm:pt-[64px]">
+          <div className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-[52px] pb-8 sm:pt-[56px]">
 
             {/* Media container — max-width controlled per type */}
             <div style={{ width: "100%", maxWidth: maxW }} className="relative">
@@ -351,7 +427,7 @@ export function ViewerFrame({
                     <StarAction
                       isActive={isStarred}
                       onClick={handleStarBtn}
-                      count={formatStat(isStarred ? starsCount + 1 : starsCount)}
+                      count={formatStat(totalStars)}
                       variant="viewer"
                       isStaring={staring}
                     />
@@ -360,24 +436,22 @@ export function ViewerFrame({
                       isActive={pinned}
                       isFramed={pinned}
                       onFrame={handlePin}
-                      onQuote={() => setIsQuoteModalOpen(true)}
+                      onQuote={() => {
+                        if (!currentArtist) {
+                          setToastMsg("Sign in required to quote and discuss works");
+                          setTimeout(() => setToastMsg(null), 3000);
+                          return;
+                        }
+                        setIsQuoteModalOpen(true);
+                      }}
                       variant="viewer"
                     />
                     
                     <SaveAction
                       isActive={saved}
                       onClick={handleSaveToggle}
+                      count={formatStat(totalSaves)}
                       variant="viewer"
-                    />
-                    <ShareAction
-                      title={`${work.title || "Work"} on Aera`}
-                      text={`Check out ${work.title || "this work"} on Aera`}
-                      url={`${window.location.origin}/works/${work.id}`}
-                      variant="viewer"
-                      onShareSuccess={() => {
-                        setToastMsg("LINK COPIED");
-                        setTimeout(() => setToastMsg(null), 2400);
-                      }}
                     />
                   </div>
                 </div>

@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "motion/react";
 import { TheatreItem } from "../../../types";
-import { buildMobileClustersWithRemainder } from "../../theatre/engine/mobileClusterBuilder";
+import { buildMobileClusters, getMobileClusterHeight } from "../../theatre/engine/mobileClusterBuilder";
 import { MobileClusterView } from "../../theatre/components/mobile/MobileClusterView";
-import { MobileCard } from "../../theatre/components/mobile/MobileCard";
-import { isPosterWork, isStoryboardWork, isEditWork } from "../../shared/work";
 import { FeedContext } from "../../../context/FeedContext";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { apiFetch } from "@/lib/api";
@@ -30,7 +28,7 @@ export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPan
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            const items = json.items || json.data || [];
+            const items = json.data ?? [];
             setArtistWorks(items);
           }
         })
@@ -71,16 +69,12 @@ export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPan
     return { displayWorks: works, sectionTitle: title };
   }, [feedItemsFromState, artistWorks, currentWorkId]);
 
-  const { clusters, stackedItems } = React.useMemo(() => {
-    if (displayWorks.length === 0) return { clusters: [], stackedItems: [] };
-    const res = buildMobileClustersWithRemainder(displayWorks);
-    return {
-      clusters: res.clusters.slice(0, 4),
-      stackedItems: res.stackedItems,
-    };
+  const clusters = React.useMemo(() => {
+    if (displayWorks.length === 0) return [];
+    return buildMobileClusters(displayWorks).slice(0, 6);
   }, [displayWorks]);
 
-  if (displayWorks.length === 0 || (clusters.length === 0 && stackedItems.length === 0)) return null;
+  if (displayWorks.length === 0 || clusters.length === 0) return null;
 
   return (
     <div className="w-full h-full bg-[#070706] lg:border-l lg:border-white/[0.04]">
@@ -96,44 +90,16 @@ export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPan
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="flex flex-col w-full gap-4">
+            <div className="flex flex-col w-full gap-0">
               <FeedContext.Provider value={displayWorks}>
-                {/* 1. Complete Clusters */}
-                {clusters.map((cluster) => (
-                  <div key={cluster.id} style={{ height: "40dvh" }}>
-                    <MobileClusterView cluster={cluster} />
-                  </div>
-                ))}
-
-                {/* 2. Remaining Stacked Items (fewer than full cluster) */}
-                {stackedItems.length > 0 && (
-                  <div className="flex flex-col gap-4 w-full">
-                    {stackedItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`w-full overflow-hidden rounded-xl border border-white/10 ${
-                          isPosterWork(item)
-                            ? "aspect-[2/3]"
-                            : isStoryboardWork(item)
-                            ? "aspect-[4/5]"
-                            : "aspect-[16/9]"
-                        }`}
-                      >
-                        <MobileCard
-                          slot={{
-                            item,
-                            type: isPosterWork(item)
-                              ? "Vertical"
-                              : isEditWork(item)
-                              ? "Wide"
-                              : "Square",
-                          }}
-                          className="w-full h-full"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {clusters.map((cluster) => {
+                  const height = getMobileClusterHeight(cluster);
+                  return (
+                    <div key={cluster.id} style={{ height }} className="w-full">
+                      <MobileClusterView cluster={cluster} />
+                    </div>
+                  );
+                })}
               </FeedContext.Provider>
             </div>
           </motion.div>

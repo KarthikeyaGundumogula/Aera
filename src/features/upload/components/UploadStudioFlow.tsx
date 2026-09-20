@@ -258,7 +258,8 @@ export function UploadStudioFlow({
         let friendlyMessage = "Upload failed. Please try again.";
         try {
           const errJson = JSON.parse(errText);
-          if (errJson.message) friendlyMessage = errJson.message;
+          if (errJson.error) friendlyMessage = errJson.error;
+          else if (errJson.message) friendlyMessage = errJson.message;
         } catch { /* non-JSON error body */ }
         console.warn("[UploadStudioFlow] Backend upload returned:", uploadRes.status, errText);
         setUploadError(friendlyMessage);

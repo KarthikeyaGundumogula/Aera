@@ -1,25 +1,16 @@
 export interface DiscussionItem {
   id: string;
-  artistId?: string;
-  artistName?: string;
-  artistPicture?: string;
-  originalId?: string;
-  originalTitle?: string;
-  thoughtText?: string;
-  text?: string;
-  title?: string;
-  content?: string;
-  body?: string;
-  work?: any;
-  taggedWorkId?: string;
-  threadCount?: number;
+  setId: string;
   setName?: string;
-  setId?: string;
+  authorId?: string;
   authorName?: string;
-  timestamp?: string;
-  hits?: number;
-  score?: number;
-  createdAt?: string;
+  authorAvatar?: string;
+  title: string;
+  body: string;
+  commentCount: number;
+  work?: any;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export type DiscussionPostItem = DiscussionItem;

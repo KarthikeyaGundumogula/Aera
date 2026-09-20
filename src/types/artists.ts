@@ -1,18 +1,14 @@
 export interface Artist {
   id: string;
   userName?: string;
-  user_name?: string;
   stageName: string;
-  stage_name?: string;
-  spiritAnimal: string;
-  spirit_animal?: string;
+  spiritAnimal?: string;
   spiritDescription?: string;
-  role: string;
-  profilePicture: string;
-  profile_picture?: string;
+  role?: string;
+  profilePicture?: string;
   bannerImage?: string;
-  banner_image?: string;
   bio?: string;
+  spirit?: number;
   isRegistered?: boolean;
   peakMagnitude?: number;
   surgeMean?: number;

@@ -83,7 +83,7 @@ export function CenterFeedLayout() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setItems(json.items || json.data || []);
+          setItems(json.data ?? []);
         }
       })
       .catch((err) => {
@@ -336,6 +336,14 @@ export function CenterFeedLayout() {
             icon={Sun}
             title="Originals"
             containerClassName="px-6 md:px-12 mb-6"
+            actionNode={
+              <button
+                onClick={() => navigate("/originals")}
+                className="text-[9px] font-sans font-extrabold uppercase tracking-widest text-white/40 hover:text-white transition-colors duration-200 cursor-pointer"
+              >
+                //Explore Archive
+              </button>
+            }
           />
           <TopOriginalsAccordion navigate={navigate} />
         </section>

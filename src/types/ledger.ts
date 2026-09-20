@@ -31,8 +31,10 @@ export interface LedgerItem {
 
   addedAt: string;
   watchedAt?: string;
+  director?: string;
   makerCredits?: LedgerMakerCredit[];
   makers?: any[];
+  stars?: any[];
   // Artist / profile identity
   artistStageName?: string;
   artistProfilePicture?: string;

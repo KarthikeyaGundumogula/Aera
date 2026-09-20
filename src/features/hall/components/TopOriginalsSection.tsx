@@ -16,7 +16,25 @@ export function TopOriginalsSection() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setOriginals(json.items || json.data || []);
+          const rawList = json.data ?? [];
+          const mapped: Original[] = rawList.map((og: any) => ({
+            id: og.id,
+            title: og.title,
+            description: og.description || "",
+            coverImage: og.coverImage || "",
+            releaseDate: og.releaseDate || "",
+            genre: og.genre || undefined,
+            director: og.director || undefined,
+            castPreview: og.castPreview || undefined,
+            stats: {
+              presence: og.presence ?? 0,
+              members: og.members ?? 0,
+              releases: 0,
+            },
+            topArtists: [],
+            works: [],
+          }));
+          setOriginals(mapped);
         }
       })
       .catch((err) => {
@@ -37,7 +55,7 @@ export function TopOriginalsSection() {
         <div className="flex gap-4 sm:gap-6 w-max px-6 md:px-12 mx-auto">
           {originals.map((orig: any) => {
             const director = orig.director as string | null | undefined;
-            const castPreview = (orig.castPreview || orig.cast_preview) as string | null | undefined;
+            const castPreview = orig.castPreview as string | null | undefined;
             const ticketNo = `TKT-${(orig.id || "").slice(0, 6).toUpperCase()}`;
 
             return (

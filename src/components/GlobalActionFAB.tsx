@@ -417,6 +417,10 @@ export function GlobalActionFAB() {
                 delay={0}
                 onClick={() => {
                   setIsMenuOpen(false);
+                  if (!currentArtist) {
+                    navigate("/profile/login");
+                    return;
+                  }
                   setIsCreateRecOpen(true);
                 }}
               />
@@ -427,6 +431,10 @@ export function GlobalActionFAB() {
                 delay={0.025}
                 onClick={() => {
                   setIsMenuOpen(false);
+                  if (!currentArtist) {
+                    navigate("/profile/login");
+                    return;
+                  }
                   setIsPostLineOpen(true);
                 }}
               />
@@ -437,6 +445,10 @@ export function GlobalActionFAB() {
                 delay={0.05}
                 onClick={() => {
                   setIsMenuOpen(false);
+                  if (!currentArtist) {
+                    navigate("/profile/login");
+                    return;
+                  }
                   setIsLedgerModalOpen(true);
                 }}
               />

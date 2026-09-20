@@ -50,37 +50,37 @@ export function OriginalPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const remote = json.data || json;
+          const remote = json.data;
           if (remote && isMounted) {
             const mappedOriginal = {
               id: remote.id,
               title: remote.title,
               description: remote.description || "",
-              coverImage: remote.coverImage || remote.cover_img || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
-              releaseDate: remote.releaseDate || remote.release_date || undefined,
+              coverImage: remote.coverImage || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+              releaseDate: remote.releaseDate || undefined,
               genre: remote.genre || [],
               stats: {
                 presence: remote.stats?.presence || 0,
                 members: remote.stats?.members || 0,
                 releases: remote.stats?.releases || 0,
               },
-              resonanceSignature: remote.resonanceSignature || remote.resonance_signature || undefined,
+              resonanceSignature: remote.resonanceSignature || undefined,
               stars: (remote.stars || []).map((s: any) => ({
-                actorName: s.actorName || s.actor_name || "Cast Member",
-                characterName: s.characterName || s.character_name || "Star",
-                imageUrl: s.imageUrl || s.image_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+                actorName: s.actorName || "Cast Member",
+                characterName: s.characterName || "Star",
+                imageUrl: s.imageUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
                 originalId: remote.id,
               })),
               makers: (remote.makers || []).map((m: any) => ({
-                actorName: m.actorName || m.actor_name || "Filmmaker",
-                characterName: m.characterName || m.character_name || "Maker",
-                imageUrl: m.imageUrl || m.image_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+                actorName: m.actorName || "Filmmaker",
+                characterName: m.characterName || "Maker",
+                imageUrl: m.imageUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
                 originalId: remote.id,
               })),
-              topArtists: (remote.topArtists || remote.top_artists || []).map((a: any) => ({
+              topArtists: (remote.topArtists || []).map((a: any) => ({
                 id: a.id,
-                name: a.name || a.stage_name || "Artist",
-                image: a.image || a.profile_picture || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+                name: a.name || "Artist",
+                image: a.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
                 spirit: a.spirit || 0,
                 works: a.works || 0,
               })),
@@ -102,12 +102,12 @@ export function OriginalPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const theatreCards = json.data || json;
+          const theatreCards = json.data ?? [];
           if (Array.isArray(theatreCards) && isMounted && theatreCards.length > 0) {
             const mappedWorks: TheatreItem[] = theatreCards.map((w: any) => ({
               id: w.id,
               title: w.title || "Untitled Work",
-              category: w.workType || w.work_type || w.category || "Edit",
+              category: w.workType || "Edit",
               image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
               platform: "youtube" as const,
               srcId: w.id,
@@ -125,7 +125,7 @@ export function OriginalPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const rels = json.data || json;
+          const rels = json.data ?? [];
           if (Array.isArray(rels) && isMounted) {
             setOfficialReleases(rels);
           }

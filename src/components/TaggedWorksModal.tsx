@@ -47,7 +47,7 @@ export function TaggedWorksModal({
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const data = json.data || [];
+          const data = json.data ?? [];
           if (isMounted) {
             setRemoteWorks(data);
           }

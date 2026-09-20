@@ -257,17 +257,39 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
   type PersonCard = { name: string; role: string; imageUrl?: string };
   const makersList: PersonCard[] = [];
 
-  // Add makers from entry.makerCredits
-  entry.makerCredits?.forEach((m) => {
-    if (!makersList.some((x) => x.name === m.artistStageName)) {
-      makersList.push({ name: m.artistStageName || "", role: m.role, imageUrl: m.artistPic });
-    }
-  });
+  // Add makers from entry.makers / entry.makerCredits
+  if (entry.makers && entry.makers.length > 0) {
+    entry.makers.forEach((m: any) => {
+      const name = m.actorName || m.name || "";
+      const role = m.characterName || m.role || "Maker";
+      const imageUrl = m.imageUrl || m.image;
+      if (name && !makersList.some((x) => x.name === name)) {
+        makersList.push({ name, role, imageUrl });
+      }
+    });
+  } else if (entry.makerCredits && entry.makerCredits.length > 0) {
+    entry.makerCredits.forEach((m) => {
+      if (m.artistStageName && !makersList.some((x) => x.name === m.artistStageName)) {
+        makersList.push({ name: m.artistStageName, role: m.role, imageUrl: m.artistPic });
+      }
+    });
+  } else if (entry.director) {
+    makersList.push({ name: entry.director, role: "Director" });
+  }
 
   // Build Stars List
   const starsList: PersonCard[] = [];
 
-  if (entry.starName) {
+  if (entry.stars && entry.stars.length > 0) {
+    entry.stars.forEach((s: any) => {
+      const name = s.actorName || s.name || "";
+      const role = s.characterName || s.role || "Star";
+      const imageUrl = s.imageUrl || s.image;
+      if (name && !starsList.some((x) => x.name === name)) {
+        starsList.push({ name, role, imageUrl });
+      }
+    });
+  } else if (entry.starName) {
     starsList.push({
       name: entry.starName,
       role: "Lead Star",
@@ -584,30 +606,32 @@ export function LedgerViewer() {
       .then(async (res) => {
         if (!res.ok || !isMounted) return;
         const json = await res.json().catch(() => ({}));
-        const item = json.data || json;
+        const item = json.data;
         if (!item || !item.id) return;
 
         const st = String(item.status || "").toLowerCase();
+        const firstStar = item.stars?.[0];
         setRemoteEntry({
           id: item.id,
-          artistId: item.artistId || (item.originalId ? "" : "fh-001"),
+          artistId: item.artistId || "",
           originalId: item.originalId,
           originalName: item.originalName || "Original",
           originalPosterUrl: item.originalPosterUrl || "",
           releaseYear: item.releaseDate ? new Date(item.releaseDate).getFullYear().toString() : "2026",
           genre: Array.isArray(item.genre) ? item.genre : [item.genre || "Drama"],
-          starName: "",
+          starName: firstStar?.actorName || "",
+          starImageUrl: firstStar?.imageUrl,
+          director: item.director,
+          makers: item.makers || [],
+          stars: item.stars || [],
           status: st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched",
-          preThoughts: item.userHypeThought || item.preThoughts || "",
-          afterThoughts: item.userAfterThought || item.afterThoughts || "",
+          preThoughts: item.userHypeThought || "",
+          afterThoughts: item.userAfterThought || "",
           surgeScore: item.surgeScore ?? 0,
-          // peak_snapshot: the library peak at the time this entry was created (historical)
-          peakScore: item.peakScore ?? undefined,
-          peakSnapshot: item.peakSnapshot ?? item.peak_snapshot ?? undefined,
-          // current_peak_score: the profile's current_peak_library (live, from backend)
-          currentPeakScore: item.currentPeakScore ?? item.current_peak_score ?? undefined,
+          peakSnapshot: item.peakSnapshot ?? undefined,
+          currentPeakScore: item.currentPeakScore ?? undefined,
           taggedWorks: item.taggedWorks || [],
-          addedAt: item.addedAt || new Date().toISOString(),
+          addedAt: item.createdAt || new Date().toISOString(),
           artistStageName: item.artistStageName || "",
           artistProfilePicture: item.artistProfilePicture || "",
           artistColorTheme: item.artistColorTheme || "",
@@ -1113,9 +1137,19 @@ export function LedgerViewer() {
             <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/20 mb-3">
               Makers
             </p>
-            {entry.makers?.map((m: any) => (
-              <CreditRow key={m.name} label={m.role} value={m.name} />
-            ))}
+            {entry.makers && entry.makers.length > 0 ? (
+              entry.makers.map((m: any) => (
+                <CreditRow
+                  key={m.actorName || m.name}
+                  label={m.characterName || m.role || "Maker"}
+                  value={m.actorName || m.name}
+                />
+              ))
+            ) : entry.director ? (
+              <CreditRow label="Director" value={entry.director} />
+            ) : (
+              <p className="text-[10px] text-white/30 italic">Not available</p>
+            )}
           </div>
 
           {entry.releaseYear && (

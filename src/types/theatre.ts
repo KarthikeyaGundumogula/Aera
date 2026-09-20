@@ -61,9 +61,13 @@ export interface EditWorkDetail {
   title?: string;
   category: "EDIT";
   stars: number;
+  saves?: number;
   createdAt: string;
   srcId: string;
   platform: string;
+  isStarred?: boolean;
+  isSaved?: boolean;
+  isFramed?: boolean;
   artist: WorkArtistInfo;
   originals: WorkCreditItem[];
 }
@@ -73,8 +77,12 @@ export interface PosterWorkDetail {
   title?: string;
   category: "POSTER";
   stars: number;
+  saves?: number;
   createdAt: string;
   srcId: string;
+  isStarred?: boolean;
+  isSaved?: boolean;
+  isFramed?: boolean;
   artist: WorkArtistInfo;
   originals: WorkCreditItem[];
 }
@@ -84,6 +92,7 @@ export interface ScriptWorkDetail {
   title?: string;
   category: "STORYBOARD" | "SCRIPT";
   stars: number;
+  saves?: number;
   createdAt: string;
   images?: string[];
   captions?: string[];
@@ -91,9 +100,16 @@ export interface ScriptWorkDetail {
   thoughts?: string[];
   isStarred?: boolean;
   isSaved?: boolean;
+  isFramed?: boolean;
   artist: WorkArtistInfo;
   originals: WorkCreditItem[];
 }
 
 export type WorkDetail = EditWorkDetail | PosterWorkDetail | ScriptWorkDetail;
+
+export interface LinkedOriginal {
+  id: string;
+  title: string;
+  coverImg: string;
+}
 

@@ -9,29 +9,18 @@ interface FetchOriginalsResponse {
   data?: Array<{
     id: string;
     title: string;
+    description?: string | null;
     coverImage?: string | null;
-    cover_image?: string | null;
     releaseDate?: string | null;
-    release_date?: string | null;
+    genre?: string[] | null;
+    presence?: number | null;
+    members?: number | null;
     director?: string | null;
     castPreview?: string | null;
-    cast_preview?: string | null;
   }>;
-  items?: Array<{
-    id: string;
-    title: string;
-    coverImage?: string | null;
-    cover_image?: string | null;
-    releaseDate?: string | null;
-    release_date?: string | null;
-    director?: string | null;
-    castPreview?: string | null;
-    cast_preview?: string | null;
-  }>;
-  pagination?: {
-    next_cursor?: string | null;
-    has_more?: boolean;
-    total_count?: number;
+  meta?: {
+    nextCursor?: string | null;
+    totalCount?: number;
   };
 }
 
@@ -56,18 +45,19 @@ export function usePaginatedOriginals(pageSize = 12) {
 
       if (res.ok) {
         const json: FetchOriginalsResponse = await res.json();
-        const rawList = json.items || json.data || [];
+        const rawList = json.data ?? [];
         const mapped: OriginalItem[] = rawList.map((og) => ({
           id: og.id,
           title: og.title,
-          description: "",
-          coverImage: og.coverImage || og.cover_image || "",
-          releaseDate: og.releaseDate || og.release_date || "",
+          description: og.description || "",
+          coverImage: og.coverImage || "",
+          releaseDate: og.releaseDate || "",
+          genre: og.genre || undefined,
           director: og.director || undefined,
-          castPreview: og.castPreview || og.cast_preview || undefined,
+          castPreview: og.castPreview || undefined,
           stats: {
-            presence: 100,
-            members: 0,
+            presence: og.presence ?? 0,
+            members: og.members ?? 0,
             releases: 0,
           },
           topArtists: [],
@@ -77,10 +67,10 @@ export function usePaginatedOriginals(pageSize = 12) {
         if (isInitial) setItems(mapped);
         else setItems((prev) => [...prev, ...mapped]);
 
-        const next = json.pagination?.next_cursor || null;
+        const next = json.meta?.nextCursor || null;
         setNextCursor(next);
-        setHasMore(Boolean(json.pagination?.has_more ?? (next !== null)));
-        setTotalCount(json.pagination?.total_count ?? mapped.length);
+        setHasMore(next !== null);
+        setTotalCount(json.meta?.totalCount ?? mapped.length);
       } else {
         if (isInitial) {
           setItems([]);

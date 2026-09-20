@@ -20,7 +20,7 @@ function mapBackendWorkToTheatreItem(raw: {
   artist?: string;
   artistAvatar?: string;
 }): TheatreItem {
-  const rawCategory = raw.work_type || raw.workType || "Edit";
+  const rawCategory = raw.workType || "Edit";
   const category: TheatreItem["category"] =
     rawCategory.toUpperCase() === "EDIT"
       ? "Edit"
@@ -31,7 +31,7 @@ function mapBackendWorkToTheatreItem(raw: {
       : "Edit";
 
   let thumbnail = raw.thumbnail || undefined;
-  let srcId: string | undefined = raw.src_id || raw.srcId || undefined;
+  let srcId: string | undefined = raw.srcId || undefined;
   let platform: TheatreItem["platform"] | undefined =
     (raw.platform?.toLowerCase() as TheatreItem["platform"]) || undefined;
 
@@ -43,7 +43,7 @@ function mapBackendWorkToTheatreItem(raw: {
     }
   }
 
-  // Fallback for Edit category if thumbnail is missing but srcId is present
+  // Set thumbnail for YouTube edits if missing
   if (category === "Edit" && srcId && !thumbnail && (!platform || platform === "youtube")) {
     thumbnail = `https://img.youtube.com/vi/${srcId}/hqdefault.jpg`;
     platform = platform || "youtube";
@@ -117,7 +117,7 @@ async function fetchMyProfile(): Promise<OriginalArtist | null> {
     const res = await apiFetch("/profiles/me", { method: "GET" });
     if (!res.ok) return null;
     const json = await res.json();
-    const data = json.data || json;
+    const data = json.data;
     if (!data || !data.id) return null;
 
     const { themeTextColor, themeBgColor } = parseColorTheme(data.colorTheme);
@@ -137,8 +137,8 @@ async function fetchMyProfile(): Promise<OriginalArtist | null> {
       color_theme: data.colorTheme || "#FAC107,#0F1A42",
       themeTextColor,
       themeBgColor,
-      currentPeakLibrary: data.currentPeakLibrary ?? data.current_peak_library,
-      currentPeakRecommendations: data.currentPeakRecommendations ?? data.current_peak_recommendations,
+      currentPeakLibrary: data.currentPeakLibrary ?? 0,
+      currentPeakRecommendations: data.currentPeakRecommendations ?? 0,
       socials: {
         instagram: data.instagramProfile || undefined,
         twitter: data.twitterProfile || undefined,
@@ -191,10 +191,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const rawItems: Array<{
           id: string;
           title?: string | null;
-          work_type?: string;
           workType?: string;
           thumbnail?: string | null;
-        }> = json.data || json.items || [];
+        }> = json.data ?? [];
         const mapped = rawItems.map(mapBackendWorkToTheatreItem);
         setUserWorks(mapped);
         return;

@@ -26,7 +26,7 @@ export function OriginalsSearch({ onSelect, onClose }: OriginalsSearchProps) {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const items = json.items || json.data || [];
+          const items = json.data ?? [];
           setOriginals(items);
         }
       })

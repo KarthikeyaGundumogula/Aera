@@ -36,12 +36,14 @@ export default function TaggedWorksPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const data = json.data || json;
-          setOriginal({
-            id: data.id || originalId,
-            title: data.title || "Original",
-            coverImage: data.coverImage || data.cover_img,
-          });
+          const data = json.data;
+          if (data) {
+            setOriginal({
+              id: data.id || originalId,
+              title: data.title || "Original",
+              coverImage: data.coverImage,
+            });
+          }
         }
       })
       .catch(console.error);
@@ -62,14 +64,12 @@ export default function TaggedWorksPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const items: TheatreItem[] = json.data || json.items || [];
-          const meta = json.meta || {};
+          const items: TheatreItem[] = json.data ?? [];
+          const meta = json.meta;
 
           setWorks((prev) => (isInitial ? items : [...prev, ...items]));
-          setNextCursor(meta.nextCursor || meta.next_cursor || null);
-          if (meta.totalCount !== undefined) setTotalCount(meta.totalCount);
-          else if (meta.total_count !== undefined) setTotalCount(meta.total_count);
-          else if (isInitial) setTotalCount(items.length);
+          setNextCursor(meta?.nextCursor || null);
+          setTotalCount(meta?.totalCount ?? (isInitial ? items.length : 0));
         }
       })
       .catch(console.error)

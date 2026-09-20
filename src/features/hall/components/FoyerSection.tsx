@@ -42,7 +42,7 @@ export function FoyerSection() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setArtistGroups(json.data || json.groups || []);
+          setArtistGroups(json.data ?? []);
         }
       })
       .catch((err) => {

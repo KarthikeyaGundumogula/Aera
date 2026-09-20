@@ -2,31 +2,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Tag } from "lucide-react";
-import { OWN_RELEASE_ORIGINAL } from "../../../constants/originals";
 import { LedgerAction } from "../../../components/actions/LedgerAction";
-import { apiFetch } from "@/lib/api";
+import type { LinkedOriginal } from "../../../types";
 
 interface CurateOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  originalIds: string[]; // Linked original IDs
+  originals: LinkedOriginal[];
+  isLoading?: boolean;
   onShowToast: (msg: string) => void;
 }
 
 export function CurateOverlay({
   isOpen,
   onClose,
-  originalIds,
+  originals,
+  isLoading = false,
   onShowToast,
 }: CurateOverlayProps) {
   const navigate = useNavigate();
   const [ledgerOriginals, setLedgerOriginals] = useState<string[]>([]);
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
-
-  // Only show the originals that this fragment is related to
-  const relatedOriginals = [
-    ...(originalIds.includes("own-release") ? [OWN_RELEASE_ORIGINAL] : []),
-  ];
 
   const handleAddToLedger = (id: string) => {
     if (ledgerOriginals.includes(id)) {
@@ -46,18 +42,14 @@ export function CurateOverlay({
     setTaggedOriginals((prev) => [...prev, id]);
     if (!ledgerOriginals.includes(id)) {
       setLedgerOriginals((prev) => [...prev, id]);
-      onShowToast("Original collection creaed with Work");
+      onShowToast("Original collection created with Work");
     } else {
-      onShowToast("Work addded to original collection");
+      onShowToast("Work added to original collection");
     }
   };
 
   const handleNavigation = (id: string) => {
-    if (id === "own-release") {
-      navigate("/profile");
-    } else {
-      navigate(`/originals/${id}`);
-    }
+    navigate(`/originals/${id}`);
     onClose();
   };
 
@@ -79,25 +71,30 @@ export function CurateOverlay({
             className="w-full sm:w-[85%] max-w-2xl overflow-y-auto space-y-2 sm:space-y-3 no-scrollbar max-h-full pb-4 pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {relatedOriginals.length === 0 ? (
+            {isLoading ? (
+              <div className="py-12 flex flex-col items-center justify-center gap-3 opacity-60">
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white/80 rounded-xl animate-spin" />
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white">Loading Originals</p>
+              </div>
+            ) : originals.length === 0 ? (
               <div className="py-6 flex flex-col items-center justify-center text-center opacity-40">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
                   No Linked Originals
                 </p>
               </div>
             ) : (
-              relatedOriginals.map((item) => {
+              originals.map((item) => {
                 const inLedger = ledgerOriginals.includes(item.id);
                 const isTagged = taggedOriginals.includes(item.id);
 
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-black border border-white/10 hover:border-white/20 transition-all shadow-xl"
+                    className="flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-black/80 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all shadow-xl"
                   >
                     <img
                       loading="lazy"
-                      src={item.coverImage}
+                      src={item.coverImg}
                       alt={item.title}
                       onClick={() => handleNavigation(item.id)}
                       className="w-14 h-9 sm:w-20 sm:h-12 object-cover object-top rounded-md sm:rounded-lg opacity-90 cursor-pointer hover:opacity-100 transition-opacity"

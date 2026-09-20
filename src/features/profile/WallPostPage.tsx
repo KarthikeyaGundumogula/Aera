@@ -55,7 +55,7 @@ export default function WallPostPage() {
         }
 
         const json = await res.json();
-        const item = json.data || json.post;
+        const item = json.data;
         if (!item) {
           setError("Post data unavailable");
           setIsLoading(false);
@@ -64,62 +64,59 @@ export default function WallPostPage() {
 
         const mappedPost: WallPost = {
           id: item.id,
-          artistId: item.artistId || item.artist_id || "",
-          artistName: item.artistName || item.artist_name || "Artist",
-          artistImage: item.artistImage || item.artist_image || "",
+          artistId: item.artistId || "",
+          artistName: item.artistName || "Artist",
+          artistImage: item.artistImage || "",
           type: (() => {
             const hasFrame = !!(
               item.framedRecommendation ||
-              item.framed_recommendation ||
               item.framedWork ||
-              item.framed_work ||
-              item.framedOriginal ||
-              item.framed_original
+              item.framedOriginal
             );
-            const hasText = !!(item.text || item.text_line);
+            const hasText = !!item.text;
             if (hasFrame && hasText) return "QUOTE";
             if (hasFrame) return "FRAME";
             return "LINE";
           })() as WallPost["type"],
-          text: item.text || item.text_line,
-          postedAt: item.postedAt || item.posted_at || item.createdAt || new Date().toISOString(),
-          totalReactions: item.totalReactions || item.total_reactions || 0,
-          totalSaves: item.totalSaves || item.total_saves || 0,
-          isSaved: item.isSaved || item.is_saved,
-          userReaction: item.userReaction || item.user_reaction,
-        } as any;
+          text: item.text,
+          postedAt: item.postedAt || new Date().toISOString(),
+          totalReactions: item.totalReactions ?? 0,
+          totalSaves: item.totalSaves ?? 0,
+          isSaved: item.isSaved,
+          userReaction: item.userReaction,
+        };
 
         let mappedRec: Recommendation | undefined = undefined;
-        if (item.framedRecommendation || item.framed_recommendation) {
+        if (item.framedRecommendation) {
           mappedRec = mapFramedToRecommendation(
-            item.framedRecommendation || item.framed_recommendation,
+            item.framedRecommendation,
             mappedPost,
           );
         }
 
         let mappedWork: TheatreItem | undefined = undefined;
-        if (item.framedWork || item.framed_work) {
-          const fw = item.framedWork || item.framed_work;
+        if (item.framedWork) {
+          const fw = item.framedWork;
           mappedWork = {
             id: fw.id,
             title: fw.title,
-            category: fw.workType || fw.work_type || "Edit",
+            category: fw.workType || "Edit",
             image: fw.thumbnail,
             thumbnail: fw.thumbnail,
-            srcId: fw.srcId || fw.src_id,
+            srcId: fw.srcId,
             platform: (fw.platform || "youtube").toLowerCase(),
-            artist: fw.artistName || fw.artist_name || fw.artistHandle || fw.artist_handle || mappedPost.artistName,
-            artistId: fw.artistId || fw.artist_id || mappedPost.artistId,
-            artistAvatar: fw.artistAvatar || fw.artist_avatar || mappedPost.artistImage,
+            artist: fw.artistName || mappedPost.artistName,
+            artistId: fw.artistId || mappedPost.artistId,
+            artistAvatar: fw.artistAvatar || mappedPost.artistImage,
           } as any;
         }
 
         setPost(mappedPost);
         setResolvedWork(mappedWork);
-        setResolvedOriginal(item.framedOriginal || item.framed_original);
+        setResolvedOriginal(item.framedOriginal);
         setResolvedRecommendation(mappedRec);
-        if (item.userReaction || item.user_reaction) {
-          setActiveReaction((item.userReaction || item.user_reaction) as ReactionId);
+        if (item.userReaction) {
+          setActiveReaction(item.userReaction as ReactionId);
         }
         setIsLoading(false);
       })
@@ -201,24 +198,30 @@ export default function WallPostPage() {
       });
 
       try {
-        if (reactionId) {
-          await apiFetch("/artists/add_reaction", {
-            method: "POST",
-            body: JSON.stringify({
-              wall_post_id: post.id,
-              reaction: reactionId,
-            }),
-          });
-        } else {
-          await apiFetch("/artists/remove_reaction", {
-            method: "POST",
-            body: JSON.stringify({
-              wall_post_id: post.id,
-            }),
-          });
+        const res = reactionId
+          ? await apiFetch("/artists/add_reaction", {
+              method: "POST",
+              body: JSON.stringify({
+                wall_post_id: post.id,
+                reaction: reactionId,
+              }),
+            })
+          : await apiFetch("/artists/remove_reaction", {
+              method: "POST",
+              body: JSON.stringify({
+                wall_post_id: post.id,
+              }),
+            });
+
+        if (!res.ok) {
+          console.warn("[WallPostPage] Failed to save reaction with status:", res.status);
+          setActiveReaction(prevReaction);
+          setPost((prev) => (prev ? { ...prev, userReaction: prevReaction ?? undefined } : prev));
         }
       } catch (err) {
         console.warn("[WallPostPage] Failed to save reaction:", err);
+        setActiveReaction(prevReaction);
+        setPost((prev) => (prev ? { ...prev, userReaction: prevReaction ?? undefined } : prev));
       }
     },
     [post, activeReaction],

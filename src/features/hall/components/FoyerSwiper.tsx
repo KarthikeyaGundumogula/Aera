@@ -1058,38 +1058,38 @@ export function mapFramedToRecommendation(framed: any, post?: any): Recommendati
   return {
     id: framed.id,
     notes: framed.notes || "",
-    title: framed.originalTitle || framed.original_title || "",
-    coverImage: framed.coverImage || framed.cover_image || framed.cover_picture || "",
-    surgeScore: framed.surgeScore || framed.score || 85,
-    score: framed.score || framed.surgeScore || 85,
+    title: framed.originalTitle || "",
+    coverImage: framed.coverImage || "",
+    surgeScore: framed.surgeScore ?? framed.score ?? 85,
+    score: framed.score ?? framed.surgeScore ?? 85,
     director: framed.director,
-    cast: framed.cast || framed.cast_names,
-    postedAt: post?.postedAt || framed.createdAt || framed.created_at || new Date().toISOString(),
-    ledgerEntryId: framed.ledgerEntryId || framed.ledger_entry_id,
+    cast: framed.cast,
+    postedAt: post?.postedAt || framed.createdAt || new Date().toISOString(),
+    ledgerEntryId: framed.ledgerEntryId,
     original: {
-      id: framed.originalId || framed.original_id || "",
-      title: framed.originalTitle || framed.original_title || "",
-      coverImage: framed.coverImage || framed.cover_image || "",
+      id: framed.originalId || "",
+      title: framed.originalTitle || "",
+      coverImage: framed.coverImage || "",
       director: framed.director,
-      stars: framed.cast || framed.cast_names,
+      stars: framed.cast,
     },
     artist: {
-      id: framed.authorId || framed.author_id || post?.artistId || "",
-      name: framed.authorName || framed.author_name || post?.artistName || "Artist",
-      stageName: framed.authorName || framed.author_name || post?.artistName || "Artist",
-      handle: framed.authorHandle || framed.author_handle || "",
-      profilePicture: framed.authorAvatar || framed.author_avatar || post?.artistImage || "",
-      spirit: framed.authorSpirit || framed.author_spirit || 0,
-      works: framed.authorWorksCount || framed.author_works_count || 0,
+      id: framed.authorId || post?.artistId || "",
+      name: framed.authorName || post?.artistName || "Artist",
+      stageName: framed.authorName || post?.artistName || "Artist",
+      handle: framed.authorHandle || "",
+      profilePicture: framed.authorAvatar || post?.artistImage || "",
+      spirit: framed.authorSpirit || 0,
+      works: framed.authorWorksCount || 0,
     },
-    author: (framed.authorName || framed.author_name)
+    author: framed.authorName
       ? {
-          id: framed.authorId || framed.author_id || "",
-          name: framed.authorName || framed.author_name || "",
-          handle: framed.authorHandle || framed.author_handle || "",
-          avatar: framed.authorAvatar || framed.author_avatar || "",
-          spirit: framed.authorSpirit || framed.author_spirit || 0,
-          worksCount: framed.authorWorksCount || framed.author_works_count || 0,
+          id: framed.authorId || "",
+          name: framed.authorName || "",
+          handle: framed.authorHandle || "",
+          avatar: framed.authorAvatar || "",
+          spirit: framed.authorSpirit || 0,
+          worksCount: framed.authorWorksCount || 0,
         }
       : undefined,
   } as any;
@@ -1149,57 +1149,57 @@ const SlideContent = React.memo(function SlideContent({
         if (!isMounted) return;
         if (res.ok) {
           const json = await res.json();
-          const item = json.data || json.post;
+          const item = json.data;
           if (item && isMounted) {
             const mappedPost: WallPost = {
               id: item.id,
-              artistId: item.artistId || item.artist_id || group.artistId,
-              artistName: item.artistName || item.artist_name || group.artistName,
-              artistImage: item.artistImage || item.artist_image || group.artistImage,
+              artistId: item.artistId || group.artistId,
+              artistName: item.artistName || group.artistName,
+              artistImage: item.artistImage || group.artistImage,
               type: (() => {
-                const hasFrame = !!(item.framedRecommendation || item.framed_recommendation || item.framedWork || item.framed_work || item.framedOriginal || item.framed_original);
-                const hasText = !!(item.text || item.text_line);
+                const hasFrame = !!(item.framedRecommendation || item.framedWork || item.framedOriginal);
+                const hasText = !!item.text;
                 if (hasFrame && hasText) return "QUOTE";
                 if (hasFrame) return "FRAME";
                 return "LINE";
               })() as WallPost["type"],
-              text: item.text || item.text_line,
-              postedAt: item.postedAt || item.posted_at || item.createdAt || new Date().toISOString(),
-              totalReactions: item.totalReactions || item.total_reactions || 0,
-              totalSaves: item.totalSaves || item.total_saves || 0,
-              isSaved: item.isSaved || item.is_saved,
-              userReaction: item.userReaction || item.user_reaction,
+              text: item.text,
+              postedAt: item.postedAt || item.createdAt || new Date().toISOString(),
+              totalReactions: item.totalReactions ?? 0,
+              totalSaves: item.totalSaves ?? 0,
+              isSaved: item.isSaved,
+              userReaction: item.userReaction,
             } as any;
 
             let mappedRec: Recommendation | undefined = undefined;
-            if (item.framedRecommendation || item.framed_recommendation) {
+            if (item.framedRecommendation) {
               mappedRec = mapFramedToRecommendation(
-                item.framedRecommendation || item.framed_recommendation,
+                item.framedRecommendation,
                 mappedPost,
               );
             }
 
             let mappedWork: TheatreItem | undefined = undefined;
-            if (item.framedWork || item.framed_work) {
-              const fw = item.framedWork || item.framed_work;
+            if (item.framedWork) {
+              const fw = item.framedWork;
               mappedWork = {
                 id: fw.id,
                 title: fw.title,
-                category: fw.workType || fw.work_type || "Edit",
+                category: fw.workType || fw.category || "Edit",
                 image: fw.thumbnail,
                 thumbnail: fw.thumbnail,
-                srcId: fw.srcId || fw.src_id,
+                srcId: fw.srcId,
                 platform: (fw.platform || "youtube").toLowerCase(),
-                artist: fw.artistName || fw.artist_name || fw.artistHandle || fw.artist_handle || mappedPost.artistName,
-                artistId: fw.artistId || fw.artist_id || mappedPost.artistId,
-                artistAvatar: fw.artistAvatar || fw.artist_avatar || mappedPost.artistImage,
+                artist: fw.artistName || fw.artistHandle || mappedPost.artistName,
+                artistId: fw.artistId || mappedPost.artistId,
+                artistAvatar: fw.artistAvatar || mappedPost.artistImage,
               } as any;
             }
 
             setDetailData({
               post: mappedPost,
               resolvedWork: mappedWork || entry?.resolvedWork,
-              resolvedOriginal: item.framedOriginal || item.framed_original || entry?.resolvedOriginal,
+              resolvedOriginal: item.framedOriginal || entry?.resolvedOriginal,
               resolvedRecommendation: mappedRec || entry?.resolvedRecommendation,
             });
           }
@@ -1247,7 +1247,9 @@ const SlideContent = React.memo(function SlideContent({
       <div className="absolute inset-0 w-full h-full flex flex-col px-4 pt-20 pb-16 overflow-y-auto overflow-x-hidden transform-gpu pointer-events-none">
         <div className="w-full my-auto pointer-events-none shrink-0 flex items-center justify-center">
           {isOlderCard ? (
-            <ArtistProfile artist={artistProfile} variant="inline" onClose={onClose} />
+            isActive ? (
+              <ArtistProfile artist={artistProfile} variant="inline" onClose={onClose} />
+            ) : null
           ) : isLoadingDetails ? (
             <div className="w-full min-h-[300px] flex flex-col items-center justify-center pointer-events-none">
               <FHLoader label="Loading Post Details..." />

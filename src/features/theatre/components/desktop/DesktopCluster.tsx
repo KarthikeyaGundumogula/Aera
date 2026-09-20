@@ -34,6 +34,9 @@ export const DesktopCluster = memo(function DesktopCluster({
   const screenX = useTransform(camX, (cam: number) => cam + worldX);
   const screenY = useTransform(camY, (cam: number) => cam + worldY);
 
+  const cols = cluster.slots.reduce((max, s) => Math.max(max, s.x + s.w), 0) || 12;
+  const rows = cluster.slots.reduce((max, s) => Math.max(max, s.y + s.h), 0) || 9;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -51,8 +54,8 @@ export const DesktopCluster = memo(function DesktopCluster({
         className="w-full h-full gap-0"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(16, 1fr)",
-          gridTemplateRows: "repeat(8, 1fr)",
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gridTemplateRows: `repeat(${rows}, 1fr)`,
         }}
       >
         {cluster.slots.map(

@@ -276,14 +276,14 @@ const ProfilePage: React.FC = () => {
           const res = await apiFetch(`/profiles/get_profile_details/${cleanHandle}`);
           if (res.ok) {
             const json = await res.json();
-            const stage = json.artist_stage || json.data || json;
+            const stage = json.artist_stage || json.data;
             if (stage && isMounted) {
               if (typeof stage.isFavorited === "boolean") {
                 setIsFavorited(stage.isFavorited);
               }
               const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
-              const rawUserName = stage.userName || stage.user_name || stage.username;
-              const rawStageName = stage.stageName || stage.stage_name;
+              const rawUserName = stage.userName;
+              const rawStageName = stage.stageName;
 
               const fetchedHandle = (rawUserName && !isUuid(rawUserName))
                 ? rawUserName
@@ -314,19 +314,20 @@ const ProfilePage: React.FC = () => {
                 colorTheme: stage.colorTheme || "#fac107,#0f1a42",
               });
 
-            const rawOriginals = stage.originals || json.originals || [];
+            const rawOriginals = stage.originals || [];
             if (Array.isArray(rawOriginals) && rawOriginals.length > 0) {
               const mapped: Original[] = rawOriginals.map((og: any) => ({
                 id: og.id,
-                libraryEntryId: og.libraryEntryId || og.library_entry_id,
+                libraryEntryId: og.libraryEntryId,
                 title: og.title || "Untitled Original",
                 description: og.description || "",
-                coverImage: og.coverImage || og.cover_image || "",
-                releaseDate: og.releaseDate || og.release_date || "",
+                coverImage: og.coverImage || "",
+                releaseDate: og.releaseDate || "",
+                genre: og.genre || undefined,
                 director: og.director,
-                castPreview: og.castPreview || og.cast_preview,
+                castPreview: og.castPreview,
                 stats: {
-                  presence: 100,
+                  presence: og.presence ?? 0,
                   members: 0,
                   releases: 0,
                 },
@@ -370,7 +371,7 @@ const ProfilePage: React.FC = () => {
           const res = await apiFetch(`/profiles/${backendProfile.id}/works?limit=12`);
           if (res.ok && isMounted) {
             const json = await res.json();
-            const items = json.items || json.data || [];
+            const items = json.data ?? [];
             const cursor = json.meta?.nextCursor || null;
             setBackendWorks(items);
             setWorksNextCursor(cursor);
@@ -379,7 +380,7 @@ const ProfilePage: React.FC = () => {
           const res = await apiFetch(`/profiles/${backendProfile.id}/wall?limit=12`);
           if (res.ok && isMounted) {
             const json = await res.json();
-            const items = json.items || json.data || [];
+            const items = json.data ?? [];
             setBackendWallPosts(items);
           }
         }
@@ -400,7 +401,7 @@ const ProfilePage: React.FC = () => {
       const res = await apiFetch(`/profiles/${backendProfile.id}/works?limit=12&cursor=${encodeURIComponent(worksNextCursor)}`);
       if (res.ok) {
         const json = await res.json();
-        const items = json.items || json.data || [];
+        const items = json.data ?? [];
         const newCursor = json.meta?.nextCursor || null;
         if (items.length > 0) {
           setBackendWorks(prev => [...prev, ...items]);

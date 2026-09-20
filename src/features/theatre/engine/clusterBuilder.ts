@@ -243,92 +243,36 @@ function buildAdaptivePartialCluster(items: TheatreItem[], seed: number): Cluste
   if (!Array.isArray(items) || items.length === 0) return null;
   const count = items.length;
 
-  const edits = items.filter(isEditWork);
-  const nonEdits = items.filter(i => !isEditWork(i));
-
   let templateSlots: ClusterSlot[] = [];
 
   if (count === 1) {
-    if (edits.length === 1) {
-      templateSlots = [{ type: "WIDE", x: 0, y: 0, w: 16, h: 6, item: edits[0] }];
-    } else {
-      templateSlots = [{ type: "VERTICAL", x: 6, y: 0, w: 4, h: 8, item: nonEdits[0] }];
-    }
+    templateSlots = [{ type: "IMAX", x: 0, y: 0, w: 12, h: 9, item: items[0] }];
   } else if (count === 2) {
-    if (edits.length >= 2) {
-      templateSlots = [
-        { type: "WIDE", x: 0, y: 0, w: 8, h: 4, item: edits[0] },
-        { type: "WIDE", x: 8, y: 0, w: 8, h: 4, item: edits[1] },
-      ];
-    } else if (nonEdits.length >= 2) {
-      templateSlots = [
-        { type: "VERTICAL", x: 4, y: 0, w: 4, h: 8, item: nonEdits[0] },
-        { type: "VERTICAL", x: 8, y: 0, w: 4, h: 8, item: nonEdits[1] },
-      ];
-    } else {
-      templateSlots = [
-        { type: "VERTICAL", x: 2, y: 0, w: 4, h: 8, item: nonEdits[0] },
-        { type: "WIDE", x: 6, y: 2, w: 8, h: 4, item: edits[0] },
-      ];
-    }
+    templateSlots = [
+      { type: "WIDE", x: 0, y: 0, w: 6, h: 9, item: items[0] },
+      { type: "WIDE", x: 6, y: 0, w: 6, h: 9, item: items[1] },
+    ];
   } else if (count === 3) {
-    if (edits.length >= 1 && nonEdits.length >= 2) {
-      // 1 Hero Edit in center (8x8), flanked by 2 Vertical Posters/Scripts (4x8 left, 4x8 right)
-      templateSlots = [
-        { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8, item: nonEdits[0] },
-        { type: "IMAX", x: 4, y: 0, w: 8, h: 8, item: edits[0] },
-        { type: "VERTICAL", x: 12, y: 0, w: 4, h: 8, item: nonEdits[1] },
-      ];
-    } else if (edits.length >= 2) {
-      templateSlots = [
-        { type: "WIDE", x: 0, y: 0, w: 8, h: 4, item: edits[0] },
-        { type: "WIDE", x: 8, y: 0, w: 8, h: 4, item: edits[1] },
-        { type: "VERTICAL", x: 6, y: 4, w: 4, h: 8, item: nonEdits[0] || edits[2] },
-      ];
-    } else {
-      templateSlots = [
-        { type: "VERTICAL", x: 0, y: 0, w: 5, h: 8, item: nonEdits[0] },
-        { type: "VERTICAL", x: 5, y: 0, w: 6, h: 8, item: nonEdits[1] },
-        { type: "VERTICAL", x: 11, y: 0, w: 5, h: 8, item: nonEdits[2] },
-      ];
-    }
+    templateSlots = [
+      { type: "VERTICAL", x: 0, y: 0, w: 3, h: 9, item: items[0] },
+      { type: "IMAX", x: 3, y: 0, w: 6, h: 9, item: items[1] },
+      { type: "VERTICAL", x: 9, y: 0, w: 3, h: 9, item: items[2] },
+    ];
   } else if (count === 4) {
-    if (edits.length >= 1) {
-      const remaining = [...nonEdits, ...edits.slice(1)];
-      templateSlots = [
-        { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8, item: remaining[0] },
-        { type: "IMAX", x: 4, y: 0, w: 8, h: 8, item: edits[0] },
-        { type: "VERTICAL", x: 12, y: 0, w: 4, h: 4, item: remaining[1] },
-        { type: "VERTICAL", x: 12, y: 4, w: 4, h: 4, item: remaining[2] },
-      ];
-    } else {
-      templateSlots = [
-        { type: "VERTICAL", x: 0, y: 0, w: 4, h: 8, item: nonEdits[0] },
-        { type: "VERTICAL", x: 4, y: 0, w: 4, h: 8, item: nonEdits[1] },
-        { type: "VERTICAL", x: 8, y: 0, w: 4, h: 8, item: nonEdits[2] },
-        { type: "VERTICAL", x: 12, y: 0, w: 4, h: 8, item: nonEdits[3] },
-      ];
-    }
-  } else if (count >= 5) {
-    if (edits.length >= 1) {
-      const remaining = [...nonEdits, ...edits.slice(1)];
-      templateSlots = [
-        { type: "SQUARE", x: 0, y: 0, w: 4, h: 4, item: remaining[0] },
-        { type: "IMAX", x: 4, y: 0, w: 8, h: 8, item: edits[0] },
-        { type: "SQUARE", x: 12, y: 0, w: 4, h: 4, item: remaining[1] },
-        { type: "SQUARE", x: 0, y: 4, w: 4, h: 4, item: remaining[2] },
-        { type: "SQUARE", x: 12, y: 4, w: 4, h: 4, item: remaining[3] },
-      ];
-    } else {
-      templateSlots = items.slice(0, 5).map((item, idx) => ({
-        type: "VERTICAL",
-        x: (idx % 4) * 4,
-        y: Math.floor(idx / 4) * 8,
-        w: 4,
-        h: 8,
-        item,
-      }));
-    }
+    templateSlots = [
+      { type: "VERTICAL", x: 0, y: 0, w: 3, h: 9, item: items[0] },
+      { type: "IMAX", x: 3, y: 0, w: 6, h: 6, item: items[1] },
+      { type: "WIDE", x: 3, y: 6, w: 6, h: 3, item: items[2] },
+      { type: "VERTICAL", x: 9, y: 0, w: 3, h: 9, item: items[3] },
+    ];
+  } else {
+    templateSlots = [
+      { type: "VERTICAL", x: 0, y: 0, w: 3, h: 6, item: items[0] },
+      { type: "IMAX", x: 3, y: 0, w: 6, h: 6, item: items[1] },
+      { type: "VERTICAL", x: 9, y: 0, w: 3, h: 6, item: items[2] },
+      { type: "WIDE", x: 0, y: 6, w: 6, h: 3, item: items[3] },
+      { type: "WIDE", x: 6, y: 6, w: 6, h: 3, item: items[4] },
+    ];
   }
 
   return { id: `pc-${count}-${seed}`, type: `PARTIAL_${count}`, slots: templateSlots };

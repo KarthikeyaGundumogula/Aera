@@ -6,14 +6,14 @@ import { PosterImage } from "../../../components/PosterImage";
 
 interface OriginalPosterCardProps {
   original: Original;
-  makers: OriginalMaker[];
-  stars: OriginalStar[];
+  makers?: OriginalMaker[];
+  stars?: OriginalStar[];
   index: number;
   onClick?: () => void;
 }
 
 export const OriginalPosterCard = memo(
-  ({ original, makers, stars, index, onClick }: OriginalPosterCardProps) => {
+  ({ original, makers = [], stars = [], index, onClick }: OriginalPosterCardProps) => {
     const navigate = useNavigate();
 
     const director = useMemo(() => {

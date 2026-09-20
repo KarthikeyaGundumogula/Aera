@@ -55,7 +55,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
       } else {
         const errData = await res.json().catch(() => ({}));
         setStatus("error");
-        let msg = errData.message || `Password update failed (HTTP ${res.status}).`;
+        let msg = errData.error || errData.message || `Password update failed (HTTP ${res.status}).`;
         if (res.status === 422 || msg.includes("Unable to process")) {
           msg = "Password validation failed: Must be 8+ chars with uppercase, lowercase & number (e.g. SecurePass123).";
         }

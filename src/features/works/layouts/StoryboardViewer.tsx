@@ -83,8 +83,6 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
     ? activeWork.frames
     : (activeWork as any)?.srcId
     ? [(activeWork as any).srcId]
-    : (activeWork as any)?.src_id
-    ? [(activeWork as any).src_id]
     : activeWork?.originals?.[0]?.coverPoster
     ? [activeWork.originals[0].coverPoster]
     : [];

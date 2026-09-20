@@ -7,34 +7,22 @@ interface SetResponseItem {
   title: string;
   description?: string;
   captainId?: string;
-  captain_id?: string;
   coverImage?: string;
-  cover_image?: string;
   accentColor?: string;
-  accent_color?: string;
   themeLine?: string;
-  theme_line?: string;
   memberCount?: number;
-  member_count?: number;
   totalFestivals?: number;
-  total_festivals?: number;
   liveFestivals?: number;
-  live_festivals?: number;
   isMember?: boolean;
-  is_member?: boolean;
   activeFestivalId?: string;
-  active_festival_id?: string;
   festivalStatus?: string;
-  festival_status?: string;
 }
 
 interface PaginationMeta {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
   totalCount?: number;
-  total_count?: number;
   hasMore?: boolean;
-  has_more?: boolean;
 }
 
 export function usePaginatedSets(pageSize = 10) {
@@ -57,28 +45,28 @@ export function usePaginatedSets(pageSize = 10) {
         const res = await apiFetch(`/sets?page=${pageToFetch}&limit=${pageSize}`);
         if (res.ok) {
           const json = await res.json();
-          const rawList: SetResponseItem[] = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
+          const rawList: SetResponseItem[] = json.data ?? [];
 
           const mapped: Set[] = rawList.map((s) => ({
             id: s.id,
             title: s.title || "Untitled Set",
             description: s.description || "",
-            captainId: s.captainId || s.captain_id || "c1",
-            coverImage: s.coverImage || s.cover_image || "https://images.unsplash.com/photo-1579783902614-a3fb3927b675",
-            accentColor: s.accentColor || s.accent_color || "#D97706",
-            themeLine: s.themeLine || s.theme_line || "",
+            captainId: s.captainId || "c1",
+            coverImage: s.coverImage || "https://images.unsplash.com/photo-1579783902614-a3fb3927b675",
+            accentColor: s.accentColor || "#D97706",
+            themeLine: s.themeLine || "",
             members: [],
-            memberCount: s.memberCount ?? s.member_count ?? 0,
-            totalFestivals: s.totalFestivals ?? s.total_festivals ?? 0,
-            liveFestivals: s.liveFestivals ?? s.live_festivals ?? 0,
-            isMember: s.isMember ?? s.is_member ?? false,
-            activeFestivalId: s.activeFestivalId || s.active_festival_id,
-            festivalStatus: (s.festivalStatus || s.festival_status) === "LIVE" ? "ONGOING" : undefined,
+            memberCount: s.memberCount ?? 0,
+            totalFestivals: s.totalFestivals ?? 0,
+            liveFestivals: s.liveFestivals ?? 0,
+            isMember: s.isMember ?? false,
+            activeFestivalId: s.activeFestivalId,
+            festivalStatus: s.festivalStatus === "LIVE" ? "ONGOING" : undefined,
           }));
 
           const meta: PaginationMeta | undefined = json.meta;
-          const serverHasMore = meta ? (meta.hasMore ?? meta.has_more ?? false) : rawList.length >= pageSize;
-          const serverTotal = meta ? (meta.totalCount ?? meta.total_count ?? mapped.length) : mapped.length;
+          const serverHasMore = meta ? (meta.hasMore ?? false) : rawList.length >= pageSize;
+          const serverTotal = meta ? (meta.totalCount ?? mapped.length) : mapped.length;
 
           setHasMore(serverHasMore);
           setTotalCount(serverTotal);

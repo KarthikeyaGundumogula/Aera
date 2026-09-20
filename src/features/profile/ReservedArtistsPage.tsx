@@ -15,7 +15,7 @@ export default function ReservedArtistsPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setArtists(json.items || json.data || []);
+          setArtists(json.data ?? []);
         }
       })
       .catch((err) => {

@@ -1,9 +1,15 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { UploadStudioFlow } from "./components/UploadStudioFlow";
+import { useAuth } from "@/context/AuthContext";
 
 export default function UploadPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { currentArtist, isLoading } = useAuth();
+
+  if (!isLoading && !currentArtist) {
+    return <Navigate to="/profile/login" replace />;
+  }
 
   const festivalId = searchParams.get("festivalId") || undefined;
   const setId = searchParams.get("setId") || undefined;

@@ -14,7 +14,7 @@ export function TrendingDiscussions() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setThoughts(json.items || json.data || []);
+          setThoughts(json.data ?? []);
         }
       })
       .catch((err) => {

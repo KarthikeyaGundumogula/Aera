@@ -19,7 +19,7 @@ export function TaggedWorksPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setOriginal(json.data || json);
+          setOriginal(json.data);
         }
       })
       .catch((err) => {
@@ -30,7 +30,7 @@ export function TaggedWorksPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setExistingWorks(json.data || json || []);
+          setExistingWorks(json.data ?? []);
         }
       })
       .catch((err) => {
@@ -38,8 +38,8 @@ export function TaggedWorksPage() {
       });
   }, [id]);
 
-  const title = original?.title || original?.name || "Original";
-  const posterUrl = original?.coverImage || original?.cover_image || "/posters/og.jpeg";
+  const title = original?.title || "Original";
+  const posterUrl = original?.coverImage || "/posters/og.jpeg";
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pb-32">

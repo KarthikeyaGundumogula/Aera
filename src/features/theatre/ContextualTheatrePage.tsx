@@ -27,7 +27,7 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            const remote = json.data || json;
+            const remote = json.data;
             if (remote?.title && isMounted) {
               setSubtitle(remote.title);
             }
@@ -40,12 +40,12 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            const theatreCards = json.data || json;
+            const theatreCards = json.data ?? [];
             if (Array.isArray(theatreCards) && isMounted) {
               const mappedWorks: TheatreItem[] = theatreCards.map((w: any) => ({
                 id: w.id,
                 title: w.title || "Untitled Work",
-                category: w.workType || w.work_type || w.category || "Edit",
+                category: w.workType || "Edit",
                 image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
                 platform: "youtube",
                 srcId: w.id,
@@ -64,8 +64,8 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            const data = json.data || json;
-            if (isMounted && data.title) setSubtitle(data.title);
+            const data = json.data;
+            if (isMounted && data?.title) setSubtitle(data.title);
           }
         })
         .catch((err) => {
@@ -76,8 +76,8 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            const data = json.data || json;
-            if (isMounted && data.title) setSubtitle(data.title);
+            const data = json.data;
+            if (isMounted && data?.title) setSubtitle(data.title);
           }
         })
         .catch((err) => {

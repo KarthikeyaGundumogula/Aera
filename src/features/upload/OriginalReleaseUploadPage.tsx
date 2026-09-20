@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { UploadStudioFlow } from "./components/UploadStudioFlow";
 import { apiFetch } from "@/lib/api";
 import { FHLoader } from "@/components/FHLoader";
+import { useAuth } from "@/context/AuthContext";
 
 export default function OriginalReleaseUploadPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { currentArtist, isLoading } = useAuth();
 
   const [original, setOriginal] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(!!id);
+
+  if (!isLoading && !currentArtist) {
+    return <Navigate to="/profile/login" replace />;
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -19,12 +25,12 @@ export default function OriginalReleaseUploadPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const remote = json.data || json;
+          const remote = json.data;
           if (remote && isMounted) {
             setOriginal({
               id: remote.id,
               title: remote.title || "Untitled Original",
-              coverImage: remote.coverImage || remote.cover_img || "",
+              coverImage: remote.coverImage || "",
               description: remote.description || "",
             });
           }

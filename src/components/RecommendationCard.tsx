@@ -38,7 +38,7 @@ export const RecommendationCard = memo(function RecommendationCard({
   compact = false,
 }: Props) {
   const navigate = useNavigate();
-  const ledgerEntryId = rec.ledgerEntryId || (rec as any).ledger_entry_id || (rec as any).ledgerEntryId;
+  const ledgerEntryId = rec.ledgerEntryId;
 
   const hasBreakdown = React.useMemo(() => {
     return Boolean(ledgerEntryId);

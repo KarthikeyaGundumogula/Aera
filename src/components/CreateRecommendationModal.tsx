@@ -112,7 +112,7 @@ export function CreateRecommendationModal({
         setTimeout(() => onClose(), 1400);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setErrorMsg(errData.message || `Failed to post recommendation (HTTP ${res.status}). Verify profile login.`);
+        setErrorMsg(errData.error || errData.message || `Failed to post recommendation (HTTP ${res.status}). Verify profile login.`);
       }
     } catch (err) {
       setErrorMsg("Network error. Unable to submit recommendation.");

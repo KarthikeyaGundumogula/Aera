@@ -187,52 +187,44 @@ export function buildMobileClusters(items: TheatreItem[]): MobileCluster[] {
   if (!Array.isArray(stackedItems) || stackedItems.length === 0) return clusters;
 
   const seed = getSeed(items);
-  const remainderClusters: MobileCluster[] = stackedItems.map((item, i) => ({
-    id: `mc-rem-${i}-${seed}`,
-    type: "A",
-    slots: [
-      {
-        type: isEditWork(item) ? "Wide" : isPosterWork(item) ? "Vertical" : "Square",
-        item,
-      },
-    ],
-  }));
+  const remainderClusters: MobileCluster[] = [];
+
+  let i = 0;
+  while (i < stackedItems.length) {
+    if (i + 1 < stackedItems.length) {
+      // Pair 2 items into a 2-column cluster (Template E)
+      remainderClusters.push({
+        id: `mc-rem-pair-${i}-${seed}`,
+        type: "E",
+        slots: [
+          { type: isPosterWork(stackedItems[i]) ? "Vertical" : "Square", item: stackedItems[i] },
+          { type: isPosterWork(stackedItems[i + 1]) ? "Vertical" : "Square", item: stackedItems[i + 1] },
+        ],
+      });
+      i += 2;
+    } else {
+      // Single leftover item rendered as full-width banner
+      remainderClusters.push({
+        id: `mc-rem-single-${i}-${seed}`,
+        type: "A",
+        slots: [
+          {
+            type: isEditWork(stackedItems[i]) ? "Wide" : isPosterWork(stackedItems[i]) ? "Vertical" : "Square",
+            item: stackedItems[i],
+          },
+        ],
+      });
+      i += 1;
+    }
+  }
 
   return [...clusters, ...remainderClusters];
 }
 
 export function getMobileClusterHeight(cluster: MobileCluster): string {
-  if (!cluster || !Array.isArray(cluster.slots)) return "0px";
-  const [s0, s1, s2] = cluster.slots;
-  const hasItem = (s?: MobileSlot) => !!s?.item;
-
-  let topOccupied = false;
-  let bottomOccupied = false;
-
-  switch (cluster.type) {
-    case "A":
-      topOccupied = hasItem(s0);
-      bottomOccupied = hasItem(s1) || hasItem(s2);
-      break;
-    case "B":
-      topOccupied = hasItem(s0) || hasItem(s1);
-      bottomOccupied = hasItem(s0) || hasItem(s2);
-      break;
-    case "C":
-      topOccupied = hasItem(s0) || hasItem(s1);
-      bottomOccupied = hasItem(s2) || hasItem(s1);
-      break;
-    case "D":
-      topOccupied = hasItem(s0) || hasItem(s1);
-      bottomOccupied = hasItem(s2);
-      break;
-    case "E":
-      topOccupied = hasItem(s0) || hasItem(s1);
-      bottomOccupied = hasItem(s0) || hasItem(s1);
-      break;
-  }
-
-  if (topOccupied && bottomOccupied) return "40dvh";
-  if (topOccupied || bottomOccupied) return "22dvh";
-  return "0px";
+  if (!cluster || !Array.isArray(cluster.slots)) return "auto";
+  const filledCount = cluster.slots.filter(s => !!s?.item).length;
+  if (filledCount === 0) return "0px";
+  if (filledCount === 1) return "auto";
+  return "40dvh";
 }

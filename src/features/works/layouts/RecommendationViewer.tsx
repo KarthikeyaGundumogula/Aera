@@ -18,7 +18,7 @@ export function RecommendationViewer({ item }: RecommendationViewerProps) {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setRec(json.data || json);
+          setRec(json.data);
         }
       })
       .catch((err) => {

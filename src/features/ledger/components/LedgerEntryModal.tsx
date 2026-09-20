@@ -349,7 +349,7 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
         setTimeout(() => onClose(), 1300);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setErrorMsg(errData.message || `Failed to log entry (HTTP ${res.status}). Verify profile login.`);
+        setErrorMsg(errData.error || errData.message || `Failed to log entry (HTTP ${res.status}). Verify profile login.`);
       }
     } catch (err) {
       setErrorMsg("Network error. Unable to log entry to server.");

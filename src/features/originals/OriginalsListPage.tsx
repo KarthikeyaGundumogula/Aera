@@ -12,9 +12,6 @@ export function OriginalsListPage() {
   const navigate = useNavigate();
   const { items, loading, loadingMore, hasMore, totalCount, loadMore } = usePaginatedOriginals(12);
 
-  const makers = useMemo(() => [], []);
-  const stars = useMemo(() => [], []);
-
   return (
     <div
       className="min-h-screen bg-black text-white overflow-y-auto no-scrollbar"
@@ -42,8 +39,6 @@ export function OriginalsListPage() {
                 <OriginalPosterCard
                   key={original.id}
                   original={original}
-                  makers={makers}
-                  stars={stars}
                   index={index}
                 />
               ))}

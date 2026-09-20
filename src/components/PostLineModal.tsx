@@ -72,7 +72,7 @@ export function PostLineModal({ isOpen, onClose }: PostLineModalProps) {
         setTimeout(() => onClose(), 1000);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setErrorMsg(errData.message || `Failed to post line (HTTP ${res.status}). Verify profile login.`);
+        setErrorMsg(errData.error || errData.message || `Failed to post line (HTTP ${res.status}). Verify profile login.`);
       }
     } catch (err) {
       setErrorMsg("Network error. Unable to connect to server.");

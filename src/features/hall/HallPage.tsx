@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "motion/react";
 import {
   Film,
@@ -23,6 +23,8 @@ import { ArtistRecommendationsSection } from "./components/ArtistRecommendations
 import { FestivalsSection } from "./components/FestivalsSection";
 import { SectionHeader } from "../../components/SectionHeader";
 import { EmptyState } from "../../components/EmptyState";
+import { apiFetch } from "@/lib/api";
+import type { Festival, DiscussionItem } from "@/types";
 
 export default function HallPage() {
   const navigate = useNavigate();
@@ -40,11 +42,36 @@ export default function HallPage() {
   const ledgerItems = useMemo(() => [], []);
 
   // ── Festivals ─────────────────────────────────────────────────────────────
-  const memberFestivals = useMemo(() => [], []);
-  const liveFestivals = useMemo(() => [], []);
+  const [memberFestivals, setMemberFestivals] = useState<Festival[]>([]);
+
+  useEffect(() => {
+    apiFetch("/festivals")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setMemberFestivals(json.data ?? []);
+        }
+      })
+      .catch((err) => {
+        console.warn("[HallPage] Failed to fetch festivals:", err);
+      });
+  }, []);
 
   // ── Discussions ───────────────────────────────────────────────────────────
-  const memberDiscussions = useMemo(() => [], []);
+  const [memberDiscussions, setMemberDiscussions] = useState<DiscussionItem[]>([]);
+
+  useEffect(() => {
+    apiFetch("/thoughts")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setMemberDiscussions(json.data ?? []);
+        }
+      })
+      .catch((err) => {
+        console.warn("[HallPage] Failed to fetch discussions:", err);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-surface-deep text-white pb-28">

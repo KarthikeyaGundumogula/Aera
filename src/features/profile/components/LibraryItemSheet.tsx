@@ -36,7 +36,7 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
-            setOriginal(json.data || json);
+            setOriginal(json.data);
           }
         })
         .catch(console.error);
@@ -52,10 +52,10 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
           const sheetRes = await apiFetch(`/library/sheet/${targetId}`).catch(() => null);
           if (!sheetRes || !sheetRes.ok) return null;
           const sheetJson = await sheetRes.json().catch(() => ({}));
-          return sheetJson.data || sheetJson;
+          return sheetJson.data;
         }
         const json = await res.json().catch(() => ({}));
-        return json.data || json;
+        return json.data;
       })
       .then((data) => {
         if (!data) return;
@@ -65,24 +65,18 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
           setEntryStatus(st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched");
         }
         if (typeof data.surgeScore === "number") setSurgeScore(data.surgeScore);
-        else if (typeof data.surge_score === "number") setSurgeScore(data.surge_score);
-
         if (typeof data.peakSnapshot === "number") setPeakMagnitude(data.peakSnapshot);
-        else if (typeof data.peak_snapshot === "number") setPeakMagnitude(data.peak_snapshot);
-
         if (typeof data.currentPeakScore === "number") setCurrentPeakScore(data.currentPeakScore);
-        else if (typeof data.current_peak_score === "number") setCurrentPeakScore(data.current_peak_score);
 
-        if (data.userHypeThought) setPreThoughts(data.userHypeThought);
-        else if (data.preThought) setPreThoughts(data.preThought);
-        else if (data.pre_thought) setPreThoughts(data.pre_thought);
-
-        if (data.userAfterThought) setAfterThoughts(data.userAfterThought);
-        else if (data.postImpression) setAfterThoughts(data.postImpression);
-        else if (data.post_impression) setAfterThoughts(data.post_impression);
-
-        if (typeof data.creditedWorksCount === "number") setCreditedWorksCount(data.creditedWorksCount);
-        else if (typeof data.credited_works_count === "number") setCreditedWorksCount(data.credited_works_count);
+        if (data.userHypeThought || data.preThought) {
+          setPreThoughts(data.userHypeThought || data.preThought);
+        }
+        if (data.userAfterThought || data.postImpression) {
+          setAfterThoughts(data.userAfterThought || data.postImpression);
+        }
+        if (typeof data.creditedWorksCount === "number") {
+          setCreditedWorksCount(data.creditedWorksCount);
+        }
       })
       .catch(console.error);
   }, [libraryEntryId, originalId]);
