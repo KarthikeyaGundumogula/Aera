@@ -54,6 +54,7 @@ export interface WorkArtistInfo {
   profilePicture: string;
   favoritesCount: number;
   spirit: number;
+  worksCount?: number;
 }
 
 export interface EditWorkDetail {

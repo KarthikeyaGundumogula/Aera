@@ -20,7 +20,7 @@ const ARTISTS_MOCK: any[] = [];
 const GRID_ITEMS: any[] = [];
 import { EmbeddedWorkBox } from "./EmbeddedWorkBox";
 
-import { formatRelativeTime } from "../utils/time";
+import { formatRelativeTime } from "@/utils/time";
 import { formatStat } from "../utils/number";
 
 export interface ArtistOverride {

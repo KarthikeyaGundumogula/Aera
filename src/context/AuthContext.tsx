@@ -131,6 +131,7 @@ async function fetchMyProfile(): Promise<OriginalArtist | null> {
         : DEFAULT_AVATAR_PLACEHOLDER,
       spirit: data.spirit || 0,
       works: data.worksCount || 0,
+      worksCount: data.worksCount || 0,
       favoritesCount: data.favoritesCount || 0,
       role: data.roleName || "organizer",
       bio: data.tagLine || "",
@@ -139,6 +140,7 @@ async function fetchMyProfile(): Promise<OriginalArtist | null> {
       themeBgColor,
       currentPeakLibrary: data.currentPeakLibrary ?? 0,
       currentPeakRecommendations: data.currentPeakRecommendations ?? 0,
+      memberSetIds: data.memberSetIds || [],
       socials: {
         instagram: data.instagramProfile || undefined,
         twitter: data.twitterProfile || undefined,
@@ -155,6 +157,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentArtist, setCurrentArtist] = useState<OriginalArtist | null>(null);
   const [userWorks, setUserWorks] = useState<TheatreItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Clear authentication state if session refresh fails
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setCurrentArtist(null);
+      setUserWorks([]);
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("aera:auth-expired", handleAuthExpired);
+      return () => {
+        window.removeEventListener("aera:auth-expired", handleAuthExpired);
+      };
+    }
+  }, []);
 
   const refreshProfile = useCallback(async (): Promise<OriginalArtist | null> => {
     const artist = await fetchMyProfile();

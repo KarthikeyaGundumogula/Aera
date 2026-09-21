@@ -22,7 +22,7 @@ import { SaveAction } from "../../../components/actions/SaveAction";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
 import { FHLoader } from "../../../components/FHLoader";
-import { formatRelativeTime } from "../../../utils/time";
+import { formatRelativeTime } from "@/utils/time";
 import { apiFetch } from "@/lib/api";
 import type { LedgerItem } from "@/types/ledger";
 import { LedgerWallCard } from "../../profile/components/LedgerWallCard";

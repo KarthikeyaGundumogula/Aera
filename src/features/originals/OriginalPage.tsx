@@ -17,7 +17,7 @@ import { CommandCenter, CommandItem } from "../../components/CommandCenter";
 import { OriginalManagementModal } from "./components/OriginalManagementModal";
 import { RecentReleasesSection } from "../shared/components/RecentReleasesSection";
 import { PosterImage } from "../../components/PosterImage";
-import { formatReleaseDate } from "../../utils/time";
+import { formatReleaseDate } from "@/utils/time";
 import { Original } from "../../types/originals";
 import { TheatreItem } from "../../types";
 

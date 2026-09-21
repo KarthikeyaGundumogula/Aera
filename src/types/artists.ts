@@ -9,6 +9,8 @@ export interface Artist {
   bannerImage?: string;
   bio?: string;
   spirit?: number;
+  worksCount?: number;
+  favoritesCount?: number;
   isRegistered?: boolean;
   peakMagnitude?: number;
   surgeMean?: number;

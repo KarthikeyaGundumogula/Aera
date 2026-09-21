@@ -18,18 +18,22 @@ import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
 interface ArtistModalData {
-  profileId?: string;
-  profilePicture?: string;
-  stageName?: string;
-  userName?: string;
+  profileId: string;
+  profilePicture: string;
+  stageName: string;
+  userName: string;
   tagLine?: string;
-  youtubeProfile?: string | null;
-  twitterProfile?: string | null;
-  instagramProfile?: string | null;
-  spirit?: number;
-  works?: number;
-  isFavorited?: boolean;
-  originals?: string[];
+  youtubeProfile?: string;
+  twitterProfile?: string;
+  instagramProfile?: string;
+  spirit: number;
+  colorTheme: string;
+  worksCount: number;
+  favoritesCount: number;
+  isFavorited: boolean;
+  currentPeakLibrary: number;
+  currentPeakRecommendations: number;
+  originals: Array<{ id: string; title: string }>;
 }
 
 // In-memory cache and in-flight request deduplication
@@ -180,15 +184,18 @@ export const ArtistProfile = memo(
       : (currentName ? `@${currentName.toLowerCase().replace(/\s+/g, "")}` : "@artist");
     const currentImage = modalData?.profilePicture || artist.image || "";
     const currentBio = modalData?.tagLine || artist.bio || "FrameHouse creator contributing to the cinematic evolution.";
-    const currentSpirit = modalData?.spirit ?? artist.spirit ?? 0;
-    const currentWorks = modalData?.works ?? artist.works ?? 0;
+    const currentSpirit = modalData ? modalData.spirit : artist.spirit;
+    const currentWorks = modalData ? modalData.worksCount : (artist.worksCount ?? artist.works);
     const currentSocials = {
       instagram: modalData?.instagramProfile || artist.socials?.instagram,
       twitter: modalData?.twitterProfile || artist.socials?.twitter,
       youtube: modalData?.youtubeProfile || artist.socials?.youtube,
     };
-    const currentOriginals: Array<{ id: string; title: string }> = modalData?.originals
-      ? modalData.originals.map((title, idx) => ({ id: `${idx}`, title }))
+    const currentOriginals: Array<{ id: string; title: string }> = modalData
+      ? modalData.originals.map((item) => ({
+          id: item.id,
+          title: item.title,
+        }))
       : (artist.workedOn || []);
 
     const handleProjectClick = () => {

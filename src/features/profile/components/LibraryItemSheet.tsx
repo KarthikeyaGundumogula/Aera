@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { SurgeScoreDisplay } from "../../../components/surge/SurgeScoreDisplay";
 import { PosterImage } from "../../../components/PosterImage";
-import { formatReleaseDate } from "../../../utils/time";
+import { formatReleaseDate } from "@/utils/time";
 import { apiFetch } from "@/lib/api";
 
 interface LibraryItemSheetProps {

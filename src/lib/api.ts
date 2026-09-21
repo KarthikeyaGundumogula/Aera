@@ -169,6 +169,56 @@ async function processApiError(
   return errorDetail;
 }
 
+// ─── Refresh Token Queue & Flow ───────────────────────────────────────────────
+
+let refreshPromise: Promise<boolean> | null = null;
+
+/**
+ * Executes a token refresh request against the backend.
+ * Uses native fetch to avoid recursion.
+ * On success, backend sets new rotated auth_token and refresh_token cookies.
+ */
+async function performTokenRefresh(): Promise<boolean> {
+  try {
+    const refreshUrl = apiUrl('/auth/refresh');
+    const res = await fetch(refreshUrl, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (res.ok) {
+      return true;
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('aera:auth-expired'));
+    }
+    return false;
+  } catch (err) {
+    console.warn('[apiFetch] Token refresh network error:', err);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('aera:auth-expired'));
+    }
+    return false;
+  }
+}
+
+/**
+ * Deduplicates in-flight refresh requests to ensure only one token rotation
+ * call executes at a time, preventing token replay rejections.
+ */
+function requestTokenRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = performTokenRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
 /**
  * Typed API fetch wrapper.
  *
@@ -176,13 +226,19 @@ async function processApiError(
  *   - Base URL resolution (`VITE_API_URL`)
  *   - Cookie credential forwarding (`credentials: 'include'`)
  *   - Content-Type JSON header
+ *   - Automatic 401 refresh token rotation & request replay
  *   - Automatic error intercepting & parsing for non-2xx responses and network failures
  *
  * @param path    - API path relative to base URL
  * @param options - Optional RequestInit overrides (method, body, headers, etc.)
+ * @param isRetry - Internal flag preventing infinite retry loops
  * @returns Response object carrying optional `.apiError` property if !res.ok
  */
-export async function apiFetch(path: string, options?: RequestInit): Promise<ApiResponse> {
+export async function apiFetch(
+  path: string,
+  options?: RequestInit,
+  isRetry = false
+): Promise<ApiResponse> {
   const url = apiUrl(path);
   const method = (options?.method ?? 'GET').toUpperCase();
   const mergedOptions: RequestInit = {
@@ -196,6 +252,14 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Api
 
   try {
     const response: ApiResponse = await fetch(url, mergedOptions);
+
+    // If 401 Unauthorized occurs on a non-auth endpoint, attempt token refresh and replay once
+    if (response.status === 401 && !isRetry && !/^\/?auth\//i.test(path)) {
+      const refreshed = await requestTokenRefresh();
+      if (refreshed) {
+        return await apiFetch(path, options, true);
+      }
+    }
 
     if (!response.ok) {
       const errorDetail = await processApiError(path, url, method, response);

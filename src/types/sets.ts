@@ -35,6 +35,7 @@ export interface Festival {
   status: 'UPCOMING' | 'LIVE' | 'CONCLUDED';
   startDate: string;
   endDate: string;
+  totalWorks?: number;
   rules?: string[];
   prizes?: string[];
   presenceLeader?: string; // Profile ID of the top performer / winner

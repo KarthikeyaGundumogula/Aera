@@ -20,7 +20,7 @@ import { ArtistProfile } from "../features/shared/profile/ArtistProfile";
 import { SurgeBars } from "./SurgeBars";
 import { PosterImage } from "./PosterImage";
 import { QuoteModal } from "./QuoteModal";
-import { formatRelativeTime } from "../utils/time";
+import { formatRelativeTime } from "@/utils/time";
 import { useWorkNavigation } from "@/hooks/useWorkNavigation";
 import type { TheatreItem } from "../types/theatre";
 import { apiFetch } from "@/lib/api";

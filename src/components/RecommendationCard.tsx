@@ -21,7 +21,7 @@ import { BoostAction } from "./actions/BoostAction";
 import { LedgerAction } from "./actions/LedgerAction";
 import { FrameAction } from "./actions/FrameAction";
 import { SurgeBars } from "./SurgeBars";
-import { formatRelativeTime } from "../utils/time";
+import { formatRelativeTime } from "@/utils/time";
 import { useWorkNavigation } from "@/hooks/useWorkNavigation";
 import type { TheatreItem } from "../types/theatre";
 import { apiFetch } from "@/lib/api";

@@ -7,6 +7,7 @@ export interface OriginalArtist {
   image: string;
   spirit: number;
   works: number;
+  worksCount?: number;
   favoritesCount?: number;
   role?: string;
   bio?: string;
@@ -22,6 +23,7 @@ export interface OriginalArtist {
   imagePosition?: string;
   currentPeakLibrary?: number;
   currentPeakRecommendations?: number;
+  memberSetIds?: string[];
 }
 
 export interface OriginalStar {
@@ -40,6 +42,9 @@ export interface Original {
   title: string;
   description: string;
   coverImage: string;
+  associatedWith?: string;
+  membersCount?: number;
+  taggedWorksCount?: number;
   stats: {
     presence: number;
     members: number;

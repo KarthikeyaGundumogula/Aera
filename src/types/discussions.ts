@@ -8,6 +8,7 @@ export interface DiscussionItem {
   title: string;
   body: string;
   commentCount: number;
+  totalComments?: number;
   work?: any;
   createdAt: string;
   updatedAt?: string;

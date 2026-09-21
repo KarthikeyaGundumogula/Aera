@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Quote, Film, Sparkles } from "lucide-react";
+import { Quote, Camera, Sparkles } from "lucide-react";
 import { FoyerSwiper, FoyerArtistGroup } from "./FoyerSwiper";
 import { apiFetch } from "@/lib/api";
 
@@ -105,7 +105,7 @@ export function FoyerSection() {
                     )}
                     {postType === 'FRAME' && (
                       <>
-                        <Film size={8} className="fill-blue-500/20" />
+                        <Camera size={8} className="fill-blue-500/20" />
                         <span className="text-[6.5px] font-black uppercase tracking-[0.2em]">Frame</span>
                       </>
                     )}

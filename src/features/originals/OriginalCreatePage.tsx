@@ -50,6 +50,12 @@ export default function OriginalCreatePage() {
     const isValidUuid = (id?: string) => typeof id === "string" && /^[0-9a-fA-F-]{36}$/.test(id);
     const targetAssociatedId = isValidUuid(currentArtist?.id) ? currentArtist?.id : undefined;
 
+    if (!targetAssociatedId) {
+      setErrorMessage("Active authenticated profile is required to initiate an Original. Please log in.");
+      setIsSaved(false);
+      return;
+    }
+
     const payload: Record<string, unknown> = {
       title: formData.title.trim(),
       release_date: formData.releaseDate.trim() || undefined,
@@ -58,13 +64,10 @@ export default function OriginalCreatePage() {
       category: "MOVIE",
       genres: parsedGenres.length > 0 ? parsedGenres : ["Action", "Drama"],
       password: "kApten@1023",
+      associated_with: targetAssociatedId,
       stars,
       makers,
     };
-
-    if (targetAssociatedId) {
-      payload.associated_with = targetAssociatedId;
-    }
 
     try {
       const res = await apiFetch("/originals/new", {

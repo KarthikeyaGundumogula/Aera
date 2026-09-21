@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { Sparkles, Sun, Users, QrCode, Film } from "lucide-react";
 import { PosterImage } from "../../../components/PosterImage";
-import { formatReleaseDate } from "../../../utils/time";
+import { formatReleaseDate } from "@/utils/time";
 import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
 import type { Original } from "@/types/originals";
