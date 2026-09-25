@@ -1,13 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "motion/react";
 import {
-  Film,
-  BookOpen,
   Trophy,
   MessageSquare,
-  Clapperboard,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,7 +15,6 @@ import { DiscussionsSection } from "./components/DiscussionsSection";
 import { YoutubeReleasesSection } from "./components/YoutubeReleasesSection";
 import { FoyerSection } from "./components/FoyerSection";
 import { TopOriginalsSection } from "./components/TopOriginalsSection";
-import { ArtistRecommendationsSection } from "./components/ArtistRecommendationsSection";
 import { FestivalsSection } from "./components/FestivalsSection";
 import { SectionHeader } from "../../components/SectionHeader";
 import { EmptyState } from "../../components/EmptyState";
@@ -29,10 +24,7 @@ import type { Festival, DiscussionItem } from "@/types";
 export default function HallPage() {
   const navigate = useNavigate();
 
-  const originalsRef = useRef<HTMLElement>(null);
   const festivalsRef = useRef<HTMLElement>(null);
-  const recommendationsRef = useRef<HTMLElement>(null);
-  const ledgerRef = useRef<HTMLElement>(null);
 
   // ── Works & Originals ────────────────────────────────────────────────
   const favoritedWorks = useMemo(() => [], []);
@@ -103,19 +95,6 @@ export default function HallPage() {
           <TopOriginalsSection />
         </motion.section>
 
-        {/* ══════════════════════════════════════════════════════
-            NEW SCENE — ARTIST RECOMMENDATIONS
-        ══════════════════════════════════════════════════════ */}
-        <motion.section
-          ref={recommendationsRef}
-          id="section-recommendations"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-6 scroll-mt-24"
-        >
-          <ArtistRecommendationsSection />
-        </motion.section>
 
         {/* ══════════════════════════════════════════════════════
             SCENE 1 — FESTIVALS IN YOUR SETS

@@ -6,6 +6,7 @@ import { FHLoader } from '../../../components/FHLoader';
 
 import { buildEmbedUrl } from '../../../utils/embed';
 import { useTwitterWidgets } from '../../../hooks/useTwitterWidgets';
+import { useYoutubeEmbed } from '../../../hooks/useYoutubeEmbed';
 
 interface FestivalSpotlightPlayerProps {
   works: ReleaseSectionWork[];
@@ -16,7 +17,6 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
 }: FestivalSpotlightPlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isIntersecting, setIsIntersecting] = useState(false);
-  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,18 +30,15 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
 
   const currentWork = works[currentIndex];
 
-  // Reset iframe loading state when switching videos, with a fallback timer
-  useEffect(() => {
-    setIsIframeLoaded(false);
-    const timer = setTimeout(() => {
-      setIsIframeLoaded(true);
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, [currentIndex, currentWork?.workId]);
-
   const rawPlatform = (currentWork?.platform || '').toLowerCase();
   const isTwitter = rawPlatform === 'twitter' || (Boolean(currentWork?.workSrcId) && /twitter\.com|x\.com/.test(currentWork?.workSrcId || ''));
   const isYoutube = !isTwitter;
+
+  const { isYoutubeLoaded, handleIframeLoad } = useYoutubeEmbed(
+    isYoutube ? currentWork?.workSrcId : undefined,
+    isYoutube
+  );
+
   const embedUrl =
     isYoutube && currentWork?.workSrcId
       ? buildEmbedUrl('youtube', currentWork.workSrcId)
@@ -59,7 +56,7 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
     setCurrentIndex(i => (i - 1 + works.length) % works.length);
 
   const isFullyLoaded = isYoutube
-    ? isIframeLoaded
+    ? isYoutubeLoaded
     : isTwitter
     ? isTwitterLoaded
     : true;
@@ -87,22 +84,22 @@ export const FestivalSpotlightPlayer = memo(function FestivalSpotlightPlayer({
                 className="absolute inset-0 w-full h-full border-none z-10"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                onLoad={() => setIsIframeLoaded(true)}
+                onLoad={handleIframeLoad}
               />
             )}
 
             {/* Twitter Embed */}
             {isTwitter && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-4">
+              <div className="absolute inset-0 flex flex-col items-center justify-start py-6 px-4 bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10">
                 <div
                   ref={twitterContainerRef}
-                  className="w-full max-w-[560px] flex justify-center scale-95"
+                  className="w-full max-w-[560px] flex justify-center my-auto"
                 />
                 <a
-                  href={`https://twitter.com/i/web/status/${currentWork?.workSrcId}`}
+                  href={currentWork?.workSrcId?.startsWith('http') ? currentWork.workSrcId : `https://twitter.com/i/web/status/${currentWork?.workSrcId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 z-20"
+                  className="mt-3 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 z-20 flex-shrink-0"
                 >
                   View on Twitter / X
                 </a>

@@ -5,6 +5,7 @@ import { SectionHeader } from '../../../components/SectionHeader';
 import { FHLoader } from '../../../components/FHLoader';
 import { buildEmbedUrl } from '../../../utils/embed';
 import { useTwitterWidgets } from '../../../hooks/useTwitterWidgets';
+import { useYoutubeEmbed } from '../../../hooks/useYoutubeEmbed';
 
 export interface OriginalReleaseItem {
   id: string;
@@ -14,6 +15,66 @@ export interface OriginalReleaseItem {
   releaseType?: string;
   artist?: string;
 }
+
+interface ReleaseWorkItem {
+  id: string;
+  title: string;
+  srcId: string;
+  platform: string;
+  category?: string;
+  originalIds?: string[];
+  artist?: string;
+}
+
+interface ReleasePlayerMediaProps {
+  currentWork: ReleaseWorkItem;
+  isIntersecting: boolean;
+}
+
+const ReleasePlayerMedia = memo(function ReleasePlayerMedia({ currentWork, isIntersecting }: ReleasePlayerMediaProps) {
+  const rawPlatform = (currentWork?.platform || "").toLowerCase();
+  const isTwitter = rawPlatform === "twitter" || (Boolean(currentWork?.srcId) && /twitter\.com|x\.com/.test(currentWork?.srcId || ""));
+  const isYoutube = !isTwitter;
+  const embedUrl = isYoutube && currentWork?.srcId ? buildEmbedUrl('youtube', currentWork.srcId) : '';
+
+  const { isYoutubeLoaded, handleIframeLoad } = useYoutubeEmbed(
+    isYoutube && isIntersecting ? currentWork?.srcId : undefined,
+    isYoutube && isIntersecting
+  );
+
+  const { containerRef, isLoaded: isTwitterLoaded } = useTwitterWidgets(
+    isTwitter && isIntersecting ? currentWork.srcId : undefined
+  );
+
+  const isFullyLoaded = isYoutube ? isYoutubeLoaded : (isTwitter ? isTwitterLoaded : true);
+
+  return (
+    <>
+      {(!isIntersecting || !isFullyLoaded) && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
+          <FHLoader label="Loading" />
+        </div>
+      )}
+
+      {isIntersecting && isYoutube && embedUrl && (
+        <iframe
+          key={`yt-${currentWork.id || currentWork.srcId}`}
+          src={embedUrl}
+          className="absolute inset-0 w-full h-full border-none z-10"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          onLoad={handleIframeLoad}
+        />
+      )}
+
+      {isIntersecting && isTwitter && (
+        <div className="absolute inset-0 flex flex-col items-center justify-start py-6 px-2 bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10">
+          <div ref={containerRef} className="w-full max-w-[560px] flex justify-center my-auto" />
+        </div>
+      )}
+    </>
+  );
+});
 
 interface RecentReleasesSectionProps {
   title?: string;
@@ -34,20 +95,19 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 }: RecentReleasesSectionProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const [isIntersecting, setIsIntersecting] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
-  const recentReleases = useMemo(() => {
+  const recentReleases: ReleaseWorkItem[] = useMemo(() => {
     if (works && works.length > 0) {
-      return works.map((w) => ({
-        id: w.id || w.srcId,
-        title: w.title || "Release",
-        srcId: w.srcId || w.id,
+      return works.map((w: any) => ({
+        id: w.id || w.workId || w.srcId || w.workSrcId || "",
+        title: w.title || w.workTitle || "Release",
+        srcId: w.srcId || w.workSrcId || w.id || w.workId || "",
         platform: (w.platform || "YOUTUBE").toUpperCase(),
         category: w.category || "EDIT",
         originalIds: w.originalIds || [],
-        artist: w.artist || "Artist",
+        artist: w.artist || w.artistName || "Artist",
       }));
     }
     if (customReleases && customReleases.length > 0) {
@@ -75,32 +135,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
   const currentWork = recentReleases[currentIndex];
 
-  useEffect(() => {
-    setIsIframeLoaded(false);
-    const timer = setTimeout(() => {
-      setIsIframeLoaded(true);
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, [currentIndex, currentWork?.id]);
-
-  const rawPlatform = (currentWork?.platform || "").toLowerCase();
-  const isTwitter = rawPlatform === "twitter" || (Boolean(currentWork?.srcId) && /twitter\.com|x\.com/.test(currentWork?.srcId || ""));
-  const isYoutube = !isTwitter;
-
-  const embedUrl = isYoutube && currentWork?.srcId
-    ? buildEmbedUrl('youtube', currentWork.srcId)
-    : '';
-
-  const { containerRef: desktopTwitterRef, isLoaded: isDesktopTwitterLoaded } =
-    useTwitterWidgets(isTwitter ? currentWork?.srcId : undefined);
-
-  const { containerRef: mobileTwitterRef, isLoaded: isMobileTwitterLoaded } =
-    useTwitterWidgets(isTwitter ? currentWork?.srcId : undefined);
-
   if (!recentReleases.length) return null;
-
-  const isDesktopFullyLoaded = isYoutube ? isIframeLoaded : isTwitter ? isDesktopTwitterLoaded : true;
-  const isMobileFullyLoaded = isYoutube ? isIframeLoaded : isTwitter ? isMobileTwitterLoaded : true;
 
   const handleNext = () => setCurrentIndex(i => Math.min(i + 1, recentReleases.length - 1));
   const handlePrev = () => setCurrentIndex(i => Math.max(i - 1, 0));
@@ -121,51 +156,22 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
               maxWidth: "calc((100vh - 280px) * 16 / 9)"
             }}
           >
-             {!isDesktopFullyLoaded && (
-               <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
-                 <FHLoader label="Loading" />
-               </div>
-             )}
-
-             {isYoutube && embedUrl && (
-               <iframe
-                 key={`yt-desktop-${currentWork.id}`}
-                 src={embedUrl}
-                 className="absolute inset-0 w-full h-full border-none z-10"
-                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                 allowFullScreen
-                 onLoad={() => setIsIframeLoaded(true)}
-               />
-             )}
-
-             {isTwitter && (
-               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-4">
-                 <div
-                   ref={desktopTwitterRef}
-                   className="w-full max-w-[560px] flex justify-center scale-95"
-                 />
-                 <a
-                   href={`https://twitter.com/i/web/status/${currentWork?.srcId}`}
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   className="mt-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 z-20"
-                 >
-                   View on Twitter / X
-                 </a>
-               </div>
-             )}
+             <ReleasePlayerMedia currentWork={currentWork} isIntersecting={isIntersecting} />
           </div>
 
           {/* Controls & Metadata */}
           <div className="flex items-center justify-between px-2 gap-6">
              <div className="flex flex-col text-left">
                 <button 
-                  onClick={(e) => { e.stopPropagation(); navigate(`/works/${currentWork.id}`); }}
-                  className="text-xl font-black uppercase tracking-tight text-white hover:underline text-left"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (currentWork.id) navigate(`/works/${currentWork.id}`); 
+                  }}
+                  className="text-xl font-black uppercase tracking-tight text-white hover:underline text-left truncate"
                 >
                   {currentWork.title}
                 </button>
-                <p className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1.5">By. {currentWork.artist}</p>
+                <p className="text-[10px] text-white/40 font-bold tracking-[0.25em] uppercase mt-1.5 truncate">By. {currentWork.artist}</p>
              </div>
 
              <div className="flex items-center gap-4">
@@ -202,39 +208,7 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
         <div className="block md:hidden">
           <div className="px-2">
             <div className="relative aspect-video rounded-2xl overflow-hidden bg-surface-deep border border-white/[0.03] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-                {!isMobileFullyLoaded && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-deep/60 backdrop-blur-sm z-20">
-                    <FHLoader label="Loading" />
-                  </div>
-                )}
-
-                {isYoutube && embedUrl && (
-                  <iframe
-                    key={`yt-mobile-${currentWork.id}`}
-                    src={embedUrl}
-                    className="absolute inset-0 w-full h-full border-none z-10"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    onLoad={() => setIsIframeLoaded(true)}
-                  />
-                )}
-
-                {isTwitter && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black overflow-y-auto overflow-x-hidden no-scrollbar z-10 p-4">
-                    <div
-                      ref={mobileTwitterRef}
-                      className="w-full max-w-[560px] flex justify-center scale-95"
-                    />
-                    <a
-                      href={`https://twitter.com/i/web/status/${currentWork?.srcId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 z-20"
-                    >
-                      View on Twitter / X
-                    </a>
-                  </div>
-                )}
+               <ReleasePlayerMedia currentWork={currentWork} isIntersecting={isIntersecting} />
             </div>
           </div>
 
@@ -254,7 +228,10 @@ export const RecentReleasesSection = memo(function RecentReleasesSection({
 
             <div className="flex flex-col items-center text-center min-w-0 flex-1 px-1">
               <button 
-                onClick={(e) => { e.stopPropagation(); navigate(`/works/${currentWork.id}`); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  if (currentWork.id) navigate(`/works/${currentWork.id}`); 
+                }}
                 className="text-sm sm:text-base font-black uppercase tracking-tight text-white drop-shadow-md truncate w-full hover:underline text-center"
               >
                 {currentWork.title}

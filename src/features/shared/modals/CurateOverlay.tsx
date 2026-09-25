@@ -26,10 +26,11 @@ export function CurateOverlay({
 }: CurateOverlayProps) {
   const navigate = useNavigate();
   const { currentArtist } = useAuth();
-  const [ledgerOriginals, setLedgerOriginals] = useState<string[]>([]);
+  // Map of originalId -> libraryEntryId
+  const [libraryEntryMap, setLibraryEntryMap] = useState<Record<string, string>>({});
   const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
-  // Pre-load user's favorited originals if logged in
+  // Pre-load user's library entries if logged in
   useEffect(() => {
     if (isOpen && currentArtist) {
       apiFetch("/library")
@@ -38,8 +39,15 @@ export function CurateOverlay({
             const json = await res.json();
             const items = json.data ?? [];
             if (Array.isArray(items)) {
-              const favoritedIds = items.map((e: any) => e.originalId || e.id).filter(Boolean);
-              setLedgerOriginals(favoritedIds);
+              const map: Record<string, string> = {};
+              for (const e of items) {
+                const origId = e.id || e.originalId;
+                const entryId = e.libraryEntryId || e.id;
+                if (origId) {
+                  map[origId] = String(entryId);
+                }
+              }
+              setLibraryEntryMap(map);
             }
           }
         })
@@ -49,33 +57,55 @@ export function CurateOverlay({
 
   const handleAddToLedger = async (id: string) => {
     if (!currentArtist) {
-      onShowToast("Sign in required to add to Ledger");
+      onShowToast("Sign in required to add to Library");
       return;
     }
 
-    const isCurrentlyInLedger = ledgerOriginals.includes(id);
+    const existingEntryId = libraryEntryMap[id];
 
     try {
-      const endpoint = isCurrentlyInLedger ? "/originals/unfavorite" : "/originals/favorite";
-      const res = await apiFetch(endpoint, {
-        method: "POST",
-        body: JSON.stringify(id),
-      });
+      if (existingEntryId) {
+        const res = await apiFetch(`/library/${existingEntryId}/delete`, {
+          method: "DELETE",
+        });
 
-      if (res.ok) {
-        if (isCurrentlyInLedger) {
-          setLedgerOriginals((prev) => prev.filter((item) => item !== id));
-          onShowToast("Original Removed from Ledger");
+        if (res.ok) {
+          setLibraryEntryMap((prev) => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+          });
+          onShowToast("Original Removed from Library");
         } else {
-          setLedgerOriginals((prev) => [...prev, id]);
-          onShowToast("Original Added to Ledger");
+          onShowToast("Failed to remove from Library");
         }
       } else {
-        onShowToast("Failed to update Ledger");
+        const res = await apiFetch("/library/new", {
+          method: "POST",
+          body: JSON.stringify({
+            original_id: id,
+            visibility: true,
+            status: "WANT_TO_WATCH",
+            entry_type: "MOVIE",
+            surge_score: 0,
+          }),
+        });
+
+        if (res.ok) {
+          const json = await res.json().catch(() => null);
+          const newEntryId = json?.data?.id || json?.data || `lib-${Date.now()}`;
+          setLibraryEntryMap((prev) => ({
+            ...prev,
+            [id]: String(newEntryId),
+          }));
+          onShowToast("Original Added to Library");
+        } else {
+          onShowToast("Failed to add to Library");
+        }
       }
     } catch (err) {
-      console.error("[CurateOverlay] Failed to update ledger status:", err);
-      onShowToast("Network error updating Ledger");
+      console.error("[CurateOverlay] Failed to update library status:", err);
+      onShowToast("Network error updating Library");
     }
   };
 
@@ -91,13 +121,38 @@ export function CurateOverlay({
     }
 
     try {
-      // Ensure the original is favorited in the ledger first
-      if (!ledgerOriginals.includes(id)) {
-        await apiFetch("/originals/favorite", {
+      let entryId = libraryEntryMap[id];
+
+      // Ensure the original is added to library first if not already present
+      if (!entryId) {
+        const createRes = await apiFetch("/library/new", {
           method: "POST",
-          body: JSON.stringify(id),
+          body: JSON.stringify({
+            original_id: id,
+            visibility: true,
+            status: "WANT_TO_WATCH",
+            entry_type: "MOVIE",
+            surge_score: 0,
+          }),
         });
-        setLedgerOriginals((prev) => [...prev, id]);
+
+        if (createRes.ok) {
+          const json = await createRes.json().catch(() => null);
+          entryId = json?.data?.id || json?.data;
+          if (entryId) {
+            setLibraryEntryMap((prev) => ({
+              ...prev,
+              [id]: String(entryId),
+            }));
+          }
+        }
+      }
+
+      if (entryId && workId) {
+        await apiFetch(`/library/${entryId}/tag_work`, {
+          method: "POST",
+          body: JSON.stringify({ work_id: workId }),
+        });
       }
 
       setTaggedOriginals((prev) => [...prev, id]);
@@ -144,7 +199,7 @@ export function CurateOverlay({
               </div>
             ) : (
               originals.map((item) => {
-                const inLedger = ledgerOriginals.includes(item.id);
+                const inLedger = Boolean(libraryEntryMap[item.id]);
                 const isTagged = taggedOriginals.includes(item.id);
 
                 return (

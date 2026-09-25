@@ -31,13 +31,22 @@ export function TrendingDiscussions() {
       />
       <div className="overflow-x-auto no-scrollbar pb-6 px-6 md:px-12">
         <div className="flex gap-4 sm:gap-6 w-max">
-          {thoughts.map((thought: any) => (
-            <DiscussionCard
-              key={thought.id}
-              thought={thought}
-              onCardClick={() => navigate(`/sets/${thought.setId || "default"}/discussions/${thought.id}`)}
-            />
-          ))}
+          {thoughts.map((thought: any) => {
+            const targetSetId = thought.setId || thought.set_id;
+            return (
+              <DiscussionCard
+                key={thought.id}
+                thought={thought}
+                onCardClick={() =>
+                  navigate(
+                    targetSetId
+                      ? `/sets/${targetSetId}/discussions/${thought.id}`
+                      : `/discussions/${thought.id}`
+                  )
+                }
+              />
+            );
+          })}
         </div>
       </div>
     </section>

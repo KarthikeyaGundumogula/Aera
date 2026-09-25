@@ -10,11 +10,12 @@ interface CreditsStepProps {
   originals: Original[];
   selectedIds: string[];
   setFormData: UpdateUploadFormData;
+  onOriginalsChange?: (originals: Original[]) => void;
   onNext: () => void;
   onBack: () => void;
 }
 
-export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBack }: CreditsStepProps) {
+export function CreditsStep({ originals, selectedIds, setFormData, onOriginalsChange, onNext, onBack }: CreditsStepProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Scoped originals search — delegates all debounce, abort, and caching
@@ -50,20 +51,30 @@ export function CreditsStep({ originals, selectedIds, setFormData, onNext, onBac
 
   const filteredResults = useMemo(() => {
     if (!searchQuery.trim()) {
-      return originals;
+      return originals.length > 0 ? originals : mergedOriginals;
     }
     const query = searchQuery.toLowerCase();
     return allAvailable.filter(o =>
       o.title.toLowerCase().includes(query) ||
       o.id.toLowerCase().includes(query)
     );
-  }, [allAvailable, originals, searchQuery]);
+  }, [allAvailable, originals, mergedOriginals, searchQuery]);
 
   const toggleSelection = (id: string) => {
-    const newIds = selectedIds.includes(id)
+    const isSelected = selectedIds.includes(id);
+    const newIds = isSelected
       ? selectedIds.filter(i => i !== id)
       : [...selectedIds, id];
     setFormData({ originalIds: newIds });
+
+    if (onOriginalsChange) {
+      const targetOrg = mergedOriginals.find((o) => o.id === id);
+      if (isSelected) {
+        onOriginalsChange(selectedOriginals.filter((o) => o.id !== id));
+      } else if (targetOrg) {
+        onOriginalsChange([...selectedOriginals, targetOrg]);
+      }
+    }
   };
 
   return (

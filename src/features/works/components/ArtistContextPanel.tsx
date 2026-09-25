@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "motion/react";
 import { TheatreItem } from "../../../types";
-import { buildMobileClusters, getMobileClusterHeight } from "../../theatre/engine/mobileClusterBuilder";
+import { buildMobileClusters } from "../../theatre/engine/mobileClusterBuilder";
 import { MobileClusterView } from "../../theatre/components/mobile/MobileClusterView";
 import { FeedContext } from "../../../context/FeedContext";
 import { SectionHeader } from "../../../components/SectionHeader";
@@ -16,27 +16,60 @@ interface ArtistContextPanelProps {
 export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPanelProps) {
   const location = useLocation();
   const [artistWorks, setArtistWorks] = useState<TheatreItem[]>([]);
+  const [isFallback, setIsFallback] = useState(false);
 
   // Check if feed items were passed via router location.state
   const locationState = location.state as { item?: TheatreItem; feedItems?: TheatreItem[] } | null;
   const feedItemsFromState = locationState?.feedItems;
 
   useEffect(() => {
-    // If no feed items in state, fetch artist works from backend as fallback using correct endpoint
-    if ((!feedItemsFromState || feedItemsFromState.length === 0) && artistId) {
-      apiFetch(`/profiles/${artistId}/works?limit=20`)
-        .then(async (res) => {
-          if (res.ok) {
-            const json = await res.json();
-            const items = json.data ?? [];
-            setArtistWorks(items);
-          }
-        })
-        .catch((err) => {
-          console.error("[ArtistContextPanel] Failed to fetch artist works:", err);
-        });
+    // If no feed items in state, fetch artist works from backend as fallback
+    if (!feedItemsFromState || feedItemsFromState.length === 0) {
+      if (artistId) {
+        apiFetch(`/profiles/${artistId}/works?limit=20`)
+          .then(async (res) => {
+            if (res.ok) {
+              const json = await res.json();
+              const items: TheatreItem[] = json.data ?? [];
+              const remaining = items.filter(
+                (w) => String(w.id) !== String(currentWorkId)
+              );
+              if (remaining.length > 0) {
+                setArtistWorks(items);
+                setIsFallback(false);
+                return;
+              }
+            }
+            // If artist has no other works, fall back to theatre community works
+            const theatreRes = await apiFetch(`/theatre?limit=20`);
+            if (theatreRes.ok) {
+              const theatreJson = await theatreRes.json();
+              setArtistWorks(theatreJson.data ?? []);
+              setIsFallback(true);
+            }
+          })
+          .catch(async (err) => {
+            console.error("[ArtistContextPanel] Failed to fetch artist works, trying fallback:", err);
+            const theatreRes = await apiFetch(`/theatre?limit=20`).catch(() => null);
+            if (theatreRes?.ok) {
+              const theatreJson = await theatreRes.json();
+              setArtistWorks(theatreJson.data ?? []);
+              setIsFallback(true);
+            }
+          });
+      } else {
+        apiFetch(`/theatre?limit=20`)
+          .then(async (theatreRes) => {
+            if (theatreRes.ok) {
+              const theatreJson = await theatreRes.json();
+              setArtistWorks(theatreJson.data ?? []);
+              setIsFallback(true);
+            }
+          })
+          .catch(() => {});
+      }
     }
-  }, [artistId, feedItemsFromState]);
+  }, [artistId, feedItemsFromState, currentWorkId]);
 
   // Memoize display works and section title
   const { displayWorks, sectionTitle } = React.useMemo(() => {
@@ -60,19 +93,23 @@ export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPan
         );
       }
     } else if (artistWorks.length > 0) {
-      title = "More From Artist";
       works = artistWorks.filter(
         (w) => String(w.id) !== String(currentWorkId)
       );
+      title = isFallback ? "Up Next" : "More From Artist";
     }
 
     return { displayWorks: works, sectionTitle: title };
-  }, [feedItemsFromState, artistWorks, currentWorkId]);
+  }, [feedItemsFromState, artistWorks, currentWorkId, isFallback]);
 
   const clusters = React.useMemo(() => {
     if (displayWorks.length === 0) return [];
-    return buildMobileClusters(displayWorks).slice(0, 6);
+    return buildMobileClusters(displayWorks).slice(0, 4);
   }, [displayWorks]);
+
+  const flatWorks = React.useMemo(() => {
+    return clusters.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as TheatreItem[]);
+  }, [clusters]);
 
   if (displayWorks.length === 0 || clusters.length === 0) return null;
 
@@ -84,22 +121,19 @@ export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPan
           <SectionHeader title={sectionTitle} />
         </div>
 
-        <div className="pt-2 pb-20 lg:pb-10 px-4 sm:px-6">
+        <div className="pt-2 pb-20 lg:pb-10">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="flex flex-col w-full gap-0">
-              <FeedContext.Provider value={displayWorks}>
-                {clusters.map((cluster) => {
-                  const height = getMobileClusterHeight(cluster);
-                  return (
-                    <div key={cluster.id} style={{ height }} className="w-full">
-                      <MobileClusterView cluster={cluster} />
-                    </div>
-                  );
-                })}
+            <div className="flex flex-col w-full">
+              <FeedContext.Provider value={flatWorks}>
+                {clusters.map((cluster) => (
+                  <div key={cluster.id} style={{ height: "40dvh" }} className="w-full">
+                    <MobileClusterView cluster={cluster} />
+                  </div>
+                ))}
               </FeedContext.Provider>
             </div>
           </motion.div>

@@ -110,12 +110,26 @@ const CardLayout: React.FC<CardLayoutProps> = ({
     (artistObj as any)?.handle ||
     `//${artistName.toUpperCase().replace(/\s+/g, "_")}`;
 
-  const handleSaveToggle = (e: React.MouseEvent) => {
+  const handleSaveToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onToggleSave) {
       onToggleSave();
-    } else {
-      setInternalSaved(!internalSaved);
+      return;
+    }
+    const nextSaved = !saved;
+    setInternalSaved(nextSaved);
+    if (postId) {
+      try {
+        const endpoint = nextSaved ? "/artists/save_wall_post" : "/artists/unsave_wall_post";
+        const method = nextSaved ? "POST" : "DELETE";
+        await apiFetch(endpoint, {
+          method,
+          body: JSON.stringify(postId),
+        });
+      } catch (err) {
+        console.warn("[PostCard] Failed to toggle save wall post:", err);
+        setInternalSaved(!nextSaved);
+      }
     }
   };
 

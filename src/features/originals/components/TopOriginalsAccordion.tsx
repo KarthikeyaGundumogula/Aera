@@ -14,11 +14,11 @@ export const TopOriginalsAccordion = memo(function TopOriginalsAccordion({
 
   useEffect(() => {
     let isMounted = true;
-    apiFetch("/originals?limit=12")
+    apiFetch("/originals?limit=5")
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const rawList = json.data ?? [];
+          const rawList = (json.data ?? []).slice(0, 5);
           if (isMounted) {
             const mapped: Original[] = rawList.map((og: any) => ({
               id: og.id,

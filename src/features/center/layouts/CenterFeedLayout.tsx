@@ -19,64 +19,35 @@ import {
   Youtube,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { TheatreItem, OriginalArtist } from "../../../types";
+import type { TheatreItem, OriginalArtist, Festival } from "../../../types";
 import { apiFetch } from "@/lib/api";
 import { StageIcon } from "../../../components/icons/AppIcons";
-import { ProfileNav } from "../../../components/ProfileNav";
-
-
-import { Logo } from "../../../components/Logo";
 import { TopOriginalsAccordion } from "../../originals/components/TopOriginalsAccordion";
 import { SectionHeader } from "../../../components/SectionHeader";
-import { ArtistProfile } from "../../shared/profile";
-import { buildClusters } from "../../theatre/engine/clusterBuilder";
-import { StaticDesktopCluster } from "../../theatre/components/desktop/StaticDesktopCluster";
-import {
-  OriginalLink,
-  EditWork,
-  PosterWork,
-  StoryboardWork,
-} from "../../shared/work";
-import { getWorkKind } from "../../shared/work/types";
+import { OriginalLink } from "../../shared/work";
 import { RollingTicker } from "../components/RollingTicker";
-import { CategoryBadge } from '../../theatre/components/CategoryBadge';
 import { ArtistSpotlightGrid } from '../../../components/ArtistSpotlightGrid';
-import { CinematicPageHeader } from '../../../components/CinematicPageHeader';
 import { ContactCTA } from "../components/ContactCTA";
 import { CenterQuotes } from "../components/CenterQuotes";
 import { HomePageSkeleton } from "../components/HomePageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 import { TrendingDiscussions } from "../components/TrendingDiscussions";
-import { GlobalSearch } from "../../../components/search/GlobalSearch";
-import { FeedContext } from "../../../context/FeedContext";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 import { DesktopHeader } from "../../navigation/DesktopHeader";
 import { FestivalsSection } from "../../hall/components/FestivalsSection";
-
-const MobileFeedItem = memo(({ item }: { item: TheatreItem }) => {
-  const kind = getWorkKind(item);
-  return (
-    <div className="w-full px-6">
-      <div
-        className="relative rounded-xl overflow-hidden border border-white/5 bg-white/5"
-        style={{ aspectRatio: item.aspectRatio || 1 }}
-      >
-        {kind === "storyboard" ? (
-          <StoryboardWork item={item} variant="theatre-mobile" />
-        ) : kind === "poster" ? (
-          <PosterWork item={item} variant="theatre-mobile" />
-        ) : (
-          <EditWork item={item} variant="theatre-mobile" />
-        )}
-      </div>
-    </div>
-  );
-});
 
 export function CenterFeedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [items, setItems] = useState<TheatreItem[] | null>([]);
+  const [festivals, setFestivals] = useState<Festival[]>([]);
+  const [heroOriginals, setHeroOriginals] = useState<any[]>([]);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  const SLIDE_DURATION = 5000;
+  const PROGRESS_INTERVAL = 50;
 
   useEffect(() => {
     apiFetch("/theatre")
@@ -91,40 +62,41 @@ export function CenterFeedLayout() {
       });
   }, []);
 
-  // Defer heavy layout data so the hero/header paints immediately on mount
-  const deferredItems = useDeferredValue(items || []);
-  const desktopClusters = useMemo(
-    () => buildClusters(deferredItems, "flow"),
-    [deferredItems],
-  );
-
-  const desktopFlatItems = useMemo(
-    () => desktopClusters.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as TheatreItem[]),
-    [desktopClusters]
-  );
-
-  const getNavItemClassName = (active: boolean) =>
-    `flex min-w-0 flex-col items-center justify-center rounded-2xl px-2 py-3 text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${
-      active
-        ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.08)]"
-        : "text-white/45 hover:text-white"
-    }`;
-
-  const [heroIndex, setHeroIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const [isLoadingDown, setIsLoadingDown] = useState(false);
-  const bottomObserverTarget = useRef<HTMLDivElement>(null);
-
-  const safeHeroItem: any = null;
-
-  const SLIDE_DURATION = 5000;
-  const PROGRESS_INTERVAL = 50;
-
-  // Timer logic: heroIndex is the single source of truth.
-  // We use a time-based approach to ensure precision and prevent skipping.
   useEffect(() => {
-    return;
+    apiFetch("/festivals")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          setFestivals(json.data ?? []);
+        }
+      })
+      .catch((err) => {
+        console.error("[CenterFeedLayout] Failed to fetch festivals:", err);
+      });
+  }, []);
+
+  useEffect(() => {
+    apiFetch("/originals?limit=5")
+      .then(async (res) => {
+        if (res.ok) {
+          const json = await res.json();
+          const raw = (json.data ?? []).slice(0, 5);
+          setHeroOriginals(raw);
+        }
+      })
+      .catch((err) => {
+        console.error("[CenterFeedLayout] Failed to fetch hero originals:", err);
+      });
+  }, []);
+
+  const safeHeroItem = useMemo(() => {
+    if (!heroOriginals || heroOriginals.length === 0) return null;
+    const safeIdx = ((heroIndex % heroOriginals.length) + heroOriginals.length) % heroOriginals.length;
+    return heroOriginals[safeIdx] || heroOriginals[0] || null;
+  }, [heroOriginals, heroIndex]);
+
+  useEffect(() => {
+    if (!heroOriginals || heroOriginals.length === 0) return;
     setProgress(0);
     const startTime = Date.now();
 
@@ -134,14 +106,14 @@ export function CenterFeedLayout() {
 
       if (newProgress >= 100) {
         setDirection(1);
-        setHeroIndex((prev) => (prev + 1) % 1);
+        setHeroIndex((prev) => (prev + 1) % heroOriginals.length);
       } else {
         setProgress(newProgress);
       }
     }, PROGRESS_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [heroIndex]);
+  }, [heroIndex, heroOriginals.length]);
 
   const handleIndicatorClick = (idx: number) => {
     if (idx === heroIndex) return;
@@ -149,23 +121,22 @@ export function CenterFeedLayout() {
     setHeroIndex(idx);
   };
 
-
-
-  const baseGlobalArtists: OriginalArtist[] = useMemo(
-    () => [],
-    [],
-  );
-
-  const globalArtistStripItems = useMemo(
-    () =>
-      baseGlobalArtists.length > 0
-        ? Array.from(
-            { length: 10 },
-            (_, index) => baseGlobalArtists[index % baseGlobalArtists.length],
-          )
-        : [],
-    [baseGlobalArtists],
-  );
+  const theatreArtists: OriginalArtist[] = useMemo(() => {
+    if (!items || items.length === 0) return [];
+    const map = new Map<string, OriginalArtist>();
+    for (const item of items) {
+      if (item.artistId && !map.has(item.artistId)) {
+        map.set(item.artistId, {
+          id: item.artistId,
+          name: item.artist || "Artist",
+          image: item.artistAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.artist || "Artist")}`,
+          spirit: 0,
+          works: 1,
+        } as OriginalArtist);
+      }
+    }
+    return Array.from(map.values());
+  }, [items]);
 
   if (!items) {
     return <HomePageSkeleton />;
@@ -180,7 +151,7 @@ export function CenterFeedLayout() {
       <DesktopHeader />
 
       <main className="pt-20 md:pt-24 px-0 w-full max-w-full overflow-x-hidden">
-        {/* HERO - UPCOMING RELEASES */}
+        {/* HERO - UPCOMING RELEASES / TOP 5 MOVIES CAROUSEL */}
         {safeHeroItem && (
           <section className="px-0 mb-0">
             <div className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-black">
@@ -202,7 +173,6 @@ export function CenterFeedLayout() {
               <AnimatePresence mode="popLayout">
                 <OriginalLink
                   key={heroIndex}
-                  // Mock a TheatreItem format for the OriginalLink component
                   item={{
                     id: safeHeroItem.id,
                     originalIds: [safeHeroItem.id],
@@ -251,7 +221,7 @@ export function CenterFeedLayout() {
                             <div className="flex items-center gap-2 mb-1">
                               <StageIcon className="w-3 h-3 text-white/80" />
                               <span className="text-lg font-bold drop-shadow-2xl">
-                                {safeHeroItem.stats?.presence ?? 0}
+                                {safeHeroItem.presence ?? safeHeroItem.stats?.presence ?? 0}
                               </span>
                             </div>
                             <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
@@ -268,14 +238,15 @@ export function CenterFeedLayout() {
 
               {/* Carousel Indicators */}
               <div className="absolute top-1/2 -translate-y-1/2 right-6 flex flex-col gap-3 z-40">
-                {[].map((_, idx: number) => (
+                {heroOriginals.map((_, idx: number) => (
                   <button
                     key={idx}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleIndicatorClick(idx);
                     }}
-                    className="group relative w-1 h-10 rounded-xl bg-white/10 overflow-hidden transition-all duration-300 hover:w-1.5"
+                    className="group relative w-1 h-10 rounded-xl bg-white/10 overflow-hidden transition-all duration-300 hover:w-1.5 cursor-pointer"
+                    aria-label={`Slide ${idx + 1}`}
                   >
                     <div className="relative w-full h-full">
                       {/* Previous bars: faded white */}
@@ -301,36 +272,50 @@ export function CenterFeedLayout() {
 
         <RollingTicker />
 
-        {/* RECENT RELEASES */}
-        <RecentReleasesSection icon={Youtube} />
+        {/* RECENT RELEASES (THEATRE WORKS) */}
+        {items && items.length > 0 && (
+          <RecentReleasesSection works={items} icon={Youtube} />
+        )}
 
         {/* TOP ARTISTS */}
-        <ArtistSpotlightGrid
-          icon={Users}
-          title="Top Artists"
-          artists={globalArtistStripItems}
-          rows={2}
-          variant="featured"
-          containerClassName="mt-4 mb-4"
-        />
+        {theatreArtists.length > 0 && (
+          <ArtistSpotlightGrid
+            icon={Users}
+            title="Top Artists"
+            artists={theatreArtists}
+            rows={2}
+            variant="featured"
+            containerClassName="mt-4 mb-4"
+          />
+        )}
 
         {/* CENTER QUOTES */}
         <CenterQuotes />
 
         {/* FESTIVALS */}
-        <section className="mb-12">
-          <SectionHeader
-            icon={Trophy}
-            title="Festivals"
-            containerClassName="px-6 md:px-12 mb-6"
-          />
-          <FestivalsSection festivals={[]} />
-        </section>
+        {festivals.length > 0 && (
+          <section className="mb-12">
+            <div className="px-6 md:px-12 mb-5 flex items-center justify-between">
+              <SectionHeader
+                icon={Trophy}
+                title="Festivals"
+                containerClassName="opacity-100"
+              />
+              <button
+                onClick={() => navigate("/sets")}
+                className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/25 hover:text-white/60 transition-colors"
+              >
+                All Sets <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+            <FestivalsSection festivals={festivals} />
+          </section>
+        )}
 
         {/* TRENDING DISCUSSIONS */}
         <TrendingDiscussions />
 
-        {/* TOP ORIGINALS */}
+        {/* EXPLORE ORIGINALS */}
         <section className="mb-12">
           <SectionHeader
             icon={Sun}

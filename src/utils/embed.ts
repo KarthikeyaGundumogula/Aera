@@ -22,7 +22,7 @@ export function buildEmbedUrl(platform: EmbedPlatform, srcId: string): string {
     case "youtube":
       return `https://www.youtube.com/embed/${cleanId}?enablejsapi=1`;
     case "twitter":
-      return `https://twitter.com/i/web/status/${cleanId}`;
+      return `https://twitter.com/x/status/${cleanId}/video/1`;
     default:
       return "";
   }

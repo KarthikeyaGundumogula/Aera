@@ -13,11 +13,11 @@ export function TopOriginalsSection() {
   const [originals, setOriginals] = useState<Original[]>([]);
 
   useEffect(() => {
-    apiFetch("/originals")
+    apiFetch("/originals?limit=5")
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          const rawList = json.data ?? [];
+          const rawList = (json.data ?? []).slice(0, 5);
           const mapped: Original[] = rawList.map((og: any) => ({
             id: og.id,
             title: og.title,

@@ -6,11 +6,20 @@ declare global {
     twttr?: {
       widgets?: {
         load: (el?: HTMLElement) => Promise<unknown>;
+        createVideo: (
+          tweetId: string,
+          targetEl: HTMLElement,
+          options?: Record<string, unknown>
+        ) => Promise<HTMLElement | undefined>;
         createTweet: (
           tweetId: string,
           targetEl: HTMLElement,
           options?: Record<string, unknown>
         ) => Promise<HTMLElement | undefined>;
+      };
+      events?: {
+        bind: (type: string, callback: (event: any) => void) => void;
+        unbind: (type: string, callback: (event: any) => void) => void;
       };
       _e?: Array<() => void>;
       ready?: (callback: (twttr: any) => void) => void;
@@ -81,6 +90,22 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: un
     const generation = ++renderGenRef.current;
     setIsLoaded(false);
     let isCancelled = false;
+    let observer: ResizeObserver | null = null;
+    let mutationObserver: MutationObserver | null = null;
+    let renderedHandler: ((event: any) => void) | null = null;
+
+    const markLoaded = () => {
+      if (isCancelled || renderGenRef.current !== generation) return;
+      setIsLoaded(true);
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (mutationObserver) {
+        mutationObserver.disconnect();
+        mutationObserver = null;
+      }
+    };
 
     const render = async () => {
       const twttr = await loadTwitterSdk();
@@ -89,62 +114,99 @@ export function useTwitterWidgets(srcId: string | undefined, refreshTrigger?: un
       const container = containerRef.current;
       if (!container) return;
 
-      container.innerHTML = "";
+      // Subscribe to Twitter's native widget 'rendered' event
+      if (twttr?.events?.bind) {
+        renderedHandler = (event: any) => {
+          if (container && (container.contains(event?.target) || event?.target === container.querySelector("iframe"))) {
+            markLoaded();
+          }
+        };
+        twttr.events.bind("rendered", renderedHandler);
+      }
 
-      if (twttr?.widgets?.createTweet) {
+      container.innerHTML = `
+        <blockquote class="twitter-tweet" data-media-max-width="560" data-conversation="none" data-theme="dark" data-dnt="true" data-align="center">
+          <a href="https://twitter.com/x/status/${cleanTweetId}/video/1"></a>
+        </blockquote>
+      `;
+
+      // Helper to check if a video iframe already exists and has rendered content (>50px)
+      const checkRendered = () => {
+        const iframe = container.querySelector("iframe");
+        if (iframe) {
+          const height = iframe.offsetHeight || iframe.clientHeight || iframe.getBoundingClientRect().height;
+          if (height > 50) {
+            markLoaded();
+            return true;
+          }
+
+          iframe.addEventListener("load", markLoaded, { once: true });
+
+          if (!observer) {
+            observer = new ResizeObserver((entries) => {
+              for (const entry of entries) {
+                if (entry.contentRect.height > 50) {
+                  markLoaded();
+                }
+              }
+            });
+            observer.observe(iframe);
+          }
+          return true;
+        }
+        return false;
+      };
+
+      mutationObserver = new MutationObserver(() => {
+        if (checkRendered()) {
+          mutationObserver?.disconnect();
+          mutationObserver = null;
+        }
+      });
+      mutationObserver.observe(container, { childList: true, subtree: true });
+
+      if (twttr?.widgets?.load) {
         try {
-          const el = await twttr.widgets.createTweet(cleanTweetId, container, {
-            theme: "dark",
-            dnt: true,
-            conversation: "none",
-            align: "center",
-          });
-
-          if (isCancelled || renderGenRef.current !== generation) return;
-
-          if (el) {
-            setIsLoaded(true);
-            return;
+          const res = twttr.widgets.load(container);
+          if (res instanceof Promise) {
+            await res;
+            if (!isCancelled && renderGenRef.current === generation) {
+              const iframe = container.querySelector("iframe");
+              const h = iframe?.offsetHeight || iframe?.getBoundingClientRect().height || 0;
+              if (h > 50) {
+                markLoaded();
+                return;
+              }
+            }
           }
-        } catch (err) {
-          console.warn("[useTwitterWidgets] createTweet failed, trying fallback blockquote:", err);
+        } catch (e) {
+          console.warn("[useTwitterWidgets] load error:", e);
         }
       }
 
-      // Fallback: blockquote + widgets.load
-      if (container && !isCancelled && renderGenRef.current === generation) {
-        container.innerHTML = `
-          <blockquote class="twitter-tweet" data-theme="dark" data-dnt="true" data-conversation="none" data-align="center">
-            <a href="https://twitter.com/i/status/${cleanTweetId}"></a>
-          </blockquote>
-        `;
+      if (isCancelled || renderGenRef.current !== generation) return;
 
-        if (twttr?.widgets?.load) {
-          try {
-            await twttr.widgets.load(container);
-          } catch (e) {
-            console.warn("[useTwitterWidgets] fallback load error:", e);
-          }
-        }
-      }
-
-      if (!isCancelled && renderGenRef.current === generation) {
-        setIsLoaded(true);
-      }
+      checkRendered();
     };
 
     render();
 
+    // Fallback safety timer: dismiss loader after 2.5s if adblockers/network prevent events
     const fallbackTimer = setTimeout(() => {
-      if (!isCancelled && renderGenRef.current === generation) {
-        setIsLoaded(true);
-      }
-    }, 4000);
+      markLoaded();
+    }, 2500);
 
     return () => {
       isCancelled = true;
       clearTimeout(fallbackTimer);
       renderGenRef.current++;
+      if (observer) observer.disconnect();
+      if (mutationObserver) mutationObserver.disconnect();
+      if (renderedHandler && window.twttr?.events?.unbind) {
+        try {
+          window.twttr.events.unbind("rendered", renderedHandler);
+        } catch { /* ignore */ }
+      }
       if (containerRef.current) {
         containerRef.current.innerHTML = "";
       }

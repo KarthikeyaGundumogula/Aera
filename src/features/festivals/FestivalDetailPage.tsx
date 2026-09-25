@@ -4,6 +4,7 @@ import { Clock, Share2, Settings, Upload, Plus } from 'lucide-react';
 import { CinematicPageHeader } from '../../components/CinematicPageHeader';
 import { CommandCenter, CommandItem } from '../../components/CommandCenter';
 import { RecentReleasesSection } from '../shared/components/RecentReleasesSection';
+import { FestivalSpotlightPlayer } from './components/FestivalSpotlightPlayer';
 import { ArtistSpotlightGrid } from '../../components/ArtistSpotlightGrid';
 import { TheatrePreviewSection } from '../theatre/components/TheatrePreviewSection';
 import { UpdateFestivalModal } from './components/UpdateFestivalModal';
@@ -87,7 +88,10 @@ export function FestivalDetailPage() {
             id: w.id,
             title: w.title || undefined,
             category: w.workType,
+            thumbnail: w.thumbnail || undefined,
             image: w.thumbnail || undefined,
+            srcId: w.srcId,
+            platform: w.platform?.toLowerCase(),
           }));
           setTheatreWorks(mapped);
         }
@@ -104,6 +108,18 @@ export function FestivalDetailPage() {
   const participants = useMemo(() => {
     return [...addedPanelists, ...backendPanelists];
   }, [addedPanelists, backendPanelists]);
+
+  const festivalRules: string[] = useMemo(() => {
+    if (!localFestival?.rules) return [];
+    if (Array.isArray(localFestival.rules)) return localFestival.rules;
+    if (typeof localFestival.rules === 'string') {
+      return localFestival.rules
+        .split('\n')
+        .map((r: string) => r.trim())
+        .filter((r: string) => r.length > 0);
+    }
+    return [];
+  }, [localFestival?.rules]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -238,12 +254,42 @@ export function FestivalDetailPage() {
         </div>
       </section>
 
+      {/* ─── Festival Statements & Rules ───────────────────────────────────── */}
+      {festivalRules.length > 0 && (
+        <section className="px-4 md:px-8 pt-8 pb-4 max-w-6xl mx-auto w-full" aria-label="Festival Statements & Rules">
+          <div className="bg-surface-deep/80 border border-white/[0.06] rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-2 h-2 rounded-full bg-amber-500/80" />
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+                Festival Statements & Rules
+              </h2>
+            </div>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {festivalRules.map((rule, i) => (
+                <li key={i} className="flex items-start gap-3 bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+                  <span className="font-mono text-xs font-bold text-amber-500/60 mt-0.5 flex-shrink-0">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-xs md:text-sm text-white/80 leading-relaxed font-sans font-medium">
+                    {rule}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* ─── Layer II: Panelist Spotlight ─────────────────────────────────── */}
-      <RecentReleasesSection 
-        title="Panelist Spotlight" 
-        works={spotlightWorks}
-        className="pt-4 pb-6"
-      />
+      {spotlightWorks.length > 0 ? (
+        <FestivalSpotlightPlayer works={spotlightWorks} />
+      ) : (
+        <RecentReleasesSection 
+          title="Panelist Spotlight" 
+          works={spotlightWorks}
+          className="pt-4 pb-6"
+        />
+      )}
 
       {/* ─── Layer III: Participants ──────────────────────────────────────── */}
       <ArtistSpotlightGrid 

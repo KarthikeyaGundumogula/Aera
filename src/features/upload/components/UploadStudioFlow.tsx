@@ -64,10 +64,66 @@ export function UploadStudioFlow({
   });
   const previousBlobUrlsRef = useRef<string[]>([]);
 
-  const selectedOriginals = useMemo(
-    () => originals.filter((original) => formData.originalIds.includes(original.id)),
-    [formData.originalIds, originals],
+  const [selectedOriginalsData, setSelectedOriginalsData] = useState<Original[]>(() =>
+    originals.filter((o) => initialOriginalIds.includes(o.id))
   );
+
+  useEffect(() => {
+    if (originals.length > 0 && selectedOriginalsData.length === 0 && formData.originalIds.length > 0) {
+      const matched = originals.filter((o) => formData.originalIds.includes(o.id));
+      if (matched.length > 0) {
+        setSelectedOriginalsData(matched);
+      }
+    }
+  }, [originals, formData.originalIds, selectedOriginalsData.length]);
+
+  useEffect(() => {
+    const targetId = originalId || formData.originalIds[0] || initialOriginalIds[0];
+    if (!targetId || !/^[0-9a-fA-F-]{36}$/.test(targetId)) return;
+    if (selectedOriginalsData.some((o) => o.id === targetId)) return;
+
+    let isMounted = true;
+    apiFetch(`/originals/${targetId}`)
+      .then(async (res) => {
+        if (res.ok && isMounted) {
+          const json = await res.json();
+          const d = json.data;
+          if (d && isMounted) {
+            setSelectedOriginalsData((prev) => {
+              if (prev.some((o) => o.id === d.id)) return prev;
+              return [
+                ...prev,
+                {
+                  id: d.id,
+                  title: d.title || "Untitled Film",
+                  description: d.description || "",
+                  coverImage: d.coverImage || "",
+                  stats: { presence: 0, members: 0, releases: 0 },
+                  topArtists: [],
+                  works: [],
+                },
+              ];
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("[UploadStudioFlow] Failed to fetch original detail:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [originalId, formData.originalIds, initialOriginalIds, selectedOriginalsData]);
+
+  const selectedOriginals = useMemo(() => {
+    const map = new Map<string, Original>();
+    originals.forEach((o) => map.set(o.id, o));
+    selectedOriginalsData.forEach((o) => map.set(o.id, o));
+    return formData.originalIds
+      .map((id) => map.get(id))
+      .filter((o): o is Original => Boolean(o));
+  }, [formData.originalIds, originals, selectedOriginalsData]);
   const titleLines = useMemo(() => title.split("\n"), [title]);
 
   const updateFormData = useCallback((data: Partial<UploadFormData>) => {
@@ -404,6 +460,7 @@ export function UploadStudioFlow({
                 originals={originals}
                 selectedIds={formData.originalIds}
                 setFormData={updateFormData}
+                onOriginalsChange={setSelectedOriginalsData}
                 onNext={handleNext}
                 onBack={handleBack}
               />

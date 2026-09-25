@@ -177,7 +177,7 @@ export function RecommendationModal({
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#B45309]" />
                     </span>
                     <span className="text-[8px] font-black uppercase tracking-[0.4em] text-[#B45309]">
-                      {rec.contextLabel}
+                      {rec.contextLabel || "From your Originals"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap justify-end">

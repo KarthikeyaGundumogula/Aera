@@ -147,13 +147,15 @@ export function SetDetailPage() {
     };
   }, [id]);
 
+  const [activeFestivalDetail, setActiveFestivalDetail] = useState<Festival | null>(null);
+
   const set = localSet;
 
   const allFestivals = useMemo(() => {
     return fetchedFestivals.filter((f) => String(f.setId) === String(id));
   }, [fetchedFestivals, id]);
 
-  const activeFestival = useMemo(() => {
+  const activeFestivalSummary = useMemo(() => {
     if (!set) return null;
     if (set.activeFestivalId) {
       const match = allFestivals.find((f) => String(f.id) === String(set.activeFestivalId));
@@ -165,6 +167,58 @@ export function SetDetailPage() {
       null
     );
   }, [set, allFestivals]);
+
+  useEffect(() => {
+    const festId = activeFestivalSummary?.id || set?.activeFestivalId;
+    if (!festId) {
+      setActiveFestivalDetail(null);
+      return;
+    }
+
+    let isMounted = true;
+    apiFetch(`/festivals/${festId}?panelist_limit=12`)
+      .then(async (res) => {
+        if (res.ok && isMounted) {
+          const json = await res.json();
+          const d = json.data;
+          if (d) {
+            let parsedRules: string[] = [];
+            if (Array.isArray(d.rules)) {
+              parsedRules = d.rules;
+            } else if (typeof d.rules === "string") {
+              parsedRules = d.rules
+                .split("\n")
+                .map((r: string) => r.trim())
+                .filter(Boolean);
+            }
+
+            setActiveFestivalDetail({
+              id: d.id,
+              setId: d.setId || id || "",
+              setName: d.setName || set?.title,
+              organizerId: d.organizerId || "",
+              title: d.title || "Festival",
+              description: d.description || "",
+              rules: parsedRules,
+              startDate: d.startDate || new Date().toISOString(),
+              endDate: d.endDate || new Date(Date.now() + 7 * 86400000).toISOString(),
+              coverImage: d.coverImage || set?.coverImage || "",
+              status: d.status || "LIVE",
+              presenceLeader: d.presenceLeader,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("[SetDetailPage] Failed to fetch active festival detail:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeFestivalSummary?.id, set?.activeFestivalId, id, set?.title, set?.coverImage]);
+
+  const activeFestival = activeFestivalDetail || activeFestivalSummary;
 
   const captain = null as { id: string; name: string; profilePicture?: string } | null;
 

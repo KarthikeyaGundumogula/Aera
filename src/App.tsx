@@ -34,7 +34,6 @@ import {
   // Profile
   ArtistSetupPage,
   LoginPage,
-  ReservedArtistsPage,
   StudioPage,
   ProfileEditPage,
   ProfilePage,
@@ -144,6 +143,10 @@ function AppRoutes() {
               path="/sets/:setId/discussions/:discussionId"
               element={<DiscussionPage />}
             />
+            <Route
+              path="/discussions/:discussionId"
+              element={<DiscussionPage />}
+            />
             <Route path="/festivals/:id" element={<FestivalDetailPage />} />
             <Route
               path="/festivals/:id/theatre"
@@ -153,7 +156,6 @@ function AppRoutes() {
             {/* ── Profile ─────────────────────────────────── */}
             <Route path="/profile/new" element={<ArtistSetupPage />} />
             <Route path="/profile/login" element={<LoginPage />} />
-            <Route path="/profile/reserved" element={<ReservedArtistsPage />} />
             <Route path="/profile/edit" element={<ProfileEditPage />} />
             <Route path="/profile/:profileId" element={<ProfilePage />} />
             <Route path="/profile/:profileId/recommendations/:originalId" element={<OriginalRecommendationsPage />} />

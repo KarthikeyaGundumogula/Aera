@@ -425,10 +425,14 @@ function CommentNode({
   );
 }
 
+function isUuid(val?: string | null): boolean {
+  return Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val));
+}
+
 /* ─── Main Discussion Detail Page ────────────────────────────────── */
 
 export function DiscussionPage() {
-  const { setId, discussionId } = useParams<{ setId: string; discussionId: string }>();
+  const { setId: routeSetId, discussionId } = useParams<{ setId?: string; discussionId: string }>();
   const navigate = useNavigate();
   const { currentArtist } = useAuth();
 
@@ -439,87 +443,106 @@ export function DiscussionPage() {
   const [loadingComments, setLoadingComments] = useState(false);
   const [rootText, setRootText] = useState("");
 
+  const effectiveSetId = thought?.setId || (isUuid(routeSetId) ? routeSetId : null);
+
   // Stage 1: Fetch Parent Discussion Post Details
   useEffect(() => {
-    if (!setId || !discussionId) return;
+    if (!discussionId) return;
     setLoadingPost(true);
 
-    apiFetch(`/sets/${setId}/discussions/${discussionId}`)
-      .then(async (res) => {
-        if (res.ok) {
-          const json = await res.json();
-          const data = json.data;
-          setThought({
-            id: data.id,
-            title: data.title,
-            content: data.body,
-            text: data.body,
-            authorName: data.authorName || "Artist",
-            authorAvatar: data.authorAvatar,
-            commentCount: data.commentCount ?? 0,
-            createdAt: data.createdAt,
-            timestamp: data.createdAt
-              ? new Date(data.createdAt).toLocaleDateString()
-              : "Just now",
-            work: data.work || null,
-          });
-        } else {
-          // Fallback: list search if single endpoint is not supported
-          const listRes = await apiFetch(`/sets/${setId}/discussions`).catch(() => null);
-          if (listRes && listRes.ok) {
-            const json = await listRes.json();
-            const list = json.data ?? [];
-            if (Array.isArray(list)) {
-              const found = list.find((d: any) => String(d.id) === String(discussionId));
-              if (found) {
-                setThought({
-                  id: found.id,
-                  title: found.title,
-                  content: found.body,
-                  text: found.body,
-                  authorName: found.authorName || "Artist",
-                  authorAvatar: found.authorAvatar,
-                  commentCount: found.commentCount ?? 0,
-                  createdAt: found.createdAt,
-                  timestamp: found.createdAt
-                    ? new Date(found.createdAt).toLocaleDateString()
-                    : "Just now",
-                  work: found.work || null,
-                });
-              }
+    const loadDiscussion = async () => {
+      try {
+        let postData: any = null;
+
+        // If routeSetId is a valid UUID, call canonical endpoint
+        if (routeSetId && isUuid(routeSetId)) {
+          const res = await apiFetch(`/sets/${routeSetId}/discussions/${discussionId}`).catch(() => null);
+          if (res && res.ok) {
+            const json = await res.json();
+            postData = (json && typeof json === "object" && "data" in json && json.data) ? json.data : json;
+          }
+        }
+
+        // Fallback / Discovery: If routeSetId is missing/invalid or direct call failed, query /thoughts
+        if (!postData || !postData.id) {
+          const thoughtsRes = await apiFetch("/thoughts").catch(() => null);
+          if (thoughtsRes && thoughtsRes.ok) {
+            const thoughtsJson = await thoughtsRes.json();
+            const list = thoughtsJson.data ?? (Array.isArray(thoughtsJson) ? thoughtsJson : []);
+            const found = list.find((d: any) => String(d.id) === String(discussionId));
+            if (found) {
+              postData = found;
             }
           }
         }
-      })
-      .catch((err) => {
+
+        // Fallback 2: If routeSetId is valid UUID, check the set's discussion list
+        if ((!postData || !postData.id) && routeSetId && isUuid(routeSetId)) {
+          const listRes = await apiFetch(`/sets/${routeSetId}/discussions`).catch(() => null);
+          if (listRes && listRes.ok) {
+            const json = await listRes.json();
+            const list = json.data ?? [];
+            const found = Array.isArray(list) ? list.find((d: any) => String(d.id) === String(discussionId)) : null;
+            if (found) {
+              postData = found;
+            }
+          }
+        }
+
+        if (postData && (postData.id || postData.title)) {
+          const resolvedSetId = postData.setId || postData.set_id || (isUuid(routeSetId) ? routeSetId : undefined);
+          setThought({
+            id: postData.id,
+            setId: resolvedSetId,
+            title: postData.title,
+            content: postData.body || postData.content,
+            text: postData.body || postData.content,
+            authorName: postData.authorName || postData.author_name || "Artist",
+            authorAvatar: postData.authorAvatar || postData.author_avatar,
+            commentCount: postData.commentCount ?? postData.comment_count ?? 0,
+            createdAt: postData.createdAt || postData.created_at,
+            timestamp: (postData.createdAt || postData.created_at)
+              ? new Date(postData.createdAt || postData.created_at).toLocaleDateString()
+              : "Just now",
+            work: postData.work || null,
+          });
+
+          if (resolvedSetId && (!routeSetId || !isUuid(routeSetId))) {
+            navigate(`/sets/${resolvedSetId}/discussions/${discussionId}`, { replace: true });
+          }
+        }
+      } catch (err) {
         console.error("[DiscussionPage] Failed to fetch discussion details:", err);
-      })
-      .finally(() => {
+      } finally {
         setLoadingPost(false);
-      });
-  }, [setId, discussionId]);
+      }
+    };
+
+    loadDiscussion();
+  }, [routeSetId, discussionId, navigate]);
 
   // Stage 2: Fetch Paginated Top-Level Comments (no parent_id)
   const fetchTopComments = useCallback(
     async (pageToFetch: number = 1) => {
-      if (!setId || !discussionId) return;
+      if (!effectiveSetId || !discussionId) return;
       setLoadingComments(true);
       try {
         const res = await apiFetch(
-          `/sets/${setId}/discussions/${discussionId}/comments?page=${pageToFetch}&limit=20`
+          `/sets/${effectiveSetId}/discussions/${discussionId}/comments?page=${pageToFetch}&limit=20`
         );
         if (res.ok) {
           const json = await res.json();
-          const items: DiscussionCommentItem[] = (json.data ?? []).map((c: any) => ({
+          const rawItems = json.data ?? (Array.isArray(json) ? json : []);
+          const items: DiscussionCommentItem[] = rawItems.map((c: any) => ({
             id: c.id,
-            discussionPostId: c.discussionPostId,
-            authorId: c.authorId,
-            authorName: c.authorName || "Artist",
-            authorAvatar: c.authorAvatar,
-            parentId: c.parentId,
+            discussionPostId: c.discussionPostId || c.discussion_post_id,
+            authorId: c.authorId || c.author_id,
+            authorName: c.authorName || c.author_name || "Artist",
+            authorAvatar: c.authorAvatar || c.author_avatar,
+            parentId: c.parentId || c.parent_id,
             content: c.content || "",
-            replyCount: c.replyCount ?? 0,
-            createdAt: c.createdAt || new Date().toISOString(),
+            replyCount: c.replyCount ?? c.reply_count ?? 0,
+            createdAt: c.createdAt || c.created_at || new Date().toISOString(),
           }));
 
           if (pageToFetch === 1) {
@@ -538,14 +561,14 @@ export function DiscussionPage() {
         setLoadingComments(false);
       }
     },
-    [setId, discussionId]
+    [effectiveSetId, discussionId]
   );
 
   useEffect(() => {
-    if (discussionId) {
+    if (discussionId && effectiveSetId) {
       fetchTopComments(1);
     }
-  }, [discussionId, fetchTopComments]);
+  }, [discussionId, effectiveSetId, fetchTopComments]);
 
   /** Called when user submits an inline reply to a comment */
   const handleSubmitReply = async (parentId: string, text: string) => {
@@ -565,9 +588,9 @@ export function DiscussionPage() {
       parentId: parentId,
     };
 
-    if (setId && discussionId) {
+    if (effectiveSetId && discussionId) {
       try {
-        await apiFetch(`/sets/${setId}/new/comment`, {
+        await apiFetch(`/sets/${effectiveSetId}/new/comment`, {
           method: "POST",
           body: JSON.stringify({
             discussion_id: discussionId,
@@ -603,7 +626,7 @@ export function DiscussionPage() {
       navigate("/profile/login");
       return;
     }
-    if (!rootText.trim() || !setId || !discussionId) return;
+    if (!rootText.trim() || !effectiveSetId || !discussionId) return;
     const textToPost = rootText.trim();
 
     const newComment: DiscussionCommentItem = {
@@ -627,7 +650,7 @@ export function DiscussionPage() {
     }
 
     try {
-      await apiFetch(`/sets/${setId}/new/comment`, {
+      await apiFetch(`/sets/${effectiveSetId}/new/comment`, {
         method: "POST",
         body: JSON.stringify({
           discussion_id: discussionId,
@@ -655,8 +678,8 @@ export function DiscussionPage() {
           Discussion Not Found
         </p>
         <button
-          onClick={() => navigate(setId ? `/sets/${setId}` : "/sets")}
-          className="text-[10px] uppercase tracking-[0.3em] text-white/20 hover:text-white transition-colors"
+          onClick={() => navigate(effectiveSetId ? `/sets/${effectiveSetId}` : "/sets")}
+          className="text-[10px] uppercase tracking-[0.3em] text-white/20 hover:text-white transition-colors cursor-pointer"
         >
           ← Back to Set
         </button>
@@ -673,8 +696,8 @@ export function DiscussionPage() {
       <MobileTopHeader
         rightActions={
           <button
-            onClick={() => navigate(`/sets/${setId}`)}
-            className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
+            onClick={() => navigate(effectiveSetId ? `/sets/${effectiveSetId}` : "/sets")}
+            className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors cursor-pointer"
           >
             Exit
           </button>
@@ -776,7 +799,7 @@ export function DiscussionPage() {
               <CommentNode
                 key={comment.id}
                 comment={comment}
-                setId={setId!}
+                setId={effectiveSetId || ""}
                 discussionId={discussionId!}
                 currentUserId={currentArtist?.id}
                 currentUserName={currentArtist?.name}

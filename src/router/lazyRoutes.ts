@@ -53,12 +53,6 @@ export const LoginPage = lazy(() =>
   import("@/features/profile").then((m) => ({ default: m.LoginPage })),
 );
 
-export const ReservedArtistsPage = lazy(() =>
-  import("@/features/profile").then((m) => ({
-    default: m.ReservedArtistsPage,
-  })),
-);
-
 export const StudioPage = lazy(() =>
   import("@/features/profile").then((m) => ({ default: m.StudioPage })),
 );

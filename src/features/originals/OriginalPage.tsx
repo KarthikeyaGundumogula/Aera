@@ -32,7 +32,11 @@ export function OriginalPage() {
   const location = useLocation();
   const { currentArtist } = useAuth();
 
-  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
   const [showManagement, setShowManagement] = useState(false);
   const isMobile = useMediaQuery();
   const [localOriginal, setLocalOriginal] = useState<Original | null>(null);
@@ -175,10 +179,31 @@ export function OriginalPage() {
       {
         label: "Save to Watchlist",
         icon: <BookPlus className="w-4 h-4" />,
-        action: () => {
-          if (!showToast) {
-            setShowToast(true);
-            setTimeout(() => setShowToast(false), 3000);
+        action: async () => {
+          if (!original?.id) return;
+          if (!currentArtist) {
+            triggerToast("Sign in required to add to Library");
+            return;
+          }
+          try {
+            const res = await apiFetch("/library/new", {
+              method: "POST",
+              body: JSON.stringify({
+                original_id: original.id,
+                visibility: true,
+                status: "WANT_TO_WATCH",
+                entry_type: "MOVIE",
+                surge_score: 0,
+              }),
+            });
+            if (res.ok) {
+              triggerToast("Added to Library");
+            } else {
+              const json = await res.json().catch(() => null);
+              triggerToast(json?.message || "Already in Library");
+            }
+          } catch {
+            triggerToast("Network error");
           }
         },
         description: "Add to Library",
@@ -201,7 +226,7 @@ export function OriginalPage() {
     [
       navigate,
       original?.id,
-      showToast,
+      currentArtist,
       userClaims.canCreateRelease,
       userClaims.canUpdateMeta,
     ],
@@ -429,16 +454,16 @@ export function OriginalPage() {
 
       {/* Visual Hit Toast */}
       <AnimatePresence>
-        {showToast && (
+        {toastMessage && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-xl z-[200] flex items-center gap-2 pointer-events-none"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-xl z-[200] flex items-center gap-2 pointer-events-none shadow-2xl"
           >
             <BookPlus size={14} className="fill-current" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">
-              Added to Library
+              {toastMessage}
             </span>
           </motion.div>
         )}

@@ -24,11 +24,20 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
   const [isExpanded, setIsExpanded] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
+
+  const isLive = festival.status === 'LIVE';
+  const isConcluded =
+    festival.status === 'CONCLUDED' ||
+    (!isLive && Boolean(festival.endDate) && new Date(festival.endDate).getTime() < Date.now());
+
   useEffect(() => {
     const tick = () => {
       const now = Date.now();
-      const end = new Date(festival.endDate).getTime();
-      const diff = Math.max(0, end - now);
+      const targetTime = isLive
+        ? new Date(festival.endDate).getTime()
+        : new Date(festival.startDate).getTime();
+      const diff = Math.max(0, targetTime - now);
+
       setTimeLeft({
         days: Math.floor(diff / 86400000),
         hours: Math.floor((diff % 86400000) / 3600000),
@@ -39,15 +48,21 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [festival.endDate]);
+  }, [festival.endDate, festival.startDate, isLive]);
 
-  const isLive = festival.status === 'LIVE';
+  const countdownLabel = isLive
+    ? 'Ends In'
+    : isConcluded
+    ? 'Concluded'
+    : 'Starts In';
+
+  const coverSrc = festival.coverImage || set.coverImage || '';
 
   return (
     <section className="px-4 md:px-8 py-6" aria-label={`Active Festival: ${festival.title}`}>
       {/* Section Label */}
       <SectionHeader
-        title={isLive ? 'Happening Now' : 'Upcoming Festival'}
+        title={isLive ? 'Happening Now' : isConcluded ? 'Concluded Festival' : 'Upcoming Festival'}
         containerClassName="mb-6"
       />
 
@@ -64,7 +79,7 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
         >
           {/* Background image */}
           <PosterImage
-            src={festival.coverImage}
+            src={coverSrc}
             alt={festival.title}
             info={festival.status}
             className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.02]"
@@ -124,7 +139,7 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
                   <div className="flex items-center gap-2 mb-4">
                     <Clock className="w-3.5 h-3.5 text-white/20" />
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20">
-                      {isLive ? 'Ends In' : 'Starts In'}
+                      {countdownLabel}
                     </span>
                   </div>
 
@@ -151,8 +166,8 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
                   </div>
                 </div>
 
-                {/* Rules Block */}
-                {festival.rules && festival.rules.length > 0 && (
+                {/* Rules or Festival Window Block */}
+                {festival.rules && festival.rules.length > 0 ? (
                   <div className="md:col-span-4 bg-surface-deep border border-white/[0.06] rounded-xl p-5">
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 mb-3">Rules</p>
                     <ul className="space-y-2">
@@ -166,10 +181,36 @@ export const ActiveFestivalSpotlight = memo(function ActiveFestivalSpotlight({
                       ))}
                     </ul>
                   </div>
+                ) : (
+                  <div className="md:col-span-4 bg-surface-deep border border-white/[0.06] rounded-xl p-5 flex flex-col justify-between">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 mb-3">Festival Window</p>
+                      <div className="flex flex-col gap-1.5 text-[11px] text-white/50">
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/30 text-[10px] uppercase font-bold tracking-wider">Start</span>
+                          <span className="font-mono text-white/70">
+                            {festival.startDate ? new Date(festival.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBA'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/30 text-[10px] uppercase font-bold tracking-wider">End</span>
+                          <span className="font-mono text-white/70">
+                            {festival.endDate ? new Date(festival.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBA'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-white/[0.04]">
+                      <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-red-500 animate-pulse' : 'bg-white/30'}`} />
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-white/40">
+                        {isLive ? 'Submissions Open' : isConcluded ? 'Archived' : 'Upcoming'}
+                      </span>
+                    </div>
+                  </div>
                 )}
 
                 {/* Enter CTA */}
-                <div className={`flex flex-col justify-end ${festival.rules?.length ? 'md:col-span-3' : 'md:col-span-7'}`}>
+                <div className="md:col-span-3 flex flex-col justify-end">
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}

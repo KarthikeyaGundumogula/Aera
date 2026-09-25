@@ -4,6 +4,7 @@ import { EditWorkDetail } from "../../../types";
 import { ViewerFrame, MediaSlotContext } from "./ViewerFrame";
 import { buildEmbedUrl } from "../../../utils/embed";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
+import { useYoutubeEmbed } from "../../../hooks/useYoutubeEmbed";
 import { FHLoader } from "../../../components/FHLoader";
 
 interface EditViewerProps {
@@ -17,11 +18,15 @@ interface EditViewerProps {
  */
 export function EditViewer({ work }: EditViewerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isYoutubeLoaded, setIsYoutubeLoaded] = useState(false);
 
   const rawPlatform = (work.platform || "").toLowerCase();
   const isTwitter = rawPlatform === "twitter" || (Boolean(work.srcId) && /twitter\.com|x\.com/.test(work.srcId));
   const isYoutube = !isTwitter;
+
+  const { isYoutubeLoaded, handleIframeLoad } = useYoutubeEmbed(
+    isYoutube ? work.srcId : undefined,
+    isYoutube
+  );
 
   const { containerRef: twitterRef, isLoaded: isTwitterLoaded } =
     useTwitterWidgets(isTwitter ? work.srcId : undefined, true);
@@ -32,12 +37,12 @@ export function EditViewer({ work }: EditViewerProps) {
   const ambientSrc =
     isYoutube && work.srcId
       ? `https://img.youtube.com/vi/${work.srcId}/maxresdefault.jpg`
-      : "";
+      : work.originals?.[0]?.coverPoster || "";
 
   return (
     <ViewerFrame
       work={work}
-      mediaMaxWidth={isTwitter ? "min(550px,calc(100vw-2rem))" : "min(680px,calc(100vw-2rem))"}
+      mediaMaxWidth={isTwitter ? "min(560px,calc(100vw-2rem))" : "min(680px,calc(100vw-2rem))"}
       mediaSlot={({ doubleTapFlash, triggerDoubleTap }: MediaSlotContext) => (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
@@ -55,7 +60,7 @@ export function EditViewer({ work }: EditViewerProps) {
                 transition={{ duration: 0.3 }}
                 className="absolute inset-0 z-10 flex items-center justify-center bg-white/[0.025] rounded-xl"
               >
-                {isYoutube && ambientSrc && (
+                {ambientSrc && (
                   <img
                     src={ambientSrc}
                     alt=""
@@ -90,7 +95,7 @@ export function EditViewer({ work }: EditViewerProps) {
                 allowFullScreen
                 title={work.title}
                 loading="eager"
-                onLoad={() => setIsYoutubeLoaded(true)}
+                onLoad={handleIframeLoad}
               />
             </div>
           )}
@@ -102,7 +107,7 @@ export function EditViewer({ work }: EditViewerProps) {
                 isLoaded ? "opacity-100" : "opacity-0"
               }`}
             >
-              <div ref={twitterRef} className="w-full max-w-[540px]" />
+              <div ref={twitterRef} className="w-full max-w-[560px]" />
             </div>
           )}
         </motion.div>

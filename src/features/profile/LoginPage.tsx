@@ -167,12 +167,6 @@ export default function LoginPage() {
 
               <div className="mt-12 text-center flex flex-col gap-5">
                 <button
-                  onClick={() => navigate("/profile/reserved")}
-                  className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors"
-                >
-                  We've reserved stages for select artists. Check if you're on the list
-                </button>
-                <button
                   onClick={() => navigate("/profile/new")}
                   className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 hover:text-white transition-colors"
                   id="join-collective-link"

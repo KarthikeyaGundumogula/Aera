@@ -21,6 +21,7 @@ import { StarAction } from "../../../components/actions/StarAction";
 import { SaveAction } from "../../../components/actions/SaveAction";
 import { FeedRecommendationCard } from "../../../components/FeedRecommendationCard";
 import { useTwitterWidgets } from "../../../hooks/useTwitterWidgets";
+import { useYoutubeEmbed } from "../../../hooks/useYoutubeEmbed";
 import { FHLoader } from "../../../components/FHLoader";
 import { formatRelativeTime } from "@/utils/time";
 import { apiFetch } from "@/lib/api";
@@ -150,13 +151,16 @@ interface EditEmbedProps {
 
 function EditEmbed({ item, isActive, onNavigate }: EditEmbedProps) {
   const isYoutube = item.platform === "youtube";
-  const [ytLoaded, setYtLoaded] = useState(false);
+  const { isYoutubeLoaded, handleIframeLoad } = useYoutubeEmbed(
+    isYoutube && isActive ? item.srcId : undefined,
+    isYoutube && isActive
+  );
   const { containerRef: twitterRef, isLoaded: twitterLoaded } =
     useTwitterWidgets(
       !isYoutube && item.srcId ? item.srcId : undefined,
       isActive,
     );
-  const isLoaded = isYoutube ? ytLoaded : twitterLoaded;
+  const isLoaded = isYoutube ? isYoutubeLoaded : twitterLoaded;
   const embedUrl =
     isYoutube && item.srcId ? buildEmbedUrl("youtube", item.srcId) : "";
 
@@ -179,7 +183,7 @@ function EditEmbed({ item, isActive, onNavigate }: EditEmbedProps) {
               allowFullScreen
               title={item.title}
               loading="lazy"
-              onLoad={() => setYtLoaded(true)}
+              onLoad={handleIframeLoad}
             />
           ) : (
             <div className="w-full flex justify-center py-2 relative z-[310] pointer-events-auto">

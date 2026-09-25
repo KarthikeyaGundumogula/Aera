@@ -30,15 +30,27 @@ interface Props {
   rec: Recommendation;
   variant?: "default" | "modal" | "wall-embed";
   compact?: boolean;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
 }
 
 export const RecommendationCard = memo(function RecommendationCard({
   rec,
   variant = "default",
   compact = false,
+  isSaved: propIsSaved,
+  onToggleSave,
 }: Props) {
   const navigate = useNavigate();
   const ledgerEntryId = rec.ledgerEntryId;
+
+  const isArtistFavorited = Boolean(
+    rec.artist?.isFavorited ??
+    (rec.artist as any)?.is_favorited ??
+    rec.artistLiked ??
+    (rec as any).artist_liked ??
+    false
+  );
 
   const hasBreakdown = React.useMemo(() => {
     return Boolean(ledgerEntryId);
@@ -47,7 +59,29 @@ export const RecommendationCard = memo(function RecommendationCard({
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [boosted, setBoosted] = useState(false);
   const [inLedger, setInLedger] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [internalSaved, setInternalSaved] = useState(Boolean(propIsSaved));
+  const saved = propIsSaved !== undefined ? propIsSaved : internalSaved;
+
+  const handleToggleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleSave) {
+      onToggleSave();
+      return;
+    }
+    const nextSaved = !saved;
+    setInternalSaved(nextSaved);
+    try {
+      const endpoint = nextSaved ? "/artists/save_recommendation" : "/artists/unsave_recommendation";
+      const method = nextSaved ? "POST" : "DELETE";
+      await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(rec.id),
+      });
+    } catch (err) {
+      console.warn("[RecommendationCard] Failed to toggle save recommendation:", err);
+      setInternalSaved(!nextSaved);
+    }
+  };
   const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -135,10 +169,7 @@ export const RecommendationCard = memo(function RecommendationCard({
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (variant === "modal") return;
-
-    if (original.id) {
-      navigate(`/originals/${original.id}`);
-    }
+    openWork(theatreItem);
   };
 
   const score = Number(rec.score || rec.surgeScore || 0);
@@ -328,7 +359,13 @@ export const RecommendationCard = memo(function RecommendationCard({
             {/* TOP: Film Title */}
             <div className="px-3 pt-3 pb-2 border-b border-white/[0.04] flex items-start justify-between gap-2">
               <h3
-                className="text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2"
+                onClick={(e) => {
+                  if (original.id) {
+                    e.stopPropagation();
+                    navigate(`/originals/${original.id}`);
+                  }
+                }}
+                className={`text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2 ${original.id ? "hover:text-amber-400 transition-colors cursor-pointer" : ""}`}
                 style={{ textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}
               >
                 {original.title}
@@ -442,22 +479,27 @@ export const RecommendationCard = memo(function RecommendationCard({
                 </button>
 
                 {/* Name + Stage Name + Stats */}
-                <div className="flex-1 min-w-0">
+                <div 
+                  className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsArtistModalOpen(true);
+                  }}
+                >
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/85 leading-none truncate">
                       {artist.name || artist.stageName}
                     </span>
-                    {/* Artist's own liked status on this original */}
-                    {rec.artistLiked && (
-                      <Heart
-                        className="w-2.5 h-2.5 shrink-0"
-                        style={{
-                          fill: "#ef4444",
-                          color: "#ef4444",
-                          filter: "drop-shadow(0 0 4px rgba(239,68,68,0.4))",
-                        }}
-                      />
-                    )}
+                    {/* Artist favorite status indicator */}
+                    <Heart
+                      className="w-2.5 h-2.5 shrink-0"
+                      style={{
+                        fill: isArtistFavorited ? "#ef4444" : "transparent",
+                        color: isArtistFavorited ? "#ef4444" : "rgba(255,255,255,0.35)",
+                        strokeWidth: isArtistFavorited ? 0 : 2,
+                        filter: isArtistFavorited ? "drop-shadow(0 0 4px rgba(239,68,68,0.4))" : "none",
+                      }}
+                    />
                     {artist.handle ? (
                       <span className="text-[8px] font-mono text-white/30 leading-none truncate">
                         @{artist.handle.replace(/^@/, "")}
@@ -471,13 +513,13 @@ export const RecommendationCard = memo(function RecommendationCard({
                   {/* Artist stats */}
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[7px] font-black text-white/25 uppercase tracking-[0.15em]">
-                      {rec.artist.spirit.toLocaleString()} spirit
+                      {Number(artist.spirit || 0).toLocaleString()} spirit
                     </span>
-                    {rec.artist.works != null && (
+                    {(artist.works != null || rec.artist?.works != null) && (
                       <>
                         <span className="text-[7px] text-white/15">·</span>
                         <span className="text-[7px] font-black text-white/25 uppercase tracking-[0.15em]">
-                          {rec.artist.works} works
+                          {artist.works ?? rec.artist?.works} works
                         </span>
                       </>
                     )}
@@ -574,10 +616,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 {/* Save Action (Moved from bottom) */}
                 <button
                   className="shrink-0 p-1 rounded-lg hover:bg-white/[0.04] w-7 h-7 mr-3 flex items-center justify-center transition-colors text-white/30 hover:text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSaved(!saved);
-                  }}
+                  onClick={handleToggleSave}
                   aria-label={saved ? "Saved" : "Save"}
                 >
                   <Bookmark

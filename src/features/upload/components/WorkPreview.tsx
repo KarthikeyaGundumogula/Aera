@@ -19,7 +19,7 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
     const srcId = extractSrcId(formData.platform, formData.contentUrl) ?? undefined;
 
     // Resolve cover image
-    let image = originalCover ?? FALLBACK_IMAGE;
+    let image = originalCover || FALLBACK_IMAGE;
     
     if (formData.category === "Poster" && formData.contentUrl) {
       image = formData.contentUrl;
@@ -27,6 +27,8 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
       image = formData.storyboardPages[0].url;
     } else if (srcId && formData.platform === "youtube") {
       image = buildThumbnail("youtube", srcId);
+    } else if (formData.platform === "twitter") {
+      image = originalCover || FALLBACK_IMAGE;
     }
 
     return {
@@ -34,6 +36,7 @@ export function WorkPreview({ formData, originalCover }: WorkPreviewProps) {
       title: formData.title || "Untitled Work",
       category: formData.category,
       image,
+      thumbnail: image,
       images: formData.storyboardPages.map(p => p.url),
       captions: formData.storyboardPages.map(p => p.text),
       aspectRatio: formData.aspectRatio,

@@ -9,6 +9,7 @@ export interface Recommendation {
     works?: number;
     handle?: string;
     highestScore?: number;
+    isFavorited?: boolean;
   };
   original: {
     id: string;
