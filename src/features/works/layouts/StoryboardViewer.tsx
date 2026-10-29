@@ -27,41 +27,100 @@ interface StreamingTextProps {
   speed?: number;
   delay?: number;
   active?: boolean;
+  maxDuration?: number;
+  minDuration?: number;
 }
 
 export function StreamingText({
   text,
-  speed = 15,
-  delay = 350,
+  speed,
+  delay = 200,
   active = true,
+  maxDuration,
+  minDuration = 400,
 }: StreamingTextProps) {
   const [displayedText, setDisplayedText] = useState("");
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!active) {
-      setDisplayedText("");
+    if (!active || !text) {
+      setDisplayedText(active && text ? text : "");
       return;
     }
 
     setDisplayedText("");
 
-    const startTimer = setTimeout(() => {
-      let index = 0;
-      const interval = setInterval(() => {
-        setDisplayedText((prev) => prev + text.charAt(index));
-        index++;
-        if (index >= text.length) {
-          clearInterval(interval);
-        }
-      }, speed);
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    // Bounded maximum stabilization time: ~1.1s on mobile, ~1.4s on desktop
+    const effectiveMaxDuration = maxDuration ?? (isMobile ? 1100 : 1400);
 
-      return () => clearInterval(interval);
+    // Adaptive duration calculation:
+    // Scales smoothly with text length but enforces an upper bound so large scripts
+    // stabilize rapidly without lagging or taking dozens of seconds.
+    const calculatedDuration = speed
+      ? Math.min(effectiveMaxDuration, Math.max(minDuration, text.length * speed))
+      : Math.min(
+          effectiveMaxDuration,
+          Math.max(
+            minDuration,
+            minDuration + Math.sqrt(text.length) * (isMobile ? 24 : 32)
+          )
+        );
+
+    const startTimer = setTimeout(() => {
+      let startTime: number | null = null;
+      let lastCount = 0;
+
+      const tick = (now: number) => {
+        if (startTime === null) startTime = now;
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / calculatedDuration);
+
+        // Ease-out curve: dynamic stream rushes in and settles cleanly
+        const eased = 1 - Math.pow(1 - progress, 2);
+        const targetCount = Math.min(text.length, Math.ceil(eased * text.length));
+
+        if (targetCount !== lastCount) {
+          lastCount = targetCount;
+          setDisplayedText(text.slice(0, targetCount));
+        }
+
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(tick);
+        }
+      };
+
+      rafRef.current = requestAnimationFrame(tick);
     }, delay);
 
-    return () => clearTimeout(startTimer);
-  }, [text, speed, delay, active]);
+    return () => {
+      clearTimeout(startTimer);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [text, speed, delay, active, maxDuration, minDuration]);
 
-  return <>{parseMarkdownBold(displayedText)}</>;
+  // Tap-to-complete: tapping while streaming immediately reveals the full script
+  const handleInstantReveal = (e: React.MouseEvent) => {
+    if (displayedText.length < text.length) {
+      e.stopPropagation();
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      setDisplayedText(text);
+    }
+  };
+
+  return (
+    <span
+      onClick={handleInstantReveal}
+      className="inline cursor-pointer select-text"
+      title={displayedText.length < text.length ? "Tap to reveal entire script" : undefined}
+    >
+      {parseMarkdownBold(displayedText)}
+    </span>
+  );
 }
 
 /**
@@ -75,7 +134,10 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
   const isRevealed = isFlipped;
   const setIsRevealed = (val: any) => setIsFlipped(typeof val === "function" ? val(isFlipped) : val);
   const [imgAspect, setImgAspect] = useState<number | null>(null);
-  const touchStartX = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const textContainerRef = useRef<HTMLDivElement>(null);
+  const textContentRef = useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
 
   const rawPages = activeWork?.images?.length
     ? activeWork.images
@@ -92,6 +154,27 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
   const rawCaptions = activeWork?.captions?.length ? activeWork.captions : (activeWork?.thoughts?.length ? activeWork.thoughts : []);
   const captions = rawCaptions.length ? rawCaptions : FALLBACK_CAPTIONS.slice(0, Math.max(1, total));
   const caption = captions[pageIndex] || (total > 0 ? FALLBACK_CAPTIONS[pageIndex % FALLBACK_CAPTIONS.length] : FALLBACK_CAPTIONS[0]);
+
+  useEffect(() => {
+    if (!isRevealed) {
+      setIsOverflowing(false);
+      return;
+    }
+    const container = textContainerRef.current;
+    const content = textContentRef.current;
+    if (!container || !content) return;
+
+    const checkOverflow = () => {
+      setIsOverflowing(content.scrollHeight > container.clientHeight + 4);
+    };
+
+    checkOverflow();
+
+    const ro = new ResizeObserver(checkOverflow);
+    ro.observe(container);
+    ro.observe(content);
+    return () => ro.disconnect();
+  }, [isRevealed, caption, pageIndex]);
 
   const goTo = (idx: number) => {
     setIsFlipped(false);
@@ -121,13 +204,21 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
   };
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(dx) > 40) dx < 0 ? next() : prev();
-    touchStartX.current = null;
+    if (!touchStartRef.current) return;
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+
+    // Only paginate on intentional horizontal swipe
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      dx < 0 ? next() : prev();
+    }
   };
 
   return (
@@ -140,31 +231,11 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
           onPointerDown={triggerDoubleTap}
-          style={{ overscrollBehavior: "contain", touchAction: "manipulation" }}
+          style={{ touchAction: "pan-y" }}
         >
-          {/* Controls row: page counter + Story/Board toggle */}
-          <div className="flex items-center justify-between pb-0 px-1">
-            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/25">
-              {total > 0 ? `${pageIndex + 1} / ${total}` : "1 / 1"}
-            </span>
-            <button
-              onClick={() => setIsRevealed((r: boolean) => !r)}
-              className={`flex items-center gap-1.5 px-3 h-6 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-200 active:scale-[0.95] ${
-                isRevealed
-                  ? "bg-white text-black border-white"
-                  : "bg-transparent text-white/35 border-white/10 hover:border-white/25 hover:text-white/55"
-              }`}
-              style={{ touchAction: "manipulation" }}
-            >
-              <RotateCw size={8} strokeWidth={2.5} />
-              {isRevealed ? "Story" : "Board"}
-            </button>
-          </div>
-
           {/* Image & Overlay Container */}
           <div
-            onClick={() => setIsFlipped((f) => !f)}
-            className="relative w-full flex justify-center cursor-pointer select-none group"
+            className="relative w-full flex justify-center select-none group"
           >
             <div className="relative inline-block max-w-full">
               {/* Base Layer: Image */}
@@ -248,10 +319,21 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
                         </p>
                       </div>
                       
-                      <div className="flex-1 flex flex-col justify-center text-center">
-                        <p className="text-sm sm:text-[15px] font-medium text-white leading-relaxed">
-                          <StreamingText text={caption} active={isRevealed} />
-                        </p>
+                      <div 
+                        ref={textContainerRef}
+                        className={`flex-1 min-h-0 py-2 px-1 text-center no-scrollbar ${
+                          isOverflowing ? "overflow-y-auto" : "overflow-hidden"
+                        }`}
+                        style={{ touchAction: isOverflowing ? "pan-y" : "auto" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <div ref={textContentRef} className="min-h-full flex flex-col justify-center my-auto">
+                          <p className="text-sm sm:text-[15px] font-medium text-white leading-relaxed select-text">
+                            <StreamingText text={caption} active={isRevealed} />
+                          </p>
+                        </div>
                       </div>
                       
                       <div className="flex items-center gap-2 mt-auto">
@@ -268,22 +350,25 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
             </div>
           </div>
 
-          {/* Pagination */}
-          {total > 1 && (
-            <div className="flex items-center justify-between gap-3 pt-2">
-              <div className="flex items-center min-w-[60px]">
+          {/* Bottom Controls: Page Numbers + Pagination + Story/Board toggle */}
+          <div className="flex items-center justify-between gap-3 pt-2 px-1">
+            <div className="flex items-center gap-2 min-w-[60px]">
+              {total > 1 && (
                 <button
                   onClick={prev}
                   className="hidden sm:flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black transition-all active:scale-90 shrink-0"
                   style={{ touchAction: "manipulation" }}
+                  aria-label="Previous page"
                 >
                   <ChevronLeft size={13} />
                 </button>
-                <span className="flex sm:hidden text-[9px] font-bold uppercase tracking-[0.3em] text-white/25 whitespace-nowrap">
-                  {pageIndex + 1} / {total}
-                </span>
-              </div>
+              )}
+              <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/30 whitespace-nowrap">
+                {total > 0 ? `${pageIndex + 1} / ${total}` : "1 / 1"}
+              </span>
+            </div>
 
+            {total > 1 && (
               <div className="flex items-center gap-1.5 flex-wrap justify-center flex-1">
                 {displayPages.map((_, i) => (
                   <button
@@ -299,30 +384,33 @@ export function StoryboardViewer({ work, item }: StoryboardViewerProps & { item?
                   />
                 ))}
               </div>
+            )}
 
-              <div className="flex items-center justify-end min-w-[60px]">
+            <div className="flex items-center justify-end gap-2 min-w-[60px]">
+              <button
+                onClick={() => setIsRevealed((r: boolean) => !r)}
+                className={`flex items-center gap-1.5 px-3 h-8 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 ${
+                  isRevealed
+                    ? "bg-white text-black border-white"
+                    : "bg-transparent text-white/35 border-white/10 hover:border-white/25 hover:text-white/55"
+                }`}
+                style={{ touchAction: "manipulation" }}
+              >
+                <RotateCw size={10} strokeWidth={2.5} />
+                {isRevealed ? "Story" : "Board"}
+              </button>
+              {total > 1 && (
                 <button
                   onClick={next}
                   className="hidden sm:flex h-8 w-8 items-center justify-center rounded-xl border border-white/8 bg-white/3 text-white/35 hover:bg-white hover:text-black transition-all active:scale-90 shrink-0"
                   style={{ touchAction: "manipulation" }}
+                  aria-label="Next page"
                 >
                   <ChevronRight size={13} />
                 </button>
-                <button
-                  onClick={() => setIsRevealed((r: boolean) => !r)}
-                  className={`flex sm:hidden items-center gap-1.5 px-3 h-8 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 ${
-                    isRevealed
-                      ? "bg-white text-black border-white"
-                      : "bg-transparent text-white/35 border-white/10 hover:border-white/25 hover:text-white/55"
-                  }`}
-                  style={{ touchAction: "manipulation" }}
-                >
-                  <RotateCw size={10} strokeWidth={2.5} />
-                  {isRevealed ? "Story" : "board"}
-                </button>
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
     />

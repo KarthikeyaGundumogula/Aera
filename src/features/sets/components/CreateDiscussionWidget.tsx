@@ -158,20 +158,38 @@ export function CreateDiscussionWidget({
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between px-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+              Title
+            </label>
+            <span className={`text-[9px] font-mono tabular-nums ${title.length >= 300 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+              {title.length >= 300 ? "Limit reached (300 / 300)" : `${title.length} / 300`}
+            </span>
+          </div>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            maxLength={300}
             placeholder="Discussion Title (e.g., What makes this Set unique?)"
             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors"
           />
         </div>
 
-        <div>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between px-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+              Critique / Thought
+            </label>
+            <span className={`text-[9px] font-mono tabular-nums ${content.length >= 40000 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+              {content.length >= 40000 ? "Limit reached (40,000 / 40,000)" : `${content.length.toLocaleString()} / 40,000`}
+            </span>
+          </div>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            maxLength={40000}
             placeholder="Write your thought or critique…"
             rows={4}
             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"

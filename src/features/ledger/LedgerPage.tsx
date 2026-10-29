@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
-import type { LedgerItem } from "@/types/ledger";
+import { type LedgerItem, mapBackendLedgerItem } from "@/types/ledger";
 import { LedgerItemCard } from "./components/LedgerItemCard";
 import { ArrowLeft, Plus } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { ConfirmDeleteModal } from "../shared/modals/ConfirmDeleteModal";
 
 export function LedgerPage() {
   const [ledger, setLedger] = useState<LedgerItem[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<LedgerItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const filter = searchParams.get("filter") || "all";
@@ -17,7 +20,8 @@ export function LedgerPage() {
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setLedger(json.data ?? []);
+          const items = Array.isArray(json.data) ? json.data : [];
+          setLedger(items.map((it: any) => mapBackendLedgerItem(it)));
         }
       })
       .catch((err) => {
@@ -29,6 +33,35 @@ export function LedgerPage() {
     setLedger((prev) =>
       prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
     );
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      let res = await apiFetch(`/library/${deleteTarget.id}/delete`, {
+        method: "DELETE",
+      }).catch(() => null);
+      if ((!res || !res.ok) && deleteTarget.originalId && deleteTarget.originalId !== deleteTarget.id) {
+        res = await apiFetch(`/library/${deleteTarget.originalId}/delete`, {
+          method: "DELETE",
+        }).catch(() => null);
+      }
+      if (res?.ok) {
+        setLedger((prev) =>
+          prev.filter(
+            (item) =>
+              item.id !== deleteTarget.id &&
+              (!deleteTarget.originalId || item.originalId !== deleteTarget.originalId)
+          )
+        );
+      }
+    } catch (e) {
+      console.error("[LedgerPage] Failed to delete entry:", e);
+    } finally {
+      setIsDeleting(false);
+      setDeleteTarget(null);
+    }
   };
 
   const filteredLedger = ledger.filter((item) => {
@@ -110,6 +143,12 @@ export function LedgerPage() {
               key={item.id}
               item={item}
               onUpdate={handleUpdateItem}
+              onDelete={(target) => setDeleteTarget(target)}
+              isDeleting={
+                isDeleting &&
+                (deleteTarget?.id === item.id ||
+                  (Boolean(deleteTarget?.originalId) && deleteTarget?.originalId === item.originalId))
+              }
             />
           ))}
 
@@ -130,6 +169,23 @@ export function LedgerPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={deleteTarget !== null}
+        onClose={() => !isDeleting && setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        isDeleting={isDeleting}
+        title="Remove from Ledger?"
+        description={
+          deleteTarget ? (
+            <span>
+              Are you sure you want to remove{" "}
+              <strong className="text-white">{deleteTarget.originalName}</strong> from your
+              ledger? Your thoughts and history will be deleted.
+            </span>
+          ) : undefined
+        }
+      />
     </div>
   );
 }

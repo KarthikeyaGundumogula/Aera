@@ -4,7 +4,7 @@ import { X, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { LedgerItem } from "@/types/ledger";
 
-export interface LedgerTaggedWork {
+export interface LedgerCollectionWork {
   id: string;
   title: string;
   category?: string;
@@ -15,28 +15,31 @@ export interface LedgerTaggedWork {
   platform?: string;
   srcId?: string;
 }
+
+export type LedgerTaggedWork = LedgerCollectionWork;
+
 import { WallPostCard } from "../features/profile/components/WallPostCard";
 import { WallPost } from "../types/wall";
 import { TheatreItem } from "../types/theatre";
 import { apiFetch } from "../lib/api";
 
-interface TaggedWorksModalProps {
+export interface CollectionWorksModalProps {
   isOpen: boolean;
   onClose: () => void;
   entry?: LedgerItem;
   originalName?: string;
-  taggedWorks?: LedgerTaggedWork[];
+  taggedWorks?: LedgerCollectionWork[];
   libraryEntryId?: string;
 }
 
-export function TaggedWorksModal({
+export function CollectionWorksModal({
   isOpen,
   onClose,
   entry,
   originalName,
   taggedWorks: initialTaggedWorks,
   libraryEntryId,
-}: TaggedWorksModalProps) {
+}: CollectionWorksModalProps) {
   const navigate = useNavigate();
   const [remoteWorks, setRemoteWorks] = React.useState<any[]>([]);
 
@@ -54,7 +57,7 @@ export function TaggedWorksModal({
         }
       })
       .catch((err) => {
-        console.error("[TaggedWorksModal] Failed to fetch tagged works:", err);
+        console.error("[CollectionWorksModal] Failed to fetch collection works:", err);
       });
     return () => {
       isMounted = false;
@@ -98,7 +101,7 @@ export function TaggedWorksModal({
               </div>
               <div>
                 <h3 className="text-sm font-black uppercase tracking-wider text-white">
-                  Tagged Works
+                  Collection Works
                 </h3>
                 <p className="text-[10px] font-mono text-amber-400/80">
                   {title} • {worksList.length} Works Linked
@@ -121,10 +124,11 @@ export function TaggedWorksModal({
                 artistId: "fh-001",
                 artistName: work.authorName,
                 artistImage: work.thumbnailUrl,
-                type: "PIN_WORK",
-                text: `Tagged ${work.type === "hype_cut" ? "Hype Cut Edit" : "Fan Poster"} for ${title}`,
+                type: "FRAME",
+                text: `Collection ${work.type === "hype_cut" ? "Hype Cut Edit" : "Fan Poster"} for ${title}`,
+                framedWorkId: work.srcId || work.id,
                 pinnedWorkId: work.srcId || work.id,
-                postedAt: "Tagged Work",
+                postedAt: "Collection Work",
               };
 
               const resolvedWork: TheatreItem = {
@@ -148,9 +152,20 @@ export function TaggedWorksModal({
                 </div>
               );
             })}
+
+            {worksList.length === 0 && (
+              <div className="py-12 text-center text-white/40 space-y-2">
+                <p className="text-xs uppercase tracking-wider">No works linked yet</p>
+                <p className="text-[10px]">Be the first artist to publish a work for this original title.</p>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
     </AnimatePresence>
   );
 }
+
+// Backward compatibility aliases
+export const TaggedWorksModal = CollectionWorksModal;
+export type TaggedWorksModalProps = CollectionWorksModalProps;

@@ -22,13 +22,14 @@ interface AdaptiveTitleProps {
 }
 
 export function AdaptiveTitle({
-  title,
+  title = "",
   multiWordClass = "text-2xl sm:text-4xl",
   singleWordClamp = "clamp(1.5rem, 10vw, 3.5rem)",
   className = "",
   as: Tag = "h2",
 }: AdaptiveTitleProps) {
-  const isMultiWord = title.includes(" ");
+  const safeTitle = typeof title === "string" ? title : (title ? String(title) : "");
+  const isMultiWord = safeTitle.includes(" ");
 
   const base =
     "max-w-[95%] font-black uppercase tracking-tighter text-white leading-[0.9] drop-shadow-2xl";
@@ -36,7 +37,7 @@ export function AdaptiveTitle({
   if (isMultiWord) {
     return (
       <Tag className={`${base} ${multiWordClass} whitespace-normal break-words ${className}`}>
-        {title}
+        {safeTitle}
       </Tag>
     );
   }
@@ -46,7 +47,7 @@ export function AdaptiveTitle({
       className={`${base} whitespace-nowrap ${className}`}
       style={{ fontSize: singleWordClamp }}
     >
-      {title}
+      {safeTitle}
     </Tag>
   );
 }

@@ -31,8 +31,19 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "motion/react";
-import { ArrowLeft, Share2, Check, BookPlus, Eye, Clock, Edit3, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Share2,
+  Check,
+  BookPlus,
+  Eye,
+  Clock,
+  Edit3,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import type { LedgerItem, LedgerMakerCredit } from "@/types/ledger";
+import { ShareAction } from "@/components/actions/ShareAction";
 import { SurgeBars } from "../../components/SurgeBars";
 import { SurgeScoreDisplay } from "../../components/surge/SurgeScoreDisplay";
 import { SurgeInputSection } from "../../components/surge/SurgeInputSection";
@@ -40,6 +51,7 @@ import { ArtistAvatar } from "@/components/ArtistAvatar";
 import { PosterImage } from "@/components/PosterImage";
 import { formatReleaseYear } from "@/utils/time";
 import { useAuth } from "../../context/AuthContext";
+import { ConfirmDeleteModal } from "../shared/modals/ConfirmDeleteModal";
 
 // ─── Easing constant (strong ease-out per Emil design-eng principles) ──────────
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -149,14 +161,45 @@ function splitHeadline(text: string): { line1: string; rest: string } {
   return { line1: text, rest: "" };
 }
 
-// ─── Mobile: Maker card content ─────────────────────────────────────────────
+// ─── Mobile: Editorial identity card content (Star spotlight, fallback to Maker) ──
 
 function MakerCardContent({ entry }: { entry: LedgerItem }) {
-  const primaryMaker: LedgerMakerCredit | null = entry.makers?.[0] ?? null;
+  // First check if a star is available
+  const firstStar = entry.stars?.[0];
+  const starImage =
+    entry.starImageUrl ||
+    firstStar?.imageUrl ||
+    firstStar?.image ||
+    firstStar?.artistPic ||
+    null;
+  const starName =
+    entry.starName ||
+    firstStar?.actorName ||
+    firstStar?.artistStageName ||
+    firstStar?.name ||
+    null;
+  const starRole = firstStar?.characterName || firstStar?.role || "Star";
 
-  const imageUrl = primaryMaker?.imageUrl ?? entry.starImageUrl ?? null;
-  const displayName = primaryMaker?.name ?? entry.starName ?? null;
-  const displayRole = primaryMaker?.role ?? "Star";
+  // Fallback to maker if no star is present
+  const firstMaker = entry.makers?.[0] || entry.makerCredits?.[0];
+  const makerImage =
+    firstMaker?.imageUrl || firstMaker?.image || firstMaker?.artistPic || null;
+  const makerName =
+    firstMaker?.name ||
+    firstMaker?.actorName ||
+    firstMaker?.artistStageName ||
+    entry.director ||
+    null;
+  const makerRole =
+    firstMaker?.role ||
+    firstMaker?.characterName ||
+    (entry.director ? "Director" : "Maker");
+
+  // Prioritize Star so image and details strictly match the star
+  const hasStar = Boolean(starImage || starName);
+  const imageUrl = hasStar ? starImage : makerImage;
+  const displayName = hasStar ? starName : makerName;
+  const displayRole = hasStar ? starRole : makerRole;
 
   if (!imageUrl && !displayName) return null;
 
@@ -191,7 +234,11 @@ interface MobileSurgeProps {
   currentPeakScore?: number;
 }
 
-function MobileSurgeScore({ surgeCount, peakSnapshot, currentPeakScore }: MobileSurgeProps) {
+function MobileSurgeScore({
+  surgeCount,
+  peakSnapshot,
+  currentPeakScore,
+}: MobileSurgeProps) {
   return (
     <div className="pt-6 border-t border-white/[0.05]">
       <SurgeScoreDisplay
@@ -208,7 +255,13 @@ function MobileSurgeScore({ surgeCount, peakSnapshot, currentPeakScore }: Mobile
 // Renders the first letter using an inline SVG with the profile's theme gradient.
 // SVG height 44px precisely spans the 2-line body height (line 1 cap to line 2 baseline).
 
-function DropCapSVG({ letter, artistId }: { letter: string; artistId?: string }) {
+function DropCapSVG({
+  letter,
+  artistId,
+}: {
+  letter: string;
+  artistId?: string;
+}) {
   const [stop1, stop2] = getAuthorThemeGradient(artistId);
   const uniqueId = React.useId();
   const gradId = `dropCapGrad-${uniqueId.replace(/[^a-zA-Z0-9]/g, "")}`;
@@ -255,23 +308,38 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
   const navigate = useNavigate();
 
   // Build Makers List
-  type PersonCard = { name: string; role: string; imageUrl?: string };
+  type PersonCard = {
+    id?: string;
+    name: string;
+    role: string;
+    imageUrl?: string;
+  };
   const makersList: PersonCard[] = [];
 
   // Add makers from entry.makers / entry.makerCredits
   if (entry.makers && entry.makers.length > 0) {
     entry.makers.forEach((m: any) => {
+      const id = m.id;
       const name = m.actorName || m.name || "";
       const role = m.characterName || m.role || "Maker";
       const imageUrl = m.imageUrl || m.image;
       if (name && !makersList.some((x) => x.name === name)) {
-        makersList.push({ name, role, imageUrl });
+        makersList.push({ id, name, role, imageUrl });
       }
     });
   } else if (entry.makerCredits && entry.makerCredits.length > 0) {
-    entry.makerCredits.forEach((m) => {
-      if (m.artistStageName && !makersList.some((x) => x.name === m.artistStageName)) {
-        makersList.push({ name: m.artistStageName, role: m.role, imageUrl: m.artistPic });
+    entry.makerCredits.forEach((m: any) => {
+      const id = m.id || m.artistId;
+      if (
+        m.artistStageName &&
+        !makersList.some((x) => x.name === m.artistStageName)
+      ) {
+        makersList.push({
+          id,
+          name: m.artistStageName,
+          role: m.role,
+          imageUrl: m.artistPic,
+        });
       }
     });
   } else if (entry.director) {
@@ -283,11 +351,12 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
 
   if (entry.stars && entry.stars.length > 0) {
     entry.stars.forEach((s: any) => {
+      const id = s.id;
       const name = s.actorName || s.name || "";
       const role = s.characterName || s.role || "Star";
       const imageUrl = s.imageUrl || s.image;
       if (name && !starsList.some((x) => x.name === name)) {
-        starsList.push({ name, role, imageUrl });
+        starsList.push({ id, name, role, imageUrl });
       }
     });
   } else if (entry.starName) {
@@ -327,10 +396,16 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    navigate(`/profile/${encodeURIComponent(person.name)}`);
+                    navigate(
+                      `/profile/${person.id || encodeURIComponent(person.name)}`,
+                    );
                   }
                 }}
-                onClick={() => navigate(`/profile/${encodeURIComponent(person.name)}`)}
+                onClick={() =>
+                  navigate(
+                    `/profile/${person.id || encodeURIComponent(person.name)}`,
+                  )
+                }
                 className="flex-shrink-0 flex items-center gap-2.5 p-2 pr-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.06] transition-all cursor-pointer group w-[165px]"
               >
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/[0.05] border border-white/10">
@@ -386,10 +461,16 @@ function IdentityCardsSections({ entry }: IdentityCardsProps) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    navigate(`/profile/${encodeURIComponent(person.name)}`);
+                    navigate(
+                      `/profile/${person.id || encodeURIComponent(person.name)}`,
+                    );
                   }
                 }}
-                onClick={() => navigate(`/profile/${encodeURIComponent(person.name)}`)}
+                onClick={() =>
+                  navigate(
+                    `/profile/${person.id || encodeURIComponent(person.name)}`,
+                  )
+                }
                 className="flex-shrink-0 flex items-center gap-2.5 p-2 pr-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.06] transition-all cursor-pointer group w-[165px]"
               >
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/[0.05] border border-white/10">
@@ -496,11 +577,19 @@ function InPlaceBreakdownEditor({
           </button>
           <button
             onClick={() => handleStatusChangeInViewer("want_to_watch")}
-            className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
+            disabled={entryStatus === "watched"}
+            className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
               entryStatus === "want_to_watch"
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm"
-                : "text-white/40 hover:text-white"
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm cursor-pointer"
+                : entryStatus === "watched"
+                  ? "text-white/20 opacity-40 cursor-not-allowed"
+                  : "text-white/40 hover:text-white cursor-pointer"
             }`}
+            title={
+              entryStatus === "watched"
+                ? "Watched entries cannot be reverted to watchlist"
+                : undefined
+            }
           >
             <Clock className="w-3 h-3" />
             Plan to Watch
@@ -508,16 +597,17 @@ function InPlaceBreakdownEditor({
         </div>
       </div>
 
-      {/* Pre-watching Expectations Input */}
+      {/* Opening statement Input */}
       <div className="space-y-2">
         <label className="text-[10px] font-bold uppercase tracking-wider text-white/60">
-          Pre-Watching Expectations
+          Opening Statement
         </label>
         <textarea
           value={preThoughts}
           onChange={(e) => setPreThoughts(e.target.value)}
-          placeholder="What were your thoughts before watching?"
+          placeholder="Start with ..."
           rows={3}
+          maxLength={10000}
           className="w-full p-4 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 resize-none font-serif leading-relaxed"
         />
       </div>
@@ -525,14 +615,12 @@ function InPlaceBreakdownEditor({
       {/* Post-watching Breakdown Input (only when watched) */}
       {entryStatus === "watched" && (
         <div className="space-y-2">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-white/60">
-            Post-Watching Breakdown
-          </label>
           <textarea
             value={afterThoughts}
             onChange={(e) => setAfterThoughts(e.target.value)}
-            placeholder="Log your reflection, thoughts, and post-watching breakdown..."
+            placeholder="Log your reflection, thoughts, and watching Experience..."
             rows={5}
+            maxLength={10000}
             className="w-full p-4 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 resize-none font-serif leading-relaxed"
           />
         </div>
@@ -547,17 +635,26 @@ function InPlaceBreakdownEditor({
             </label>
             <div className="flex items-center gap-3 text-[9px] font-mono">
               <span className="text-white/40">
-                Snapshot: <strong className="text-white/70">{peakSnapshot.toLocaleString()}</strong>
+                Snapshot:{" "}
+                <strong className="text-white/70">
+                  {peakSnapshot.toLocaleString()}
+                </strong>
               </span>
               <span className="text-amber-400/80">
-                Current Peak: <strong className="text-amber-300">{currentPeak.toLocaleString()}</strong>
+                Current Peak:{" "}
+                <strong className="text-amber-300">
+                  {currentPeak.toLocaleString()}
+                </strong>
               </span>
             </div>
           </div>
 
           {isDecrementing && peakSnapshot !== currentPeak && (
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 flex items-center justify-between">
-              <span>Score below current peak ({currentPeak.toLocaleString()}) — scaled to entry snapshot ({peakSnapshot.toLocaleString()})</span>
+              <span>
+                Score below current peak ({currentPeak.toLocaleString()}) —
+                scaled to entry snapshot ({peakSnapshot.toLocaleString()})
+              </span>
             </div>
           )}
 
@@ -614,18 +711,28 @@ export function LedgerViewer() {
         const firstStar = item.stars?.[0];
         setRemoteEntry({
           id: item.id,
-          artistId: item.artistId || "",
-          originalId: item.originalId,
-          originalName: item.originalName || "Original",
-          originalPosterUrl: item.originalPosterUrl || "",
+          artistId: item.artistId || item.artist_id || item.profile_id || item.author_id || item.userId || item.user_id || "",
+          originalId: item.originalId || item.original_id || "",
+          originalName: item.originalName || item.title || "Original",
+          originalPosterUrl: item.originalPosterUrl || item.cover_image || item.coverImage || "",
           releaseYear: formatReleaseYear(item.releaseDate) || "2026",
-          genre: Array.isArray(item.genre) ? item.genre : [item.genre || "Drama"],
-          starName: firstStar?.actorName || "",
-          starImageUrl: firstStar?.imageUrl,
+          genre: Array.isArray(item.genre)
+            ? item.genre
+            : [item.genre || "Drama"],
+          starName:
+            firstStar?.actorName ||
+            firstStar?.artistStageName ||
+            firstStar?.name ||
+            "",
+          starImageUrl:
+            firstStar?.imageUrl || firstStar?.image || firstStar?.artistPic,
           director: item.director,
           makers: item.makers || [],
           stars: item.stars || [],
-          status: st.includes("want") || st.includes("plan") ? "want_to_watch" : "watched",
+          status:
+            st.includes("want") || st.includes("plan")
+              ? "want_to_watch"
+              : "watched",
           preThoughts: item.userHypeThought || "",
           afterThoughts: item.userAfterThought || "",
           surgeScore: item.surgeScore ?? 0,
@@ -649,47 +756,118 @@ export function LedgerViewer() {
 
   const entry: LedgerItem | undefined = remoteEntry || undefined;
   const currentArtistId = currentArtist?.id || "fh-001";
-  const isOwner = Boolean(entry && (!entry.artistId || entry.artistId === currentArtistId || entry.artistId === "fh-001"));
+  const isOwner = Boolean(
+    entry &&
+    (!entry.artistId ||
+      entry.artistId === currentArtistId ||
+      entry.artistId === "fh-001"),
+  );
+
+  const isAuthor = Boolean(
+    currentArtist?.id &&
+      entry &&
+      (String(entry.artistId) === String(currentArtist.id) ||
+        String((entry as any).artist_id) === String(currentArtist.id) ||
+        String((entry as any).profile_id) === String(currentArtist.id) ||
+        String((entry as any).author_id) === String(currentArtist.id) ||
+        (currentArtist.id === "fh-001" && (!entry.artistId || entry.artistId === "fh-001")))
+  );
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteEntry = async () => {
+    if (!entry) return;
+    setIsDeleting(true);
+    try {
+      let res = await apiFetch(`/library/${entry.id}/delete`, {
+        method: "DELETE",
+      }).catch(() => null);
+      if ((!res || !res.ok) && entry.originalId && entry.originalId !== entry.id) {
+        res = await apiFetch(`/library/${entry.originalId}/delete`, {
+          method: "DELETE",
+        }).catch(() => null);
+      }
+      if (res?.ok) {
+        window.dispatchEvent(new CustomEvent("ledgerUpdated"));
+        window.dispatchEvent(new CustomEvent("libraryUpdated"));
+        await refreshProfile?.();
+        navigate(-1);
+      } else {
+        console.error("[LedgerViewer] Failed to delete entry, status:", res?.status);
+      }
+    } catch (e) {
+      console.error("[LedgerViewer] Error deleting ledger entry:", e);
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+    }
+  };
   // For ledger (library) entries:
   // - currentPeak: profile's current live library peak from AuthContext / DB
   // - peakSnapshot: library peak at the time entry was logged (1000)
-  const currentPeak = currentArtist?.currentPeakLibrary ?? entry?.currentPeakScore ?? 1000;
+  const currentPeak =
+    currentArtist?.currentPeakLibrary ?? entry?.currentPeakScore ?? 1000;
   const peakSnapshot = entry?.peakSnapshot || 1000;
 
   const [isEditing, setIsEditing] = useState<boolean>(
-    searchParams.get("edit") === "true" && isOwner
+    searchParams.get("edit") === "true" && isOwner,
   );
   const [entryStatus, setEntryStatus] = useState<"watched" | "want_to_watch">(
-    entry?.status ?? "want_to_watch"
+    entry?.status ?? "want_to_watch",
   );
   const [preThoughts, setPreThoughts] = useState<string>(
-    entry?.preThoughts ?? ""
+    entry?.preThoughts ?? "",
   );
   const [afterThoughts, setAfterThoughts] = useState<string>(
-    entry?.afterThoughts ?? ""
+    entry?.afterThoughts ?? "",
   );
-  const [surgeScore, setSurgeScore] = useState<number>(
-    entry?.surgeScore ?? 0
-  );
+  const [surgeScore, setSurgeScore] = useState<number>(entry?.surgeScore ?? 0);
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     if (entry) {
-      setEntryStatus(entry.status === "watched" ? "watched" : "want_to_watch");
+      const isParamWatched = searchParams.get("status") === "watched";
+      const isParamEdit = searchParams.get("edit") === "true";
+
+      const resolvedStatus = isParamWatched
+        ? "watched"
+        : entry.status === "watched"
+          ? "watched"
+          : "want_to_watch";
+
+      setEntryStatus(resolvedStatus);
       setPreThoughts(entry.preThoughts || "");
       setAfterThoughts(entry.afterThoughts || "");
       if (typeof entry.surgeScore === "number" && entry.surgeScore > 0) {
         setSurgeScore(entry.surgeScore);
       }
+      if ((isParamEdit || isParamWatched) && isOwner) {
+        setIsEditing(true);
+      }
     }
-  }, [entry?.id, entry?.status, entry?.preThoughts, entry?.afterThoughts, entry?.surgeScore]);
+  }, [
+    entry?.id,
+    entry?.status,
+    entry?.preThoughts,
+    entry?.afterThoughts,
+    entry?.surgeScore,
+    searchParams,
+    isOwner,
+  ]);
 
-  const surgeCount = useSurgeCount(isEditing ? surgeScore : (entry?.surgeScore ?? 0), 1600);
+  const surgeCount = useSurgeCount(
+    isEditing ? surgeScore : (entry?.surgeScore ?? 0),
+    1600,
+  );
 
   const authorProfile = useMemo(() => {
     if (!entry) return { name: "Original", image: "" };
     if (entry.artistStageName) {
-      return { name: entry.artistStageName, image: entry.artistProfilePicture || "" };
+      return {
+        name: entry.artistStageName,
+        image: entry.artistProfilePicture || "",
+      };
     }
     if (entry.starName) {
       return { name: entry.starName, image: entry.starImageUrl || "" };
@@ -718,7 +896,14 @@ export function LedgerViewer() {
     );
   }
 
-  const handleStatusChangeInViewer = (newStatus: "watched" | "want_to_watch") => {
+  const handleStatusChangeInViewer = (
+    newStatus: "watched" | "want_to_watch",
+  ) => {
+    if (entryStatus === "watched" && newStatus === "want_to_watch") {
+      // One-way transition only: watched items cannot be reverted to watchlist
+      return;
+    }
+
     setEntryStatus(newStatus);
     entry.status = newStatus;
     if (newStatus === "watched") {
@@ -727,7 +912,8 @@ export function LedgerViewer() {
       }
       if (entry.preThoughts) setPreThoughts(entry.preThoughts);
       if (entry.afterThoughts) setAfterThoughts(entry.afterThoughts);
-      if (typeof entry.surgeScore === "number" && entry.surgeScore > 0) setSurgeScore(entry.surgeScore);
+      if (typeof entry.surgeScore === "number" && entry.surgeScore > 0)
+        setSurgeScore(entry.surgeScore);
       setIsEditing(true);
     } else {
       setIsEditing(false);
@@ -737,17 +923,22 @@ export function LedgerViewer() {
   const handleSaveInPlace = async () => {
     entry.status = entryStatus;
     entry.preThoughts = preThoughts || "";
-    entry.afterThoughts = entryStatus === "watched" ? (afterThoughts || "") : "";
+    entry.afterThoughts = entryStatus === "watched" ? afterThoughts || "" : "";
     entry.surgeScore = entryStatus === "watched" ? surgeScore : 0;
     if (entryStatus === "watched" && !entry.watchedAt) {
       entry.watchedAt = new Date().toISOString();
     }
 
     const apiStatus = entryStatus === "watched" ? "WATCHED" : "WANT_TO_WATCH";
-    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(entry.id);
+    const isValidUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        entry.id,
+      );
     const isValidOriginalUuid = Boolean(
       entry.originalId &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(entry.originalId)
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        entry.originalId,
+      ),
     );
 
     try {
@@ -756,7 +947,8 @@ export function LedgerViewer() {
           method: "POST",
           body: JSON.stringify({
             pre_thought: preThoughts.trim() || null,
-            post_impression: entryStatus === "watched" ? (afterThoughts.trim() || null) : null,
+            post_impression:
+              entryStatus === "watched" ? afterThoughts.trim() || null : null,
             status: apiStatus,
             surge_score: entryStatus === "watched" ? surgeScore : null,
           }),
@@ -770,7 +962,8 @@ export function LedgerViewer() {
             status: apiStatus,
             entry_type: "MOVIE",
             pre_thought: preThoughts.trim() || null,
-            post_impression: entryStatus === "watched" ? (afterThoughts.trim() || null) : null,
+            post_impression:
+              entryStatus === "watched" ? afterThoughts.trim() || null : null,
             surge_score: entryStatus === "watched" ? surgeScore : null,
           }),
         });
@@ -778,7 +971,9 @@ export function LedgerViewer() {
       await refreshProfile();
 
       // Re-fetch entry detail from backend so entry.currentPeakScore and entry.peakSnapshot reflect latest DB state
-      const freshRes = await apiFetch(`/library/entry/${entry.id}`).catch(() => null);
+      const freshRes = await apiFetch(`/library/entry/${entry.id}`).catch(
+        () => null,
+      );
       if (freshRes && freshRes.ok) {
         const freshJson = await freshRes.json().catch(() => ({}));
         const freshItem = freshJson.data || freshJson;
@@ -787,11 +982,18 @@ export function LedgerViewer() {
             prev
               ? {
                   ...prev,
-                  surgeScore: freshItem.surgeScore ?? freshItem.surge_score ?? surgeScore,
-                  peakSnapshot: freshItem.peakSnapshot ?? freshItem.peak_snapshot ?? prev.peakSnapshot,
-                  currentPeakScore: freshItem.currentPeakScore ?? freshItem.current_peak_score ?? prev.currentPeakScore,
+                  surgeScore:
+                    freshItem.surgeScore ?? freshItem.surge_score ?? surgeScore,
+                  peakSnapshot:
+                    freshItem.peakSnapshot ??
+                    freshItem.peak_snapshot ??
+                    prev.peakSnapshot,
+                  currentPeakScore:
+                    freshItem.currentPeakScore ??
+                    freshItem.current_peak_score ??
+                    prev.currentPeakScore,
                 }
-              : prev
+              : prev,
           );
         }
       }
@@ -860,7 +1062,10 @@ export function LedgerViewer() {
         if (res.ok) {
           setAddedToLedger(true);
         } else {
-          console.error("[LedgerViewer] Failed to add entry to library, status:", res.status);
+          console.error(
+            "[LedgerViewer] Failed to add entry to library, status:",
+            res.status,
+          );
         }
       })
       .catch((err) => {
@@ -885,19 +1090,27 @@ export function LedgerViewer() {
             Ledger Entry
           </span>
 
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/70 backdrop-blur-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all cursor-pointer"
-          >
-            {copied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
-            ) : (
-              <Share2 className="w-3.5 h-3.5" />
-            )}
-            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">
-              {copied ? "Copied" : "Share"}
-            </span>
-          </button>
+          <ShareAction
+            title={`Framehouse — ${entry?.originalName || "Ledger Entry"}`}
+            text={`Check out the ledger breakdown for ${entry?.originalName || "this film"}`}
+            url={
+              entry?.id
+                ? `${window.location.origin}/ledger/${entry.id}`
+                : undefined
+            }
+            variant="ledger"
+          />
+
+          {isAuthor && (
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="p-2 rounded-xl bg-black/70 backdrop-blur-xl border border-white/10 hover:border-red-500/40 text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer flex items-center justify-center"
+              title="Delete Ledger Entry"
+              aria-label="Delete Ledger Entry"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -947,10 +1160,8 @@ export function LedgerViewer() {
           DESKTOP LAYOUT  (lg+) — original grid, untouched
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="hidden lg:grid grid-cols-[1fr_280px] gap-0 border-t border-white/[0.07]">
-
         {/* ── LEFT: Main editorial column ─────────────────────────────── */}
         <div className="border-r border-white/[0.05]">
-
           {/* Artist byline block */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -959,14 +1170,24 @@ export function LedgerViewer() {
             className="flex items-center gap-3 px-10 py-5 border-b border-white/[0.06]"
           >
             <ArtistAvatar
-              src={entry.artistProfilePicture || authorProfile.image || entry.originalPosterUrl}
-              name={entry.artistStageName || authorProfile.name || entry.originalName}
+              src={
+                entry.artistProfilePicture ||
+                authorProfile.image ||
+                entry.originalPosterUrl
+              }
+              name={
+                entry.artistStageName ||
+                authorProfile.name ||
+                entry.originalName
+              }
               size={32}
               className="w-8 h-8 rounded-xl shrink-0"
             />
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90">
-                {entry.artistStageName || authorProfile.name || entry.originalName}
+                {entry.artistStageName ||
+                  authorProfile.name ||
+                  entry.originalName}
               </p>
               {watchedDate && (
                 <p className="text-[9px] font-medium text-white/30 flex items-center gap-1 mt-0.5">
@@ -987,6 +1208,16 @@ export function LedgerViewer() {
                 >
                   <Edit3 className="w-3 h-3" />
                   {isEditing ? "Done" : "Update Breakdown"}
+                </button>
+              )}
+              {isAuthor && (
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="p-1.5 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 text-white/40 hover:text-red-400 transition-all cursor-pointer flex items-center justify-center"
+                  title="Delete Entry"
+                  aria-label="Delete Entry"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               )}
               <span
@@ -1029,7 +1260,8 @@ export function LedgerViewer() {
                       In Watchlist (Plan to Watch)
                     </p>
                     <p className="text-xs text-white/60">
-                      Have you watched this film? Mark it as watched to add your post-watching breakdown.
+                      Have you watched this film? Mark it as watched to add your
+                      post-watching breakdown.
                     </p>
                   </div>
                   <button
@@ -1087,20 +1319,22 @@ export function LedgerViewer() {
                       Surge Score
                     </p>
                     <div className="flex items-baseline gap-3 flex-wrap">
-                    <SurgeScoreDisplay
-                      surgeScore={surgeCount}
-                      peakSnapshot={entry.peakSnapshot}
-                      currentPeakScore={entry.currentPeakScore}
-                      size="lg"
-                      label="Resonance at time of watching"
-                    />
+                      <SurgeScoreDisplay
+                        surgeScore={surgeCount}
+                        peakSnapshot={entry.peakSnapshot}
+                        currentPeakScore={entry.currentPeakScore}
+                        size="lg"
+                        label="Resonance at time of watching"
+                      />
                     </div>
                   </div>
 
                   <div className="pb-2">
                     <SurgeBars
                       score={surgeCount}
-                      highestScore={entry.peakSnapshot || entry.currentPeakScore}
+                      highestScore={
+                        entry.peakSnapshot || entry.currentPeakScore
+                      }
                       colorVariant="amber"
                       size="lg"
                     />
@@ -1230,6 +1464,16 @@ export function LedgerViewer() {
                 {isEditing ? "Done" : "Update Breakdown"}
               </button>
             )}
+            {isAuthor && (
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="p-1.5 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 text-white/40 hover:text-red-400 transition-all cursor-pointer flex items-center justify-center"
+                title="Delete Entry"
+                aria-label="Delete Entry"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
                 isWatched
@@ -1275,7 +1519,8 @@ export function LedgerViewer() {
                     In Watchlist (Plan to Watch)
                   </p>
                   <p className="text-xs text-white/60 leading-relaxed">
-                    Have you watched this film? Mark it as watched to add your post-watching breakdown.
+                    Have you watched this film? Mark it as watched to add your
+                    post-watching breakdown.
                   </p>
                 </div>
                 <button
@@ -1313,7 +1558,10 @@ export function LedgerViewer() {
                     const line1AfterChar = line1.slice(1);
                     return (
                       <div className="text-[15px] font-medium leading-[1.75] text-white/70">
-                        <DropCapSVG letter={firstChar} artistId={entry.artistColorTheme || entry.artistId} />
+                        <DropCapSVG
+                          letter={firstChar}
+                          artistId={entry.artistColorTheme || entry.artistId}
+                        />
                         <span>{line1AfterChar}</span>
                         <span className="float-right block ml-3 mb-2 w-[88px] text-center select-none text-normal font-normal normal-case">
                           <MakerCardContent entry={entry} />
@@ -1325,7 +1573,10 @@ export function LedgerViewer() {
 
                 {hasPreThoughts && hasAfterThoughts && (
                   <p className="text-[15px] font-medium leading-[1.75] text-white/70">
-                    <DropCapSVG letter={afterThoughts.charAt(0)} artistId={entry.artistColorTheme || entry.artistId} />
+                    <DropCapSVG
+                      letter={afterThoughts.charAt(0)}
+                      artistId={entry.artistColorTheme || entry.artistId}
+                    />
                     {afterThoughts.slice(1)}
                   </p>
                 )}
@@ -1355,8 +1606,6 @@ export function LedgerViewer() {
             )}
           </motion.div>
         )}
-
-
 
         {/* ── Stars & Makers identity card sections ────────────────── */}
         <motion.div
@@ -1393,6 +1642,23 @@ export function LedgerViewer() {
           </button>
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => !isDeleting && setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteEntry}
+        isDeleting={isDeleting}
+        title="Remove from Ledger?"
+        description={
+          entry ? (
+            <span>
+              Are you sure you want to remove{" "}
+              <strong className="text-white">{entry.originalName}</strong> from your
+              ledger? Your logged thoughts and surge score will be deleted.
+            </span>
+          ) : undefined
+        }
+      />
     </div>
   );
 }

@@ -159,10 +159,22 @@ export function PostLineModal({ isOpen, onClose }: PostLineModalProps) {
                     placeholder="What's on your mind? Drop a line..."
                     value={lineText}
                     onChange={(e) => setLineText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                        e.preventDefault();
+                        handleSubmit();
+                      }
+                    }}
+                    maxLength={500}
                     className="w-full h-32 bg-white/[0.02] border border-white/10 rounded-xl p-4 text-[15px] sm:text-[16px] text-white/90 placeholder:text-white/20 resize-none focus:outline-none focus:border-[#B45309]/50 transition-colors leading-relaxed"
                   />
-                  <div className="flex justify-end pr-1 text-[11px] font-mono text-white/20">
-                    {lineText.length} / 280
+                  <div className="flex items-center justify-between px-1 text-[11px] font-mono">
+                    <span className="text-white/30 text-[10px]">
+                      Enter for new line • ⌘/Ctrl+Enter to post
+                    </span>
+                    <span className={`tabular-nums ${lineText.length >= 500 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+                      {lineText.length >= 500 ? "Limit reached (500 / 500)" : `${lineText.length} / 500`}
+                    </span>
                   </div>
                 </div>
 

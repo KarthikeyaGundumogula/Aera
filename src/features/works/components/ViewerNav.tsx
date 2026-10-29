@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { ArrowLeft, Layers } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { WorkDetail, LinkedOriginal } from "../../../types";
-import { CurateOverlay } from "../../shared/modals/CurateOverlay";
+import { LinkedOriginalsOverlay } from "../../shared/modals/LinkedOriginalsOverlay";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { ShareAction } from "../../../components/actions/ShareAction";
 import { apiFetch } from "@/lib/api";
@@ -22,7 +22,7 @@ const linkedOriginalsCache = new Map<string, LinkedOriginal[]>();
  */
 export function ViewerNav({ work }: ViewerNavProps) {
   const navigate = useNavigate();
-  const [showCurate, setShowCurate] = useState(false);
+  const [showOriginalsOverlay, setShowOriginalsOverlay] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [activeOriginals, setActiveOriginals] = useState<LinkedOriginal[]>([]);
   const [isLoadingOriginals, setIsLoadingOriginals] = useState(false);
@@ -30,7 +30,7 @@ export function ViewerNav({ work }: ViewerNavProps) {
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
 
   const handleOpenOriginals = useCallback(() => {
-    setShowCurate(true);
+    setShowOriginalsOverlay(true);
     const workKey = String(work.id);
 
     if (linkedOriginalsCache.has(workKey)) {
@@ -102,16 +102,16 @@ export function ViewerNav({ work }: ViewerNavProps) {
         </motion.div>
       </div>
 
-      {/* CurateOverlay sits as a portal-like absolute layer */}
-      {showCurate && (
+      {/* LinkedOriginalsOverlay sits as a portal-like absolute layer */}
+      {showOriginalsOverlay && (
         <div
           className="fixed inset-0 z-[180] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setShowCurate(false)}
+          onClick={() => setShowOriginalsOverlay(false)}
         >
           <div onClick={e => e.stopPropagation()} className="w-full max-w-md">
-            <CurateOverlay
-              isOpen={showCurate}
-              onClose={() => setShowCurate(false)}
+            <LinkedOriginalsOverlay
+              isOpen={showOriginalsOverlay}
+              onClose={() => setShowOriginalsOverlay(false)}
               originals={activeOriginals}
               workId={work.id}
               isLoading={isLoadingOriginals}

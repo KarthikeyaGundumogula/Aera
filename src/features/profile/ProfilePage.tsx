@@ -20,6 +20,7 @@ import { Logo } from "../../components/Logo";
 import { ProfileNav } from "../../components/ProfileNav";
 import { ProfileHero } from "../shared/profile/ProfileHero";
 import { WallFeed } from "./components/WallFeed";
+import { ConfirmDeleteModal } from "../shared/modals/ConfirmDeleteModal";
 import { useAuth, parseColorTheme } from "../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { TheatreItem, Original } from "../../types";
@@ -141,18 +142,21 @@ interface ProfileDisplayData {
 
 const loadedProfiles = new Set<string>();
 
+const PROFILE_TABS = ["THEATRE", "WALL", "LIBRARY"] as const;
+type ProfileTab = (typeof PROFILE_TABS)[number];
+
 const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const { currentArtist } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const rawTab = searchParams.get("tab")?.toUpperCase();
-  const activeTab: "LIBRARY" | "WALL" | "THEATRE" = 
+  const activeTab: ProfileTab = 
     (rawTab === "THEATRE" || rawTab === "WALL" || rawTab === "LIBRARY") 
       ? rawTab 
       : "LIBRARY";
 
-  const setActiveTab = (tab: "LIBRARY" | "WALL" | "THEATRE") => {
+  const setActiveTab = (tab: ProfileTab) => {
     setSearchParams({ tab: tab.toLowerCase() }, { replace: true });
   };
   const [selectedOriginalId, setSelectedOriginalId] = useState<string | null>(null);
@@ -180,6 +184,28 @@ const ProfilePage: React.FC = () => {
 
   // Initial loading state
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Delete wall post confirmation state
+  const [deleteWallPostId, setDeleteWallPostId] = useState<string | null>(null);
+  const [isDeletingWallPost, setIsDeletingWallPost] = useState(false);
+
+  const handleConfirmDeleteWallPost = async () => {
+    if (!deleteWallPostId) return;
+    setIsDeletingWallPost(true);
+    try {
+      const res = await apiFetch(`/artists/delete/wall_post/${deleteWallPostId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setBackendWallPosts((prev) => prev.filter((p) => p.id !== deleteWallPostId));
+      }
+    } catch (e) {
+      console.error("[ProfilePage] Failed to delete wall post:", e);
+    } finally {
+      setIsDeletingWallPost(false);
+      setDeleteWallPostId(null);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -217,102 +243,104 @@ const ProfilePage: React.FC = () => {
     return () => window.removeEventListener("resize", onResize);
   }, [activeTab]);
 
+  const currentArtistRef = useRef(currentArtist);
+  currentArtistRef.current = currentArtist;
+
+  // Track loaded tabs per profile to prevent duplicate network calls on tab switching
+  const loadedTabsRef = useRef<{ [profileId: string]: Set<string> }>({});
+
   useEffect(() => {
     if (!profileId) {
       setIsInitialLoading(false);
       return;
     }
 
-    let isMounted = true;
+    const abortController = new AbortController();
     const cleanHandle = profileId.replace(/^profile-/, "").toLowerCase();
+    const loggedIn = currentArtistRef.current;
+
+    // Reset tab cache for this new profile
+    loadedTabsRef.current[profileId] = new Set<string>();
+
+    setIsInitialLoading(true);
+
+    // Optimistic hydration: If this is the logged-in user, populate profile state immediately
+    const isOwnProfile = !!(
+      loggedIn &&
+      (loggedIn.name.toLowerCase() === cleanHandle ||
+        loggedIn.id.toLowerCase() === profileId.toLowerCase() ||
+        loggedIn.id.toLowerCase().includes(cleanHandle))
+    );
+
+    if (isOwnProfile && loggedIn) {
+      const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
+      const ownHandle = (loggedIn.userName && !isUuid(loggedIn.userName))
+        ? loggedIn.userName
+        : (!isUuid(cleanHandle) && cleanHandle)
+        ? cleanHandle
+        : (loggedIn.name && !isUuid(loggedIn.name))
+        ? loggedIn.name.toLowerCase().replace(/\s+/g, "")
+        : "artist";
+      const ownName = (loggedIn.name && !isUuid(loggedIn.name)) ? loggedIn.name : "ARTIST";
+
+      setBackendProfile({
+        id: loggedIn.id,
+        name: ownName,
+        handle: ownHandle,
+        tagline: loggedIn.bio || "Visionary Artist",
+        image: loggedIn.image || DEFAULT_AVATAR_PLACEHOLDER,
+        spirit: (loggedIn.spirit || 0).toLocaleString(),
+        favoritesCount: (loggedIn.favoritesCount || 0).toLocaleString(),
+        type: "ARTIST",
+        socials: loggedIn.socials,
+        colorTheme: loggedIn.color_theme || `${loggedIn.themeTextColor || "#fac107"},${loggedIn.themeBgColor || "#0f1a42"}`,
+      });
+    }
 
     (async () => {
-      setIsInitialLoading(true);
+      try {
+        const res = await apiFetch(`/profiles/get_profile_details/${cleanHandle}`, {
+          signal: abortController.signal,
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const stage = json.artist_stage || json.data;
+          if (stage && !abortController.signal.aborted) {
+            if (typeof stage.isFavorited === "boolean") {
+              setIsFavorited(stage.isFavorited);
+            }
+            const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
+            const rawUserName = stage.userName;
+            const rawStageName = stage.stageName;
 
-      // Check 1: If current logged-in user matches, set profile display data from cached currentArtist.
-      // We still call get_profile_details below so originals are always fetched from the backend.
-      if (
-        currentArtist &&
-        (currentArtist.name.toLowerCase() === cleanHandle ||
-          currentArtist.id.toLowerCase() === profileId.toLowerCase() ||
-          currentArtist.id.toLowerCase().includes(cleanHandle))
-      ) {
-        if (isMounted) {
-          const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
-          const ownHandle = (currentArtist.userName && !isUuid(currentArtist.userName))
-            ? currentArtist.userName
-            : (!isUuid(cleanHandle) && cleanHandle)
-            ? cleanHandle
-            : (currentArtist.name && !isUuid(currentArtist.name))
-            ? currentArtist.name.toLowerCase().replace(/\s+/g, "")
-            : "artist";
-          const ownName = (currentArtist.name && !isUuid(currentArtist.name)) ? currentArtist.name : "ARTIST";
+            const fetchedHandle = (rawUserName && !isUuid(rawUserName))
+              ? rawUserName
+              : (rawStageName && !isUuid(rawStageName))
+              ? rawStageName.toLowerCase().replace(/\s+/g, "")
+              : (!isUuid(cleanHandle) ? cleanHandle : "artist");
 
-          setBackendProfile({
-            id: currentArtist.id,
-            name: ownName,
-            handle: ownHandle,
-            tagline: currentArtist.bio || "Visionary Artist",
-            image: currentArtist.image || DEFAULT_AVATAR_PLACEHOLDER,
-            spirit: (currentArtist.spirit || 0).toLocaleString(),
-            favoritesCount: (currentArtist.favoritesCount || 0).toLocaleString(),
-            type: "ARTIST",
-            socials: currentArtist.socials,
-            colorTheme: currentArtist.color_theme || `${currentArtist.themeTextColor || "#fac107"},${currentArtist.themeBgColor || "#0f1a42"}`,
-          });
-        }
-        // Fall through to fetch originals from backend
-      }
+            const fetchedName = (rawStageName && !isUuid(rawStageName))
+              ? rawStageName
+              : (rawUserName && !isUuid(rawUserName))
+              ? rawUserName
+              : (!isUuid(cleanHandle) ? cleanHandle : "ARTIST");
 
-        // Check 2: Call backend GET /profiles/get_profile_details/{username}
-        // Always called — even for own profile — to populate originals from the library.
-        const isOwnProfile = !!(
-          currentArtist &&
-          (currentArtist.name.toLowerCase() === cleanHandle ||
-            currentArtist.id.toLowerCase() === profileId.toLowerCase() ||
-            currentArtist.id.toLowerCase().includes(cleanHandle))
-        );
-        try {
-          const res = await apiFetch(`/profiles/get_profile_details/${cleanHandle}`);
-          if (res.ok) {
-            const json = await res.json();
-            const stage = json.artist_stage || json.data;
-            if (stage && isMounted) {
-              if (typeof stage.isFavorited === "boolean") {
-                setIsFavorited(stage.isFavorited);
-              }
-              const isUuid = (str?: string) => typeof str === "string" && /^[0-9a-fA-F-]{36}$/.test(str.trim());
-              const rawUserName = stage.userName;
-              const rawStageName = stage.stageName;
-
-              const fetchedHandle = (rawUserName && !isUuid(rawUserName))
-                ? rawUserName
-                : (rawStageName && !isUuid(rawStageName))
-                ? rawStageName.toLowerCase().replace(/\s+/g, "")
-                : (!isUuid(cleanHandle) ? cleanHandle : "artist");
-
-              const fetchedName = (rawStageName && !isUuid(rawStageName))
-                ? rawStageName
-                : (rawUserName && !isUuid(rawUserName))
-                ? rawUserName
-                : (!isUuid(cleanHandle) ? cleanHandle : "ARTIST");
-
-              setBackendProfile({
-                id: stage.id || profileId,
-                name: fetchedName,
-                handle: fetchedHandle,
-                tagline: stage.tagLine || "Visionary Artist",
-                image: stage.profilePicture || DEFAULT_AVATAR_PLACEHOLDER,
-                spirit: (stage.spirit || 0).toLocaleString(),
-                favoritesCount: (stage.favoritesCount || 0).toLocaleString(),
-                type: "ARTIST",
-                socials: {
-                  instagram: stage.instagramProfile || undefined,
-                  twitter: stage.twitterProfile || undefined,
-                  youtube: stage.youtubeProfile || undefined,
-                },
-                colorTheme: stage.colorTheme || "#fac107,#0f1a42",
-              });
+            setBackendProfile({
+              id: stage.id || profileId,
+              name: fetchedName,
+              handle: fetchedHandle,
+              tagline: stage.tagLine || "Visionary Artist",
+              image: stage.profilePicture || DEFAULT_AVATAR_PLACEHOLDER,
+              spirit: (stage.spirit || 0).toLocaleString(),
+              favoritesCount: (stage.favoritesCount || 0).toLocaleString(),
+              type: "ARTIST",
+              socials: {
+                instagram: stage.instagramProfile || undefined,
+                twitter: stage.twitterProfile || undefined,
+                youtube: stage.youtubeProfile || undefined,
+              },
+              colorTheme: stage.colorTheme || "#fac107,#0f1a42",
+            });
 
             const rawOriginals = stage.originals || [];
             if (Array.isArray(rawOriginals) && rawOriginals.length > 0) {
@@ -341,12 +369,13 @@ const ProfilePage: React.FC = () => {
             return;
           }
         }
-      } catch (e) {
-        console.warn("Backend get_profile_details failed:", e);
+      } catch (e: any) {
+        if (e?.name !== "AbortError" && !abortController.signal.aborted) {
+          console.warn("Backend get_profile_details failed:", e);
+        }
       }
 
-      if (isMounted) {
-        // If it's own profile and backend failed, don't null out the profile we already set
+      if (!abortController.signal.aborted) {
         if (!isOwnProfile) {
           setBackendProfile(null);
         }
@@ -355,19 +384,46 @@ const ProfilePage: React.FC = () => {
     })();
 
     return () => {
-      isMounted = false;
+      abortController.abort();
     };
-  }, [profileId, currentArtist]);
+  }, [profileId]);
 
+  // Synchronize local currentArtist changes without triggering network requests
+  useEffect(() => {
+    if (!currentArtist || !backendProfile) return;
+    if (backendProfile.id === currentArtist.id) {
+      setBackendProfile(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          name: currentArtist.name || prev.name,
+          image: currentArtist.image || prev.image,
+          tagline: currentArtist.bio || prev.tagline,
+          spirit: (currentArtist.spirit || 0).toLocaleString(),
+          favoritesCount: (currentArtist.favoritesCount || 0).toLocaleString(),
+          socials: currentArtist.socials || prev.socials,
+        };
+      });
+    }
+  }, [currentArtist]);
+
+  // Lazy tab feed fetching with local cache
   useEffect(() => {
     if (!backendProfile?.id) return;
     const isUuid = /^[0-9a-fA-F-]{36}$/.test(backendProfile.id);
     if (!isUuid) return;
 
-    let isMounted = true;
-    (async () => {
-      try {
-        if (activeTab === "THEATRE") {
+    const profileKey = backendProfile.id;
+    if (!loadedTabsRef.current[profileKey]) {
+      loadedTabsRef.current[profileKey] = new Set<string>();
+    }
+    const profileLoadedTabs = loadedTabsRef.current[profileKey];
+
+    // Only fetch if not already loaded for this profile
+    if (activeTab === "THEATRE" && !profileLoadedTabs.has("THEATRE")) {
+      let isMounted = true;
+      (async () => {
+        try {
           const res = await apiFetch(`/profiles/${backendProfile.id}/works?limit=12`);
           if (res.ok && isMounted) {
             const json = await res.json();
@@ -375,23 +431,34 @@ const ProfilePage: React.FC = () => {
             const cursor = json.meta?.nextCursor || null;
             setBackendWorks(items);
             setWorksNextCursor(cursor);
+            profileLoadedTabs.add("THEATRE");
           }
-        } else if (activeTab === "WALL") {
+        } catch (e) {
+          console.warn("Failed to fetch works feed from backend:", e);
+        }
+      })();
+      return () => {
+        isMounted = false;
+      };
+    } else if (activeTab === "WALL" && !profileLoadedTabs.has("WALL")) {
+      let isMounted = true;
+      (async () => {
+        try {
           const res = await apiFetch(`/profiles/${backendProfile.id}/wall?limit=12`);
           if (res.ok && isMounted) {
             const json = await res.json();
             const items = json.data ?? [];
             setBackendWallPosts(items);
+            profileLoadedTabs.add("WALL");
           }
+        } catch (e) {
+          console.warn("Failed to fetch wall feed from backend:", e);
         }
-      } catch (e) {
-        console.warn("Failed to fetch paginated tab feed from backend:", e);
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-    };
+      })();
+      return () => {
+        isMounted = false;
+      };
+    }
   }, [backendProfile?.id, activeTab]);
 
   const loadMoreWorks = useCallback(async () => {
@@ -526,13 +593,7 @@ const ProfilePage: React.FC = () => {
               : "opacity-0 -translate-y-2 pointer-events-none"
           }`}
         >
-          {(
-            [
-              "LIBRARY",
-              "THEATRE",
-              "WALL",
-            ] as ("LIBRARY" | "THEATRE" | "WALL")[]
-          ).map((tab) => (
+          {PROFILE_TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -588,13 +649,7 @@ const ProfilePage: React.FC = () => {
         <div ref={tabsRowRef} className="relative w-full">
           <div className="w-full flex justify-center py-3.5 md:py-4">
             <div className="flex items-center gap-8 md:gap-16">
-              {(
-                [
-                  "THEATRE",
-                  "WALL",
-                  "LIBRARY",
-                ] as ("THEATRE" | "WALL" | "LIBRARY")[]
-              ).map((tab) => (
+              {PROFILE_TABS.map((tab) => (
                 <button
                   key={tab}
                   ref={(el) => {
@@ -680,6 +735,12 @@ const ProfilePage: React.FC = () => {
                       : undefined
                   }
                   themeGradient={[parsedTheme.themeTextColor, parsedTheme.themeTextColor]}
+                  onDelete={
+                    currentArtist && backendProfile && currentArtist.id === backendProfile.id
+                      ? (id) => setDeleteWallPostId(id)
+                      : undefined
+                  }
+                  deletingPostId={isDeletingWallPost ? deleteWallPostId : null}
                 />
               </div>
             )}
@@ -724,6 +785,15 @@ const ProfilePage: React.FC = () => {
           </section>
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={deleteWallPostId !== null}
+        onClose={() => !isDeletingWallPost && setDeleteWallPostId(null)}
+        onConfirm={handleConfirmDeleteWallPost}
+        isDeleting={isDeletingWallPost}
+        title="Delete Wall Post?"
+        description="Are you sure you want to permanently delete this post from your wall? This action cannot be undone."
+      />
     </div>
   );
 };

@@ -182,6 +182,7 @@ export function PersonSearchInput({
             placeholder={placeholderRole}
             value={role}
             onChange={(e) => setRole(e.target.value)}
+            maxLength={50}
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-medium focus:border-white/30 outline-none transition-all placeholder:text-white/10 font-mono"
           />
         </div>
@@ -200,6 +201,7 @@ export function PersonSearchInput({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setIsFocused(true)}
+              maxLength={100}
               className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:border-white/30 outline-none transition-all placeholder:text-white/10 uppercase tracking-widest"
             />
           </div>

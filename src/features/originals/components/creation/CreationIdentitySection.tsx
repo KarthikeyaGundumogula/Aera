@@ -30,16 +30,23 @@ export function CreationIdentitySection({ title, description, onChange }: Creati
             placeholder="e.g. THE DARK KNIGHT"
             value={title}
             onChange={(e) => onChange("title", e.target.value)}
+            maxLength={100}
             className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-5 text-lg font-bold focus:ring-2 focus:ring-white/10 focus:border-white/20 outline-none transition-all placeholder:text-white/10 uppercase tracking-tight"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/30 ml-1">Description (Optional)</label>
+          <div className="flex items-center justify-between ml-1">
+            <label className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/30">Description (Optional)</label>
+            <span className={`text-[9px] font-mono tabular-nums ${description.length >= 2000 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+              {description.length >= 2000 ? "Limit reached (2,000 / 2,000)" : `${description.length} / 2,000`}
+            </span>
+          </div>
           <textarea
             placeholder="The soul of the artifact..."
             value={description}
             onChange={(e) => onChange("description", e.target.value)}
+            maxLength={2000}
             rows={4}
             className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-5 text-sm font-medium focus:ring-2 focus:ring-white/10 focus:border-white/20 outline-none transition-all placeholder:text-white/10 resize-none leading-relaxed"
           />

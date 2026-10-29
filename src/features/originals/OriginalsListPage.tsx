@@ -1,6 +1,4 @@
-import { useMemo } from "react";
-import { motion } from "motion/react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { OriginalPosterCard } from "./components/OriginalPosterCard";
 import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
@@ -9,8 +7,29 @@ import { MobileTopHeader } from "../navigation/MobileTopHeader";
 import { DesktopHeader } from "../navigation/DesktopHeader";
 
 export function OriginalsListPage() {
-  const navigate = useNavigate();
-  const { items, loading, loadingMore, hasMore, totalCount, loadMore } = usePaginatedOriginals(12);
+  // Page size 24 cleanly fills 8, 6, 4, 3, and 2 column responsive layouts without row gaps
+  const { items, loading, loadingMore, hasMore, loadMore } = usePaginatedOriginals(24);
+  const bottomObserverTarget = useRef<HTMLDivElement>(null);
+
+  // Automated infinite scroll triggered when scrolling near the end of the list
+  useEffect(() => {
+    if (!hasMore || loadingMore || loading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: "600px" }
+    );
+
+    if (bottomObserverTarget.current) {
+      observer.observe(bottomObserverTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loading, loadMore]);
 
   return (
     <div
@@ -44,22 +63,17 @@ export function OriginalsListPage() {
               ))}
             </div>
 
+            {/* Automated Infinite Scroll Sentinel & Loading Indicator */}
             {hasMore && (
-              <div className="mt-10 flex justify-center">
-                <button
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-black uppercase tracking-[0.25em] text-white/70 hover:text-white transition-all active:scale-95 flex items-center gap-2"
-                >
-                  {loadingMore ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                      <span>Loading Next Reel…</span>
-                    </>
-                  ) : (
-                    <span>Load More Originals</span>
-                  )}
-                </button>
+              <div ref={bottomObserverTarget} className="py-10 flex justify-center items-center">
+                {loadingMore && (
+                  <div className="flex items-center gap-2.5 text-white/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                    <span className="text-[10px] font-mono uppercase tracking-[0.25em]">
+                      Loading Next Originals Reel…
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </>

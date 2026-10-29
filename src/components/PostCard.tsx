@@ -1,6 +1,7 @@
-import React, { memo, useState } from "react";
+import React, { memo, useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 import { motion } from "motion/react";
-import { Camera, Bookmark, Heart, Play } from "lucide-react";
+import { Camera, Bookmark, Heart, Play, Trash2 } from "lucide-react";
 import { WallPost } from "../types/wall";
 import { TheatreItem } from "../types/theatre";
 import type { Recommendation } from "../types/recommendations";
@@ -11,6 +12,7 @@ import { useMediaQuery } from "../hooks/useMediaQuery";
 import { ReactionAction } from "./actions/ReactionAction";
 import { ReactionId } from "../types/reactions";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useWorkNavigation } from "../hooks/useWorkNavigation";
 import { ShareAction } from "./actions/ShareAction";
 import type { LedgerItem } from "../types/ledger";
@@ -49,8 +51,12 @@ interface CardLayoutProps {
   quoteHeader?: string;
   themeGradient?: [string, string];
   hideReactions?: boolean;
+  totalReactions?: number;
+  initialReaction?: ReactionId | null;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  onDelete?: (postId: string) => void;
+  isDeleting?: boolean;
   children?: React.ReactNode;
 }
 
@@ -68,18 +74,71 @@ const CardLayout: React.FC<CardLayoutProps> = ({
   quoteHeader,
   themeGradient,
   hideReactions = false,
+  totalReactions,
+  initialReaction,
   isSaved: externalSaved,
   onToggleSave,
+  onDelete,
+  isDeleting,
   children,
 }) => {
-  const [activeReaction, setActiveReaction] = useState<ReactionId | null>(null);
+  const [activeReaction, setActiveReaction] = useState<ReactionId | null>(initialReaction ?? null);
+  const [reactionsCount, setReactionsCount] = useState<number>(totalReactions ?? 0);
   const [internalSaved, setInternalSaved] = useState(false);
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
 
   const saved = externalSaved !== undefined ? externalSaved : internalSaved;
 
-  const viewsCount = artistName.length * 142 + 340;
-  const reactionsCount = artistName.length * 12 + 15;
+  useEffect(() => {
+    setActiveReaction(initialReaction ?? null);
+    setReactionsCount(totalReactions ?? 0);
+  }, [postId, initialReaction, totalReactions]);
+
+  const handleReact = async (reactionId: ReactionId | null) => {
+    if (!currentArtist) {
+      navigate("/profile/login");
+      return;
+    }
+
+    const prevReaction = activeReaction;
+    const prevCount = reactionsCount;
+    setActiveReaction(reactionId);
+
+    let diff = 0;
+    if (!prevReaction && reactionId) diff = 1;
+    if (prevReaction && !reactionId) diff = -1;
+    setReactionsCount(Math.max(0, prevCount + diff));
+
+    if (postId) {
+      try {
+        const res = reactionId
+          ? await apiFetch("/artists/add_reaction", {
+              method: "POST",
+              body: JSON.stringify({
+                wall_post_id: postId,
+                reaction: reactionId,
+              }),
+            })
+          : await apiFetch("/artists/remove_reaction", {
+              method: "POST",
+              body: JSON.stringify({
+                wall_post_id: postId,
+                reaction: prevReaction || "🔥",
+              }),
+            });
+        if (!res.ok) {
+          console.warn("[PostCard] Failed to save reaction with status:", res.status);
+          setActiveReaction(prevReaction);
+          setReactionsCount(prevCount);
+        }
+      } catch (err) {
+        console.warn("[PostCard] Failed to save reaction:", err);
+        setActiveReaction(prevReaction);
+        setReactionsCount(prevCount);
+      }
+    }
+  };
 
   const artistObj = ARTISTS_MOCK.find(
     (a: any) => a.id === artistId || a.name.toLowerCase() === artistName.toLowerCase()
@@ -112,6 +171,10 @@ const CardLayout: React.FC<CardLayoutProps> = ({
 
   const handleSaveToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!currentArtist) {
+      navigate("/profile/login");
+      return;
+    }
     if (onToggleSave) {
       onToggleSave();
       return;
@@ -177,9 +240,24 @@ const CardLayout: React.FC<CardLayoutProps> = ({
         </div>
 
         {/* Timing on top right corner */}
-        <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 shrink-0 pt-0.5">
-          {formatRelativeTime(postedAt)}
-        </span>
+        <div className="flex items-center gap-2 shrink-0 pt-0.5">
+          <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30">
+            {formatRelativeTime(postedAt)}
+          </span>
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(postId);
+              }}
+              disabled={isDeleting}
+              className="p-1 rounded-lg bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/30 text-white/40 hover:text-red-400 transition-all hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-40"
+              title="Delete post"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -206,7 +284,7 @@ const CardLayout: React.FC<CardLayoutProps> = ({
               </div>
             )}
             <p
-              className={`text-[15px] leading-[1.55] text-white/85 ${
+              className={`text-[15px] leading-[1.55] text-white/85 whitespace-pre-wrap break-words ${
                 children ? "italic" : "font-normal"
               }`}
             >
@@ -224,7 +302,7 @@ const CardLayout: React.FC<CardLayoutProps> = ({
             <div className="flex-1 min-w-0">
               <ReactionAction
                 activeReaction={activeReaction}
-                onReact={setActiveReaction}
+                onReact={handleReact}
                 count={reactionsCount}
                 variant="comment-bar"
               />
@@ -270,8 +348,12 @@ interface LineVariantProps {
   artistFavoritesCount?: number;
   artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
+  totalReactions?: number;
+  initialReaction?: ReactionId | null;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  onDelete?: (postId: string) => void;
+  isDeleting?: boolean;
 }
 
 const LineVariant: React.FC<LineVariantProps> = ({
@@ -286,8 +368,12 @@ const LineVariant: React.FC<LineVariantProps> = ({
   artistFavoritesCount,
   artistOverride,
   themeGradient,
+  totalReactions,
+  initialReaction,
   isSaved,
   onToggleSave,
+  onDelete,
+  isDeleting,
 }) => (
   <CardLayout
     artistName={artistName}
@@ -301,14 +387,18 @@ const LineVariant: React.FC<LineVariantProps> = ({
     artistOverride={artistOverride}
     text={text}
     themeGradient={themeGradient}
+    totalReactions={totalReactions}
+    initialReaction={initialReaction}
     isSaved={isSaved}
     onToggleSave={onToggleSave}
+    onDelete={onDelete}
+    isDeleting={isDeleting}
   />
 );
 
-// ─── 2. Pin Media Preview ────────────────────────────────────────────────────
+// ─── 2. Frame Media Preview ───────────────────────────────────────────────────
 
-interface PinMediaPreviewProps {
+interface FrameMediaPreviewProps {
   image?: string;
   title?: string;
   resolvedWork?: TheatreItem;
@@ -318,11 +408,12 @@ interface PinMediaPreviewProps {
   pinnedWorkId?: string;
   pinnedOriginalId?: string;
   hideReactions?: boolean;
+  hideFrameBadge?: boolean;
   hideCameraPin?: boolean;
   postType?: string;
 }
 
-const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
+const FrameMediaPreview: React.FC<FrameMediaPreviewProps> = ({
   image,
   title,
   resolvedWork,
@@ -331,10 +422,12 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
   pinnedWorkId,
   pinnedOriginalId,
   hideReactions = false,
+  hideFrameBadge,
   hideCameraPin = false,
   postType,
 }) => {
   const navigate = useNavigate();
+  const shouldHideFrame = hideFrameBadge ?? hideCameraPin;
 
   if (resolvedWork || (!isOriginal && pinnedWorkId)) {
     return (
@@ -343,7 +436,7 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
           work={resolvedWork}
           workId={pinnedWorkId}
           variant="default"
-          showCameraPin={postType === "PIN_WORK" && !hideReactions && !hideCameraPin}
+          showFrameBadge={postType === "PIN_WORK" && !hideReactions && !shouldHideFrame}
         />
       </div>
     );
@@ -364,13 +457,13 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
   return (
     <div
       onClick={handleClick}
-      className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 cursor-pointer group/pin hover:opacity-95 transition-opacity"
+      className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 cursor-pointer group/frame hover:opacity-95 transition-opacity"
     >
       {displayImage ? (
         <img
           src={displayImage}
-          alt={displayTitle ?? "Pinned item"}
-          className="w-full h-full object-cover object-center group-hover/pin:scale-[1.01] transition-transform duration-300"
+          alt={displayTitle ?? "Framed item"}
+          className="w-full h-full object-cover object-center group-hover/frame:scale-[1.01] transition-transform duration-300"
           loading="lazy"
         />
       ) : (
@@ -384,7 +477,7 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
       {/* Cinematic gradient overlay */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
-      {/* Pin badge — top-left */}
+      {/* Frame badge — top-left */}
       {!hideReactions && (
         <div className="absolute top-3 left-3 z-20 w-7 h-7 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 shadow-md flex items-center justify-center">
           <Camera size={12} className="text-amber-500 fill-amber-500 [&>circle]:fill-black" aria-hidden="true" />
@@ -410,9 +503,9 @@ const PinMediaPreview: React.FC<PinMediaPreviewProps> = ({
   );
 };
 
-// ─── 3. Pin Variant (Work or Original) ───────────────────────────────────────
+// ─── 3. Frame Variant (Work or Original) ──────────────────────────────────────
 
-interface PinVariantProps {
+interface FrameVariantProps {
   image?: string;
   pinnedTitle?: string;
   text?: string;
@@ -432,12 +525,17 @@ interface PinVariantProps {
   pinnedWorkId?: string;
   pinnedOriginalId?: string;
   hideReactions?: boolean;
+  hideFrameBadge?: boolean;
   hideCameraPin?: boolean;
+  totalReactions?: number;
+  initialReaction?: ReactionId | null;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  onDelete?: (postId: string) => void;
+  isDeleting?: boolean;
 }
 
-const PinVariant: React.FC<PinVariantProps> = ({
+const FrameVariant: React.FC<FrameVariantProps> = ({
   image,
   pinnedTitle,
   text,
@@ -457,9 +555,14 @@ const PinVariant: React.FC<PinVariantProps> = ({
   pinnedWorkId,
   pinnedOriginalId,
   hideReactions,
+  hideFrameBadge,
   hideCameraPin,
+  totalReactions,
+  initialReaction,
   isSaved,
   onToggleSave,
+  onDelete,
+  isDeleting,
 }) => (
   <CardLayout
     artistName={artistName}
@@ -474,10 +577,14 @@ const PinVariant: React.FC<PinVariantProps> = ({
     text={text}
     themeGradient={themeGradient}
     hideReactions={hideReactions}
+    totalReactions={totalReactions}
+    initialReaction={initialReaction}
     isSaved={isSaved}
     onToggleSave={onToggleSave}
+    onDelete={onDelete}
+    isDeleting={isDeleting}
   >
-    <PinMediaPreview
+    <FrameMediaPreview
       image={image}
       title={pinnedTitle}
       resolvedWork={resolvedWork}
@@ -487,11 +594,13 @@ const PinVariant: React.FC<PinVariantProps> = ({
       pinnedWorkId={pinnedWorkId}
       pinnedOriginalId={pinnedOriginalId}
       hideReactions={hideReactions}
-      hideCameraPin={hideCameraPin}
+      hideFrameBadge={hideFrameBadge ?? hideCameraPin}
       postType={isOriginal ? "PIN_ORIGINAL" : "PIN_WORK"}
     />
   </CardLayout>
 );
+
+const PinVariant = FrameVariant;
 
 // ─── 4. Recommendation Variant ────────────────────────────────────────────────
 
@@ -508,8 +617,12 @@ interface RecommendationVariantProps {
   artistFavoritesCount?: number;
   artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
+  totalReactions?: number;
+  initialReaction?: ReactionId | null;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  onDelete?: (postId: string) => void;
+  isDeleting?: boolean;
 }
 
 const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
@@ -525,8 +638,12 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
   artistFavoritesCount,
   artistOverride,
   themeGradient,
+  totalReactions,
+  initialReaction,
   isSaved,
   onToggleSave,
+  onDelete,
+  isDeleting,
 }) => {
   return (
     <CardLayout
@@ -540,8 +657,12 @@ const RecommendationVariant: React.FC<RecommendationVariantProps> = ({
       artistFavoritesCount={artistFavoritesCount}
       artistOverride={artistOverride}
       themeGradient={themeGradient}
+      totalReactions={totalReactions}
+      initialReaction={initialReaction}
       isSaved={isSaved}
       onToggleSave={onToggleSave}
+      onDelete={onDelete}
+      isDeleting={isDeleting}
     >
       {text && (
         <div
@@ -573,9 +694,12 @@ export interface PostCardProps {
   themeGradient?: [string, string];
   className?: string;
   hideReactions?: boolean;
+  hideFrameBadge?: boolean;
   hideCameraPin?: boolean;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  onDelete?: (postId: string) => void;
+  isDeleting?: boolean;
   onClick?: () => void;
 }
 
@@ -590,11 +714,15 @@ export const PostCard = memo<PostCardProps>(
     themeGradient,
     className,
     hideReactions,
+    hideFrameBadge,
     hideCameraPin,
     isSaved,
     onToggleSave,
+    onDelete,
+    isDeleting,
     onClick,
   }) => {
+    const shouldHideFrame = hideFrameBadge ?? hideCameraPin;
     const isMobile = useMediaQuery();
 
     const artistName = artistOverride?.name || post.artistName || "Artist";
@@ -680,6 +808,10 @@ export const PostCard = memo<PostCardProps>(
       effectiveWork?.title ||
       (post.type === "PIN_ORIGINAL" ? effectiveOriginal?.title : undefined);
 
+    const postSaved = isSaved !== undefined ? isSaved : post.isSaved;
+    const postReaction = (post.userReaction as ReactionId) || null;
+    const postTotalReactions = post.totalReactions ?? 0;
+
     const cardContent = (
       <>
         {post.type === "LEDGER_ENTRY" && resolvedLedgerEntry && (
@@ -701,15 +833,19 @@ export const PostCard = memo<PostCardProps>(
             artistSpirit={post.framedRecommendation?.authorSpirit}
             artistOverride={artistOverride}
             themeGradient={themeGradient}
-            isSaved={isSaved}
+            totalReactions={postTotalReactions}
+            initialReaction={postReaction}
+            isSaved={postSaved}
             onToggleSave={onToggleSave}
+            onDelete={onDelete}
+            isDeleting={isDeleting}
           />
         )}
         {(post.type === "PIN_WORK" || post.type === "PIN_ORIGINAL" || Boolean(effectiveWork)) &&
           post.type !== "RECOMMENDATION" &&
           post.type !== "LINE" &&
           post.type !== "LEDGER_ENTRY" && (
-            <PinVariant
+            <FrameVariant
               image={pinnedImage}
               pinnedTitle={pinnedTitle}
               text={post.text}
@@ -728,9 +864,13 @@ export const PostCard = memo<PostCardProps>(
               pinnedWorkId={post.pinnedWorkId}
               pinnedOriginalId={post.pinnedOriginalId}
               hideReactions={hideReactions}
-              hideCameraPin={hideCameraPin}
-              isSaved={isSaved}
+              hideFrameBadge={shouldHideFrame}
+              totalReactions={postTotalReactions}
+              initialReaction={postReaction}
+              isSaved={postSaved}
               onToggleSave={onToggleSave}
+              onDelete={onDelete}
+              isDeleting={isDeleting}
             />
           )}
         {post.type === "RECOMMENDATION" && effectiveRecommendation && (
@@ -746,8 +886,12 @@ export const PostCard = memo<PostCardProps>(
             artistSpirit={post.framedRecommendation?.authorSpirit}
             artistOverride={artistOverride}
             themeGradient={themeGradient}
-            isSaved={isSaved}
+            totalReactions={postTotalReactions}
+            initialReaction={postReaction}
+            isSaved={postSaved}
             onToggleSave={onToggleSave}
+            onDelete={onDelete}
+            isDeleting={isDeleting}
           />
         )}
       </>
@@ -788,7 +932,7 @@ export const PostCard = memo<PostCardProps>(
         aria-label={
           post.type === "LINE"
             ? `Line by ${artistName}`
-            : `Pin by ${artistName}: ${pinnedTitle ?? ""}`
+            : `Framed by ${artistName}: ${pinnedTitle ?? ""}`
         }
       >
         {cardContent}

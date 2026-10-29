@@ -7,6 +7,8 @@ import { ArtistProfile } from "../shared/profile";
 import { apiFetch } from "@/lib/api";
 import { EmbeddedWorkBox } from "../../components/EmbeddedWorkBox";
 import { useAuth } from "../../context/AuthContext";
+import { ConfirmDeleteModal } from "../shared/modals/ConfirmDeleteModal";
+import type { OriginalArtist } from "../../types";
 
 export interface DiscussionCommentItem {
   id: string;
@@ -29,6 +31,10 @@ export interface PaginationMeta {
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
 
+function isUuid(val?: string | null): boolean {
+  return Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val));
+}
+
 function extractWorkCodes(text: string): string[] {
   const matches = text.match(/#(work-[\w-]+)/g);
   return matches ? matches.map((m) => m.slice(1)) : [];
@@ -41,23 +47,42 @@ function getAuthorAvatar(name?: string, avatar?: string): string {
 
 /* ─── Clickable Artist Name ──────────────────────────────────── */
 
-function ArtistName({ name, className }: { name: string; className?: string }) {
+interface ArtistNameProps {
+  name: string;
+  authorId?: string | null;
+  avatar?: string | null;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+function ArtistName({
+  name,
+  authorId,
+  avatar,
+  className,
+  children,
+}: ArtistNameProps) {
   const [showProfile, setShowProfile] = useState(false);
-  const artistData = {
-    id: "fh-001",
+
+  // If authorId is a valid UUID, use it as the target ID for backend profile modal lookup.
+  const targetId = authorId && isUuid(authorId) ? authorId : (name || "Artist");
+  const artistData: OriginalArtist = {
+    id: targetId,
     name: name,
-    image: getAuthorAvatar(name),
+    userName: undefined,
+    image: getAuthorAvatar(name, avatar || undefined),
     bio: "Artist",
     spirit: 0,
     works: 0,
     role: "Artist",
     socials: {},
-    colorTheme: "#fac107,#0f1a42",
+    color_theme: "#fac107,#0f1a42",
   };
 
   return (
     <>
       <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
           setShowProfile(true);
@@ -66,7 +91,7 @@ function ArtistName({ name, className }: { name: string; className?: string }) {
           className || "text-[10px] text-[#e2d7c5]/90"
         } hover:text-[#f2e7d5]`}
       >
-        {name}
+        {children || name}
       </button>
       {showProfile && (
         <ArtistProfile artist={artistData} onClose={() => setShowProfile(false)} />
@@ -148,6 +173,7 @@ function ReplyForm({
           onChange={(e) => setText(e.target.value)}
           placeholder={placeholder}
           rows={2}
+          maxLength={10000}
           className="w-full bg-white/[0.04] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
           onKeyDown={(e) => {
             if (e.key === "Escape") onCancel();
@@ -187,14 +213,16 @@ function CommentNode({
   currentUserName,
   onSubmitReply,
   onDeleteComment,
+  depth = 0,
 }: {
   comment: DiscussionCommentItem;
   setId: string;
   discussionId: string;
   currentUserId?: string;
   currentUserName?: string;
-  onSubmitReply: (parentId: string, text: string) => void;
-  onDeleteComment: (commentId: string, parentId?: string | null) => void;
+  onSubmitReply: (parentId: string, text: string) => Promise<DiscussionCommentItem | null>;
+  onDeleteComment: (commentId: string) => void;
+  depth?: number;
 }) {
   const [replyOpen, setReplyOpen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -203,6 +231,8 @@ function CommentNode({
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [replyCount, setReplyCount] = useState(comment.replyCount || 0);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeletingThis, setIsDeletingThis] = useState(false);
 
   const fetchChildReplies = useCallback(
     async (pageToFetch: number = 1) => {
@@ -215,14 +245,14 @@ function CommentNode({
           const json = await res.json();
           const items: DiscussionCommentItem[] = (json.data ?? []).map((c: any) => ({
             id: c.id,
-            discussionPostId: c.discussionPostId,
-            authorId: c.authorId,
-            authorName: c.authorName || "Artist",
-            authorAvatar: c.authorAvatar,
-            parentId: c.parentId,
+            discussionPostId: c.discussionPostId || c.discussion_post_id,
+            authorId: c.authorId || c.author_id,
+            authorName: c.authorName || c.author_name || "Artist",
+            authorAvatar: c.authorAvatar || c.author_avatar,
+            parentId: c.parentId || c.parent_id,
             content: c.content || "",
-            replyCount: c.replyCount ?? 0,
-            createdAt: c.createdAt || new Date().toISOString(),
+            replyCount: c.replyCount ?? c.reply_count ?? 0,
+            createdAt: c.createdAt || c.created_at || new Date().toISOString(),
           }));
 
           if (pageToFetch === 1) {
@@ -251,16 +281,22 @@ function CommentNode({
     setShowReplies((prev) => !prev);
   };
 
-  const handleAddReply = (text: string) => {
-    onSubmitReply(comment.id, text);
-    setReplyCount((prev) => prev + 1);
+  const handleAddReply = async (text: string) => {
     setReplyOpen(false);
+    const newReply = await onSubmitReply(comment.id, text);
+    if (newReply) {
+      setChildReplies((prev) => [...prev, newReply]);
+      setShowReplies(true);
+      setReplyCount((prev) => prev + 1);
+    }
   };
 
   const handleDeleteChild = async (childId: string) => {
     setDeletingId(childId);
     try {
-      await apiFetch(`/sets/delete/comment/${childId}`, { method: "DELETE" });
+      if (isUuid(childId)) {
+        await apiFetch(`/sets/delete/comment/${childId}`, { method: "DELETE" });
+      }
       setChildReplies((prev) => prev.filter((c) => c.id !== childId));
       setReplyCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
@@ -276,29 +312,35 @@ function CommentNode({
   );
 
   return (
-    <div className="border-t border-white/[0.04] pt-4 mt-3 flex flex-col">
+    <div className={`flex flex-col ${depth === 0 ? "border-t border-white/[0.04] pt-4 mt-3" : "pt-3 mt-1.5"}`}>
       {/* Main Comment */}
       <div className="flex-grow min-w-0">
         <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center gap-2">
-            {(() => {
-              const avatar = getAuthorAvatar(authorName, comment.authorAvatar);
-              return avatar ? (
-                <img
-                  src={avatar}
-                  className="w-7 h-7 rounded-md object-cover border border-white/10 flex-shrink-0"
-                  alt={authorName}
-                />
-              ) : (
-                <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                  {authorName[0]}
-                </div>
-              );
-            })()}
             <ArtistName
               name={authorName}
-              className="text-[10px] text-[#e2d7c5]/90 font-bold tracking-widest"
-            />
+              authorId={comment.authorId}
+              avatar={comment.authorAvatar}
+              className="flex items-center gap-2"
+            >
+              {(() => {
+                const avatar = getAuthorAvatar(authorName, comment.authorAvatar);
+                return avatar ? (
+                  <img
+                    src={avatar}
+                    className={`${depth === 0 ? "w-7 h-7" : "w-6 h-6"} rounded-md object-cover border border-white/10 flex-shrink-0`}
+                    alt={authorName}
+                  />
+                ) : (
+                  <div className={`${depth === 0 ? "w-7 h-7 text-[10px]" : "w-6 h-6 text-[9px]"} rounded-md bg-white/5 border border-white/10 flex items-center justify-center font-bold flex-shrink-0`}>
+                    {authorName[0]}
+                  </div>
+                );
+              })()}
+              <span className="text-[10px] text-[#e2d7c5]/90 font-bold tracking-widest hover:text-[#f2e7d5] transition-colors">
+                {authorName}
+              </span>
+            </ArtistName>
             <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
               · {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "Just now"}
             </span>
@@ -307,9 +349,10 @@ function CommentNode({
           {/* Delete action for author */}
           {isCommentOwner && (
             <button
-              onClick={() => onDeleteComment(comment.id, comment.parentId)}
+              onClick={() => setIsDeleteModalOpen(true)}
+              disabled={isDeletingThis || deletingId === comment.id}
               title="Delete Comment"
-              className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+              className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-30"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -320,12 +363,17 @@ function CommentNode({
 
         <div className="flex items-center gap-4 mt-2.5">
           <button
+            disabled={!isUuid(comment.id)}
             onClick={() => setReplyOpen((v) => !v)}
             className={`text-[9px] font-bold uppercase tracking-widest transition-colors cursor-pointer ${
-              replyOpen ? "text-white/80" : "text-white/30 hover:text-white/60"
+              !isUuid(comment.id)
+                ? "text-white/20 cursor-not-allowed"
+                : replyOpen
+                ? "text-white/80"
+                : "text-white/30 hover:text-white/60"
             }`}
           >
-            {replyOpen ? "Cancel" : "Reply"}
+            {!isUuid(comment.id) ? "Syncing..." : replyOpen ? "Cancel" : "Reply"}
           </button>
 
           {replyCount > 0 && (
@@ -347,67 +395,28 @@ function CommentNode({
         )}
       </div>
 
-      {/* Immediate 1-Level Child Replies */}
+      {/* Nested Child Replies */}
       {showReplies && (
-        <div className="ml-5 mt-3 pl-4 border-l border-white/10 flex flex-col gap-3">
+        <div className={`mt-2 border-l border-white/10 flex flex-col gap-2 ${depth < 3 ? "ml-4 sm:ml-5 pl-3 sm:pl-4" : "ml-2.5 pl-2.5"}`}>
           {loadingReplies && childReplies.length === 0 ? (
             <div className="flex items-center gap-2 text-white/30 text-[10px] font-mono py-2">
               <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
               <span>Fetching replies...</span>
             </div>
           ) : (
-            childReplies.map((child) => {
-              const childAuthor = child.authorName || "Artist";
-              const isChildOwner = Boolean(
-                currentUserId && child.authorId && String(child.authorId) === String(currentUserId)
-              );
-
-              return (
-                <div key={child.id} className="pt-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      {(() => {
-                        const avatar = getAuthorAvatar(childAuthor, child.authorAvatar);
-                        return avatar ? (
-                          <img
-                            src={avatar}
-                            className="w-6 h-6 rounded-md object-cover border border-white/10 flex-shrink-0"
-                            alt={childAuthor}
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
-                            {childAuthor[0]}
-                          </div>
-                        );
-                      })()}
-                      <ArtistName
-                        name={childAuthor}
-                        className="text-[10px] text-[#e2d7c5]/90 font-bold tracking-widest"
-                      />
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
-                        · {child.createdAt ? new Date(child.createdAt).toLocaleDateString() : "Just now"}
-                      </span>
-                    </div>
-
-                    {isChildOwner && (
-                      <button
-                        onClick={() => handleDeleteChild(child.id)}
-                        disabled={deletingId === child.id}
-                        title="Delete Reply"
-                        className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-30"
-                      >
-                        {deletingId === child.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3 h-3" />
-                        )}
-                      </button>
-                    )}
-                  </div>
-                  <RichText text={child.content} />
-                </div>
-              );
-            })
+            childReplies.map((child) => (
+              <CommentNode
+                key={child.id}
+                comment={child}
+                setId={setId}
+                discussionId={discussionId}
+                currentUserId={currentUserId}
+                currentUserName={currentUserName}
+                onSubmitReply={onSubmitReply}
+                onDeleteComment={handleDeleteChild}
+                depth={depth + 1}
+              />
+            ))
           )}
 
           {childMeta && childMeta.hasMore && (
@@ -421,12 +430,28 @@ function CommentNode({
           )}
         </div>
       )}
+
+      {/* Confirmation Modal for Comment Deletion */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={async () => {
+          setIsDeletingThis(true);
+          try {
+            await onDeleteComment(comment.id);
+          } finally {
+            setIsDeletingThis(false);
+            setIsDeleteModalOpen(false);
+          }
+        }}
+        title="Delete Comment?"
+        description="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Keep"
+        isDeleting={isDeletingThis}
+      />
     </div>
   );
-}
-
-function isUuid(val?: string | null): boolean {
-  return Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val));
 }
 
 /* ─── Main Discussion Detail Page ────────────────────────────────── */
@@ -442,8 +467,42 @@ export function DiscussionPage() {
   const [loadingPost, setLoadingPost] = useState(true);
   const [loadingComments, setLoadingComments] = useState(false);
   const [rootText, setRootText] = useState("");
+  const [isPostDeleteModalOpen, setIsPostDeleteModalOpen] = useState(false);
+  const [isDeletingPost, setIsDeletingPost] = useState(false);
 
   const effectiveSetId = thought?.setId || (isUuid(routeSetId) ? routeSetId : null);
+
+  const isPostOwner = Boolean(
+    currentArtist?.id &&
+      thought?.authorId &&
+      String(thought.authorId) === String(currentArtist.id)
+  );
+
+  const handleDeleteDiscussionPost = async () => {
+    if (!discussionId) return;
+    setIsDeletingPost(true);
+    try {
+      let deleted = false;
+      if (isUuid(discussionId)) {
+        const res1 = await apiFetch(`/sets/delete/discussion/${discussionId}`, { method: "DELETE" }).catch(() => null);
+        if (res1?.ok) deleted = true;
+      }
+      if (!deleted && effectiveSetId) {
+        const res2 = await apiFetch(`/sets/${effectiveSetId}/discussions/${discussionId}`, { method: "DELETE" }).catch(() => null);
+        if (res2?.ok) deleted = true;
+      }
+      if (!deleted && effectiveSetId) {
+        const res3 = await apiFetch(`/sets/${effectiveSetId}/delete/discussion/${discussionId}`, { method: "DELETE" }).catch(() => null);
+        if (res3?.ok) deleted = true;
+      }
+      navigate(effectiveSetId ? `/sets/${effectiveSetId}` : "/sets", { replace: true });
+    } catch (err) {
+      console.error("[DiscussionPage] Failed to delete discussion post:", err);
+    } finally {
+      setIsDeletingPost(false);
+      setIsPostDeleteModalOpen(false);
+    }
+  };
 
   // Stage 1: Fetch Parent Discussion Post Details
   useEffect(() => {
@@ -497,6 +556,7 @@ export function DiscussionPage() {
             title: postData.title,
             content: postData.body || postData.content,
             text: postData.body || postData.content,
+            authorId: postData.authorId || postData.author_id,
             authorName: postData.authorName || postData.author_name || "Artist",
             authorAvatar: postData.authorAvatar || postData.author_avatar,
             commentCount: postData.commentCount ?? postData.comment_count ?? 0,
@@ -571,36 +631,65 @@ export function DiscussionPage() {
   }, [discussionId, effectiveSetId, fetchTopComments]);
 
   /** Called when user submits an inline reply to a comment */
-  const handleSubmitReply = async (parentId: string, text: string) => {
+  const handleSubmitReply = async (
+    parentId: string,
+    text: string
+  ): Promise<DiscussionCommentItem | null> => {
     if (!currentArtist) {
       navigate("/profile/login");
-      return;
+      return null;
     }
 
-    const newReply: DiscussionCommentItem = {
-      id: `rep-${Date.now()}`,
-      discussionPostId: discussionId!,
+    if (!isUuid(parentId)) {
+      console.error("[DiscussionPage] Cannot reply: parent comment does not have a valid UUID yet:", parentId);
+      return null;
+    }
+
+    if (!effectiveSetId || !discussionId) return null;
+
+    const tempReplyId = `temp-${Date.now()}`;
+    const optimisticReply: DiscussionCommentItem = {
+      id: tempReplyId,
+      discussionPostId: discussionId,
       authorId: currentArtist?.id || "user-current",
       authorName: currentArtist?.name || "YOU (ARTIST)",
+      authorAvatar: currentArtist?.image,
       content: text,
       replyCount: 0,
       createdAt: new Date().toISOString(),
       parentId: parentId,
     };
 
-    if (effectiveSetId && discussionId) {
-      try {
-        await apiFetch(`/sets/${effectiveSetId}/new/comment`, {
-          method: "POST",
-          body: JSON.stringify({
-            discussion_id: discussionId,
-            parent_id: parentId,
-            content: text,
-          }),
-        });
-      } catch (err) {
-        console.error("[DiscussionPage] Failed to post reply:", err);
+    try {
+      const res = await apiFetch(`/sets/${effectiveSetId}/new/comment`, {
+        method: "POST",
+        body: JSON.stringify({
+          discussion_id: discussionId,
+          parent_id: parentId,
+          content: text,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json().catch(() => null);
+        const realCommentId = json?.comment_id || json?.data?.comment_id || json?.id;
+        return {
+          ...optimisticReply,
+          id: realCommentId || tempReplyId,
+        };
+      } else {
+        const errorJson = await res.json().catch(() => null);
+        const errorMsg =
+          errorJson?.message ||
+          errorJson?.error ||
+          res.apiError?.message ||
+          `Failed to post reply (${res.status})`;
+        console.error("[DiscussionPage] Failed to post reply:", errorMsg);
+        return null;
       }
+    } catch (err) {
+      console.error("[DiscussionPage] Failed to post reply:", err);
+      return null;
     }
   };
 
@@ -612,10 +701,12 @@ export function DiscussionPage() {
         prev ? { ...prev, commentCount: Math.max(0, (prev.commentCount || 0) - 1) } : prev
       );
     }
-    try {
-      await apiFetch(`/sets/delete/comment/${commentId}`, { method: "DELETE" });
-    } catch (err) {
-      console.error("[DiscussionPage] Failed to delete comment:", err);
+    if (isUuid(commentId)) {
+      try {
+        await apiFetch(`/sets/delete/comment/${commentId}`, { method: "DELETE" });
+      } catch (err) {
+        console.error("[DiscussionPage] Failed to delete comment:", err);
+      }
     }
   };
 
@@ -628,12 +719,14 @@ export function DiscussionPage() {
     }
     if (!rootText.trim() || !effectiveSetId || !discussionId) return;
     const textToPost = rootText.trim();
+    const tempId = `temp-${Date.now()}`;
 
     const newComment: DiscussionCommentItem = {
-      id: `rep-${Date.now()}`,
+      id: tempId,
       discussionPostId: discussionId,
       authorId: currentArtist?.id || "user-current",
       authorName: currentArtist?.name || "YOU (ARTIST)",
+      authorAvatar: currentArtist?.image,
       content: textToPost,
       replyCount: 0,
       createdAt: new Date().toISOString(),
@@ -650,7 +743,7 @@ export function DiscussionPage() {
     }
 
     try {
-      await apiFetch(`/sets/${effectiveSetId}/new/comment`, {
+      const res = await apiFetch(`/sets/${effectiveSetId}/new/comment`, {
         method: "POST",
         body: JSON.stringify({
           discussion_id: discussionId,
@@ -658,8 +751,39 @@ export function DiscussionPage() {
           content: textToPost,
         }),
       });
+
+      if (res.ok) {
+        const json = await res.json().catch(() => null);
+        const realCommentId = json?.comment_id || json?.data?.comment_id || json?.id;
+        if (realCommentId) {
+          setTopComments((prev) =>
+            prev.map((c) => (c.id === tempId ? { ...c, id: realCommentId } : c))
+          );
+        }
+      } else {
+        const errorJson = await res.json().catch(() => null);
+        const errorMsg =
+          errorJson?.message ||
+          errorJson?.error ||
+          res.apiError?.message ||
+          `Failed to post comment (${res.status})`;
+        console.error("[DiscussionPage] Failed to post comment:", errorMsg);
+        // Roll back optimistic comment on failure
+        setTopComments((prev) => prev.filter((c) => c.id !== tempId));
+        if (thought) {
+          setThought((prev: any) =>
+            prev ? { ...prev, commentCount: Math.max(0, (prev.commentCount || 0) - 1) } : prev
+          );
+        }
+      }
     } catch (err) {
       console.error("[DiscussionPage] Failed to post comment:", err);
+      setTopComments((prev) => prev.filter((c) => c.id !== tempId));
+      if (thought) {
+        setThought((prev: any) =>
+          prev ? { ...prev, commentCount: Math.max(0, (prev.commentCount || 0) - 1) } : prev
+        );
+      }
     }
   };
 
@@ -707,11 +831,25 @@ export function DiscussionPage() {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 mt-2 md:mt-4 flex flex-col">
         {/* Original Post */}
         <div className="pb-6 mb-2 border-b border-white/[0.06]">
-          <div className="flex items-center gap-2 text-amber-500/90 mb-3">
-            <MessageSquare className="w-4 h-4" />
-            <span className="text-[9px] font-black uppercase tracking-[0.2em]">
-              Set Discussion
-            </span>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2 text-amber-500/90">
+              <MessageSquare className="w-4 h-4" />
+              <span className="text-[9px] font-black uppercase tracking-[0.2em]">
+                Set Discussion
+              </span>
+            </div>
+
+            {isPostOwner && (
+              <button
+                onClick={() => setIsPostDeleteModalOpen(true)}
+                disabled={isDeletingPost}
+                title="Delete Discussion Post"
+                className="p-1.5 px-2.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest disabled:opacity-30"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Post</span>
+              </button>
+            )}
           </div>
 
           <h1 className="font-sans font-black text-xl sm:text-2xl uppercase tracking-wide text-white mb-3 leading-tight">
@@ -732,6 +870,8 @@ export function DiscussionPage() {
             <span className="text-[11px] text-white/40 mr-1">—</span>
             <ArtistName
               name={thought.authorName}
+              authorId={thought.authorId}
+              avatar={thought.authorAvatar}
               className="text-[11px] text-[#e2d7c5]/90 font-bold"
             />
             <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">
@@ -761,6 +901,7 @@ export function DiscussionPage() {
                 onChange={(e) => setRootText(e.target.value)}
                 placeholder="Cast a new comment into the discussion…"
                 rows={2}
+                maxLength={10000}
                 className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -830,6 +971,18 @@ export function DiscussionPage() {
           )}
         </div>
       </main>
+
+      {/* Confirmation Modal for Discussion Post Deletion */}
+      <ConfirmDeleteModal
+        isOpen={isPostDeleteModalOpen}
+        onClose={() => setIsPostDeleteModalOpen(false)}
+        onConfirm={handleDeleteDiscussionPost}
+        title="Delete Discussion Post?"
+        description={`Are you sure you want to permanently delete "${postTitle}"? All associated comments will also be removed. This action cannot be undone.`}
+        confirmLabel="Delete Post"
+        cancelLabel="Keep"
+        isDeleting={isDeletingPost}
+      />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Sun, Users, Film } from "lucide-react";
+import { Sun, Users, Film, Heart } from "lucide-react";
 
 interface OriginalStatsProps {
   stats: {
     presence: string | number;
     members: string | number;
     releases: string | number;
+    favorites?: string | number;
   };
   signature?: {
     normalizedSurgeDensity: number;
@@ -57,6 +58,19 @@ export function OriginalStats({ stats, signature }: OriginalStatsProps) {
               Works
             </span>
           </div>
+          {stats.favorites !== undefined && (
+            <div className="flex flex-col pointer-events-auto">
+              <div className="flex items-center gap-2 mb-1">
+                <Heart className="w-3 h-3 text-amber-400 fill-amber-400/20" />
+                <span className="text-lg font-bold drop-shadow-2xl">
+                  {stats.favorites}
+                </span>
+              </div>
+              <span className="text-[8px] font-bold uppercase tracking-widest text-white/50 drop-shadow-2xl">
+                Favorites
+              </span>
+            </div>
+          )}
         </div>
       </motion.div>
     </AnimatePresence>

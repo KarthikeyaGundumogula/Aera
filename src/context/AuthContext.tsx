@@ -7,33 +7,37 @@ import { DEFAULT_AVATAR_PLACEHOLDER } from "@/constants/placeholders";
  * Maps a raw WorkPreviewCard from GET /profiles/{id}/works to a TheatreItem
  * for use throughout Aera's UI.
  */
-function mapBackendWorkToTheatreItem(raw: {
-  id: string;
+export function mapBackendWorkToTheatreItem(raw: {
+  id: string | number;
   title?: string | null;
   work_type?: string;
   workType?: string;
   thumbnail?: string | null;
+  image?: string | null;
   src_id?: string | null;
   srcId?: string | null;
   platform?: string | null;
   artistId?: string;
   artist?: string;
   artistAvatar?: string;
+  category?: string;
+  aspectRatio?: number;
 }): TheatreItem {
-  const rawCategory = raw.workType || "Edit";
+  const rawCategory = raw.workType || raw.work_type || raw.category || "Edit";
   const category: TheatreItem["category"] =
     rawCategory.toUpperCase() === "EDIT"
       ? "Edit"
       : rawCategory.toUpperCase() === "POSTER"
       ? "Poster"
-      : rawCategory.toUpperCase() === "SCRIPT"
+      : rawCategory.toUpperCase() === "SCRIPT" || rawCategory.toUpperCase() === "STORYBOARD"
       ? "Storyboard"
       : "Edit";
 
-  let thumbnail = raw.thumbnail || undefined;
-  let srcId: string | undefined = raw.srcId || undefined;
+  let srcId: string | undefined = raw.srcId || raw.src_id || undefined;
   let platform: TheatreItem["platform"] | undefined =
-    (raw.platform?.toLowerCase() as TheatreItem["platform"]) || undefined;
+    (raw.platform?.toLowerCase() as TheatreItem["platform"]) ||
+    (srcId && /^[a-zA-Z0-9_-]{11}$/.test(srcId) ? "youtube" : undefined);
+  let thumbnail = raw.thumbnail || raw.image || undefined;
 
   if (thumbnail && thumbnail.includes("youtube")) {
     const match = thumbnail.match(/vi\/([^/]+)\//);
@@ -45,20 +49,24 @@ function mapBackendWorkToTheatreItem(raw: {
 
   // Set thumbnail for YouTube edits if missing
   if (category === "Edit" && srcId && !thumbnail && (!platform || platform === "youtube")) {
-    thumbnail = `https://img.youtube.com/vi/${srcId}/hqdefault.jpg`;
+    thumbnail = `https://img.youtube.com/vi/${srcId}/maxresdefault.jpg`;
     platform = platform || "youtube";
+  } else if ((category === "Poster" || category === "Storyboard") && srcId && !thumbnail) {
+    thumbnail = srcId;
   }
 
   return {
-    id: raw.id,
+    id: String(raw.id),
     title: raw.title ?? undefined,
     category,
+    thumbnail,
     image: thumbnail,
     srcId,
-    platform,
+    platform: platform || "youtube",
     artistId: raw.artistId,
     artist: raw.artist,
     artistAvatar: raw.artistAvatar,
+    aspectRatio: raw.aspectRatio,
   };
 }
 

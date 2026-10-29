@@ -150,7 +150,18 @@ export async function fetchSearchResults(
 
   const res = await apiFetch(buildSearchUrl(category, trimmed), { signal });
 
-  if (!res.ok) throw new Error(`Search request failed with status ${res.status}`);
+  if (!res.ok) {
+    if (res.status === 429) {
+      throw new Error('Too many search requests. Please wait a moment.');
+    }
+    const errorJson = await res.json().catch(() => null);
+    const msg =
+      errorJson?.message ||
+      errorJson?.error ||
+      res.apiError?.message ||
+      `Search request failed (${res.status})`;
+    throw new Error(msg);
+  }
 
   const data = await res.json().catch(() => ({}));
   return {
@@ -227,9 +238,13 @@ export function useSearchQuery(
         if (controller.signal.aborted) return;
         setCache(cacheKey, fresh);
         setResults(fresh);
-      } catch (err) {
+      } catch (err: any) {
         if (controller.signal.aborted) return;
-        setError('Search unavailable. Please try again.');
+        const msg =
+          err instanceof Error && err.message
+            ? err.message
+            : 'Search service currently unavailable. Please try again.';
+        setError(msg);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }

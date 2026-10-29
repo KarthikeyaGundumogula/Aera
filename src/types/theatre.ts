@@ -7,6 +7,7 @@ export interface TheatreItem {
   artist?: string;
   artistId?: string;
   artistAvatar?: string;
+  artistHandle?: string;
   thumbnail?: string | null;
   image?: string;
   platform?: 'youtube' | 'twitter' | string;

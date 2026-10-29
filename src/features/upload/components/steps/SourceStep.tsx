@@ -25,7 +25,7 @@ function extractYoutubeId(url: string): string | null {
   const trimmed = url.trim();
   const matchV = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
   if (matchV) return matchV[1];
-  const matchPath = trimmed.match(/(?:youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+  const matchPath = trimmed.match(/(?:youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_-]{11})/);
   if (matchPath) return matchPath[1];
   if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
   return null;
@@ -364,6 +364,7 @@ export function SourceStep({
                       <textarea 
                         value={page.text}
                         onChange={(e) => updatePageText(idx, e.target.value)}
+                        maxLength={5000}
                         placeholder="Add cinematic notes... Use **word** for bold text."
                         className="flex-1 bg-white/5 border border-white/5 rounded-xl p-3 text-[11px] leading-relaxed font-medium outline-none focus:border-white/20 transition-all resize-none placeholder:text-white/5"
                       />

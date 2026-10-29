@@ -197,13 +197,20 @@ export const PersonProfile = memo(({ person, delay = 0, type = 'Star' }: PersonP
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsOpen(false);
-                          const profileId = `profile-${person.actorName
-                            .toLowerCase()
-                            .replace(/ /g, "-")
-                            .replace(/\./g, "")}`;
-                          navigate(`/profile/${profileId}`);
+                          const targetProfile =
+                            person.id ||
+                            person.userName ||
+                            (person.actorName
+                              ? person.actorName
+                                  .toLowerCase()
+                                  .replace(/ /g, "-")
+                                  .replace(/\./g, "")
+                              : "");
+                          if (targetProfile) {
+                            navigate(`/profile/${targetProfile}`);
+                          }
                         }}
-                        className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md"
+                        className="bg-[#f0f0f0] text-[#111] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-xl backdrop-blur-md cursor-pointer"
                       >
                         Visit
                       </button>

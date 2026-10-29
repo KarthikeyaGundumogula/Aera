@@ -39,9 +39,22 @@ export function CinematicInput({
         >
           {label}
         </label>
-        {sublabel && (
-          <span className="text-[9px] text-white/20 tracking-wide">{sublabel}</span>
-        )}
+        <div className="flex items-center gap-2">
+          {sublabel && (
+            <span className="text-[9px] text-white/20 tracking-wide">{sublabel}</span>
+          )}
+          {maxLength && (
+            <span
+              className={`text-[9px] font-mono tabular-nums ${
+                value.length >= maxLength ? "text-amber-400 font-bold" : "text-white/20"
+              }`}
+            >
+              {value.length >= maxLength
+                ? `Limit reached (${maxLength.toLocaleString()})`
+                : `${value.length.toLocaleString()} / ${maxLength.toLocaleString()}`}
+            </span>
+          )}
+        </div>
       </div>
       <Tag
         id={id}

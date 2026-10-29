@@ -46,7 +46,7 @@ export default function OriginalReleaseUploadPage() {
     return () => {
       isMounted = false;
     };
-  }, [id, original]);
+  }, [id]);
 
   if (loading) {
     return (

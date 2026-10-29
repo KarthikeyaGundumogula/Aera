@@ -32,6 +32,7 @@ interface LedgerWallCardProps {
   entry: LedgerItem;
   /** When true (Hall context): card is a peek — show explicit "View Entry" button, no tap nav */
   previewOnly?: boolean;
+  onOpenCollection?: (entry: LedgerItem) => void;
   onOpenTaggedWorks?: (entry: LedgerItem) => void;
   onClick?: () => void;
 }
@@ -45,10 +46,12 @@ export const LedgerWallCard = memo(function LedgerWallCard({
   post,
   entry,
   previewOnly = false,
+  onOpenCollection,
   onOpenTaggedWorks,
   onClick,
 }: LedgerWallCardProps) {
     const navigate = useNavigate();
+    const handleCollectionClick = onOpenCollection ?? onOpenTaggedWorks;
     const isWatched = entry.status === "watched";
 
     const handleTap = () => {
@@ -195,10 +198,10 @@ export const LedgerWallCard = memo(function LedgerWallCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (onOpenTaggedWorks) {
-                  onOpenTaggedWorks(entry);
+                if (handleCollectionClick) {
+                  handleCollectionClick(entry);
                 } else {
-                  navigate(`/tagged-works/${entry.originalId}`);
+                  navigate(`/saved-works/${entry.originalId}?mode=collection`);
                 }
               }}
               className="
@@ -209,7 +212,7 @@ export const LedgerWallCard = memo(function LedgerWallCard({
               "
             >
               <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>Check Collection ({(entry.taggedWorks || []).length || 3})</span>
+              <span>Check Collection</span>
             </button>
 
             <button

@@ -48,7 +48,7 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isPasswordSaved, setIsPasswordSaved] = useState(false);
 
-  const BIO_MAX = 200;
+  const BIO_MAX = 100;
 
   /* ── handlers ─────────────────────────────────────────────────────── */
   const handlePortraitPick = useCallback(
@@ -181,16 +181,24 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
         </span>
 
         {/* Name inline edit with visual hint */}
-        <div className="relative group/name w-full max-w-xs flex items-center justify-center gap-2">
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => updateField("name", e.target.value)}
-            className="w-full text-center bg-transparent text-xl font-black tracking-tight outline-none border-b border-transparent hover:border-white/10 focus:border-white/30 transition-all py-1 placeholder:text-white/10"
-            placeholder="Your name"
-            id="edit-name"
-          />
-          <Pencil className="w-3 h-3 text-white/40 md:text-white/20 group-hover/name:text-white/40 group-focus-within/name:text-white/60 transition-colors pointer-events-none" />
+        <div className="flex flex-col items-center gap-1 w-full max-w-xs">
+          <div className="relative group/name w-full flex items-center justify-center gap-2">
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => updateField("name", e.target.value)}
+              maxLength={15}
+              className="w-full text-center bg-transparent text-xl font-black tracking-tight outline-none border-b border-transparent hover:border-white/10 focus:border-white/30 transition-all py-1 placeholder:text-white/10"
+              placeholder="Your name"
+              id="edit-name"
+            />
+            <Pencil className="w-3 h-3 text-white/40 md:text-white/20 group-hover/name:text-white/40 group-focus-within/name:text-white/60 transition-colors pointer-events-none" />
+          </div>
+          {formData.name.length >= 15 && (
+            <span className="text-[9px] font-mono text-amber-400 font-bold">
+              Limit reached (15 / 15 chars)
+            </span>
+          )}
         </div>
 
         {/* Bio with visual hint */}
@@ -209,10 +217,10 @@ export function ProfileEditCard({ artist, onSave }: ProfileEditCardProps) {
           </div>
           <span
             className={`absolute right-3 bottom-2 text-[9px] font-bold tabular-nums pointer-events-none transition-colors ${
-              formData.bio.length >= BIO_MAX ? "text-white/50" : "text-white/15"
+              formData.bio.length >= BIO_MAX ? "text-amber-400 font-bold" : "text-white/15"
             }`}
           >
-            {formData.bio.length}/{BIO_MAX}
+            {formData.bio.length >= BIO_MAX ? `Limit reached (${BIO_MAX}/${BIO_MAX})` : `${formData.bio.length}/${BIO_MAX}`}
           </span>
         </div>
       </div>
@@ -527,6 +535,7 @@ function SocialInput({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          maxLength={100}
           placeholder="handle"
           autoComplete="off"
           className="flex-1 min-w-0 bg-transparent text-sm font-medium text-white placeholder:text-white/10 outline-none"

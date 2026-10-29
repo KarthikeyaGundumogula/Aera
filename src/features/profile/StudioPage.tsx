@@ -1,7 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Film, Plus, X, Shield, ShieldCheck, Check, AlertCircle, Bookmark } from "lucide-react";
+import {
+  Film,
+  Plus,
+  X,
+  Shield,
+  ShieldCheck,
+  Check,
+  AlertCircle,
+  Bookmark,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
 import { useAuth, formatColorTheme } from "../../context/AuthContext";
 import { StudioWorkCard } from "./components/StudioWorkCard";
 import { LiveStagePreview } from "./components/LiveStagePreview";
@@ -13,6 +24,61 @@ import { PasswordResetModal } from "./components/PasswordResetModal";
 import { UnsavedChangesModal } from "./components/UnsavedChangesModal";
 import { EmptyState, EMPTY_PRESETS } from "../../components/EmptyState";
 import { FHLoader } from "../../components/FHLoader";
+import { apiFetch } from "../../lib/api";
+import type { WallPost } from "../../types/wall";
+import type { DiscussionItem } from "@/types/discussions";
+import type { Recommendation } from "@/types/recommendations";
+import { PostCard } from "../../components/PostCard";
+import { DiscussionCard } from "../shared/discussions/DiscussionCard";
+import { FeedRecommendationCard } from "../../components/FeedRecommendationCard";
+import { ConfirmDeleteModal } from "../shared/modals/ConfirmDeleteModal";
+import { PostLineModal } from "../../components/PostLineModal";
+import { CreateRecommendationModal } from "../../components/CreateRecommendationModal";
+
+const DEFAULT_AVATAR_PLACEHOLDER = "/assets/profile_card.png";
+
+function mapBackendWallPost(raw: any): WallPost {
+  const framedWorkId = raw.framedWorkId || raw.pinnedWorkId;
+  const framedOriginalId = raw.framedOriginalId || raw.pinnedOriginalId;
+  const framedRecommendationId = raw.framedRecommendationId || raw.pinnedRecommendationId;
+
+  let type: WallPost["type"] = "LINE";
+  if (framedWorkId) type = "PIN_WORK";
+  else if (framedOriginalId) type = "PIN_ORIGINAL";
+  else if (framedRecommendationId) type = "RECOMMENDATION";
+
+  return {
+    id: raw.id,
+    artistId: raw.artistId || "",
+    artistName: raw.artistName || "Artist",
+    artistImage: raw.artistImage || DEFAULT_AVATAR_PLACEHOLDER,
+    type,
+    text: raw.text ?? undefined,
+    framedWorkId: framedWorkId ?? undefined,
+    pinnedWorkId: framedWorkId ?? undefined,
+    framedWork: raw.framedWork ?? undefined,
+    framedOriginalId: framedOriginalId ?? undefined,
+    pinnedOriginalId: framedOriginalId ?? undefined,
+    framedOriginal: raw.framedOriginal ?? undefined,
+    framedRecommendationId: framedRecommendationId ?? undefined,
+    pinnedRecommendationId: framedRecommendationId ?? undefined,
+    framedRecommendation: raw.framedRecommendation ?? undefined,
+    totalReactions: raw.totalReactions,
+    totalSaves: raw.totalSaves,
+    isSaved: raw.isSaved,
+    userReaction: raw.userReaction,
+    postedAt: raw.postedAt,
+  };
+}
+
+type StudioTab = "works" | "wall" | "discussions" | "recommendations";
+
+interface DeleteTarget {
+  type: "work" | "wall_post" | "discussion" | "recommendation";
+  id: string;
+  originalId?: string;
+  title?: string;
+}
 
 export default function StudioPage() {
   const { currentArtist, userWorks, fetchUserWorks, updateProfile, updateWorkTitle, deleteWork, refreshProfile } = useAuth();
@@ -44,7 +110,69 @@ export default function StudioPage() {
   const isNavigatingRef = useRef(false);
   const trapActiveRef = useRef(false);
 
-  // Sync profile details and fetch works on-demand when Studio mounts
+  // Studio Hub Tabs & Collections
+  const [activeStudioTab, setActiveStudioTab] = useState<StudioTab>("works");
+  const [wallPosts, setWallPosts] = useState<WallPost[]>([]);
+  const [discussions, setDiscussions] = useState<DiscussionItem[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+
+  // Creation Modals in Studio
+  const [isLineModalOpen, setIsLineModalOpen] = useState(false);
+  const [isRecModalOpen, setIsRecModalOpen] = useState(false);
+
+  // Secondary Confirmation Delete Target
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchWallPosts = useCallback(async () => {
+    if (!currentArtist?.id) return;
+    try {
+      const res = await apiFetch(`/profiles/${currentArtist.id}/wall?limit=50`);
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data ?? [];
+        setWallPosts(items.map(mapBackendWallPost));
+      }
+    } catch (e) {
+      console.warn("[StudioPage] Failed to fetch wall posts:", e);
+    }
+  }, [currentArtist?.id]);
+
+  const fetchDiscussions = useCallback(async () => {
+    if (!currentArtist?.id) return;
+    try {
+      const res = await apiFetch("/thoughts");
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data ?? [];
+        const mine = items.filter((d: any) =>
+          String(d.author_id || d.authorId || d.author?.id) === String(currentArtist.id)
+        );
+        setDiscussions(mine);
+      }
+    } catch (e) {
+      console.warn("[StudioPage] Failed to fetch discussions:", e);
+    }
+  }, [currentArtist?.id]);
+
+  const fetchRecommendations = useCallback(async () => {
+    if (!currentArtist?.id) return;
+    try {
+      const res = await apiFetch("/library/recommendations");
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data ?? [];
+        const mine = items.filter((r: any) =>
+          String(r.artist?.id || r.artistId || r.artist_id || r.author?.id) === String(currentArtist.id)
+        );
+        setRecommendations(mine);
+      }
+    } catch (e) {
+      console.warn("[StudioPage] Failed to fetch recommendations:", e);
+    }
+  }, [currentArtist?.id]);
+
+  // Sync profile details and fetch all creations on-demand when Studio mounts
   useEffect(() => {
     if (currentArtist) {
       setStageName(currentArtist.name || "");
@@ -59,10 +187,52 @@ export default function StudioPage() {
       setThemeTextColor(currentArtist.themeTextColor || "#fac107");
       setThemeBgColor(currentArtist.themeBgColor || "#0f1a42");
 
-      // On-demand fetch of creator works only when Studio is active
+      // On-demand fetch of creator works and all creations
       fetchUserWorks(currentArtist.id);
+      fetchWallPosts();
+      fetchDiscussions();
+      fetchRecommendations();
     }
-  }, [currentArtist, fetchUserWorks]);
+  }, [currentArtist, fetchUserWorks, fetchWallPosts, fetchDiscussions, fetchRecommendations]);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      if (deleteTarget.type === "work") {
+        await deleteWork(deleteTarget.id);
+      } else if (deleteTarget.type === "wall_post") {
+        const res = await apiFetch(`/artists/delete/wall_post/${deleteTarget.id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          setWallPosts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+        }
+      } else if (deleteTarget.type === "discussion") {
+        const res = await apiFetch(`/sets/delete/discussion_post/${deleteTarget.id}`, {
+          method: "DELETE",
+        }).catch(() => null);
+        const resFallback = !res?.ok
+          ? await apiFetch(`/sets/delete/discussion/${deleteTarget.id}`, { method: "DELETE" }).catch(() => null)
+          : res;
+        if (res?.ok || resFallback?.ok) {
+          setDiscussions((prev) => prev.filter((d) => d.id !== deleteTarget.id));
+        }
+      } else if (deleteTarget.type === "recommendation") {
+        const res = await apiFetch(`/library/recommendations/${deleteTarget.id}/delete`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          setRecommendations((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+        }
+      }
+    } catch (e) {
+      console.error("[StudioPage] Failed to delete item:", e);
+    } finally {
+      setIsDeleting(false);
+      setDeleteTarget(null);
+    }
+  };
 
   const normalizeHex = (hex?: string, defaultHex = "#FAC107") => {
     if (!hex) return defaultHex.toUpperCase();
@@ -437,55 +607,200 @@ export default function StudioPage() {
         </section>
 
         <section className="flex flex-col gap-6">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          {/* Studio Management Tabs Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
             <div className="flex items-center gap-3">
               <Film className="w-5 h-5 text-white/40" />
               <div>
                 <h2 className="text-sm font-black uppercase tracking-[0.25em] text-white/80">
-                  Studio
+                  Studio Hub
                 </h2>
                 <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest mt-0.5">
-                  Releases ({userWorks.length} items)
+                  Manage creations & releases
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <button
                 onClick={() => handleNavigation("/saved")}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 font-black text-[9px] uppercase tracking-[0.2em] transition-all cursor-pointer"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 font-black text-[9px] uppercase tracking-[0.2em] transition-all cursor-pointer"
               >
                 <Bookmark className="w-4 h-4 fill-amber-400/20" />
                 Saved Items
               </button>
-              <button
-                onClick={() => handleNavigation("/works/new")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                New Release
-              </button>
+
+              {activeStudioTab === "works" && (
+                <button
+                  onClick={() => handleNavigation("/works/new")}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Release
+                </button>
+              )}
+
+              {activeStudioTab === "wall" && (
+                <button
+                  onClick={() => setIsLineModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Post Line
+                </button>
+              )}
+
+              {activeStudioTab === "discussions" && (
+                <button
+                  onClick={() => handleNavigation("/sets")}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Explore Sets
+                </button>
+              )}
+
+              {activeStudioTab === "recommendations" && (
+                <button
+                  onClick={() => setIsRecModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black hover:bg-white/90 font-black text-[9px] uppercase tracking-[0.2em] shadow-md transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Recommend
+                </button>
+              )}
             </div>
           </div>
 
-          {userWorks.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {userWorks.map((work) => (
-                <StudioWorkCard
-                  key={work.id}
-                  item={work}
-                  onRename={(newTitle) => updateWorkTitle(work.id, newTitle)}
-                  onDelete={() => deleteWork(work.id)}
-                />
-              ))}
+          {/* Sub-Navigation Tab Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+            {[
+              { id: "works" as const, label: "Releases", icon: Film, count: userWorks.length },
+              { id: "wall" as const, label: "Wall Posts", icon: MessageSquare, count: wallPosts.length },
+              { id: "discussions" as const, label: "Discussions", icon: MessageSquare, count: discussions.length },
+              { id: "recommendations" as const, label: "Recommendations", icon: Sparkles, count: recommendations.length },
+            ].map((tab) => {
+              const TabIcon = tab.icon;
+              const isActive = activeStudioTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveStudioTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap cursor-pointer ${
+                    isActive
+                      ? "bg-white text-black shadow-lg shadow-white/5"
+                      : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white border border-white/5"
+                  }`}
+                >
+                  <TabIcon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                  <span
+                    className={`ml-1 px-1.5 py-0.5 text-[8px] rounded-full font-mono ${
+                      isActive ? "bg-black/15 text-black" : "bg-white/10 text-white/60"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-            </div>
-          ) : (
-            <EmptyState
-              {...EMPTY_PRESETS.studioWorks}
-              actionLabel="Release First Work"
-              onAction={() => handleNavigation("/works/new")}
-            />
+          {/* Tab Content Display */}
+          {activeStudioTab === "works" && (
+            userWorks.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {userWorks.map((work) => (
+                  <StudioWorkCard
+                    key={work.id}
+                    item={work}
+                    onRename={(newTitle) => updateWorkTitle(work.id, newTitle)}
+                    onDelete={() => setDeleteTarget({ type: "work", id: String(work.id), title: work.title })}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                {...EMPTY_PRESETS.studioWorks}
+                actionLabel="Release First Work"
+                onAction={() => handleNavigation("/works/new")}
+              />
+            )
+          )}
+
+          {activeStudioTab === "wall" && (
+            wallPosts.length > 0 ? (
+              <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
+                {wallPosts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onDelete={() => setDeleteTarget({ type: "wall_post", id: post.id, title: post.text || "Wall Post" })}
+                    isDeleting={isDeleting && deleteTarget?.id === post.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                {...EMPTY_PRESETS.wall}
+                actionLabel="Post First Line"
+                onAction={() => setIsLineModalOpen(true)}
+              />
+            )
+          )}
+
+          {activeStudioTab === "discussions" && (
+            discussions.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {discussions.map((disc) => {
+                  const targetSetId = disc.setId || (disc as any).set_id;
+                  return (
+                    <DiscussionCard
+                      key={disc.id}
+                      thought={disc}
+                      onCardClick={() => handleNavigation(targetSetId ? `/sets/${targetSetId}/discussions/${disc.id}` : `/discussions/${disc.id}`)}
+                      onDelete={(_id, e) => {
+                        e.stopPropagation();
+                        setDeleteTarget({ type: "discussion", id: disc.id, title: disc.title });
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyState
+                icon={MessageSquare}
+                title="No Discussions Yet"
+                description="You haven't initiated any discussion threads or dispatches yet."
+                badge="DISCUSSIONS"
+                actionLabel="Explore Sets"
+                onAction={() => handleNavigation("/sets")}
+              />
+            )
+          )}
+
+          {activeStudioTab === "recommendations" && (
+            recommendations.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recommendations.map((rec) => (
+                  <FeedRecommendationCard
+                    key={rec.id}
+                    rec={rec}
+                    onDelete={() => setDeleteTarget({ type: "recommendation", id: rec.id, title: rec.original?.title || rec.comment || "Recommendation" })}
+                    isDeleting={isDeleting && deleteTarget?.id === rec.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Sparkles}
+                title="No Recommendations Yet"
+                description="You haven't posted any film recommendations or curated scores yet."
+                badge="RECOMMENDATIONS"
+                actionLabel="Recommend a Title"
+                onAction={() => setIsRecModalOpen(true)}
+              />
+            )
           )}
         </section>
       </div>
@@ -514,6 +829,51 @@ export default function StudioPage() {
         isOpen={isWarningModalOpen}
         onConfirm={handleConfirmLeave}
         onCancel={handleCancelLeave}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={deleteTarget !== null}
+        onClose={() => !isDeleting && setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        isDeleting={isDeleting}
+        title={
+          deleteTarget?.type === "work"
+            ? "Delete Release?"
+            : deleteTarget?.type === "wall_post"
+            ? "Delete Wall Post?"
+            : deleteTarget?.type === "discussion"
+            ? "Delete Discussion?"
+            : deleteTarget?.type === "recommendation"
+            ? "Delete Recommendation?"
+            : "Delete Item?"
+        }
+        description={
+          deleteTarget ? (
+            <span>
+              Are you sure you want to permanently delete{" "}
+              <span className="text-white font-bold">
+                {deleteTarget.title ? `"${deleteTarget.title}"` : "this item"}
+              </span>
+              ? This action cannot be undone.
+            </span>
+          ) : undefined
+        }
+      />
+
+      <PostLineModal
+        isOpen={isLineModalOpen}
+        onClose={() => {
+          setIsLineModalOpen(false);
+          fetchWallPosts();
+        }}
+      />
+
+      <CreateRecommendationModal
+        isOpen={isRecModalOpen}
+        onClose={() => {
+          setIsRecModalOpen(false);
+          fetchRecommendations();
+        }}
       />
     </div>
   );

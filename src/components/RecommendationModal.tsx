@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Film, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ModalWrapper } from "../features/shared/modals/ModalWrapper";
 import { RecommendationCard } from "./RecommendationCard";
 import type { Recommendation } from "@/types/recommendations";
@@ -47,7 +47,17 @@ export function RecommendationModal({
   startIndex = 0,
 }: RecommendationModalProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prevLocationRef = useRef(location.pathname + location.search);
   const [recs, setRecs] = useState<Recommendation[]>([]);
+
+  useEffect(() => {
+    const currentLoc = location.pathname + location.search;
+    if (isOpen && prevLocationRef.current !== currentLoc) {
+      onClose();
+    }
+    prevLocationRef.current = currentLoc;
+  }, [location.pathname, location.search, isOpen, onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -309,7 +319,7 @@ export function RecommendationModal({
                   }}
                   className="flex flex-col items-center pointer-events-auto w-full"
                 >
-                  <RecommendationCard rec={rec} variant="modal" />
+                  <RecommendationCard rec={rec} variant="modal" onNavigate={onClose} />
                 </motion.div>
               )}
             </AnimatePresence>

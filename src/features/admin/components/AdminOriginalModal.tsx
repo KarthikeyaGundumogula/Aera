@@ -466,6 +466,7 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
                 placeholder="e.g. OG (They Call Him OG)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={100}
                 className="bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-xs font-bold outline-none focus:border-white transition-all placeholder:text-white/20"
               />
             </div>
@@ -499,12 +500,18 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
             </div>
 
             <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Synopsis / Description (Optional)</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Synopsis / Description (Optional)</label>
+                <span className={`text-[9px] font-mono tabular-nums ${description.length >= 2000 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+                  {description.length >= 2000 ? "Limit reached (2,000 / 2,000)" : `${description.length} / 2,000`}
+                </span>
+              </div>
               <textarea
                 rows={3}
                 placeholder="Logline and cinematic context..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                maxLength={2000}
                 className="bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-medium outline-none focus:border-white transition-all placeholder:text-white/20 resize-none"
               />
             </div>
@@ -592,12 +599,18 @@ export function AdminOriginalModal({ onSuccess }: AdminOriginalModalProps) {
           </div>
 
           <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">New Description (Optional)</label>
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-white/50">New Description (Optional)</label>
+              <span className={`text-[9px] font-mono tabular-nums ${updateDescription.length >= 2000 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+                {updateDescription.length >= 2000 ? "Limit reached (2,000 / 2,000)" : `${updateDescription.length} / 2,000`}
+              </span>
+            </div>
             <textarea
               rows={2}
               placeholder="Updated logline..."
               value={updateDescription}
               onChange={(e) => setUpdateDescription(e.target.value)}
+              maxLength={2000}
               className="bg-white/5 border border-white/10 rounded-2xl p-3 text-xs font-medium outline-none focus:border-white transition-all placeholder:text-white/20 resize-none"
             />
           </div>

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { Sparkles, ArrowLeft, Layers, RefreshCw } from "lucide-react";
+import { Sparkles, ArrowLeft, Layers, RefreshCw, Bookmark } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { PostCard } from "@/components/PostCard";
 import { useWorkNavigation } from "@/hooks/useWorkNavigation";
@@ -14,9 +14,10 @@ interface OriginalHeaderData {
   coverImage?: string;
 }
 
-export default function TaggedWorksPage() {
+export function OriginalWorksPage() {
   const { originalId } = useParams<{ originalId: string }>();
   const [searchParams] = useSearchParams();
+  const mode = searchParams.get("mode") || (searchParams.get("artistId") ? "created" : "all");
   const artistId = searchParams.get("artistId") || searchParams.get("profileId") || "";
 
   const navigate = useNavigate();
@@ -49,39 +50,70 @@ export default function TaggedWorksPage() {
       .catch(console.error);
   }, [originalId]);
 
-  // Fetch Credited Works Batch
-  const fetchCreditedWorks = (cursor?: string) => {
+  // Fetch Works Batch depending on mode (Collection vs Created vs All)
+  const fetchWorks = useCallback((cursor?: string) => {
     if (!originalId) return;
     const isInitial = !cursor;
     if (isInitial) setLoading(true);
     else setLoadingMore(true);
 
-    let url = `/originals/${originalId}/credited_works?limit=20`;
-    if (artistId) url += `&artist_id=${artistId}`;
-    if (cursor) url += `&cursor=${encodeURIComponent(cursor)}`;
+    if (mode === "collection" || mode === "saved") {
+      // Fetch user's saved works credited to this original
+      apiFetch(`/artists/saved_works?original_id=${originalId}&limit=50`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const items: any[] = json.data ?? [];
+            const mapped: TheatreItem[] = items.map((w) => ({
+              id: w.id,
+              title: w.title,
+              category: w.workType || w.category || "Edit",
+              artist: w.artistName || "Artist",
+              artistId: w.artistId || "",
+              artistAvatar: w.artistAvatar || "",
+              image: w.thumbnail || undefined,
+              srcId: w.srcId || undefined,
+              platform: w.platform || undefined,
+            }));
+            setWorks(mapped);
+            setTotalCount(mapped.length);
+            setNextCursor(null);
+          }
+        })
+        .catch(console.error)
+        .finally(() => {
+          setLoading(false);
+          setLoadingMore(false);
+        });
+    } else {
+      // Fetch works created by artist or all community credited works
+      let url = `/originals/${originalId}/credited_works?limit=20`;
+      if (artistId) url += `&artist_id=${artistId}`;
+      if (cursor) url += `&cursor=${encodeURIComponent(cursor)}`;
 
-    apiFetch(url)
-      .then(async (res) => {
-        if (res.ok) {
-          const json = await res.json();
-          const items: TheatreItem[] = json.data ?? [];
-          const meta = json.meta;
+      apiFetch(url)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const items: TheatreItem[] = json.data ?? [];
+            const meta = json.meta;
 
-          setWorks((prev) => (isInitial ? items : [...prev, ...items]));
-          setNextCursor(meta?.nextCursor || null);
-          setTotalCount(meta?.totalCount ?? (isInitial ? items.length : 0));
-        }
-      })
-      .catch(console.error)
-      .finally(() => {
-        setLoading(false);
-        setLoadingMore(false);
-      });
-  };
+            setWorks((prev) => (isInitial ? items : [...prev, ...items]));
+            setNextCursor(meta?.nextCursor || null);
+            setTotalCount(meta?.totalCount ?? (isInitial ? items.length : 0));
+          }
+        })
+        .catch(console.error)
+        .finally(() => {
+          setLoading(false);
+          setLoadingMore(false);
+        });
+    }
+  }, [originalId, mode, artistId]);
 
   useEffect(() => {
-    fetchCreditedWorks();
-  }, [originalId, artistId]);
+    fetchWorks();
+  }, [fetchWorks]);
 
   const handleItemClick = (work: TheatreItem) => {
     openWork(work);
@@ -100,6 +132,39 @@ export default function TaggedWorksPage() {
       postedAt: "recently",
     };
   };
+
+  const isCollection = mode === "collection" || mode === "saved";
+  const isCreated = mode === "created" || Boolean(artistId && !isCollection);
+
+  const headerBadge = isCollection
+    ? "Saved Collection"
+    : isCreated
+    ? "Created Works"
+    : "Credited Works";
+
+  const headerTitle = isCollection
+    ? `${original?.title || "Original"} Collection`
+    : isCreated
+    ? `Created Works — ${original?.title || "Original"}`
+    : original?.title || "Credited Works";
+
+  const headerSubtitle = isCollection
+    ? `${totalCount} ${totalCount === 1 ? "work" : "works"} saved in your collection`
+    : isCreated
+    ? `${totalCount} ${totalCount === 1 ? "work" : "works"} created for this original`
+    : `${totalCount} ${totalCount === 1 ? "work" : "works"} credited to this original`;
+
+  const emptyTitle = isCollection
+    ? "No Saved Works in Collection"
+    : isCreated
+    ? "No Created Works Found"
+    : "No Credited Works Found";
+
+  const emptySubtitle = isCollection
+    ? "You haven't saved any works credited to this original yet. Explore the Theatre to save works to your collection."
+    : isCreated
+    ? "No works have been created by this artist credited to this original yet."
+    : "No community works have been credited to this original yet.";
 
   return (
     <div className="min-h-screen bg-[#070707] text-white pb-24 pt-6 md:pt-10 px-4 sm:px-8 md:px-12">
@@ -129,15 +194,15 @@ export default function TaggedWorksPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[9px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  Collection Feed
+                  {isCollection ? <Bookmark className="w-2.5 h-2.5" /> : <Sparkles className="w-2.5 h-2.5" />}
+                  {headerBadge}
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-white">
-                {original ? original.title : "Credited Collection"}
+                {headerTitle}
               </h1>
               <p className="text-xs font-mono text-white/40 mt-0.5">
-                {totalCount} {totalCount === 1 ? "work" : "works"} credited to this original
+                {headerSubtitle}
               </p>
             </div>
           </div>
@@ -173,7 +238,7 @@ export default function TaggedWorksPage() {
             {nextCursor && (
               <div className="mt-10 text-center">
                 <button
-                  onClick={() => fetchCreditedWorks(nextCursor)}
+                  onClick={() => fetchWorks(nextCursor)}
                   disabled={loadingMore}
                   className="px-6 py-3 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-xs font-black uppercase tracking-widest text-white/80 transition-all flex items-center gap-2 mx-auto cursor-pointer disabled:opacity-50"
                 >
@@ -191,14 +256,14 @@ export default function TaggedWorksPage() {
           /* Empty State */
           <div className="py-20 text-center flex flex-col items-center justify-center gap-4 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8">
             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30">
-              <Layers className="w-6 h-6" />
+              {isCollection ? <Bookmark className="w-6 h-6" /> : <Layers className="w-6 h-6" />}
             </div>
             <div>
               <h3 className="text-sm font-black uppercase tracking-wider text-white/80">
-                No Credited Works Found
+                {emptyTitle}
               </h3>
               <p className="text-xs font-mono text-white/40 mt-1 max-w-sm mx-auto">
-                No works have been tagged or credited to this original yet.
+                {emptySubtitle}
               </p>
             </div>
           </div>
@@ -207,3 +272,6 @@ export default function TaggedWorksPage() {
     </div>
   );
 }
+
+export default OriginalWorksPage;
+export { OriginalWorksPage as TaggedWorksPage, OriginalWorksPage as SavedWorksPage };

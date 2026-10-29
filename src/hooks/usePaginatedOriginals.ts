@@ -24,7 +24,7 @@ interface FetchOriginalsResponse {
   };
 }
 
-export function usePaginatedOriginals(pageSize = 12) {
+export function usePaginatedOriginals(pageSize = 24) {
   const [items, setItems] = useState<OriginalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

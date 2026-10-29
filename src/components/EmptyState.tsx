@@ -42,7 +42,7 @@ export const EMPTY_PRESETS = {
     sectionTitle: "STAGE DISPATCHES",
     icon: Radio,
     title: "Stage Timeline Silent",
-    description: "No broadcasts, announcements, or pinned thoughts have been posted to this timeline.",
+    description: "No broadcasts, announcements, or framed thoughts have been posted to this timeline.",
     badge: "NO DISPATCHES",
   },
   library: {

@@ -129,12 +129,18 @@ export function OriginalManagementModal({
                 className="space-y-8"
               >
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 pl-1">
-                    <Info className="w-3 h-3" /> Description
-                  </label>
+                  <div className="flex items-center justify-between pl-1">
+                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">
+                      <Info className="w-3 h-3" /> Description
+                    </label>
+                    <span className={`text-[9px] font-mono tabular-nums ${description.length >= 2000 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+                      {description.length >= 2000 ? "Limit reached (2,000 / 2,000)" : `${description.length} / 2,000`}
+                    </span>
+                  </div>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    maxLength={2000}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm text-white/80 leading-relaxed outline-none focus:border-white/20 focus:bg-white/[0.08] transition-all resize-none min-h-[140px]"
                     placeholder="Enter Stage narrative..."
                   />

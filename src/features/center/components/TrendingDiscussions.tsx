@@ -22,6 +22,10 @@ export function TrendingDiscussions() {
       });
   }, []);
 
+  if (!thoughts || thoughts.length === 0) {
+    return null;
+  }
+
   return (
     <section className="mb-12">
       <SectionHeader

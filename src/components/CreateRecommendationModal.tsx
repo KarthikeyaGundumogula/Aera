@@ -304,7 +304,7 @@ export function CreateRecommendationModal({
                       value={notes}
                       onChange={setNotes}
                       as="textarea"
-                      maxLength={300}
+                      maxLength={2000}
                     />
                   </div>
 

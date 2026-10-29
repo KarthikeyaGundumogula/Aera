@@ -16,7 +16,7 @@ interface PortraitIdentitySectionProps {
   onPortraitClear: () => void;
 }
 
-const TAGLINE_MAX = 120;
+const TAGLINE_MAX = 100;
 
 export function PortraitIdentitySection({
   username,
@@ -113,28 +113,40 @@ export function PortraitIdentitySection({
       <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-1">
-              Screen Name
-            </label>
+            <div className="flex items-center justify-between ml-1">
+              <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/30">
+                Screen Name
+              </label>
+              <span className={`text-[9px] font-mono tabular-nums ${displayName.length >= 15 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+                {displayName.length >= 15 ? "15/15" : `${displayName.length}/15`}
+              </span>
+            </div>
             <input
               type="text"
               value={displayName}
               onChange={(e) => onIdentityChange("displayName", e.target.value)}
+              maxLength={15}
               placeholder="e.g. Christopher Nolan"
               className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-5 py-3.5 text-sm font-bold tracking-tight placeholder:text-white/10 focus:border-white/30 focus:bg-white/[0.05] transition-all outline-none"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-1">
-              Artist Handle
-            </label>
+            <div className="flex items-center justify-between ml-1">
+              <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/30">
+                Artist Handle
+              </label>
+              <span className={`text-[9px] font-mono tabular-nums ${username.length >= 25 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+                {username.length >= 25 ? "25/25" : `${username.length}/25`}
+              </span>
+            </div>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-mono text-xs">@</span>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => onIdentityChange("username", e.target.value.toLowerCase().replace(/\s/g, ''))}
+                maxLength={25}
                 placeholder="handle"
                 className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-8 pr-4 py-3.5 text-sm font-bold tracking-tight placeholder:text-white/10 focus:border-white/30 focus:bg-white/[0.05] transition-all outline-none"
               />
@@ -143,20 +155,23 @@ export function PortraitIdentitySection({
         </div>
 
         <div className="space-y-2">
-          <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/30 ml-1">
-            Tagline
-          </label>
+          <div className="flex items-center justify-between ml-1">
+            <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/30">
+              Tagline
+            </label>
+            <span className={`text-[9px] font-mono tabular-nums ${tagline.length >= TAGLINE_MAX ? "text-amber-400 font-bold" : "text-white/20"}`}>
+              {tagline.length >= TAGLINE_MAX ? `Limit reached (${TAGLINE_MAX}/${TAGLINE_MAX})` : `${tagline.length}/${TAGLINE_MAX}`}
+            </span>
+          </div>
           <div className="relative">
             <input
               type="text"
               value={tagline}
               onChange={(e) => onIdentityChange("tagline", e.target.value.slice(0, TAGLINE_MAX))}
+              maxLength={TAGLINE_MAX}
               placeholder="What is your Idea of whom you are"
               className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-5 py-3.5 text-sm font-medium placeholder:text-white/10 focus:border-white/30 focus:bg-white/[0.05] transition-all outline-none"
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-mono text-white/20 tabular-nums">
-              {tagline.length}/{TAGLINE_MAX}
-            </span>
           </div>
         </div>
       </div>

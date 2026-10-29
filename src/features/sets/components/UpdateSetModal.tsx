@@ -54,6 +54,7 @@ export function UpdateSetModal({ set, isOpen, onClose, onSave }: UpdateSetModalP
               required
               value={formData.title}
               onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+              maxLength={100}
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all placeholder:text-white/10"
               placeholder="E.g. Neon Genesis"
             />
@@ -67,6 +68,7 @@ export function UpdateSetModal({ set, isOpen, onClose, onSave }: UpdateSetModalP
               type="text"
               value={formData.themeLine}
               onChange={(e) => setFormData((p) => ({ ...p, themeLine: e.target.value }))}
+              maxLength={100}
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all placeholder:text-white/10"
               placeholder="A short thematic statement..."
             />
@@ -81,6 +83,7 @@ export function UpdateSetModal({ set, isOpen, onClose, onSave }: UpdateSetModalP
               rows={5}
               value={formData.description}
               onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+              maxLength={500}
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all resize-none placeholder:text-white/10"
               placeholder="Describe the set's vision and rules..."
             />

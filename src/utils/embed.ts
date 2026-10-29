@@ -79,12 +79,12 @@ export function extractSrcId(
 
   if (plat === "youtube" || plat === "edit") {
     const match = trimmed.match(
-      /^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:v\/|e\/|embed\/|watch\?v=|shorts\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+      /^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:v\/|e\/|embed\/|watch\?v=|shorts\/|live\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
     );
     if (match?.[1]) return match[1];
 
-    const matchV = trimmed.match(/[?&]v=([^&]+)/);
-    if (matchV) return matchV[1].split("&")[0];
+    const matchV = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (matchV?.[1]) return matchV[1];
 
     if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
 

@@ -128,8 +128,20 @@ export function FestivalDetailPage() {
   const handleShare = useCallback(() => {
     if (typeof window === "undefined") return;
     const shareUrl = window.location.href;
+    if (navigator.share) {
+      void navigator.share({
+        title: `Framehouse — ${localFestival?.title || "Festival"}`,
+        text: `Check out ${localFestival?.title || "this festival"} on Framehouse`,
+        url: shareUrl,
+      }).catch((e: any) => {
+        if (e?.name !== "AbortError") {
+          void navigator.clipboard?.writeText(shareUrl);
+        }
+      });
+      return;
+    }
     void navigator.clipboard?.writeText(shareUrl);
-  }, []);
+  }, [localFestival?.title]);
 
   if (!localFestival || !set) return null;
 

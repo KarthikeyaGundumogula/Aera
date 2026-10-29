@@ -140,6 +140,11 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
   }, [shakeX, scoreColorMV, glowRadiusMV, glowAlphaMV, onChange, peak, onPeakFlash]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    // Dismiss any active mobile virtual keyboard immediately
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     e.preventDefault();
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -334,6 +339,14 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
           min={0}
           max={renderEMax}
           value={score}
+          tabIndex={-1}
+          inputMode="none"
+          onFocus={(e) => e.target.blur()}
+          onPointerDown={() => {
+            if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+              document.activeElement.blur();
+            }
+          }}
           onChange={(e) => handleScrub(Number(e.target.value))}
           className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
           style={{ touchAction: "none" }}
@@ -430,6 +443,8 @@ export function SurgeScore({ score, peak, onChange, onPeakFlash }: SurgeScorePro
       </div>
 
       <motion.button
+        type="button"
+        tabIndex={-1}
         id="recommendation-score-hold-btn"
         aria-label="Hold to set recommendation score"
         onPointerDown={handlePointerDown}

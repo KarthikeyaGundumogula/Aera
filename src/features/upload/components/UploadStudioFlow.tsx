@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { extractSrcId } from "../../../utils/embed";
+import type { Original } from "@/types/originals";
 
 
 import { THEATRE_FORMATS } from "../../../constants/formats";
@@ -118,8 +119,19 @@ export function UploadStudioFlow({
 
   const selectedOriginals = useMemo(() => {
     const map = new Map<string, Original>();
-    originals.forEach((o) => map.set(o.id, o));
     selectedOriginalsData.forEach((o) => map.set(o.id, o));
+    originals.forEach((o) => {
+      const existing = map.get(o.id);
+      if (!existing) {
+        map.set(o.id, o);
+      } else {
+        map.set(o.id, {
+          ...existing,
+          ...o,
+          coverImage: o.coverImage || existing.coverImage,
+        });
+      }
+    });
     return formData.originalIds
       .map((id) => map.get(id))
       .filter((o): o is Original => Boolean(o));
@@ -217,6 +229,7 @@ export function UploadStudioFlow({
     setIsSubmitting(true);
     setUploadError(null);
     let uploadSucceeded = false;
+    const startTime = Date.now();
 
     const categoryEndpointMap: Record<string, string> = {
       Edit: "EDIT",
@@ -325,14 +338,16 @@ export function UploadStudioFlow({
       setUploadError("Network error. Check your connection and try again.");
     }
 
-
-
-
-    // Only use addWork as a local fallback when the backend call failed
-    // (keeps the UX working offline / during dev). When the backend succeeded,
-    // fetchUserWorks already refreshed the list — adding again causes the
-    // duplicate-key React warning and shows the work twice in the studio.
-    if (!uploadSucceeded) {
+    if (uploadSucceeded) {
+      // Allow the post-production animation to play for a minimum of 2000ms seamlessly
+      const elapsed = Date.now() - startTime;
+      const remainingTime = Math.max(0, 2000 - elapsed);
+      if (remainingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+      }
+      onComplete();
+    } else {
+      // Local fallback for offline / dev
       const newWork = {
         id: `work-custom-${Date.now()}`,
         title: formData.title,
@@ -347,16 +362,22 @@ export function UploadStudioFlow({
         setId,
       };
       addWork(newWork);
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-
-    if (uploadSucceeded) {
-      window.setTimeout(() => {
-        onComplete();
-      }, 1800);
-    }
-  }, [onComplete, formData, addWork, fetchUserWorks, currentArtist, festivalId, setId, role]);
+  }, [
+    onComplete,
+    formData,
+    addWork,
+    fetchUserWorks,
+    currentArtist,
+    festivalId,
+    setId,
+    role,
+    isOriginalRelease,
+    originalId,
+    initialOriginalIds,
+    uploadTargetUrl,
+  ]);
 
 
   useEffect(() => {

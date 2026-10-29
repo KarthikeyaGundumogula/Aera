@@ -8,6 +8,8 @@ import { Original } from "@/types/originals";
 import type { Recommendation } from "@/types/recommendations";
 import { ReactionId } from "@/types/reactions";
 import { ReactionAction } from "@/components/actions/ReactionAction";
+import { ShareAction } from "@/components/actions/ShareAction";
+import { useAuth } from "@/context/AuthContext";
 import { FHLoader } from "@/components/FHLoader";
 import { apiFetch } from "@/lib/api";
 import {
@@ -24,6 +26,7 @@ export default function WallPostPage() {
   const params = useParams<{ artistId?: string; postId?: string; id?: string }>();
   const postId = params.postId || params.id;
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -181,6 +184,10 @@ export default function WallPostPage() {
 
   const handleReact = useCallback(
     async (reactionId: ReactionId | null) => {
+      if (!currentArtist) {
+        navigate("/profile/login");
+        return;
+      }
       if (!post) return;
       const prevReaction = activeReaction;
       setActiveReaction(reactionId);
@@ -210,6 +217,7 @@ export default function WallPostPage() {
               method: "POST",
               body: JSON.stringify({
                 wall_post_id: post.id,
+                reaction: prevReaction || "🔥",
               }),
             });
 
@@ -224,7 +232,7 @@ export default function WallPostPage() {
         setPost((prev) => (prev ? { ...prev, userReaction: prevReaction ?? undefined } : prev));
       }
     },
-    [post, activeReaction],
+    [post, activeReaction, currentArtist, navigate],
   );
 
   const handleClose = () => {
@@ -292,17 +300,12 @@ export default function WallPostPage() {
 
       {/* Top Right Controls: Share + Close */}
       <div className="fixed top-4 right-4 z-[300] flex items-center gap-2">
-        <button
-          onClick={handleShare}
-          className={`w-9 h-9 rounded-xl backdrop-blur-md border flex items-center justify-center transition-all duration-200 ${
-            copiedShare
-              ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-              : "bg-black/60 border-white/10 text-white/60 hover:text-white"
-          }`}
-          aria-label="Share this post"
-        >
-          {copiedShare ? <Check size={15} /> : <Share2 size={15} />}
-        </button>
+        <ShareAction
+          title={post ? `${post.artistName} on Framehouse` : "Framehouse"}
+          text={post?.text ? `"${post.text.slice(0, 80)}..."` : "Check out this update on Framehouse"}
+          url={typeof window !== "undefined" ? window.location.href : undefined}
+          variant="icon"
+        />
         <button
           onClick={handleClose}
           className="w-9 h-9 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors duration-150"

@@ -24,6 +24,11 @@ const STATUS_MAP = {
 
 function LedgerCard({ item }: { item: LedgerItem }) {
   const navigate = useNavigate();
+  const raw = item as any;
+  const originalName = item.originalName || raw.title || raw.original_name || "Original";
+  const originalPosterUrl = item.originalPosterUrl || raw.cover_image || raw.coverImage || raw.original_poster_url || "";
+  const taggedWorks = Array.isArray(item.taggedWorks) ? item.taggedWorks : [];
+
   const statusCfg = (STATUS_MAP as any)[item.status] || STATUS_MAP.want_to_watch;
   const StatusIcon = statusCfg.icon;
 
@@ -42,8 +47,8 @@ function LedgerCard({ item }: { item: LedgerItem }) {
       {/* Poster thumbnail */}
       <div className="relative h-48 overflow-hidden">
         <img
-          src={item.originalPosterUrl}
-          alt={item.originalName}
+          src={originalPosterUrl}
+          alt={originalName}
           className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
@@ -59,10 +64,10 @@ function LedgerCard({ item }: { item: LedgerItem }) {
         </div>
 
         {/* Tagged works count bubble */}
-        {item.taggedWorks.length > 0 && (
+        {taggedWorks.length > 0 && (
           <div className="absolute bottom-3 right-3 w-7 h-7 rounded-xl bg-black/70 border border-white/15 flex items-center justify-center">
             <span className="text-[10px] font-black text-white/80">
-              {item.taggedWorks.length}
+              {taggedWorks.length}
             </span>
           </div>
         )}
@@ -71,12 +76,12 @@ function LedgerCard({ item }: { item: LedgerItem }) {
       {/* Body */}
       <div className="p-4 flex flex-col gap-2">
         <h4 className="text-[13px] font-black uppercase tracking-tight text-white/90 group-hover:text-white transition-colors">
-          {item.originalName}
+          {originalName}
         </h4>
         <p className="text-[11px] text-white/40 font-mono leading-relaxed line-clamp-2">
           {item.status === "watched" && item.afterThoughts
             ? item.afterThoughts
-            : item.preThoughts}
+            : item.preThoughts || raw.pre_thoughts || raw.description || ""}
         </p>
       </div>
     </motion.button>

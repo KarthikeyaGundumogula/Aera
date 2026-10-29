@@ -8,12 +8,20 @@ interface WallFeedProps {
   posts: WallPost[];
   artistOverride?: ArtistOverride;
   themeGradient?: [string, string];
+  onDelete?: (postId: string) => void;
+  deletingPostId?: string | null;
 }
 
 /**
  * WallFeed — 2-column masonry feed of WallPostCards.
  */
-export const WallFeed: React.FC<WallFeedProps> = ({ posts, artistOverride, themeGradient }) => {
+export const WallFeed: React.FC<WallFeedProps> = ({
+  posts,
+  artistOverride,
+  themeGradient,
+  onDelete,
+  deletingPostId,
+}) => {
   const worksById = {};
   const originalsById = {};
   const recommendationsById = {};
@@ -65,6 +73,8 @@ export const WallFeed: React.FC<WallFeedProps> = ({ posts, artistOverride, theme
                   resolvedRecommendation={resolvedRecommendation}
                   resolvedLedgerEntry={resolvedLedgerEntry}
                   themeGradient={themeGradient}
+                  onDelete={onDelete}
+                  isDeleting={deletingPostId === post.id}
                 />
             </motion.div>
             </React.Fragment>

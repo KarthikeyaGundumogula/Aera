@@ -205,18 +205,32 @@ function CinematicTextarea({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label
-        htmlFor={id}
-        className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25"
-      >
-        {label}
-      </label>
+      <div className="flex items-center justify-between">
+        <label
+          htmlFor={id}
+          className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25"
+        >
+          {label}
+        </label>
+        {value.length > 0 && (
+          <span
+            className={`text-[9px] font-mono tabular-nums ${
+              value.length >= 10000 ? "text-amber-400 font-bold" : "text-white/20"
+            }`}
+          >
+            {value.length >= 10000
+              ? "Limit reached (10,000 / 10,000)"
+              : `${value.length.toLocaleString()} / 10,000`}
+          </span>
+        )}
+      </div>
       <textarea
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={3}
+        maxLength={10000}
         className="w-full bg-transparent text-white/80 placeholder-white/15 border-0 border-b border-white/10 focus:border-[#D97706]/40 py-2 text-sm font-light outline-none resize-none leading-relaxed transition-colors duration-300"
         autoComplete="off"
         spellCheck={false}
@@ -352,7 +366,20 @@ export function LedgerEntryModal({ isOpen, onClose }: LedgerEntryModalProps) {
         setTimeout(() => onClose(), 1300);
       } else {
         const errData = await res.json().catch(() => ({}));
-        setErrorMsg(errData.error || errData.message || `Failed to log entry (HTTP ${res.status}). Verify profile login.`);
+        const raw = (errData?.error || errData?.message || "").toLowerCase();
+        if (
+          res.status === 409 ||
+          res.status === 400 ||
+          raw.includes("already") ||
+          raw.includes("exist") ||
+          raw.includes("identifier") ||
+          raw.includes("duplicate") ||
+          raw.includes("unique")
+        ) {
+          setErrorMsg("Already added to your Ledger");
+        } else {
+          setErrorMsg(`Failed to log entry (HTTP ${res.status}). Verify profile login.`);
+        }
       }
     } catch (err) {
       setErrorMsg("Network error. Unable to log entry to server.");

@@ -1,10 +1,17 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowRight, BookPlus, Settings, Plus, Loader2 } from "lucide-react";
+import { ArrowRight, BookPlus, Settings, Plus, Loader2, Heart } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useMemo, useDeferredValue } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useDeferredValue,
+} from "react";
 import { PersonProfile, MakerProfile } from "../shared/profile";
 import { SectionHeader } from "../../components/SectionHeader";
 import { CinematicPageHeader } from "../../components/CinematicPageHeader";
+import { FavoriteButton } from "../../components/FavoriteButton";
 import { apiFetch } from "@/lib/api";
 
 import { useAuth } from "../../context/AuthContext";
@@ -40,6 +47,8 @@ export function OriginalPage() {
   const [showManagement, setShowManagement] = useState(false);
   const isMobile = useMediaQuery();
   const [localOriginal, setLocalOriginal] = useState<Original | null>(null);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoritesCount, setFavoritesCount] = useState(0);
   const [officialReleases, setOfficialReleases] = useState<any[]>([]);
   const [theatreWorks, setTheatreWorks] = useState<TheatreItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,35 +66,54 @@ export function OriginalPage() {
           const json = await res.json();
           const remote = json.data;
           if (remote && isMounted) {
+            const remoteFav = !!remote.isFavorited;
+            const remoteFavCount = remote.stats?.favorites ?? 0;
+            setIsFavorited(remoteFav);
+            setFavoritesCount(remoteFavCount);
+
             const mappedOriginal = {
               id: remote.id,
               title: remote.title,
               description: remote.description || "",
-              coverImage: remote.coverImage || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+              coverImage:
+                remote.coverImage ||
+                "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
               releaseDate: remote.releaseDate || undefined,
               genre: remote.genre || [],
               stats: {
                 presence: remote.stats?.presence || 0,
                 members: remote.stats?.members || 0,
                 releases: remote.stats?.releases || 0,
+                favorites: remoteFavCount,
               },
+              isFavorited: remoteFav,
               resonanceSignature: remote.resonanceSignature || undefined,
               stars: (remote.stars || []).map((s: any) => ({
+                id: s.id,
+                userName: s.userName,
                 actorName: s.actorName || "Cast Member",
                 characterName: s.characterName || "Star",
-                imageUrl: s.imageUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+                imageUrl:
+                  s.imageUrl ||
+                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
                 originalId: remote.id,
               })),
               makers: (remote.makers || []).map((m: any) => ({
+                id: m.id,
+                userName: m.userName,
                 actorName: m.actorName || "Filmmaker",
                 characterName: m.characterName || "Maker",
-                imageUrl: m.imageUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+                imageUrl:
+                  m.imageUrl ||
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
                 originalId: remote.id,
               })),
               topArtists: (remote.topArtists || []).map((a: any) => ({
                 id: a.id,
                 name: a.name || "Artist",
-                image: a.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+                image:
+                  a.image ||
+                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
                 spirit: a.spirit || 0,
                 works: a.works || 0,
               })),
@@ -108,12 +136,18 @@ export function OriginalPage() {
         if (res.ok) {
           const json = await res.json();
           const theatreCards = json.data ?? [];
-          if (Array.isArray(theatreCards) && isMounted && theatreCards.length > 0) {
+          if (
+            Array.isArray(theatreCards) &&
+            isMounted &&
+            theatreCards.length > 0
+          ) {
             const mappedWorks: TheatreItem[] = theatreCards.map((w: any) => ({
               id: w.id,
               title: w.title || "Untitled Work",
               category: w.workType || "Edit",
-              image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
+              image:
+                w.thumbnail ||
+                "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
               platform: "youtube" as const,
               srcId: w.id,
             }));
@@ -145,68 +179,155 @@ export function OriginalPage() {
     };
   }, [id]);
 
-  const isAssociatedArtist = useMemo(() => {
-    if (!currentArtist || !original) return false;
-    const userId = (currentArtist.id || "").toLowerCase();
-    const userName = (currentArtist.userName || currentArtist.name || "").toLowerCase();
-
-    // 1. Check topArtists list on the Original
-    const inTopArtists = (original.topArtists || []).some((a: any) => {
-      const aId = (a.id || "").toLowerCase();
-      const aName = (a.name || a.stage_name || a.userName || "").toLowerCase();
-      return aId === userId || (aId && userId.includes(aId)) || (aName && aName === userName);
-    });
-
-    // 2. Check makers/creators list
-    const inMakers = (original.makers || []).some((m: any) => {
-      const mName = (m.actorName || m.name || "").toLowerCase();
-      return mName === userName;
-    });
-
-    // 3. Organizer / Admin role fallback
-    const isOrganizer = currentArtist.role === "organizer" || currentArtist.role === "admin";
-
-    return inTopArtists || inMakers || isOrganizer;
-  }, [currentArtist, original]);
+  const isAssociatedOwner = Boolean(
+    currentArtist &&
+    (currentArtist.role?.toLowerCase() === "associated_owner" ||
+      currentArtist.role?.toLowerCase() === "admin"),
+  );
 
   const userClaims: OriginalClaims = {
-    canUpdateMeta: isAssociatedArtist,
-    canCreateRelease: isAssociatedArtist,
+    canUpdateMeta: isAssociatedOwner,
+    canCreateRelease: isAssociatedOwner,
   };
+
+  const handleSaveToLedger = useCallback(async () => {
+    if (!original?.id) return;
+    if (!currentArtist) {
+      triggerToast("Sign in required to save to Ledger");
+      return;
+    }
+    try {
+      const res = await apiFetch("/library/new", {
+        method: "POST",
+        body: JSON.stringify({
+          original_id: original.id,
+          visibility: true,
+          status: "WANT_TO_WATCH",
+          entry_type: "MOVIE",
+          surge_score: 0,
+        }),
+      });
+      if (res.ok) {
+        triggerToast("Saved to Ledger");
+      } else {
+        const json = await res.json().catch(() => null);
+        const raw = (json?.message || json?.error || "").toLowerCase();
+        if (
+          res.status === 409 ||
+          res.status === 400 ||
+          raw.includes("already") ||
+          raw.includes("exist") ||
+          raw.includes("identifier") ||
+          raw.includes("duplicate") ||
+          raw.includes("unique")
+        ) {
+          triggerToast("Already added");
+        } else {
+          triggerToast("Unable to save to Ledger");
+        }
+      }
+    } catch {
+      triggerToast("Network error");
+    }
+  }, [original?.id, currentArtist]);
+
+  const handleFavoriteToggle = useCallback(async () => {
+    if (!original?.id) return;
+    if (!currentArtist) {
+      triggerToast("Sign in required to favorite Originals");
+      navigate("/profile/login");
+      return;
+    }
+
+    const nextState = !isFavorited;
+    const prevFavorited = isFavorited;
+    const prevCount = favoritesCount;
+    const nextCount = Math.max(0, nextState ? prevCount + 1 : prevCount - 1);
+
+    // Optimistic UI update
+    setIsFavorited(nextState);
+    setFavoritesCount(nextCount);
+    setLocalOriginal((prev) =>
+      prev
+        ? {
+            ...prev,
+            isFavorited: nextState,
+            stats: {
+              ...prev.stats,
+              favorites: nextCount,
+            },
+          }
+        : prev
+    );
+
+    try {
+      const endpoint = nextState ? "/originals/favorite" : "/originals/unfavorite";
+      const res = await apiFetch(endpoint, {
+        method: "POST",
+        body: JSON.stringify(original.id),
+      });
+
+      if (!res.ok) {
+        console.warn(`[OriginalPage] Favorite request failed with status ${res.status}`);
+        setIsFavorited(prevFavorited);
+        setFavoritesCount(prevCount);
+        setLocalOriginal((prev) =>
+          prev
+            ? {
+                ...prev,
+                isFavorited: prevFavorited,
+                stats: {
+                  ...prev.stats,
+                  favorites: prevCount,
+                },
+              }
+            : prev
+        );
+        triggerToast("Failed to update favorite status");
+      } else {
+        triggerToast(nextState ? "Added to favorites" : "Removed from favorites");
+      }
+    } catch (err) {
+      console.warn("[OriginalPage] Favorite request error:", err);
+      setIsFavorited(prevFavorited);
+      setFavoritesCount(prevCount);
+      setLocalOriginal((prev) =>
+        prev
+          ? {
+              ...prev,
+              isFavorited: prevFavorited,
+              stats: {
+                ...prev.stats,
+                favorites: prevCount,
+              },
+            }
+          : prev
+      );
+      triggerToast("Network error");
+    }
+  }, [original?.id, currentArtist, isFavorited, favoritesCount, navigate]);
 
   const commandItems: CommandItem[] = useMemo(
     () => [
       {
-        label: "Save to Watchlist",
+        label: isFavorited ? "Favorited" : "Favorite Original",
+        icon: (
+          <Heart
+            className={`w-4 h-4 ${
+              isFavorited ? "text-amber-400 fill-amber-400" : ""
+            }`}
+          />
+        ),
+        action: handleFavoriteToggle,
+        description: isFavorited ? "Remove from Favorites" : "Add to Favorites",
+        visible: isAssociatedOwner,
+      },
+      {
+        label: "Add to Ledger",
         icon: <BookPlus className="w-4 h-4" />,
-        action: async () => {
-          if (!original?.id) return;
-          if (!currentArtist) {
-            triggerToast("Sign in required to add to Library");
-            return;
-          }
-          try {
-            const res = await apiFetch("/library/new", {
-              method: "POST",
-              body: JSON.stringify({
-                original_id: original.id,
-                visibility: true,
-                status: "WANT_TO_WATCH",
-                entry_type: "MOVIE",
-                surge_score: 0,
-              }),
-            });
-            if (res.ok) {
-              triggerToast("Added to Library");
-            } else {
-              const json = await res.json().catch(() => null);
-              triggerToast(json?.message || "Already in Library");
-            }
-          } catch {
-            triggerToast("Network error");
-          }
-        },
-        description: "Add to Library",
+        action: handleSaveToLedger,
+        description: "Add to Ledger",
+        visible: isAssociatedOwner,
       },
       {
         label: "Update Original",
@@ -226,7 +347,10 @@ export function OriginalPage() {
     [
       navigate,
       original?.id,
-      currentArtist,
+      handleFavoriteToggle,
+      isFavorited,
+      handleSaveToLedger,
+      isAssociatedOwner,
       userClaims.canCreateRelease,
       userClaims.canUpdateMeta,
     ],
@@ -260,7 +384,9 @@ export function OriginalPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4 text-white">Original not found</h1>
+          <h1 className="text-2xl font-bold mb-4 text-white">
+            Original not found
+          </h1>
           <button
             onClick={() => navigate("/")}
             className="px-6 py-2 bg-white text-black rounded-xl font-bold"
@@ -298,7 +424,6 @@ export function OriginalPage() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
             >
-
               <h1
                 className="font-black tracking-tighter mb-2 uppercase leading-[0.82] whitespace-pre-wrap drop-shadow-2xl"
                 style={{
@@ -329,11 +454,45 @@ export function OriginalPage() {
           }}
           rightActions={
             <>
-              <CommandCenter
-                contextTitle="Original Studio"
-                items={commandItems}
-              />
+              {/* Favorite Action Button */}
+              <FavoriteButton
+                isFavorited={isFavorited}
+                onFavorite={handleFavoriteToggle}
+                iconSize={18}
+                className="p-2 rounded-xl border transition-all duration-300 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.06] active:scale-95 border-white/[0.08] hover:border-white/[0.15] shadow-[0_4px_20px_rgba(0,0,0,0.5)] backdrop-blur-md cursor-pointer"
+                activeColor="#F59E0B"
+              >
+                {favoritesCount > 0 && (
+                  <span className="font-mono text-[10px] font-bold text-white/80 hidden sm:inline-block">
+                    {favoritesCount}
+                  </span>
+                )}
+              </FavoriteButton>
               <div className="hidden sm:block h-4 w-px bg-white/10" />
+
+              {isAssociatedOwner ? (
+                <>
+                  <CommandCenter
+                    contextTitle="Original Studio"
+                    items={commandItems}
+                  />
+                  <div className="hidden sm:block h-4 w-px bg-white/10" />
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSaveToLedger}
+                    className="relative group flex items-center gap-2 p-2 rounded-xl border transition-all duration-300 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.06] active:scale-95 border-white/[0.08] hover:border-white/[0.15] shadow-[0_4px_20px_rgba(0,0,0,0.5)] backdrop-blur-md text-white"
+                    aria-label="Save to Ledger"
+                  >
+                    <BookPlus className="w-4 h-4 text-amber-400 group-hover:text-amber-300 transition-colors" />
+                    <span className="text-[10px] font-mono tracking-widest uppercase text-white/70 group-hover:text-white font-bold hidden sm:inline-block">
+                      Add to Ledger
+                    </span>
+                  </button>
+                  <div className="hidden sm:block h-4 w-px bg-white/10" />
+                </>
+              )}
               <button
                 onClick={() =>
                   document
@@ -351,12 +510,21 @@ export function OriginalPage() {
           }
         />
 
-        <OriginalStats stats={original.stats} signature={original.resonanceSignature} />
+        <OriginalStats
+          stats={{
+            ...original.stats,
+            favorites: favoritesCount,
+          }}
+          signature={original.resonanceSignature}
+        />
       </motion.div>
 
       {/* RECENT RELEASES */}
       <div id="releases">
-        <RecentReleasesSection customReleases={officialReleases} className="pt-8 pb-6" />
+        <RecentReleasesSection
+          customReleases={officialReleases}
+          className="pt-8 pb-6"
+        />
       </div>
 
       {/* Star Spotlight */}
@@ -412,7 +580,7 @@ export function OriginalPage() {
       {/* Originals Theatre Section */}
       <TheatrePreviewSection
         title="Theatre"
-        works={theatreWorks.length > 0 ? theatreWorks : (original.works || [])}
+        works={theatreWorks.length > 0 ? theatreWorks : original.works || []}
         enterUrl={`/originals/${original.id}/theatre`}
       />
 
@@ -471,7 +639,7 @@ export function OriginalPage() {
 
       {/* Management Modal */}
       <AnimatePresence>
-        {showManagement && (
+        {showManagement && isAssociatedOwner && (
           <OriginalManagementModal
             original={original}
             onClose={() => setShowManagement(false)}

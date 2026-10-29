@@ -82,10 +82,29 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
       .catch(console.error);
   }, [libraryEntryId, originalId]);
 
+  const hasBreakdown = Boolean(
+    (afterThoughts && afterThoughts.trim().length > 0) ||
+    (sheetDetail?.userAfterThought && sheetDetail.userAfterThought.trim().length > 0) ||
+    (sheetDetail?.postImpression && sheetDetail.postImpression.trim().length > 0)
+  );
+
   const handleStatusChange = (newStatus: "watched" | "want_to_watch") => {
+    if (entryStatus === "watched" && newStatus === "want_to_watch") {
+      // One-way transition only: watched items cannot be reverted to watchlist
+      return;
+    }
+
     setEntryStatus(newStatus);
-    const targetId = libraryEntryId || originalId;
+    const targetId = sheetDetail?.id || libraryEntryId || originalId;
     if (!targetId) return;
+
+    if (newStatus === "watched") {
+      // Marking as watched from watchlist navigates directly to the breakdown editor
+      onClose();
+      navigate(`/ledger/${targetId}?edit=true&status=watched`);
+      return;
+    }
+
     apiFetch(`/library/${targetId}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -93,11 +112,11 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
     }).catch(console.error);
   };
 
-  const handleOpenFullViewer = () => {
+  const handleOpenFullViewer = (editMode: boolean = false) => {
     onClose();
     const entryIdToNavigate = sheetDetail?.id || libraryEntryId || originalId;
     if (entryIdToNavigate) {
-      navigate(`/ledger/${entryIdToNavigate}`);
+      navigate(editMode ? `/ledger/${entryIdToNavigate}?edit=true` : `/ledger/${entryIdToNavigate}`);
     }
   };
 
@@ -167,11 +186,15 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
                 </button>
                 <button
                   onClick={() => handleStatusChange("want_to_watch")}
-                  className={`flex-1 py-2 px-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  disabled={entryStatus === "watched"}
+                  className={`flex-1 py-2 px-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                     entryStatus === "want_to_watch"
-                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm"
-                      : "text-white/40 hover:text-white/70"
+                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm cursor-pointer"
+                      : entryStatus === "watched"
+                      ? "text-white/20 opacity-40 cursor-not-allowed"
+                      : "text-white/40 hover:text-white/70 cursor-pointer"
                   }`}
+                  title={entryStatus === "watched" ? "Watched entries cannot be reverted to watchlist" : undefined}
                 >
                   <Clock className="w-3 h-3" />
                   Plan to Watch
@@ -195,25 +218,35 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
 
                   {/* Editorial Quote Block */}
                   <button
-                    onClick={() => handleOpenFullViewer()}
+                    onClick={() => handleOpenFullViewer(!hasBreakdown)}
                     className="text-left w-full group cursor-pointer space-y-2 pt-1"
                   >
                     <p className="font-serif italic text-sm md:text-base text-white/85 leading-relaxed pl-3.5 border-l-2 border-[#D97706]/60 line-clamp-3 group-hover:text-white transition-colors">
                       "{afterThoughts || preThoughts || original?.description || "No thought notes recorded yet for this entry."}"
                     </p>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#D97706] group-hover:text-amber-400 pl-3.5 transition-colors flex items-center gap-1">
-                      Read Full Breakdown <ArrowRight className="w-3 h-3" />
+                      {hasBreakdown ? (
+                        <>
+                          Read Full Breakdown <ArrowRight className="w-3 h-3" />
+                        </>
+                      ) : (
+                        <>
+                          Add Breakdown <ArrowRight className="w-3 h-3" />
+                        </>
+                      )}
                     </p>
                   </button>
                 </div>
               ) : (
                 /* PLAN TO WATCH DISPLAY */
                 <div className="p-4 rounded-2xl bg-amber-500/[0.04] border border-amber-500/20 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-amber-400" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">
-                      In Watchlist (Plan to Watch)
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-amber-400" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">
+                        In Watchlist (Plan to Watch)
+                      </span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-white/70 italic leading-relaxed pl-3 border-l-2 border-amber-500/40">
@@ -228,9 +261,8 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
               <button
                 onClick={() => {
                   onClose();
-                  const targetOgId = originalId || sheetDetail?.originalId || libraryEntryId;
-                  const queryArtist = profileId ? `?artistId=${profileId}` : "";
-                  navigate(`/tagged-works/${targetOgId}${queryArtist}`);
+                  const targetOgId = originalId || sheetDetail?.originalId;
+                  navigate(`/saved-works/${targetOgId}?mode=collection`);
                 }}
                 className="w-full py-3 px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-wider flex items-center justify-between cursor-pointer transition-all"
               >
@@ -261,7 +293,7 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
                 <button
                   onClick={() => {
                     onClose();
-                    navigate(`/works/${originalId}`);
+                    navigate(`/saved-works/${originalId}?artistId=${profileId}&mode=created`);
                   }}
                   className="flex-1 py-3 px-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left flex justify-between items-center group cursor-pointer"
                 >
@@ -273,16 +305,27 @@ export function LibraryItemSheet({ originalId, profileId, libraryEntryId, origin
               </div>
 
               {/* Primary Hero Action Button */}
-              <button
-                onClick={() => {
-                  onClose();
-                  navigate(`/originals/${originalId}`);
-                }}
-                className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(245,158,11,0.25)] hover:shadow-[0_0_32px_rgba(245,158,11,0.4)] cursor-pointer font-extrabold"
-              >
-                <span>View Original</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {hasBreakdown ? (
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate(`/originals/${originalId}`);
+                  }}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(245,158,11,0.25)] hover:shadow-[0_0_32px_rgba(245,158,11,0.4)] cursor-pointer font-extrabold"
+                >
+                  <span>View Original</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleOpenFullViewer(true)}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(245,158,11,0.25)] hover:shadow-[0_0_32px_rgba(245,158,11,0.4)] cursor-pointer font-extrabold"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Add Breakdown</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </>
         ) : (

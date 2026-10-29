@@ -25,11 +25,13 @@ import { useYoutubeEmbed } from "../../../hooks/useYoutubeEmbed";
 import { FHLoader } from "../../../components/FHLoader";
 import { formatRelativeTime } from "@/utils/time";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "../../../context/AuthContext";
 import type { LedgerItem } from "@/types/ledger";
 import { LedgerWallCard } from "../../profile/components/LedgerWallCard";
 import { ReactionAction } from "../../../components/actions/ReactionAction";
 import { ReactionId } from "../../../types/reactions";
-import { TaggedWorksModal } from "../../../components/TaggedWorksModal";
+import { CollectionWorksModal } from "../../../components/CollectionWorksModal";
+import { ShareAction } from "../../../components/actions/ShareAction";
 
 function AvatarFallback({ className }: { className: string }) {
   const baseClasses = className
@@ -235,7 +237,7 @@ function CoverCard({ item, onNavigate }: CoverCardProps) {
   );
 }
 
-export { AvatarImage, formatRelativeTime, LineFull, PinFull, RecommendationFull, LedgerFull };
+export { AvatarImage, formatRelativeTime, LineFull, FrameFull, FrameFull as PinFull, RecommendationFull, LedgerFull };
 
 // ─── Full-screen Line viewer ──────────────────────────────────────────────────
 
@@ -246,7 +248,7 @@ const LineFull: React.FC<{ post: WallPost }> = ({ post }) => (
       alt={post.artistName || "Artist"}
       className="w-12 h-12 rounded-xl object-cover object-top border border-white/15 shrink-0"
     />
-    <p className="text-[18px] sm:text-[22px] leading-[1.6] font-normal text-white/90">
+    <p className="text-[18px] sm:text-[22px] leading-[1.6] font-normal text-white/90 whitespace-pre-wrap break-words">
       {post.text}
     </p>
     <div className="flex flex-col items-center gap-1">
@@ -260,9 +262,9 @@ const LineFull: React.FC<{ post: WallPost }> = ({ post }) => (
   </div>
 );
 
-// ─── Full-screen Pin viewer ───────────────────────────────────────────────────
+// ─── Full-screen Frame viewer ──────────────────────────────────────────────────
 
-interface PinFullProps {
+interface FrameFullProps {
   post: WallPost;
   resolvedWork?: TheatreItem;
   resolvedOriginal?: Original;
@@ -270,7 +272,7 @@ interface PinFullProps {
   onClose: () => void;
 }
 
-const PinFull: React.FC<PinFullProps> = ({
+const FrameFull: React.FC<FrameFullProps> = ({
   post,
   resolvedWork,
   resolvedOriginal,
@@ -345,7 +347,7 @@ const PinFull: React.FC<PinFullProps> = ({
         <div className="relative w-full rounded-xl overflow-hidden shadow-2xl">
           <img
             src={image}
-            alt={title ?? "Pinned"}
+            alt={title ?? "Framed"}
             className="w-full h-auto object-cover object-top"
             draggable={false}
           />
@@ -361,6 +363,8 @@ const PinFull: React.FC<PinFullProps> = ({
     </div>
   );
 };
+
+const PinFull = FrameFull;
 
 // ─── Full-screen Recommendation viewer ────────────────────────────────────────
 
@@ -421,7 +425,7 @@ const LedgerFull: React.FC<{
   entry?: LedgerItem;
 }> = ({ post, entry }) => {
   const navigate = useNavigate();
-  const [showTaggedWorks, setShowTaggedWorks] = useState(false);
+  const [showCollectionModal, setShowCollectionModal] = useState(false);
 
   if (!entry) return null;
 
@@ -431,18 +435,18 @@ const LedgerFull: React.FC<{
         post={post}
         entry={entry}
         previewOnly={true}
-        onOpenTaggedWorks={() => navigate(`/tagged-works/${entry.originalId}`)}
+        onOpenCollection={() => navigate(`/saved-works/${entry.originalId}?mode=collection`)}
       />
       <div className="flex items-center justify-center gap-3 flex-wrap">
         <button
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/tagged-works/${entry.originalId}`);
+            navigate(`/saved-works/${entry.originalId}?mode=collection`);
           }}
           className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_24px_rgba(245,158,11,0.2)] cursor-pointer"
         >
           <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Check Collection ({(entry.taggedWorks || []).length || 3})</span>
+          <span>Check Collection</span>
         </button>
         <button
           onClick={(e) => {
@@ -456,9 +460,9 @@ const LedgerFull: React.FC<{
         </button>
       </div>
 
-      <TaggedWorksModal
-        isOpen={showTaggedWorks}
-        onClose={() => setShowTaggedWorks(false)}
+      <CollectionWorksModal
+        isOpen={showCollectionModal}
+        onClose={() => setShowCollectionModal(false)}
         entry={entry}
       />
     </div>
@@ -565,6 +569,7 @@ export function FoyerSwiper({
   onClose,
 }: FoyerSwiperProps) {
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
 
   // Normalised index: always in [0, groups.length)
   const [groupIndex, setGroupIndex] = useState(
@@ -617,9 +622,6 @@ export function FoyerSwiper({
   const isShowingOlderCard =
     activePostIndex === activeGroup.entries.length;
 
-  const reactionsCount =
-    activeGroup.artistName.length * 12 + activePostIndex * 5 + 15;
-
   // Animate dragX to a target then commit the index change and snap back to 0.
   const commitGroupChange = useCallback(
     (dir: number) => {
@@ -656,6 +658,49 @@ export function FoyerSwiper({
     await onFetchOlder(activeGroup.artistId);
     setIsFetching(false);
   }, [onFetchOlder, isFetching, activeGroup.artistId]);
+
+  const handleReact = useCallback(
+    async (reactionId: ReactionId | null) => {
+      if (!currentArtist) {
+        navigate("/profile/login");
+        return;
+      }
+
+      const activeEntry = activeGroup.entries[activePostIndex];
+      const activePost = getEntryPost(activeEntry, activeGroup);
+      if (!activePost) return;
+
+      const prevReaction = activeReaction;
+      setActiveReaction(reactionId);
+
+      try {
+        const res = reactionId
+          ? await apiFetch("/artists/add_reaction", {
+              method: "POST",
+              body: JSON.stringify({
+                wall_post_id: activePost.id,
+                reaction: reactionId,
+              }),
+            })
+          : await apiFetch("/artists/remove_reaction", {
+              method: "POST",
+              body: JSON.stringify({
+                wall_post_id: activePost.id,
+                reaction: prevReaction || "🔥",
+              }),
+            });
+
+        if (!res.ok) {
+          console.warn("[FoyerSwiper] Failed to save reaction with status:", res.status);
+          setActiveReaction(prevReaction);
+        }
+      } catch (err) {
+        console.warn("[FoyerSwiper] Failed to save reaction:", err);
+        setActiveReaction(prevReaction);
+      }
+    },
+    [activeGroup, activePostIndex, activeReaction, currentArtist, navigate]
+  );
 
   const handleSwiperShare = useCallback(
     async (e: React.MouseEvent) => {
@@ -790,17 +835,19 @@ export function FoyerSwiper({
     <ModalWrapper isOpen={true} onClose={onClose} isImmersive={true}>
       {/* Top-right controls: Share + Close */}
       <div className="fixed top-4 right-4 z-[300] flex items-center gap-2">
-        <button
-          onClick={handleSwiperShare}
-          className={`w-9 h-9 rounded-xl backdrop-blur-md border flex items-center justify-center transition-all duration-200 ${
-            copiedSwiper
-              ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-              : "bg-black/60 border-white/10 text-white/60 hover:text-white"
-          }`}
-          aria-label="Share this post"
-        >
-          {copiedSwiper ? <Check size={15} /> : <Share2 size={15} />}
-        </button>
+        <ShareAction
+          title={`Framehouse — ${activeGroup?.artistName || "Artist"}`}
+          text={
+            activeGroup?.entries[activePostIndex]?.post?.text?.slice(0, 100) ||
+            "Check out this on Framehouse"
+          }
+          url={
+            activeGroup && activeGroup.entries[activePostIndex]
+              ? `${window.location.origin}/wall/${activeGroup.artistId}/${activeGroup.entries[activePostIndex]?.id}`
+              : undefined
+          }
+          variant="icon"
+        />
         <button
           onClick={onClose}
           className="w-9 h-9 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors duration-150"
@@ -849,7 +896,7 @@ export function FoyerSwiper({
                       ? "Ledger Entry"
                       : activePost.type === "PIN_ORIGINAL"
                       ? "Original"
-                      : "Pin";
+                      : "Frame";
                   return (
                     <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/40">
                       {label} · {formatRelativeTime(activePost.postedAt, true)}
@@ -1000,7 +1047,7 @@ export function FoyerSwiper({
             navigate(`/profile/${prevGroup.artistId}`);
           }}
           activeReaction={activeReaction}
-          onReact={setActiveReaction}
+          onReact={handleReact}
         />
         <SlideContent
           group={activeGroup}
@@ -1016,7 +1063,7 @@ export function FoyerSwiper({
             navigate(`/profile/${activeGroup.artistId}`);
           }}
           activeReaction={activeReaction}
-          onReact={setActiveReaction}
+          onReact={handleReact}
         />
         <SlideContent
           group={nextGroup}
@@ -1033,7 +1080,7 @@ export function FoyerSwiper({
             navigate(`/profile/${nextGroup.artistId}`);
           }}
           activeReaction={activeReaction}
-          onReact={setActiveReaction}
+          onReact={handleReact}
         />
       </div>
 
@@ -1276,7 +1323,7 @@ const SlideContent = React.memo(function SlideContent({
                 </div>
               ) : (
                 <div className="w-full pointer-events-none">
-                  <PinFull
+                  <FrameFull
                     post={post}
                     resolvedWork={resolvedWork}
                     resolvedOriginal={resolvedOriginal}
@@ -1307,7 +1354,7 @@ const SlideContent = React.memo(function SlideContent({
               <ReactionAction
                 activeReaction={activeReaction}
                 onReact={onReact}
-                count={group.artistName.length * 12 + postIndex * 5 + 15}
+                count={post?.totalReactions ?? 0}
                 isFeed={false}
               />
             </motion.div>

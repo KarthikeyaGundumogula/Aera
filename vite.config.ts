@@ -43,10 +43,28 @@ export default defineConfig({
     host: true,
     port: 3000,
     strictPort: false,
-    hmr: {
-      protocol: 'ws',
-      host: 'localhost',
-      port: 3000,
+    proxy: {
+      '^/(auth|admin|artists|festivals|library|originals|profiles|search|sets|theatre|thoughts|wall|works|health_check)': {
+        target: process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        bypass: (req) => {
+          if (
+            req.headers.accept?.includes('text/html') ||
+            req.headers['sec-fetch-dest'] === 'document'
+          ) {
+            return req.url;
+          }
+        },
+        configure: (proxy) => {
+          proxy.on('error', (err, _req, res) => {
+            console.warn('[Vite Proxy] Backend connection notice:', err.message);
+            if (res && 'writeHead' in res && !res.headersSent) {
+              res.writeHead(503, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Backend unreachable', details: err.message }));
+            }
+          });
+        },
+      },
     },
   },
   resolve: {

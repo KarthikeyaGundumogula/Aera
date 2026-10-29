@@ -8,40 +8,63 @@ import {
   Eye,
   Clock,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
 import { AdaptiveTitle } from "../../../components/AdaptiveTitle";
 import { PosterImage } from "../../../components/PosterImage";
 import type { LedgerItem } from "@/types/ledger";
-import { LedgerTaggedWorksStack } from "./LedgerTaggedWorksStack";
+import { LedgerWorksStack } from "./LedgerWorksStack";
+
+export interface LedgerItemCardProps {
+  item: LedgerItem;
+  onUpdate?: (item: LedgerItem) => void;
+  onDelete?: (item: LedgerItem) => void;
+  isDeleting?: boolean;
+}
 
 export const LedgerItemCard = memo(function LedgerItemCard({
   item,
   onUpdate,
-}: {
-  item: LedgerItem;
-  onUpdate: (item: LedgerItem) => void;
-}) {
+  onDelete,
+  isDeleting,
+}: LedgerItemCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [preThoughts, setHypeText] = useState(item.preThoughts);
-  const [afterThoughts, setAfterThoughts] = useState(item.afterThoughts || "");
-  const [status, setStatus] = useState(item.status);
+
+  const raw = item as any;
+  const originalName = item.originalName || raw.title || raw.original_name || "Untitled Original";
+  const originalPosterUrl = item.originalPosterUrl || raw.cover_image || raw.coverImage || raw.original_poster_url || "";
+  const initialPreThoughts = item.preThoughts ?? raw.pre_thoughts ?? raw.description ?? "";
+  const initialAfterThoughts = item.afterThoughts ?? raw.after_thoughts ?? "";
+  const initialStatus: "watched" | "want_to_watch" =
+    item.status === "watched" || item.status === "want_to_watch"
+      ? item.status
+      : raw.watched
+      ? "watched"
+      : "want_to_watch";
+
+  const [preThoughts, setHypeText] = useState(initialPreThoughts);
+  const [afterThoughts, setAfterThoughts] = useState(initialAfterThoughts);
+  const [status, setStatus] = useState<"watched" | "want_to_watch">(initialStatus);
 
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onUpdate({
+    onUpdate?.({
       ...item,
+      originalName,
+      originalPosterUrl,
       preThoughts: preThoughts || "",
       afterThoughts: afterThoughts || "",
+      status,
     });
     setIsEditing(false);
   };
 
   const handleCancel = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setHypeText(item.preThoughts);
-    setAfterThoughts(item.afterThoughts || "");
-    setStatus(item.status);
+    setHypeText(initialPreThoughts);
+    setAfterThoughts(initialAfterThoughts);
+    setStatus(initialStatus);
     setIsEditing(false);
   };
 
@@ -61,9 +84,9 @@ export const LedgerItemCard = memo(function LedgerItemCard({
           <div className="aspect-[2/3] relative w-full overflow-hidden">
             <PosterImage
               loading="lazy"
-              src={item.originalPosterUrl}
-              alt={item.originalName}
-              info={item.status === "want_to_watch" ? "Pending" : "Watched"}
+              src={originalPosterUrl}
+              alt={originalName}
+              info={status === "want_to_watch" ? "Pending" : "Watched"}
               className="w-full h-full object-contain transition-transform duration-1000 opacity-90 group-hover:scale-105 group-hover:opacity-100"
             />
           </div>
@@ -77,12 +100,12 @@ export const LedgerItemCard = memo(function LedgerItemCard({
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 {!isEditing ? (
                   <>
-                    {item.status === "want_to_watch" && (
+                    {status === "want_to_watch" && (
                       <span className="px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.2em] bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-sm">
                         Pending
                       </span>
                     )}
-                    {item.status === "watched" && (
+                    {status === "watched" && (
                       <span className="px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.2em] bg-white/5 text-white/40 border border-white/10 rounded-sm">
                         Watched
                       </span>
@@ -96,7 +119,7 @@ export const LedgerItemCard = memo(function LedgerItemCard({
               </div>
 
               <AdaptiveTitle
-                title={item.originalName}
+                title={originalName}
                 multiWordClass="text-2xl sm:text-4xl"
                 singleWordClamp="clamp(1.5rem, 10vw, 3.5rem)"
               />
@@ -104,17 +127,38 @@ export const LedgerItemCard = memo(function LedgerItemCard({
 
             <div className="flex items-center gap-2 shrink-0">
               {!isEditing ? (
-                <button
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-105 active:scale-95"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditing(true);
-                    setIsExpanded(true);
-                  }}
-                  title="Edit Thoughts"
-                >
-                  <Edit3 className="w-4 h-4 text-white/60" />
-                </button>
+                <>
+                  {onUpdate && (
+                    <button
+                      className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-105 active:scale-95"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditing(true);
+                        setIsExpanded(true);
+                      }}
+                      title="Edit Thoughts"
+                    >
+                      <Edit3 className="w-4 h-4 text-white/60" />
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 text-white/40 hover:text-red-400 transition-all hover:scale-105 active:scale-95"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete({
+                          ...item,
+                          originalName,
+                          originalPosterUrl,
+                        });
+                      }}
+                      title="Remove from Ledger"
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </>
               ) : (
                 <div className="flex items-center gap-1.5">
                   <button
@@ -160,7 +204,7 @@ export const LedgerItemCard = memo(function LedgerItemCard({
                       e.stopPropagation();
                       setStatus("want_to_watch");
                     }}
-                    disabled={item.status === "watched"}
+                    disabled={status === "watched"}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
                       status === "want_to_watch"
                         ? "bg-white/10 text-white shadow-xl"
@@ -188,7 +232,7 @@ export const LedgerItemCard = memo(function LedgerItemCard({
               </div>
             ) : (
               <p className="text-white/60 font-medium leading-relaxed italic border-l border-white/10 pl-4 text-xs sm:text-sm max-w-2xl line-clamp-2 uppercase tracking-tight">
-                {item.preThoughts}
+                {preThoughts || "No thoughts logged yet."}
               </p>
             )}
           </div>
@@ -217,6 +261,7 @@ export const LedgerItemCard = memo(function LedgerItemCard({
                   value={preThoughts ?? ""}
                   onChange={(e) => setHypeText(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
+                  maxLength={10000}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-5 text-xs sm:text-sm text-white/90 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/10 transition-all min-h-[120px] resize-none placeholder:text-white/10 shadow-inner"
                   placeholder="Document your expectations..."
                 />
@@ -260,6 +305,7 @@ export const LedgerItemCard = memo(function LedgerItemCard({
                         value={afterThoughts}
                         onChange={(e) => setAfterThoughts(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
+                        maxLength={10000}
                         className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-5 text-sm text-white/70 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/10 transition-all min-h-[140px] resize-none shadow-inner"
                         placeholder="Document your experience after watching..."
                       />
@@ -269,18 +315,18 @@ export const LedgerItemCard = memo(function LedgerItemCard({
                     </div>
                   ) : (
                     <p className="text-sm text-white/70 leading-relaxed max-w-3xl">
-                      {item.afterThoughts}
+                      {afterThoughts || item.afterThoughts || "No post-experience thoughts logged."}
                     </p>
                   )}
                 </motion.div>
               )}
 
-              {item.taggedWorks.length > 0 && (
+              {Array.isArray(item.taggedWorks) && item.taggedWorks.length > 0 && (
                 <div>
                   <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-4">
                     Works Ledger
                   </div>
-                  <LedgerTaggedWorksStack works={item.taggedWorks as any} />
+                  <LedgerWorksStack works={item.taggedWorks as any} />
                 </div>
               )}
             </div>

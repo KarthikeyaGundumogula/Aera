@@ -123,6 +123,7 @@ export function OriginalSearchInput({
                 setIsOpen(true);
               }}
               onFocus={() => setIsOpen(true)}
+              maxLength={100}
               className="w-full bg-white/5 border border-amber-500/30 rounded-2xl py-3 pl-10 pr-10 text-xs font-medium text-white outline-none focus:border-amber-400 transition-all placeholder:text-white/20"
             />
             <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />

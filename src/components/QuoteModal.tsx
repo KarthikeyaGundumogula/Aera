@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send, Pin, Star, BookPlus, LogIn } from "lucide-react";
+import { X, Send, Star, BookPlus, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TheatreItem } from "../types";
 import { useAuth } from "@/context/AuthContext";
@@ -289,6 +289,13 @@ export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: 
                           placeholder="Add a thought..."
                           value={quoteText}
                           onChange={(e) => setQuoteText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                              e.preventDefault();
+                              handleSubmit();
+                            }
+                          }}
+                          maxLength={500}
                           className="w-full min-h-[80px] bg-transparent text-[15px] italic text-white/90 placeholder:text-white/20 resize-none focus:outline-none leading-relaxed"
                         />
 
@@ -298,10 +305,15 @@ export function QuoteModal({ isOpen, onClose, item, renderTop, onQuoteSubmit }: 
                           </p>
                         )}
                         
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-[10px] font-mono text-white/20">
-                            {quoteText.length} / 280
-                          </span>
+                        <div className="flex justify-between items-center mt-2 gap-4">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-mono tabular-nums ${quoteText.length >= 500 ? "text-amber-400 font-bold" : "text-white/20"}`}>
+                              {quoteText.length >= 500 ? "Limit reached (500 / 500)" : `${quoteText.length} / 500`}
+                            </span>
+                            <span className="text-[9px] text-white/30 hidden sm:inline">
+                              • ⌘/Ctrl+Enter to post
+                            </span>
+                          </div>
                           
                           <button
                             onClick={handleSubmit}

@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Tag } from "lucide-react";
 import { LedgerAction } from "../../../components/actions/LedgerAction";
 import { useAuth } from "../../../context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { LinkedOriginal } from "../../../types";
 
-interface CurateOverlayProps {
+export interface LinkedOriginalsOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   originals: LinkedOriginal[];
@@ -16,19 +15,18 @@ interface CurateOverlayProps {
   onShowToast: (msg: string) => void;
 }
 
-export function CurateOverlay({
+export function LinkedOriginalsOverlay({
   isOpen,
   onClose,
   originals,
-  workId,
+  workId: _workId,
   isLoading = false,
   onShowToast,
-}: CurateOverlayProps) {
+}: LinkedOriginalsOverlayProps) {
   const navigate = useNavigate();
   const { currentArtist } = useAuth();
   // Map of originalId -> libraryEntryId
   const [libraryEntryMap, setLibraryEntryMap] = useState<Record<string, string>>({});
-  const [taggedOriginals, setTaggedOriginals] = useState<string[]>([]);
 
   // Pre-load user's library entries if logged in
   useEffect(() => {
@@ -104,62 +102,8 @@ export function CurateOverlay({
         }
       }
     } catch (err) {
-      console.error("[CurateOverlay] Failed to update library status:", err);
+      console.error("[LinkedOriginalsOverlay] Failed to update library status:", err);
       onShowToast("Network error updating Library");
-    }
-  };
-
-  const handleTagToLedger = async (id: string) => {
-    if (!currentArtist) {
-      onShowToast("Sign in required to tag work");
-      return;
-    }
-
-    if (taggedOriginals.includes(id)) {
-      onShowToast("Already Tagged to Original");
-      return;
-    }
-
-    try {
-      let entryId = libraryEntryMap[id];
-
-      // Ensure the original is added to library first if not already present
-      if (!entryId) {
-        const createRes = await apiFetch("/library/new", {
-          method: "POST",
-          body: JSON.stringify({
-            original_id: id,
-            visibility: true,
-            status: "WANT_TO_WATCH",
-            entry_type: "MOVIE",
-            surge_score: 0,
-          }),
-        });
-
-        if (createRes.ok) {
-          const json = await createRes.json().catch(() => null);
-          entryId = json?.data?.id || json?.data;
-          if (entryId) {
-            setLibraryEntryMap((prev) => ({
-              ...prev,
-              [id]: String(entryId),
-            }));
-          }
-        }
-      }
-
-      if (entryId && workId) {
-        await apiFetch(`/library/${entryId}/tag_work`, {
-          method: "POST",
-          body: JSON.stringify({ work_id: workId }),
-        });
-      }
-
-      setTaggedOriginals((prev) => [...prev, id]);
-      onShowToast("Work tagged to Original");
-    } catch (err) {
-      console.error("[CurateOverlay] Failed to tag work:", err);
-      onShowToast("Network error tagging work");
     }
   };
 
@@ -200,7 +144,6 @@ export function CurateOverlay({
             ) : (
               originals.map((item) => {
                 const inLedger = Boolean(libraryEntryMap[item.id]);
-                const isTagged = taggedOriginals.includes(item.id);
 
                 return (
                   <div
@@ -222,21 +165,12 @@ export function CurateOverlay({
                         {item.title}
                       </h4>
                     </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 pr-1 sm:pr-2">
+                    <div className="flex items-center pr-1 sm:pr-2">
                       <LedgerAction 
                         isActive={inLedger}
                         onClick={() => handleAddToLedger(item.id)}
                         variant="feed"
                       />
-                      <button
-                        onClick={() => handleTagToLedger(item.id)}
-                        className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl border transition-all ${isTagged ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10"}`}
-                        title="Tag work to Ledger"
-                      >
-                        <Tag
-                          className={`w-3 h-3 sm:w-4 sm:h-4 ${isTagged ? "fill-current" : ""}`}
-                        />
-                      </button>
                     </div>
                   </div>
                 );
@@ -248,3 +182,7 @@ export function CurateOverlay({
     </AnimatePresence>
   );
 }
+
+// Backward compatibility alias
+export const CurateOverlay = LinkedOriginalsOverlay;
+export type CurateOverlayProps = LinkedOriginalsOverlayProps;

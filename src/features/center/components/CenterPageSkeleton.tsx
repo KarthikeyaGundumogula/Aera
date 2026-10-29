@@ -1,6 +1,6 @@
 /**
- * HomePageSkeleton — Cinematic shimmer skeleton for the Home Feed.
- * Mirrors the exact section layout of HomeFeedLayout so the transition
+ * CenterPageSkeleton — Cinematic shimmer skeleton for the Center Feed.
+ * Mirrors the exact section layout of CenterFeedLayout so the transition
  * from skeleton → real content is imperceptible.
  */
 import React from "react";
@@ -12,7 +12,7 @@ function SkeletonBlock({ className = "", style }: { className?: string, style?: 
   return <div className={`${shimmer} rounded-lg ${className}`} style={style} />;
 }
 
-export function HomePageSkeleton() {
+export function CenterPageSkeleton() {
   return (
     <div className="bg-surface-deep min-h-screen text-white pb-24">
       {/* Header skeleton */}
@@ -113,3 +113,6 @@ export function HomePageSkeleton() {
     </div>
   );
 }
+
+// Backward compatibility alias
+export const HomePageSkeleton = CenterPageSkeleton;

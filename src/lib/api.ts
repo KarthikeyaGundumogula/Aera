@@ -29,11 +29,30 @@ const API_BASE_URL: string =
 /**
  * Builds a full API URL by appending a path to the base URL.
  *
+ * Automatically handles mobile / local network testing (e.g. browsing http://192.168.x.x:3000):
+ * - If VITE_API_URL is configured to localhost / 127.0.0.1, mobile devices on the same WiFi
+ *   cannot reach `localhost:8000` because `localhost` refers to the mobile phone itself.
+ * - When accessed from a remote device on the LAN (hostname is not 'localhost' or '127.0.0.1'),
+ *   and base points to a local dev server, we route requests through the current origin
+ *   (the Vite dev server proxy), ensuring seamless access, valid session cookies, and zero CORS errors.
+ *
  * @param path - API path starting with `/`, e.g. `/auth/login`
  * @returns Full URL string, e.g. `http://localhost:8000/auth/login`
  */
 export function apiUrl(path: string): string {
-  const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  let base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    const currentHost = window.location.hostname;
+    const isLoopback = currentHost === 'localhost' || currentHost === '127.0.0.1';
+
+    // If testing on a mobile device or other computer on the same local network
+    if (!isLoopback && /:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(base)) {
+      // Route through the current origin (Vite proxy on port 3000)
+      base = window.location.origin;
+    }
+  }
+
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${base}${normalizedPath}`;
 }
@@ -82,6 +101,7 @@ const DEFAULT_OPTIONS: RequestInit = {
   credentials: 'include',
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 };
 

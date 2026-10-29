@@ -51,7 +51,14 @@ export function SurgeInputSection({
       </AnimatePresence>
 
       {/* Score Component */}
-      <div className="relative pb-1">
+      <div 
+        className="relative pb-1"
+        onPointerDownCapture={() => {
+          if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+        }}
+      >
         <SurgeScore
           score={score}
           peak={peak}

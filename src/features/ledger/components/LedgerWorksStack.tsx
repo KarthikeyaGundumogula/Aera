@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
-export interface LedgerTaggedWork {
+
+export interface LedgerWorkItem {
   id: string;
   title: string;
   coverImage?: string;
@@ -10,13 +11,16 @@ export interface LedgerTaggedWork {
   platform?: string;
   srcId?: string;
 }
+
+export type LedgerTaggedWork = LedgerWorkItem;
+
 import type { TheatreItem } from "../../../types";
 import { useWorkNavigation } from "../../../hooks/useWorkNavigation";
 
-export function LedgerTaggedWorksStack({
+export function LedgerWorksStack({
   works,
 }: {
-  works: LedgerTaggedWork[];
+  works: LedgerWorkItem[];
 }) {
   const { openWork } = useWorkNavigation();
 
@@ -60,3 +64,6 @@ export function LedgerTaggedWorksStack({
     </>
   );
 }
+
+// Backward compatibility alias
+export const LedgerTaggedWorksStack = LedgerWorksStack;

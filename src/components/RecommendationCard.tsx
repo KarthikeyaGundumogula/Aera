@@ -32,6 +32,7 @@ interface Props {
   compact?: boolean;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  onNavigate?: () => void;
 }
 
 export const RecommendationCard = memo(function RecommendationCard({
@@ -40,8 +41,15 @@ export const RecommendationCard = memo(function RecommendationCard({
   compact = false,
   isSaved: propIsSaved,
   onToggleSave,
+  onNavigate,
 }: Props) {
   const navigate = useNavigate();
+  const handleNavigate = (path: string) => {
+    if (onNavigate) {
+      onNavigate();
+    }
+    navigate(path);
+  };
   const ledgerEntryId = rec.ledgerEntryId;
 
   const isArtistFavorited = Boolean(
@@ -243,13 +251,13 @@ export const RecommendationCard = memo(function RecommendationCard({
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     e.stopPropagation();
-                    navigate(`/originals/${rec.original.id}`);
+                    handleNavigate(`/originals/${rec.original.id}`);
                   }
                 }}
                 className="relative w-full h-[170px] overflow-hidden rounded-none border-2 border-white/30 cursor-pointer group/poster shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/originals/${original.id}`);
+                  handleNavigate(`/originals/${original.id}`);
                 }}
               >
                 <PosterImage
@@ -279,7 +287,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/profile/${original.director}`);
+                    handleNavigate(`/profile/${original.director}`);
                   }}
                 >
                   <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/25 mb-0.5">
@@ -298,7 +306,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/profile/${original.dop}`);
+                    handleNavigate(`/profile/${original.dop}`);
                   }}
                 >
                   <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/25 mb-0.5">
@@ -327,13 +335,13 @@ export const RecommendationCard = memo(function RecommendationCard({
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
                             e.stopPropagation();
-                            navigate(`/profile/${star}`);
+                            handleNavigate(`/profile/${star}`);
                           }
                         }}
                         className="group/star flex items-center gap-0.5 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/profile/${star}`);
+                          handleNavigate(`/profile/${star}`);
                         }}
                       >
                         <p className="text-[9px] font-black text-white/80 leading-tight truncate group-hover/star:text-white transition-colors">
@@ -362,7 +370,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                 onClick={(e) => {
                   if (original.id) {
                     e.stopPropagation();
-                    navigate(`/originals/${original.id}`);
+                    handleNavigate(`/originals/${original.id}`);
                   }
                 }}
                 className={`text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] line-clamp-2 ${original.id ? "hover:text-amber-400 transition-colors cursor-pointer" : ""}`}
@@ -376,7 +384,7 @@ export const RecommendationCard = memo(function RecommendationCard({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (ledgerEntryId) {
-                        navigate(`/ledger/${ledgerEntryId}`);
+                        handleNavigate(`/ledger/${ledgerEntryId}`);
                       }
                     }}
                     className="flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-white/40 hover:text-amber-400 hover:bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/10 transition-colors cursor-pointer"

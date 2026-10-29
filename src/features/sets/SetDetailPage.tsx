@@ -15,7 +15,7 @@ import {
   Loader2,
   Globe,
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, mapBackendWorkToTheatreItem } from "../../context/AuthContext";
 import { DiscussionCard } from "../shared/discussions/DiscussionCard";
 import { ActiveFestivalSpotlight } from "./components/ActiveFestivalSpotlight";
 import { FestivalArchive } from "./components/FestivalArchive";
@@ -27,9 +27,14 @@ import { UpdateSetModal } from "./components/UpdateSetModal";
 import { CreateFestivalModal } from "./components/CreateFestivalModal";
 import { CreateDiscussionWidget, SetWorkItem } from "./components/CreateDiscussionWidget";
 import { NotFoundOverlay } from "../../components/NotFoundOverlay";
+import { ConfirmDeleteModal } from "../shared/modals/ConfirmDeleteModal";
 import { apiFetch } from "@/lib/api";
 import { Set as SetType, Festival } from "../../types/sets";
 import { TheatreItem, DiscussionItem } from "../../types";
+
+function isUuid(val?: string | null): boolean {
+  return Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val));
+}
 
 /**
  * SetDetailPage — /sets/:id
@@ -44,6 +49,37 @@ export function SetDetailPage() {
   const [discussions, setDiscussions] = useState<DiscussionItem[]>([]);
   const [theatreWorks, setTheatreWorks] = useState<TheatreItem[]>([]);
   const [fetchedFestivals, setFetchedFestivals] = useState<Festival[]>([]);
+  const [discussionToDelete, setDiscussionToDelete] = useState<DiscussionItem | null>(null);
+  const [isDeletingDiscussion, setIsDeletingDiscussion] = useState(false);
+
+  const handleConfirmDeleteDiscussion = async () => {
+    if (!discussionToDelete) return;
+    const discId = discussionToDelete.id;
+    setIsDeletingDiscussion(true);
+    try {
+      setDiscussions((prev) => prev.filter((d) => d.id !== discId));
+      let deleted = false;
+      if (isUuid(discId)) {
+        const res1 = await apiFetch(`/sets/delete/discussion/${discId}`, { method: "DELETE" }).catch(() => null);
+        if (res1?.ok) deleted = true;
+      }
+      if (!deleted && id) {
+        const res2 = await apiFetch(`/sets/${id}/discussions/${discId}`, { method: "DELETE" }).catch(() => null);
+        if (res2?.ok) deleted = true;
+      }
+      if (!deleted && id) {
+        const res3 = await apiFetch(`/sets/${id}/delete/discussion/${discId}`, { method: "DELETE" }).catch(() => null);
+        if (res3?.ok) deleted = true;
+      }
+      triggerToast("Discussion deleted.");
+    } catch (err) {
+      console.error("[SetDetailPage] Error deleting discussion:", err);
+      triggerToast("Failed to delete discussion.");
+    } finally {
+      setIsDeletingDiscussion(false);
+      setDiscussionToDelete(null);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -109,7 +145,7 @@ export function SetDetailPage() {
           const json = await theatreRes.json();
           const list = json.data ?? [];
           if (Array.isArray(list) && isMounted) {
-            setTheatreWorks(list);
+            setTheatreWorks(list.map(mapBackendWorkToTheatreItem));
           }
         }
 
@@ -226,8 +262,8 @@ export function SetDetailPage() {
     return theatreWorks.map((tw) => ({
       id: String(tw.id),
       title: tw.title || "Untitled",
-      type: tw.category || "Original",
-      thumbnail: tw.image || "",
+      type: tw.category || "Edit",
+      thumbnail: tw.thumbnail || tw.image || (tw.srcId ? `https://img.youtube.com/vi/${tw.srcId}/hqdefault.jpg` : ""),
       artistId: tw.artistId || "",
       artistName: tw.artist || "",
     }));
@@ -585,6 +621,7 @@ export function SetDetailPage() {
                   onCardClick={() =>
                     navigate(`/sets/${id}/discussions/${disc.id}`)
                   }
+                  onDelete={() => setDiscussionToDelete(disc)}
                 />
               ))}
             </div>
@@ -615,7 +652,7 @@ export function SetDetailPage() {
       {/* ─── Layer IV: Set Theatre (Y-axis scroll) ───────────────────────────── */}
       <TheatrePreviewSection
         title={`${localSet.title} Theatre`}
-        works={setWorks}
+        works={theatreWorks}
         enterUrl={`/sets/${localSet.id}/theatre`}
       />
 
@@ -639,6 +676,18 @@ export function SetDetailPage() {
           onCreate={handleCreateFestival}
         />
       )}
+
+      {/* Confirmation Modal for Discussion Post Deletion */}
+      <ConfirmDeleteModal
+        isOpen={Boolean(discussionToDelete)}
+        onClose={() => setDiscussionToDelete(null)}
+        onConfirm={handleConfirmDeleteDiscussion}
+        title="Delete Discussion Post?"
+        description={`Are you sure you want to permanently delete "${discussionToDelete?.title || "this discussion"}"? All associated comments will also be removed. This action cannot be undone.`}
+        confirmLabel="Delete Post"
+        cancelLabel="Keep"
+        isDeleting={isDeletingDiscussion}
+      />
     </div>
   );
 }

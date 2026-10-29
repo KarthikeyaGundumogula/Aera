@@ -29,7 +29,7 @@ import { RollingTicker } from "../components/RollingTicker";
 import { ArtistSpotlightGrid } from '../../../components/ArtistSpotlightGrid';
 import { ContactCTA } from "../components/ContactCTA";
 import { CenterQuotes } from "../components/CenterQuotes";
-import { HomePageSkeleton } from "../components/HomePageSkeleton";
+import { CenterPageSkeleton } from "../components/CenterPageSkeleton";
 import { RecentReleasesSection } from "../../shared/components/RecentReleasesSection";
 import { TrendingDiscussions } from "../components/TrendingDiscussions";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
@@ -50,11 +50,12 @@ export function CenterFeedLayout() {
   const PROGRESS_INTERVAL = 50;
 
   useEffect(() => {
-    apiFetch("/theatre")
+    apiFetch("/theatre?limit=10")
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          setItems(json.data ?? []);
+          const list = json.data ?? [];
+          setItems(list.slice(0, 10));
         }
       })
       .catch((err) => {
@@ -139,7 +140,7 @@ export function CenterFeedLayout() {
   }, [items]);
 
   if (!items) {
-    return <HomePageSkeleton />;
+    return <CenterPageSkeleton />;
   }
 
   return (

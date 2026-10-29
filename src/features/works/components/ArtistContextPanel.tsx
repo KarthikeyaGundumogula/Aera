@@ -11,9 +11,10 @@ import { apiFetch } from "@/lib/api";
 interface ArtistContextPanelProps {
   artistId: string;
   currentWorkId: string | number;
+  onHasWorksChange?: (hasWorks: boolean) => void;
 }
 
-export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPanelProps) {
+export function ArtistContextPanel({ artistId, currentWorkId, onHasWorksChange }: ArtistContextPanelProps) {
   const location = useLocation();
   const [artistWorks, setArtistWorks] = useState<TheatreItem[]>([]);
   const [isFallback, setIsFallback] = useState(false);
@@ -111,7 +112,13 @@ export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPan
     return clusters.flatMap((c) => c.slots.map((s) => s.item).filter(Boolean) as TheatreItem[]);
   }, [clusters]);
 
-  if (displayWorks.length === 0 || clusters.length === 0) return null;
+  const hasWorks = displayWorks.length > 0 && clusters.length > 0;
+
+  useEffect(() => {
+    onHasWorksChange?.(hasWorks);
+  }, [hasWorks, onHasWorksChange]);
+
+  if (!hasWorks) return null;
 
   return (
     <div className="w-full h-full bg-[#070706] lg:border-l lg:border-white/[0.04]">
@@ -121,7 +128,7 @@ export function ArtistContextPanel({ artistId, currentWorkId }: ArtistContextPan
           <SectionHeader title={sectionTitle} />
         </div>
 
-        <div className="pt-2 pb-20 lg:pb-10">
+        <div className="pt-2 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-10">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

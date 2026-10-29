@@ -10,6 +10,7 @@ import {
   ChevronRight,
   ArrowUpRight,
   Heart,
+  Trash2,
 } from "lucide-react";
 import type { Recommendation } from "@/types/recommendations";
 import { BoostAction } from "./actions/BoostAction";
@@ -25,12 +26,15 @@ import { useWorkNavigation } from "@/hooks/useWorkNavigation";
 import type { TheatreItem } from "../types/theatre";
 import { apiFetch } from "@/lib/api";
 
-interface FeedRecommendationCardProps {
+export interface FeedRecommendationCardProps {
   rec: Recommendation;
   highestScore?: number;
   variant?: string;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  onNavigate?: () => void;
+  onDelete?: (rec: Recommendation) => void;
+  isDeleting?: boolean;
 }
 
 export const FeedRecommendationCard = memo(function FeedRecommendationCard({
@@ -39,8 +43,17 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
   variant,
   isSaved: propIsSaved,
   onToggleSave,
+  onNavigate,
+  onDelete,
+  isDeleting,
 }: FeedRecommendationCardProps) {
   const navigate = useNavigate();
+  const handleNavigate = (path: string) => {
+    if (onNavigate) {
+      onNavigate();
+    }
+    navigate(path);
+  };
 
   const isArtistFavorited = Boolean(
     rec.artist?.isFavorited ??
@@ -203,13 +216,13 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       e.stopPropagation();
-                      navigate(`/profile/${rec.original.director}`);
+                      handleNavigate(`/profile/${rec.original.director}`);
                     }
                   }}
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/profile/${rec.original.director}`);
+                    handleNavigate(`/profile/${rec.original.director}`);
                   }}
                 >
                   <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/25 mb-0.5">
@@ -231,13 +244,13 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       e.stopPropagation();
-                      navigate(`/profile/${rec.original.dop}`);
+                      handleNavigate(`/profile/${rec.original.dop}`);
                     }
                   }}
                   className="group/credit cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/profile/${rec.original.dop}`);
+                    handleNavigate(`/profile/${rec.original.dop}`);
                   }}
                 >
                   <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/25 mb-0.5">
@@ -266,13 +279,13 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
                             e.stopPropagation();
-                            navigate(`/profile/${star}`);
+                            handleNavigate(`/profile/${star}`);
                           }
                         }}
                         className="group/star flex items-center gap-0.5 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/profile/${star}`);
+                          handleNavigate(`/profile/${star}`);
                         }}
                       >
                         <p className="text-[9px] font-black text-white/80 leading-tight truncate group-hover/star:text-white transition-colors">
@@ -301,7 +314,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                 onClick={(e) => {
                   if (original.id) {
                     e.stopPropagation();
-                    navigate(`/originals/${original.id}`);
+                    handleNavigate(`/originals/${original.id}`);
                   }
                 }}
                 className={`text-[17px] sm:text-[19px] font-black uppercase text-white tracking-tight leading-[1.05] ${original.id ? "hover:text-amber-400 transition-colors cursor-pointer" : ""}`}
@@ -315,7 +328,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (ledgerEntryId) {
-                        navigate(`/ledger/${ledgerEntryId}`);
+                        handleNavigate(`/ledger/${ledgerEntryId}`);
                       }
                     }}
                     className="flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-white/40 hover:text-amber-400 hover:bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/10 transition-colors cursor-pointer"
@@ -516,7 +529,7 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                   {/* Save Action (Moved from bottom) */}
                   {variant !== "wall-embed" && (
                     <button
-                      className="shrink-0 p-1 rounded-lg hover:bg-white/[0.04] w-7 h-7 mr-3 flex items-center justify-center transition-colors text-white/30 hover:text-white"
+                      className="shrink-0 p-1 rounded-lg hover:bg-white/[0.04] w-7 h-7 mr-1 flex items-center justify-center transition-colors text-white/30 hover:text-white"
                       onClick={handleToggleSave}
                       aria-label={saved ? "Saved" : "Save"}
                     >
@@ -524,6 +537,22 @@ export const FeedRecommendationCard = memo(function FeedRecommendationCard({
                         className="w-[18px] h-[18px] sm:w-5 sm:h-5"
                         fill={saved ? "currentColor" : "none"}
                       />
+                    </button>
+                  )}
+
+                  {/* Delete Action (if onDelete provided) */}
+                  {onDelete && variant !== "wall-embed" && (
+                    <button
+                      className="shrink-0 p-1 rounded-lg hover:bg-red-500/10 border border-transparent hover:border-red-500/20 w-7 h-7 mr-2 flex items-center justify-center transition-colors text-white/30 hover:text-red-400 disabled:opacity-40 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(rec);
+                      }}
+                      disabled={isDeleting}
+                      aria-label="Delete recommendation"
+                      title="Delete recommendation"
+                    >
+                      <Trash2 className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
                     </button>
                   )}
                 </div>

@@ -48,16 +48,13 @@ export function PosterWork({
     >
       {imgSrc ? (
         <img 
-          ref={(img) => {
-            if (img && img.complete && img.naturalWidth > 0 && !isLoaded) {
-              setIsLoaded(true);
-            }
-          }}
           onLoad={(e) => {
             const img = e.currentTarget;
             if (img.naturalWidth === 120 && img.src.includes("youtube.com")) {
               if (img.src.includes("maxresdefault") && item.srcId) {
                 setImgSrc(getYoutubeFallbackThumbnail(item.srcId));
+              } else if (item.image && img.src !== item.image) {
+                setImgSrc(item.image);
               } else {
                 setImgSrc("");
               }
@@ -68,6 +65,8 @@ export function PosterWork({
           onError={() => {
             if (imgSrc.includes("youtube.com") && imgSrc.includes("maxresdefault") && item.srcId) {
               setImgSrc(getYoutubeFallbackThumbnail(item.srcId));
+            } else if (item.image && imgSrc !== item.image) {
+              setImgSrc(item.image);
             } else {
               setImgSrc("");
             }

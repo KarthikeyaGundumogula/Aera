@@ -8,12 +8,13 @@ import { WorkDetail, OriginalArtist, TheatreItem } from "../../../types";
 import { ViewerNav } from "../components/ViewerNav";
 import { ArtistProfile } from "../../shared/profile";
 import { ArtistContextPanel } from "../components/ArtistContextPanel";
-import { Heart, Pin, BookPlus } from "lucide-react";
+import { Heart, BookPlus } from "lucide-react";
 import { SingleStar as Star } from "../../../components/icons/SingleStar";
 import { SpiritIcon } from "../../../components/icons/AppIcons";
 import { CinematicToast } from "../../shared/modals/CinematicToast";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useLocation } from "react-router-dom";
 import { DesktopHeader } from "../../navigation/DesktopHeader";
 import { MobileTopHeader } from "../../navigation/MobileTopHeader";
 
@@ -50,20 +51,33 @@ export function ViewerFrame({
   showIdentityBlock = true,
   mediaMaxWidth,
 }: ViewerFrameProps) {
+  const location = useLocation();
+  const locationState = location.state as { item?: TheatreItem; feedItems?: TheatreItem[] } | null;
+  const feedItemsFromState = locationState?.feedItems;
+  const initialHasUpNext = feedItemsFromState 
+    ? feedItemsFromState.some((w) => String(w.id) !== String(work.id))
+    : true;
+  const [hasUpNext, setHasUpNext] = useState(initialHasUpNext);
+
   const { currentArtist } = useAuth();
   const [selectedArtist, setSelectedArtist] = useState<OriginalArtist | null>(null);
   const [isStarred, setIsStarred] = useState(Boolean(work.isStarred));
   const [starsDelta, setStarsDelta] = useState(0);
   const [staring, setStaring] = useState(false);
-  const [pinned, setPinned] = useState(Boolean(work.isFramed));
+  const [isFramed, setIsFramed] = useState(Boolean(work.isFramed));
   const [saved, setSaved] = useState(Boolean(work.isSaved));
   const [savesDelta, setSavesDelta] = useState(0);
   const [doubleTapFlash, setDoubleTapFlash] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const lastTapRef = useRef(0);
+  const isStarredRef = useRef(isStarred);
   const starTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const flashTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    isStarredRef.current = isStarred;
+  }, [isStarred]);
 
   const artistId = work.artist?.id || "";
   const artistName = work.artist?.stageName || "Unknown Artist";
@@ -99,7 +113,7 @@ export function ViewerFrame({
       setSavesDelta(0);
     }
     if (typeof work.isFramed === "boolean") {
-      setPinned(work.isFramed);
+      setIsFramed(work.isFramed);
     }
   }, [work.isStarred, work.isSaved, work.isFramed]);
 
@@ -122,6 +136,12 @@ export function ViewerFrame({
   };
 
   const fireStar = async () => {
+    // If the work is already starred, double-tapping must do nothing.
+    // Works can only be unstarred by clicking the star button on the action row.
+    if (isStarred || isStarredRef.current) {
+      return;
+    }
+
     if (!currentArtist) {
       setToastMsg("Sign in required to star works");
       setTimeout(() => setToastMsg(null), 3000);
@@ -131,10 +151,9 @@ export function ViewerFrame({
     if (starTimeout.current) clearTimeout(starTimeout.current);
     if (flashTimeout.current) clearTimeout(flashTimeout.current);
     const baseStarred = work.isStarred ?? false;
-    if (!isStarred) {
-      setIsStarred(true);
-      setStarsDelta(baseStarred ? 0 : 1);
-    }
+    isStarredRef.current = true;
+    setIsStarred(true);
+    setStarsDelta(baseStarred ? 0 : 1);
     setStaring(true);
     setDoubleTapFlash(true);
     starTimeout.current = setTimeout(() => setStaring(false), 420);
@@ -147,11 +166,13 @@ export function ViewerFrame({
       });
       if (!res.ok) {
         console.warn(`[ViewerFrame] fireStar failed with status ${res.status}`);
+        isStarredRef.current = false;
         setIsStarred(false);
         setStarsDelta(baseStarred ? -1 : 0);
       }
     } catch (e) {
       console.warn("[ViewerFrame] fireStar backend error:", e);
+      isStarredRef.current = false;
       setIsStarred(false);
       setStarsDelta(baseStarred ? -1 : 0);
     }
@@ -168,6 +189,7 @@ export function ViewerFrame({
     if (flashTimeout.current) clearTimeout(flashTimeout.current);
     const next = !isStarred;
     const baseStarred = work.isStarred ?? false;
+    isStarredRef.current = next;
     setIsStarred(next);
     setStarsDelta(next ? (baseStarred ? 0 : 1) : (baseStarred ? -1 : 0));
     setStaring(true);
@@ -189,6 +211,7 @@ export function ViewerFrame({
         const errMsg = errJson.error || errJson.message || "Action failed. Please try again.";
         setToastMsg(errMsg);
         setTimeout(() => setToastMsg(null), 2500);
+        isStarredRef.current = !next;
         setIsStarred(!next);
         setStarsDelta(!next ? (baseStarred ? 0 : 1) : (baseStarred ? -1 : 0));
       }
@@ -196,6 +219,7 @@ export function ViewerFrame({
       console.warn("[ViewerFrame] star_work error:", e);
       setToastMsg("Network error. Please try again.");
       setTimeout(() => setToastMsg(null), 2500);
+      isStarredRef.current = !next;
       setIsStarred(!next);
       setStarsDelta(!next ? (baseStarred ? 0 : 1) : (baseStarred ? -1 : 0));
     }
@@ -204,20 +228,39 @@ export function ViewerFrame({
   const triggerDoubleTap = () => {
     const now = Date.now();
     if (now - lastTapRef.current < DOUBLE_TAP_MS && now - lastTapRef.current > DOUBLE_TAP_MIN_MS) {
+      lastTapRef.current = 0;
+
+      // Always trigger the 5-star burst animation at the bottom for visual feedback
+      if (flashTimeout.current) clearTimeout(flashTimeout.current);
+      setDoubleTapFlash(true);
+      flashTimeout.current = setTimeout(() => setDoubleTapFlash(false), 1000);
+
+      // If already starred, show the star animation but don't do anything else
+      if (isStarred || isStarredRef.current) {
+        return;
+      }
+
+      if (!currentArtist) {
+        setToastMsg("Sign in required to star works");
+        setTimeout(() => setToastMsg(null), 3000);
+        return;
+      }
+
       fireStar();
+      return;
     }
     lastTapRef.current = now;
   };
 
-  const handlePin = async () => {
+  const handleFrame = async () => {
     if (!currentArtist) {
       setToastMsg("Sign in required to frame works on your wall");
       setTimeout(() => setToastMsg(null), 3000);
       return;
     }
 
-    const next = !pinned;
-    setPinned(next);
+    const next = !isFramed;
+    setIsFramed(next);
 
     try {
       const res = await apiFetch("/artists/new/wall_post", {
@@ -225,20 +268,20 @@ export function ViewerFrame({
         body: JSON.stringify({ work_id: work.id }),
       });
       if (res.ok) {
-        setToastMsg(next ? "Pinned to Wall" : "Removed from Wall");
+        setToastMsg(next ? "Framed on Wall" : "Removed from Wall");
         setTimeout(() => setToastMsg(null), 3000);
       } else {
         const errJson = await res.json().catch(() => ({}));
-        const errMsg = errJson.error || errJson.message || "Failed to pin to Wall.";
+        const errMsg = errJson.error || errJson.message || "Failed to frame to Wall.";
         setToastMsg(errMsg);
         setTimeout(() => setToastMsg(null), 3000);
-        setPinned(!next);
+        setIsFramed(!next);
       }
     } catch (e) {
-      console.warn("[ViewerFrame] pin wall_post error:", e);
-      setToastMsg("Network error while pinning to Wall.");
+      console.warn("[ViewerFrame] frame wall_post error:", e);
+      setToastMsg("Network error while framing to Wall.");
       setTimeout(() => setToastMsg(null), 3000);
-      setPinned(!next);
+      setIsFramed(!next);
     }
   };
 
@@ -306,7 +349,11 @@ export function ViewerFrame({
         <div className="flex flex-col relative">
           <ViewerNav work={work} />
 
-          <div className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-[52px] pb-8 sm:pt-[56px]">
+          <div className={`flex-1 flex flex-col items-center px-4 sm:px-6 pt-[52px] sm:pt-[56px] ${
+            hasUpNext 
+              ? "pb-6 sm:pb-8 lg:pb-12" 
+              : "pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] sm:pb-32 lg:pb-12"
+          }`}>
 
             {/* Media container — max-width controlled per type */}
             <div style={{ width: "100%", maxWidth: maxW }} className="relative">
@@ -433,9 +480,9 @@ export function ViewerFrame({
                     />
                     
                     <FrameAction
-                      isActive={pinned}
-                      isFramed={pinned}
-                      onFrame={handlePin}
+                      isActive={isFramed}
+                      isFramed={isFramed}
+                      onFrame={handleFrame}
                       onQuote={() => {
                         if (!currentArtist) {
                           setToastMsg("Sign in required to quote and discuss works");
@@ -461,7 +508,11 @@ export function ViewerFrame({
         </div>
 
         {/* Right column — Artist context ────────────────────────────────── */}
-        <ArtistContextPanel artistId={artistId} currentWorkId={work.id} />
+        <ArtistContextPanel 
+          artistId={artistId} 
+          currentWorkId={work.id} 
+          onHasWorksChange={setHasUpNext}
+        />
       </main>
 
       {selectedArtist && (

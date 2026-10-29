@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { SmilePlus, Plus } from "lucide-react";
 import type { EmojiClickData } from "emoji-picker-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { useLongPress } from "../../hooks/useLongPress";
 import { DEFAULT_QUICK_REACTIONS, ReactionId } from "../../types/reactions";
 
@@ -25,17 +27,28 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
   variant,
   isFeed = true, // fallback
 }) => {
+  const { currentArtist } = useAuth();
+  const navigate = useNavigate();
   const activeVariant = variant || (isFeed ? "inline" : "floating");
+  const isCommentBar = activeVariant === "comment-bar";
   const [showPicker, setShowPicker] = useState(false);
   const [showFullPicker, setShowFullPicker] = useState(false);
   const [recentEmojis, setRecentEmojis] = useState<ReactionId[]>(DEFAULT_QUICK_REACTIONS);
   const containerRef = useRef<HTMLDivElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const [horizontalShift, setHorizontalShift] = useState(0);
+  const [openDownward, setOpenDownward] = useState(false);
 
   // Close picker when clicking outside
   useEffect(() => {
     if (!showPicker && !showFullPicker) return;
     const handleDocumentClick = (e: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        containerRef.current && 
+        !containerRef.current.contains(target) &&
+        (!pickerRef.current || !pickerRef.current.contains(target))
+      ) {
         setShowPicker(false);
         setShowFullPicker(false);
       }
@@ -48,7 +61,57 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
     };
   }, [showPicker, showFullPicker]);
 
+  // Ensure quick-tray popover stays fully within viewport bounds
+  useEffect(() => {
+    if (!showPicker) {
+      setHorizontalShift(0);
+      setOpenDownward(false);
+      return;
+    }
+
+    const checkBounds = () => {
+      if (!containerRef.current) return;
+      const cRect = containerRef.current.getBoundingClientRect();
+      
+      // If trigger is very close to top of viewport, flip downward
+      if (cRect.top < 80) {
+        setOpenDownward(true);
+      } else {
+        setOpenDownward(false);
+      }
+
+      if (pickerRef.current) {
+        const pRect = pickerRef.current.getBoundingClientRect();
+        const padding = 12; // Safety margin from viewport edges
+        let shift = 0;
+
+        if (pRect.left < padding) {
+          shift = padding - pRect.left;
+        } else if (pRect.right > window.innerWidth - padding) {
+          shift = (window.innerWidth - padding) - pRect.right;
+        }
+
+        setHorizontalShift(shift);
+      }
+    };
+
+    checkBounds();
+    const rafId = requestAnimationFrame(checkBounds);
+    window.addEventListener("resize", checkBounds);
+    window.addEventListener("scroll", checkBounds, true);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", checkBounds);
+      window.removeEventListener("scroll", checkBounds, true);
+    };
+  }, [showPicker]);
+
   const handleToggle = () => {
+    if (!currentArtist) {
+      navigate("/profile/login");
+      return;
+    }
     if (showPicker || showFullPicker) {
       setShowPicker(false);
       setShowFullPicker(false);
@@ -99,18 +162,41 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
       return (
         <div 
           onClick={handleToggle}
-          className={`w-full h-11 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 transition-colors flex items-center justify-between px-3 cursor-pointer group ${className}`}
+          className={`w-full h-11 rounded-2xl transition-all flex items-center justify-between px-3 cursor-pointer group ${
+            isActive
+              ? "bg-amber-500/[0.08] hover:bg-amber-500/[0.12] border border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.1)]"
+              : "bg-white/[0.03] hover:bg-white/[0.06] border border-white/10"
+          } ${className}`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {renderOverlappedMetrics("w-[22px] h-[22px] text-[11px]")}
-            <span className="text-[11px] font-medium text-white/40 group-hover:text-white/60 transition-colors">
+            <span className={`text-[11px] font-medium truncate transition-colors ${
+              isActive ? "text-amber-400/90 group-hover:text-amber-300 font-semibold" : "text-white/40 group-hover:text-white/60"
+            }`}>
               {count && count > 0 ? `${count} Reactions` : "Add a reaction..."}
             </span>
           </div>
           
-          <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-white/10 shadow-sm' : 'bg-transparent group-hover:bg-white/5'}`}>
+          <div 
+            onClick={(e) => {
+              if (isActive) {
+                e.stopPropagation();
+                if (!currentArtist) {
+                  navigate("/profile/login");
+                  return;
+                }
+                onReact(null);
+              }
+            }}
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+              isActive 
+                ? "bg-amber-500/20 border border-amber-500/40 shadow-sm hover:scale-110 active:scale-95" 
+                : "bg-transparent group-hover:bg-white/5"
+            }`}
+            title={isActive ? "Click to remove reaction" : "Add reaction"}
+          >
             {isActive ? (
-               <span className="text-sm scale-110">{displayIcon}</span>
+               <span className="text-sm scale-110 select-none">{displayIcon}</span>
             ) : (
                <SmilePlus size={15} className="text-white/40 group-hover:text-white/70" />
             )}
@@ -168,11 +254,22 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
       <AnimatePresence>
         {showPicker && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            ref={pickerRef}
+            initial={{ opacity: 0, y: openDownward ? -8 : 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, x: horizontalShift, scale: 1 }}
+            exit={{ opacity: 0, y: openDownward ? -8 : 8, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="absolute bottom-full right-0 mb-3 z-[400] flex items-center gap-1.5 p-2 rounded-2xl bg-[#111111]/90 backdrop-blur-xl border border-white/10 shadow-2xl origin-bottom-right"
+            className={`absolute ${
+              openDownward ? "top-full mt-2.5" : "bottom-full mb-2.5"
+            } ${
+              isCommentBar
+                ? openDownward
+                  ? "left-0 origin-top-left"
+                  : "left-0 origin-bottom-left"
+                : openDownward
+                  ? "right-0 origin-top-right"
+                  : "right-0 origin-bottom-right"
+            } z-[400] flex items-center gap-1.5 p-2 rounded-2xl bg-[#111111]/95 backdrop-blur-xl border border-white/10 shadow-2xl max-w-[calc(100vw-24px)] select-none`}
           >
             {recentEmojis.slice(0, 5).map((emoji) => {
               const isSelected = activeReaction === emoji;
@@ -181,20 +278,24 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
                   key={emoji}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onReact(emoji);
+                    if (!currentArtist) {
+                      navigate("/profile/login");
+                      return;
+                    }
+                    onReact(isSelected ? null : emoji);
                     setShowPicker(false);
                     // Move to front of recent
                     setRecentEmojis(prev => [emoji, ...prev.filter(e => e !== emoji)]);
                   }}
-                  className={`relative p-2 rounded-xl text-lg hover:scale-125 transition-transform duration-200 ${
-                    isSelected ? "bg-white/10" : "hover:bg-white/5"
+                  className={`relative p-2 rounded-xl text-lg hover:scale-125 transition-transform duration-200 shrink-0 ${
+                    isSelected ? "bg-amber-500/20 border border-amber-500/40" : "hover:bg-white/5"
                   }`}
                 >
                   <span className="relative z-10 select-none">{emoji}</span>
                   {isSelected && (
                     <motion.div
                       layoutId="active-reaction-bg"
-                      className="absolute inset-0 rounded-xl bg-white/10 border border-white/5"
+                      className="absolute inset-0 rounded-xl bg-amber-500/10"
                     />
                   )}
                 </button>
@@ -202,14 +303,19 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
             })}
             
             {/* '+' button for full emoji picker */}
-            <div className="w-px h-6 bg-white/10 mx-1" />
+            <div className="w-px h-6 bg-white/10 mx-1 shrink-0" />
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                if (!currentArtist) {
+                  navigate("/profile/login");
+                  return;
+                }
                 setShowPicker(false);
                 setShowFullPicker(true);
               }}
-              className="p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              aria-label="More emojis"
             >
               <Plus size={18} />
             </button>
@@ -236,8 +342,12 @@ export const ReactionAction: React.FC<ReactionActionProps> = ({
               <EmojiPicker
                 theme={"dark" as any}
                 onEmojiClick={(emojiData: EmojiClickData) => {
+                  if (!currentArtist) {
+                    navigate("/profile/login");
+                    return;
+                  }
                   const emoji = emojiData.emoji;
-                  onReact(emoji);
+                  onReact(activeReaction === emoji ? null : emoji);
                   setShowFullPicker(false);
                   setRecentEmojis(prev => [emoji, ...prev.filter(e => e !== emoji)]);
                 }}

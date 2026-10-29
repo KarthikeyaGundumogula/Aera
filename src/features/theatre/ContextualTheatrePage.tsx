@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { UnifiedTheatre } from "./components/UnifiedTheatre";
 import { TheatreItem } from "../../types";
 import { apiFetch } from "@/lib/api";
+import { mapBackendWorkToTheatreItem } from "@/context/AuthContext";
 
 export interface ContextualTheatrePageProps {
   type: "original" | "set" | "festival";
@@ -21,6 +22,7 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
   useEffect(() => {
     if (!id) return;
     let isMounted = true;
+    setIsLoading(true);
 
     if (type === "original") {
       apiFetch(`/originals/${id}`)
@@ -35,21 +37,13 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         })
         .catch(() => undefined);
 
-      setIsLoading(true);
       apiFetch(`/originals/${id}/theatre?limit=30`)
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
             const theatreCards = json.data ?? [];
             if (Array.isArray(theatreCards) && isMounted) {
-              const mappedWorks: TheatreItem[] = theatreCards.map((w: any) => ({
-                id: w.id,
-                title: w.title || "Untitled Work",
-                category: w.workType || "Edit",
-                image: w.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
-                platform: "youtube",
-                srcId: w.id,
-              }));
+              const mappedWorks: TheatreItem[] = theatreCards.map(mapBackendWorkToTheatreItem);
               setVisibleWorks(mappedWorks);
               setHasMore(mappedWorks.length >= 30);
             }
@@ -71,6 +65,22 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         .catch((err) => {
           console.error("[ContextualTheatrePage] Failed to fetch set detail:", err);
         });
+
+      apiFetch(`/sets/${id}/theatre`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const items = json.data ?? [];
+            if (Array.isArray(items) && isMounted) {
+              const mappedWorks: TheatreItem[] = items.map(mapBackendWorkToTheatreItem);
+              setVisibleWorks(mappedWorks);
+            }
+          }
+        })
+        .catch((err) => console.warn("[ContextualTheatrePage] Failed to fetch set theatre:", err))
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
     } else if (type === "festival") {
       apiFetch(`/festivals/${id}`)
         .then(async (res) => {
@@ -82,6 +92,22 @@ export function ContextualTheatrePage({ type }: ContextualTheatrePageProps) {
         })
         .catch((err) => {
           console.error("[ContextualTheatrePage] Failed to fetch festival detail:", err);
+        });
+
+      apiFetch(`/festivals/${id}/works`)
+        .then(async (res) => {
+          if (res.ok) {
+            const json = await res.json();
+            const items = json.data ?? [];
+            if (Array.isArray(items) && isMounted) {
+              const mappedWorks: TheatreItem[] = items.map(mapBackendWorkToTheatreItem);
+              setVisibleWorks(mappedWorks);
+            }
+          }
+        })
+        .catch((err) => console.warn("[ContextualTheatrePage] Failed to fetch festival works:", err))
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
         });
     }
 

@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { GitCommit, MessageSquare } from "lucide-react";
+import { GitCommit, MessageSquare, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { DiscussionItem } from "../../../types/discussions";
 const ARTISTS_MOCK: any[] = [];
 import { ArtistProfile } from "../profile";
 import { EmbeddedWorkBox } from "../../../components/EmbeddedWorkBox";
+import { useAuth } from "../../../context/AuthContext";
 
 export interface DiscussionCardProps {
   thought?: DiscussionItem;
   discussion?: DiscussionItem;
   onCardClick?: () => void;
+  onDelete?: (id: string, e: React.MouseEvent) => void;
 }
 
 function formatDiscussionTime(raw?: string): string {
@@ -30,9 +32,11 @@ export function DiscussionCard({
   thought: rawThought,
   discussion: rawDiscussion,
   onCardClick,
+  onDelete,
 }: DiscussionCardProps) {
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
+  const { currentArtist } = useAuth();
 
   const item = rawDiscussion || rawThought;
   if (!item) return null;
@@ -40,6 +44,11 @@ export function DiscussionCard({
   const authorName = item.authorName || "Artist";
   const authorAvatar = item.authorAvatar || "";
   const authorId = item.authorId || "";
+  const isOwner = Boolean(
+    currentArtist?.id &&
+      authorId &&
+      String(currentArtist.id) === String(authorId)
+  );
   const artistData = {
     id: authorId || "artist",
     name: authorName,
@@ -73,18 +82,32 @@ export function DiscussionCard({
                 Discussion
               </span>
             </div>
-            {setName && setId && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/sets/${setId}`);
-                }}
-                className="text-[9px] font-sans font-extrabold uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors duration-200 cursor-pointer truncate max-w-[140px]"
-                title={setName}
-              >
-                //{setName}
-              </button>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {setName && setId && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/sets/${setId}`);
+                  }}
+                  className="text-[9px] font-sans font-extrabold uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors duration-200 cursor-pointer truncate max-w-[140px]"
+                  title={setName}
+                >
+                  //{setName}
+                </button>
+              )}
+              {isOwner && onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(item.id, e);
+                  }}
+                  title="Delete Discussion"
+                  className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Title & Body Content Area */}

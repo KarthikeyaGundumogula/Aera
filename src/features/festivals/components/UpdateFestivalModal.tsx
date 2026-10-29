@@ -79,6 +79,7 @@ export function UpdateFestivalModal({
               onChange={(e) =>
                 setFormData((p) => ({ ...p, title: e.target.value }))
               }
+              maxLength={100}
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all placeholder:text-white/10"
               placeholder="E.g. The Autumn Festival"
             />
@@ -95,6 +96,7 @@ export function UpdateFestivalModal({
               onChange={(e) =>
                 setFormData((p) => ({ ...p, description: e.target.value }))
               }
+              maxLength={500}
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all resize-none placeholder:text-white/10"
               placeholder="Describe the festival's theme..."
             />
@@ -110,6 +112,7 @@ export function UpdateFestivalModal({
               onChange={(e) =>
                 setFormData((p) => ({ ...p, rulesText: e.target.value }))
               }
+              maxLength={500}
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all resize-none placeholder:text-white/10"
               placeholder="1. Must be original score&#10;2. Under 3 minutes"
             />

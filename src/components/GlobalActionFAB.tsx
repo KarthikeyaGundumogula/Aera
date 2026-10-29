@@ -62,92 +62,81 @@ export function GlobalActionFAB() {
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollTracker = useRef(new WeakMap<EventTarget, number>());
 
-  // Unified Auto-hide & Scroll Logic (Twitter style intent tracking)
+  // Unified Auto-hide & Scroll Logic (Directional reading mode tracking)
   useEffect(() => {
     let lastTouchY = 0;
     let accumulatedDelta = 0;
 
-    const isAtTop = () => {
-      if (window.scrollY > 10) return false;
-      // Also check nested scrolling containers taking up most of the screen
-      const containers = document.querySelectorAll(
-        ".overflow-y-auto, .overflow-y-scroll",
-      );
-      for (let i = 0; i < containers.length; i++) {
-        if (
-          containers[i].clientHeight >= window.innerHeight * 0.5 &&
-          containers[i].scrollTop > 10
-        ) {
-          return false;
-        }
-      }
-      return true;
-    };
+    const isModalActive =
+      isMenuOpen ||
+      isModalOpen ||
+      isLedgerModalOpen ||
+      isCreateRecOpen ||
+      isPostLineOpen;
 
     const startIdleTimer = () => {
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      if (isMenuOpen || isModalOpen) return;
+      if (isModalActive) return;
 
       idleTimerRef.current = setTimeout(() => {
-        if (!isAtTop()) {
-          setIsVisible(false);
-          setShowHint(false);
-        }
-      }, 3500);
-    };
-
-    const handleInteraction = () => {
-      if (isMenuOpen || isModalOpen) return;
-      setIsVisible(true);
-      startIdleTimer();
+        setIsVisible(false);
+        setShowHint(false);
+      }, 2500);
     };
 
     // Desktop Wheel (Mouse/Trackpad)
     const handleWheel = (e: WheelEvent) => {
-      if (isMenuOpen || isModalOpen) return;
+      if (isModalActive) return;
 
       accumulatedDelta += e.deltaY;
 
-      if (accumulatedDelta > 50) {
+      // Scrolling down -> hide immediately
+      if (accumulatedDelta > 25) {
         setIsVisible(false);
         setShowHint(false);
         accumulatedDelta = 0;
-      } else if (accumulatedDelta < -50) {
+      }
+      // Scrolling up -> show immediately and restart idle timer
+      else if (accumulatedDelta < -25) {
         setIsVisible(true);
         accumulatedDelta = 0;
+        startIdleTimer();
       }
-      startIdleTimer();
     };
 
     // Mobile Touch
     const handleTouchStart = (e: TouchEvent) => {
       lastTouchY = e.touches[0].clientY;
       accumulatedDelta = 0;
-      setIsVisible(true);
-      startIdleTimer();
+      // Do NOT force setIsVisible(true) on touchstart — reading taps/horizontal flips shouldn't wake up FAB
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (isMenuOpen || isModalOpen) return;
+      if (isModalActive) return;
       const currentTouchY = e.touches[0].clientY;
       const deltaY = lastTouchY - currentTouchY;
 
       accumulatedDelta += deltaY;
       lastTouchY = currentTouchY;
 
-      if (accumulatedDelta > 50) {
+      // Swiping up (scrolling down the content) -> hide immediately
+      if (accumulatedDelta > 25) {
         setIsVisible(false);
         setShowHint(false);
         accumulatedDelta = 0;
-      } else if (accumulatedDelta < -50) {
+      }
+      // Swiping down (scrolling up the content) -> show immediately and restart idle timer
+      else if (accumulatedDelta < -25) {
         setIsVisible(true);
         accumulatedDelta = 0;
+        startIdleTimer();
       }
     };
 
-    // Fallback for native scrollbar dragging or page jumps
+    // Fallback for document or container scrolling
     let lastScrollY = window.scrollY;
     const handleScroll = (e: Event) => {
+      if (isModalActive) return;
       const target = e.target as HTMLElement | Document;
       let currentScrollY = 0;
 
@@ -157,15 +146,15 @@ export function GlobalActionFAB() {
         currentScrollY = (target as HTMLElement).scrollTop;
       }
 
-      if (currentScrollY > lastScrollY + 50) {
+      const diff = currentScrollY - lastScrollY;
+      if (diff > 25) {
         setIsVisible(false);
-      } else if (currentScrollY < lastScrollY - 50) {
+        setShowHint(false);
+      } else if (diff < -25) {
         setIsVisible(true);
+        startIdleTimer();
       }
 
-      if (currentScrollY < 20) {
-        setIsVisible(true);
-      }
       lastScrollY = currentScrollY;
     };
 
@@ -177,8 +166,6 @@ export function GlobalActionFAB() {
       passive: true,
       capture: true,
     });
-    window.addEventListener("mousemove", handleInteraction);
-    window.addEventListener("keydown", handleInteraction);
 
     startIdleTimer();
 
@@ -187,8 +174,6 @@ export function GlobalActionFAB() {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("scroll", handleScroll, { capture: true });
-      window.removeEventListener("mousemove", handleInteraction);
-      window.removeEventListener("keydown", handleInteraction);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
   }, [

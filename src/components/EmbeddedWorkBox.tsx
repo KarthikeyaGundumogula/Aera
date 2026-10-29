@@ -20,6 +20,7 @@ export interface EmbeddedWorkBoxProps {
   work?: EmbeddedWorkData | TheatreItem | null;
   workId?: string | null;
   variant?: "default" | "compact" | "wall";
+  showFrameBadge?: boolean;
   showCameraPin?: boolean;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
@@ -29,10 +30,12 @@ export function EmbeddedWorkBox({
   work: rawWork,
   workId,
   variant = "default",
+  showFrameBadge,
   showCameraPin = false,
   className = "",
   onClick: customOnClick,
 }: EmbeddedWorkBoxProps) {
+  const isFramedBadgeVisible = showFrameBadge ?? showCameraPin;
   const navigate = useNavigate();
   const { openWork } = useWorkNavigation();
   const [imageError, setImageError] = useState(false);
@@ -198,8 +201,8 @@ export function EmbeddedWorkBox({
       {/* Cinematic gradient overlay for title contrast */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
-      {/* Camera / Pin badge — top-left (Shown ONLY when showCameraPin is explicitly enabled, e.g. for Wall Posts) */}
-      {showCameraPin && (
+      {/* Frame badge — top-left (Shown when showFrameBadge is explicitly enabled, e.g. for Wall Posts) */}
+      {isFramedBadgeVisible && (
         <div className="absolute top-3 left-3 z-20 w-7 h-7 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 shadow-md flex items-center justify-center">
           <Camera size={12} className="text-amber-500 fill-amber-500 [&>circle]:fill-black" aria-hidden="true" />
         </div>

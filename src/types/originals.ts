@@ -24,13 +24,16 @@ export interface OriginalArtist {
   currentPeakLibrary?: number;
   currentPeakRecommendations?: number;
   memberSetIds?: string[];
+  isClaimed?: boolean;
 }
 
 export interface OriginalStar {
+  id?: string;
+  userName?: string;
   actorName: string;
   characterName: string;
   imageUrl: string;
-  originalId: string;
+  originalId?: string;
   workedOn?: { id: string; title: string; color?: string }[];
 }
 
@@ -49,6 +52,7 @@ export interface Original {
     presence: number;
     members: number;
     releases: number;
+    favorites?: number;
   };
   topArtists: OriginalArtist[];
   works: TheatreItem[];
@@ -59,6 +63,7 @@ export interface Original {
   genre?: string[];
   director?: string;
   castPreview?: string;
+  isFavorited?: boolean;
   resonanceSignature?: {
     peakMagnitude: number;
     normalizedSurgeDensity: number;

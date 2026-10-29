@@ -63,6 +63,7 @@ function SocialRow({ id, icon: Icon, label, prefix, value, placeholder, onChange
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          maxLength={100}
           placeholder={placeholder}
           autoComplete="off"
           className="

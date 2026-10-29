@@ -82,9 +82,11 @@ export const WorkPage = lazy(() =>
   import("@/features/works").then((m) => ({ default: m.WorkPage })),
 );
 
-export const TaggedWorksPage = lazy(() =>
-  import("@/features/works/TaggedWorksPage")
+export const OriginalWorksPage = lazy(() =>
+  import("@/features/works/OriginalWorksPage")
 );
+export const TaggedWorksPage = OriginalWorksPage;
+export const SavedWorksPage = OriginalWorksPage;
 
 export const UploadPage = lazy(() => import("@/features/upload/UploadPage"));
 
